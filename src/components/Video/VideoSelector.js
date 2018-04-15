@@ -28,7 +28,7 @@ export default class VideoSelector extends React.Component {
         {game.division} {game.opponent}: {game.date}
       </Menu.Item>
     );
-    return <div style={{display: 'flex'}}>
+    return <div style={{display: 'flex', flexWrap: 'wrap'}}>
       <Menu vertical style={{minWidth: 300, flex: 1}}>
         <Menu.Item>
           {gameItems}
