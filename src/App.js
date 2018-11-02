@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Container, Header, Segment, List, Form} from 'semantic-ui-react'
+import {Container, Header, Segment, List} from 'semantic-ui-react'
 
 class App extends Component {
   render() {
