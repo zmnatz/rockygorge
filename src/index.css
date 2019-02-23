@@ -3,3 +3,31 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.ant-layout-header h1 {
+  color: #CCCCCC;
+  font-size: 20px;
+}
+
+.ant-row-flex.ant-row-flex-center > div {
+  padding: 15px;
+}
+
+p.description {
+  color: black;
+  margin: 10px;
+  text-align: left;
+}
+
+.store-card {
+  width: 200px;
+}
+
+.store-card .ant-card-head {
+  background-color: #001529;
+  color: #CCCCCC;
+}
+
+.isCurrent .store-card .ant-card-head {
+  background-color: #203549;
+}

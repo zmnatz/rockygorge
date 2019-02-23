@@ -1,123 +1,97 @@
 import React, { Component } from "react";
-import { Grid, Divider, Icon, Header, Segment, List } from "semantic-ui-react";
+import { Row, Col, Card, Layout } from "antd";
+import { Router, Link } from '@reach/router'
+import classnames from 'classnames'
+import RegisterProduct from './components/Store'
+import 'antd/dist/antd.css';
+import './index.css'
+
+const {
+  Header, Content
+} = Layout;
+
+const Main = () => (
+  <Col md={22} lg={11} style={{ textAlign: 'center' }}>
+    <h2>Event Registration</h2>
+    <img
+      src="images/banquet.png"
+      alt="Banquet Banner"
+      width="300px"
+    />
+    <h2>2012 and 2014 Division II National Champions</h2>
+    <p className="description">
+      This is our storefront for signing up for upcoming events.
+      Register for upcoming tournaments, social events, and fundraisers.
+    </p>
+  </Col>
+)
+
+const NavLink = (props) => (
+  <Link {...props} getProps={({ isCurrent }) => ({ className: classnames({ isCurrent }) })}>
+    {props.children}
+  </Link>
+)
+
+const Products = () => (
+  <React.Fragment>
+    <h3>Upcoming Events</h3>
+    <Row type="flex" gutter={20}>
+      <Col>
+        <NavLink to="/store/gorgeCup">
+          <Card title="Gorge Cup"
+            className="store-card"
+          >
+            <div>April 27, 2019</div>
+          </Card>
+        </NavLink>
+      </Col>
+      <Col>
+        <NavLink to="/store/slug7s">
+          <Card title="Slug 7s"
+            className="store-card"
+          >
+            <div>Date: TBD</div>
+          </Card>
+        </NavLink>
+      </Col>
+    </Row>
+  </React.Fragment >
+)
+
+const Home = () => (
+  <React.Fragment>
+    <Main />
+    <Col md={22} lg={11}>
+      <Products />
+    </Col>
+  </React.Fragment>
+)
+
+const Store = ({ product }) => {
+  return <React.Fragment>
+    <Col sm={22} md={11}>
+      <Products active={product} />
+    </Col>
+    <Col sm={22} md={11}>
+      <RegisterProduct product={product} />
+    </Col>
+  </React.Fragment>
+}
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <Segment>
-          <Grid columns={2} stackable textAlign="center">
-            <Divider vertical>
-              <Icon name="arrow right" />
-            </Divider>
-
-            <Grid.Row verticalAlign="middle">
-              <Grid.Column>
-                <Header as="h1">Rocky Gorge Rugby</Header>
-                <Header as="h2">Hall of Fame Banquet</Header>
-                <img
-                  src="images/banquet.png"
-                  alt="Banquet Banner"
-                  width="400px"
-                />
-                <Header as="h4">November 10 | @ Nottingham's</Header>
-                <List>
-                  <List.Item>Cocktail Hour</List.Item>
-                  <List.Item>Dinner</List.Item>
-                  <List.Item>Hall of Fame Ceremony</List.Item>
-                  <List.Item>More Details to Come</List.Item>
-                </List>
-              </Grid.Column>
-              <Grid.Column>
-                <Header>Buy your tickets now!</Header>
-                {/* <Form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                  <Form.Input type="hidden" name="cmd" value="_s-xclick"/>
-                  <Form.Input type="hidden" name="hosted_button_id" value="27RNPWEG2K8DJ"/>
-                  <Form.Input type="hidden" name="on0" value="Options"/>
-                  <Form.Dropdown name="os0" label="Options" options={['1 Person and 1 Date', '1 Person']}/>
-                  <Form.Input type="hidden" name="on1" value="Your Name:"/>
-                  <Form.Input name="os1" maxLength="200" label="Your Name"/>
-                  <Form.Input type="hidden" name="on2" value="Date Name:"/>
-                  <Form.Input name="os2" maxLength="200" label="Date Name"/>
-                  <Form.Input type="hidden" name="currency_code" value="USD"/>
-                  <Form.Input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!"/>
-                  <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1"/>
-                </Form> */}
-                <form
-                  action="https://www.paypal.com/cgi-bin/webscr"
-                  method="post"
-                  target="_top"
-                >
-                  <input type="hidden" name="cmd" value="_s-xclick" />
-                  <input
-                    type="hidden"
-                    name="hosted_button_id"
-                    value="27RNPWEG2K8DJ"
-                  />
-                  <table width="100%">
-                    <tbody>
-                      <tr>
-                        <td>
-                          <input type="hidden" name="on0" value="Options" />Options
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <select name="os0">
-                            <option value="1 Person and 1 Date">
-                              1 Person and 1 Date $110.00 USD
-                            </option>
-                            <option value="1 Person">
-                              1 Person $55.00 USD
-                            </option>
-                          </select>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="hidden" name="on1" value="Your Name:" />Your
-                          Name:
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="text" name="os1" maxLength="200" />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="hidden" name="on2" value="Date Name:" />Date
-                          Name:
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="text" name="os2" maxLength="200" />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <input type="hidden" name="currency_code" value="USD" />
-                  <input
-                    type="image"
-                    src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif"
-                    border="0"
-                    name="submit"
-                    alt="PayPal - The safer, easier way to pay online!"
-                  />
-                  <img
-                    alt=""
-                    border="0"
-                    src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif"
-                    width="1"
-                    height="1"
-                  />
-                </form>
-              </Grid.Column>
-            </Grid.Row>
-          </Grid>
-        </Segment>
-      </div>
+        <Header>
+          <Link to="/"><h1>Rocky Gorge Rugby</h1></Link>
+        </Header>
+        <Content>
+          <Router className="ant-row-flex ant-row-flex-center">
+            <Home path='/' />
+            <Store path='/store/:product' />
+          </Router>
+        </Content>
+      </div >
     );
   }
 }
