@@ -41,7 +41,9 @@ const Products = () => (
           <Card title="Gorge Cup"
             className="store-card"
           >
+            <div>East Columbia Library</div>
             <div>April 27, 2019</div>
+            <div>More info to come</div>
           </Card>
         </NavLink>
       </Col>
