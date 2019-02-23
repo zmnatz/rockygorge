@@ -68,5 +68,11 @@ const products = {
 
 export default ({ product }) => {
   const form = products[product];
-  return form || <div>Product not found</div>
+  if (!form) {
+    return <div>Product not found</div>
+  }
+  return <React.Fragment>
+    <h2>Registration Information</h2>
+    {form}
+  </React.Fragment>
 }
