@@ -26,8 +26,11 @@ const Main = () => (
   </Col>
 )
 
+const linkProps = ({isCurrent}) =>
+  ({className: classnames({isCurrent})})
+
 const NavLink = (props) => (
-  <Link {...props} getProps={({ isCurrent }) => ({ className: classnames({ isCurrent }) })}>
+  <Link {...props} getProps={linkProps}>
     {props.children}
   </Link>
 )
@@ -38,20 +41,16 @@ const Products = () => (
     <Row type="flex" gutter={20}>
       <Col>
         <NavLink to="/store/gorgeCup">
-          <Card title="Gorge Cup"
-            className="store-card"
-          >
+          <Card title="Gorge Cup" className="store-card">
             <div>East Columbia Library</div>
             <div>April 27, 2019</div>
-            <div>More info to come</div>
+            <div>$150 Per Team</div>
           </Card>
         </NavLink>
       </Col>
       <Col>
         <NavLink to="/store/slug7s">
-          <Card title="Slug 7s"
-            className="store-card"
-          >
+          <Card title="Slug 7s" className="store-card">
             <div>Date: TBD</div>
           </Card>
         </NavLink>
