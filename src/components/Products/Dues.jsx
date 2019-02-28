@@ -30,7 +30,7 @@ export default () => (
     <h2>GOD Donations</h2>
     <p>
       Your club needs you. Help out Rocky Gorge Rugby and donate today. 
-      Your donation comes helps Rocky Gorge buy new equipment, rent fields and 
+      Your donation lets Rocky Gorge buy new equipment, rent fields and 
       help the club grow. Donate today to lord your contributions over lesser 
       GODS and gloat to the young whippersnappers about how you saved their butts.
     </p>
