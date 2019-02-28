@@ -5,11 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "browser-preview",
+            "request": "attach",
+            "name": "Browser Preview: Attach"
+        },
+        {
+            "type": "browser-preview",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}"
+            "name": "Browser Preview: Launch",
+            "url": "http://localhost:3000"
         }
     ]
 }
