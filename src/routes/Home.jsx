@@ -1,6 +1,7 @@
 import React from 'react';
 import {Col} from 'antd';
 import Listings from '../components/Listings'
+import Product from '../components/Product'
 
 export default () => (
   <React.Fragment>
@@ -19,6 +20,10 @@ export default () => (
     </Col>
     <Col md={22} lg={11}>
       <Listings />
+      <h3>Team Dues</h3>
+      <Product title="Spring Dues" link="/dues">
+        Spring 2018 Mens Club Dues
+      </Product>
     </Col>
   </React.Fragment>
 )
