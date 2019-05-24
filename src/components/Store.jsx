@@ -3,6 +3,7 @@ import { Router } from '@reach/router'
 
 import SlugSevens from './Products/SlugSevens'
 import GorgeCup from './Products/GorgeCup'
+import Register from './Products/Register';
 
 export default () => {
   return <React.Fragment>
@@ -10,6 +11,7 @@ export default () => {
     <Router>
       <GorgeCup path="gorgeCup" />
       <SlugSevens path="slug7s" />
+      <Register path="register"/>
       <div default>
         Product not found
       </div>
