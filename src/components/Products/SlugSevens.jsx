@@ -24,9 +24,7 @@ export default () => (
               <option value="1 Team">1 Team $225.00 USD</option>
               <option value="2 Teams">2 Teams $400.00 USD</option>
               <option value="3 Teams">3 Teams $600.00 USD</option>
-              <option value="High School Team">
-                High School Team $100.00 USD
-              </option>
+              <option value="U19 HS Team">U19 HS Team $100.00 USD</option>
             </select>{" "}
           </td>
         </tr>

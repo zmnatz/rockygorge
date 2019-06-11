@@ -11,7 +11,7 @@ export default () => (
     <input type="hidden" name="cmd" value="_s-xclick" />
     <input type="hidden" name="hosted_button_id" value="YLEJB8UF5F3GY" />
     <input type="hidden" name="on0" value="Price Options" />
-    <input type="hidden" name="os0" value="High School Team" />
+    <input type="hidden" name="os0" value="U19 HS Team" />
     <table>
       <tbody>
         <tr>
