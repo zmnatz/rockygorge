@@ -21,6 +21,11 @@ export default () => (
           <div>June 15, 2019</div>
           <div>$225 per team</div>
         </Product>
+        <Product title="Slug 7s U19" link="/store/u19slug7s">
+          <div>Columbia, MD</div>
+          <div>June 15, 2019</div>
+          <div>$100 per team</div>
+        </Product>
       </Col>
     </Row>
   </React.Fragment>
