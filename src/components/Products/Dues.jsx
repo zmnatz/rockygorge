@@ -2,7 +2,7 @@ import React from "react";
 
 export default () => (
   <div>
-    <h2>Fall Dues</h2>
+    <h2>Spring Dues</h2>
     <p>Pay your dues!</p>
 
     <form
