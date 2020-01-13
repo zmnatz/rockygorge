@@ -1,16 +1,18 @@
-import React from 'react';
-import {Col} from 'antd'
+import React from "react";
+import { Col } from "antd";
 
-import Listings from '../components/Listings'
-import RegisterProduct from '../components/Store'
+import Listings from "../components/Listings";
+import Store from "../components/Store";
 
 export default () => {
-  return <React.Fragment>
-    <Col sm={22} md={11}>
-      <Listings />
-    </Col>
-    <Col sm={22} md={11}>
-      <RegisterProduct />
-    </Col>
-  </React.Fragment>
-}
+  return (
+    <React.Fragment>
+      <Col sm={22} md={11}>
+        <Listings />
+      </Col>
+      <Col sm={22} md={11}>
+        <Store />
+      </Col>
+    </React.Fragment>
+  );
+};

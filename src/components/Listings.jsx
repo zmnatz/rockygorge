@@ -6,25 +6,16 @@ export default () => (
   <React.Fragment>
     <h3>Events</h3>
     <Row type="flex" gutter={20}>
-      {/*
       <Col>
         <Product title="Gorge Cup" link="/store/gorgeCup">
-          <div>Troy Park</div>
-          <div>April 27, 2019</div>
-          <div>$150 Per Team</div>
+          <div>Details coming Spring, 2020</div>
         </Product>
       </Col>
-      */}
+
       <Col>
         <Product title="Slug 7s" link="/store/slug7s">
           <div>Columbia, MD</div>
-          <div>June 15, 2019</div>
-          <div>$225 per team</div>
-        </Product>
-        <Product title="Slug 7s U19" link="/store/u19slug7s">
-          <div>Columbia, MD</div>
-          <div>June 15, 2019</div>
-          <div>$100 per team</div>
+          <div>Details coming summer 2020</div>
         </Product>
       </Col>
     </Row>
