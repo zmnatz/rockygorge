@@ -37,9 +37,9 @@ export default () => (
     <Col md={22} lg={11}>
       <Listings />
       <h3>Team Dues</h3>
-      <Product title="Spring Dues" link="/dues">
+      {/* <Product title="Spring Dues" link="/dues">
         Spring 2020 Mens Club Dues
-      </Product>
+      </Product> */}
     </Col>
   </React.Fragment>
 );
