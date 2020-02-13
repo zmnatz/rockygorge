@@ -13,6 +13,26 @@ export default () => (
         This is our storefront for signing up for upcoming events. Register for
         upcoming tournaments, social events, and fundraisers.
       </p>
+      <p className="description">
+        <a
+          href="https://groups.google.com/forum/#!forum/rocky-gorge"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          New Players: Join Our Mailing List
+        </a>{" "}
+        for team announcements, practice times, and player information.
+      </p>
+      <p className="description">
+        <a
+          href="https://groups.google.com/forum/#!forum/rocky-gorge-alumni"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Join our alumni list
+        </a>{" "}
+        for social announcements, fan information, and old boy happy hours.
+      </p>
     </Col>
     <Col md={22} lg={11}>
       <Listings />
