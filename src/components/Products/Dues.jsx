@@ -1,40 +1,6 @@
-/* globals paypal */
-import React, { useLayoutEffect } from "react";
+import React from "react";
 
 export default () => {
-  useLayoutEffect(() => {
-    paypal
-      .Buttons({
-        style: {
-          shape: "pill",
-          color: "blue",
-          layout: "vertical",
-          label: "paypal"
-        },
-        createOrder: (data, actions) =>
-          actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: "200"
-                }
-              }
-            ]
-          }),
-        onApprove: function(data, actions) {
-          return actions.order
-            .capture()
-            .then(details =>
-              alert(
-                `Thank you for paying your dues ${
-                  details.payer.name.given_name
-                }. Transaction completed.`
-              )
-            );
-        }
-      })
-      .render("#paypal-button-container");
-  }, []);
   return (
     <div>
       <h2>Spring Dues: $200</h2>
