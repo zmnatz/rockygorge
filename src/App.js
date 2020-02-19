@@ -4,6 +4,7 @@ import { Router, Link } from "@reach/router";
 import Home from "./routes/Home";
 import Store from "./routes/Store";
 import Dues from "./components/Products/Dues";
+import Calendar from "./routes/Calendar";
 import "antd/dist/antd.css";
 
 class App extends Component {
@@ -20,6 +21,7 @@ class App extends Component {
             <Home default />
             <Store path="/store/*" />
             <Dues path="/dues" />
+            <Calendar path="/calendar" />
           </Router>
         </Layout.Content>
       </div>

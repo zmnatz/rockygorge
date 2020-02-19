@@ -1,5 +1,5 @@
 import React from "react";
-import { Col } from "antd";
+import { Col, Row } from "antd";
 import Listings from "../components/Listings";
 import Product from "../components/Product";
 
@@ -36,10 +36,19 @@ export default () => (
     </Col>
     <Col md={22} lg={11}>
       <Listings />
-      <h3>Team Dues</h3>
-      <Product title="Spring Dues" link="/dues">
-        Spring 2020 Mens Club Dues
-      </Product>
+      <h3>Player Info</h3>
+      <Row type="flex" gutter={20}>
+        <Col>
+          <Product title="Calendar" link="/calendar">
+            Practice times, locations and game information
+          </Product>
+        </Col>
+        <Col>
+          <Product title="Spring Dues" link="/dues">
+            Spring 2020 Mens Club Dues
+          </Product>
+        </Col>
+      </Row>
     </Col>
   </React.Fragment>
 );
