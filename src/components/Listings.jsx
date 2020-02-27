@@ -7,6 +7,14 @@ export default () => (
     <h3>Events</h3>
     <Row type="flex" gutter={20}>
       <Col>
+        <Product title="HOF Banquet" link="/store/banquet">
+          <div>Saturday, April 18</div>
+          <div>7:00 PM to 11:00 PM</div>
+          <div>Columbia, MD</div>
+        </Product>
+      </Col>
+
+      <Col>
         <Product title="Gorge Cup" link="/store/gorgeCup">
           <div>Details coming Spring, 2020</div>
         </Product>
