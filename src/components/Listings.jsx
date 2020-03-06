@@ -8,7 +8,9 @@ export default () => (
     <Row type="flex" gutter={20}>
       <Col>
         <Product title="Gorge Cup" link="/store/gorgeCup">
-          <div>Details coming Spring, 2020</div>
+          <div>April 25, 2020</div>
+          <div>Alpha Ridge Park</div>
+          <div>11685 Old Frederick Rd, Marriottsville, MD 21104</div>
         </Product>
       </Col>
 
