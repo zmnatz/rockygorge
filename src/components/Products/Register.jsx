@@ -1,9 +1,9 @@
-import React, {useCallback, useState} from "react";
+import React, { useCallback, useState } from "react";
 import firebase from '../../api/fire'
-import {Form, Select, Input, Button} from 'antd'
-import {Link} from '@reach/router'
+import { Form, Select, Input, Button } from 'antd'
+import { Link } from '@reach/router'
 
-const {Option} = Select;
+const { Option } = Select;
 
 const Register = (props) => {
   const [values, setValues] = useState({
@@ -14,13 +14,13 @@ const Register = (props) => {
 
   const [submitted, setSubmitted] = useState(false)
 
-  const onSubmit=useCallback((e) => {
+  const onSubmit = useCallback((e) => {
     e.preventDefault();
     firebase.database().ref('registration').push(values)
       .then(() => setSubmitted(true))
   }, [values, setSubmitted])
 
-  const onChange= useCallback(({target: {name, value}}) => {
+  const onChange = useCallback(({ target: { name, value } }) => {
     setSubmitted(false);
     setValues(prev => ({
       ...prev,
@@ -32,18 +32,19 @@ const Register = (props) => {
     (division) => setValues(prev => ({
       ...prev,
       division
-    }))
-    )
-    
-    return <React.Fragment>
+    })),
+    []
+  )
+
+  return <React.Fragment>
     <section>
       <p>Register your team for Slug 7s today</p>
       <Form onSubmit={onSubmit} layout="horizontal">
         <Form.Item required label="Team">
-          <Input required name="team" value={values.team} onChange={onChange}/>
+          <Input required name="team" value={values.team} onChange={onChange} />
         </Form.Item>
         <Form.Item required label="Email" >
-          <Input required type="email" value={values.email} name="email" onChange={onChange}/>
+          <Input required type="email" value={values.email} name="email" onChange={onChange} />
         </Form.Item>
         <Form.Item required label="Division">
           <Select required name="division" onChange={onDivisionChange} value={values.division}>

@@ -1,14 +1,15 @@
 import React from "react";
 import { Col } from "antd";
 
-import Listings from "../components/Listings";
-import Store from "../components/Store";
+import Events from "../components/Sections/Events";
+import Store from "../components/Sections/Store";
 
 export default () => {
   return (
     <React.Fragment>
       <Col sm={22} md={11}>
-        <Listings />
+        <h3>Events</h3>
+        <Events />
       </Col>
       <Col sm={22} md={11}>
         <Store />

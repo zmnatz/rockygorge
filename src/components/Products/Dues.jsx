@@ -3,9 +3,9 @@ import React from "react";
 export default () => {
   return (
     <div>
-      <h2>Spring Dues: $200</h2>
+      <h2>Fall Dues: $200</h2>
       <p>
-        Dues for the Spring are $200. This helps pay for player registration,
+        Dues for the fall are $200. This helps pay for player registration,
         insurance, fields and referees as well as equipment.
       </p>
       <p>Pay your dues!</p>
