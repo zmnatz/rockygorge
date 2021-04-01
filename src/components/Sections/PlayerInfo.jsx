@@ -1,8 +1,8 @@
-import React from 'react';
-import { Row, Col } from 'antd';
-import Product from '../Product';
+import React from "react";
+import { Row, Col } from "antd";
+import Product from "../Product";
 
-export default _ => (
+export default (_) => (
   <Row type="flex" gutter={20}>
     <Col>
       <Product title="Calendar" link="/calendar">
@@ -10,9 +10,9 @@ export default _ => (
       </Product>
     </Col>
     <Col>
-      <Product title="Fall Dues" link="/dues">
-        Fall 2020 Mens Club Dues
-        </Product>
+      <Product title="Spring Dues" link="/dues">
+        Spring 2021 Mens Club Dues
+      </Product>
     </Col>
   </Row>
-)
+);
