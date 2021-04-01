@@ -2,7 +2,7 @@ import React from "react";
 import { Col } from "antd";
 
 import Events from "../components/Sections/Events";
-import Store from "../components/Sections/Store";
+import Store from "../components/Store";
 
 export default () => {
   return (
