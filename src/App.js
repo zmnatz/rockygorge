@@ -7,6 +7,7 @@ import Dues from "./components/Products/Dues";
 import Calendar from "./routes/Calendar";
 import "antd/dist/antd.css";
 import Subscriptions from "./components/Products/Subscriptions";
+import Roster from "./routes/Roster";
 
 class App extends Component {
   render() {
@@ -24,6 +25,7 @@ class App extends Component {
             <Dues path="/dues" />
             <Calendar path="/calendar" />
             <Subscriptions path="/subscriptions" />
+            <Roster path="/roster" />
           </Router>
         </Layout.Content>
       </div>
