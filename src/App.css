@@ -23,6 +23,25 @@
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+thead tr {
+  background: grey;
+  font-weight: bold;
+  border-bottom: 1px solid black;
+}
+tr:nth-child(even) {
+  background-color: lightgrey;
+}
+table {
+  width: 100%;
+  padding: 0;
+  margin: 0 0 20px 0;
+  font-size: 13px;
 }
