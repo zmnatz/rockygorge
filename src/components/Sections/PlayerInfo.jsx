@@ -14,5 +14,10 @@ export default (_) => (
         Spring 2021 Mens Club Dues
       </Product>
     </Col>
+    <Col>
+      <Product title="Active Roster" link="/roster">
+        Currently registered players
+      </Product>
+    </Col>
   </Row>
 );

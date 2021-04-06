@@ -6,6 +6,7 @@ import Store from "./routes/Store";
 import Dues from "./components/Products/Dues";
 import Calendar from "./routes/Calendar";
 import "antd/dist/antd.css";
+import "./App.css";
 import Subscriptions from "./components/Products/Subscriptions";
 import Roster from "./routes/Roster";
 
