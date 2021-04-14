@@ -5,7 +5,7 @@ export default () => {
     <div>
       <h2>Spring Dues: $100</h2>
       <p>
-        Dues for the Spring are $100. This helps pay for insurance, fields, referees, and equipment.
+        Dues for the Spring are $100. This helps pay for insurance, fields, referees, and equipment. A Paypal account is not required. If you don't have one click "Pay with Debit or Credit Card"
       </p>
       <p>Pay your dues!</p>
       <form
