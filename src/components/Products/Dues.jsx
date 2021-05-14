@@ -3,7 +3,7 @@ import React from "react";
 export default () => {
   return (
     <div>
-      <h2>Spring Dues: $100</h2>
+      <h2>Dues: $100 Sponsor a Drinkup</h2>
       <p>
         Dues for the Spring are $100. This helps pay for insurance, fields, referees, and equipment. A Paypal account is not required. If you don't have one click "Pay with Debit or Credit Card"
       </p>
@@ -30,7 +30,7 @@ export default () => {
           height="1"
         />
       </form>
-      <h2>GOD Donations</h2>
+      {/* <h2>GOD Donations</h2>
       <p>
         Your club needs you. Help out Rocky Gorge Rugby and donate today. Your
         donation lets Rocky Gorge buy new equipment, rent fields and help the
@@ -59,7 +59,7 @@ export default () => {
           width="1"
           height="1"
         />
-      </form>
+      </form> */}
     </div>
   );
 };
