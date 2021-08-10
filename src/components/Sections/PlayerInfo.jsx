@@ -10,8 +10,9 @@ export default (_) => (
       </Product>
     </Col>
     <Col>
-      <Product title="Spring Dues" link="/dues">
-        Spring 2021 Mens Club Dues
+      <Product title="Fall Dues" link="/dues">
+        <div>$175 Club Dues</div>
+        <div>$25 off for new players</div>
       </Product>
     </Col>
     <Col>

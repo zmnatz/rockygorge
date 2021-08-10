@@ -1,65 +1,113 @@
-import React from "react";
+/*globals paypal*/
+import React, { useEffect } from "react";
 
 export default () => {
+  useEffect(() => {
+    var itemOptions = document.querySelector(
+      "#smart-button-container #item-options"
+    );
+    var quantity = 1;
+    var orderDescription = "Rocky Gorge Fall Dues";
+    if (orderDescription === "") {
+      orderDescription = "Item";
+    }
+
+    paypal
+      .Buttons({
+        style: {
+          shape: "pill",
+          color: "blue",
+          layout: "vertical",
+          label: "buynow"
+        },
+        createOrder: function (data, actions) {
+          var selectedItemDescription =
+            itemOptions.options[itemOptions.selectedIndex].value;
+          var selectedItemPrice = parseFloat(
+            itemOptions.options[itemOptions.selectedIndex].getAttribute("price")
+          );
+          var priceTotal = quantity * selectedItemPrice;
+          priceTotal = Math.round(priceTotal * 100) / 100;
+          var itemTotalValue =
+            Math.round(selectedItemPrice * quantity * 100) / 100;
+
+          return actions.order.create({
+            purchase_units: [
+              {
+                description: orderDescription,
+                amount: {
+                  currency_code: "USD",
+                  value: priceTotal,
+                  breakdown: {
+                    item_total: {
+                      currency_code: "USD",
+                      value: itemTotalValue
+                    },
+                    shipping: {
+                      currency_code: "USD",
+                      value: 0
+                    },
+                    tax_total: {
+                      currency_code: "USD",
+                      value: 0
+                    }
+                  }
+                },
+                items: [
+                  {
+                    name: selectedItemDescription,
+                    unit_amount: {
+                      currency_code: "USD",
+                      value: selectedItemPrice
+                    },
+                    quantity: quantity
+                  }
+                ]
+              }
+            ]
+          });
+        },
+        onApprove: function (data, actions) {
+          return actions.order.capture().then(function (orderData) {
+            // Full available details
+            console.log(
+              "Capture result",
+              orderData,
+              JSON.stringify(orderData, null, 2)
+            );
+
+            // Show a success message within this page, e.g.
+            const element = document.getElementById("paypal-button-container");
+            element.innerHTML = "";
+            element.innerHTML = "<h3>Thank you for your payment!</h3>";
+
+            // Or go to another URL:  actions.redirect('thank_you.html');
+          });
+        },
+        onError: function (err) {
+          console.log(err);
+        }
+      })
+      .render("#paypal-button-container");
+  }, []);
+
   return (
-    <div>
-      <h2>Dues: $100 Sponsor a Drinkup</h2>
-      <p>
-        Dues for the Spring are $100. This helps pay for insurance, fields, referees, and equipment. A Paypal account is not required. If you don't have one click "Pay with Debit or Credit Card"
-      </p>
-      <p>Pay your dues!</p>
-      <form
-        action="https://www.paypal.com/cgi-bin/webscr"
-        method="post"
-        target="_top"
-      >
-        <input type="hidden" name="cmd" value="_s-xclick" />
-        <input type="hidden" name="hosted_button_id" value="FFP2DBEXTBWL8" />
-        <input
-          type="image"
-          src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif"
-          border="0"
-          name="submit"
-          alt="PayPal - The safer, easier way to pay online!"
-        />
-        <img
-          alt=""
-          border="0"
-          src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif"
-          width="1"
-          height="1"
-        />
-      </form>
-      {/* <h2>GOD Donations</h2>
-      <p>
-        Your club needs you. Help out Rocky Gorge Rugby and donate today. Your
-        donation lets Rocky Gorge buy new equipment, rent fields and help the
-        club grow. Donate today to lord your contributions over lesser GODS and
-        gloat to the young whippersnappers about how you saved their butts.
-      </p>
-      <form
-        action="https://www.paypal.com/cgi-bin/webscr"
-        method="post"
-        target="_top"
-      >
-        <input type="hidden" name="cmd" value="_s-xclick" />
-        <input type="hidden" name="hosted_button_id" value="UAHLMT3W9ABYQ" />
-        <input
-          type="image"
-          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
-          border="0"
-          name="submit"
-          title="PayPal - The safer, easier way to pay online!"
-          alt="Donate with PayPal button"
-        />
-        <img
-          alt=""
-          border="0"
-          src="https://www.paypal.com/en_US/i/scr/pixel.gif"
-          width="1"
-          height="1"
-        />
-      </form> */}
+    <div id="smart-button-container">
+      <div style={{ textAlign: "center" }}>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <p>Rocky Gorge Fall Dues</p>
+          <select id="item-options">
+            <option value="Player Dues" price="175">
+              Player Dues - 175 USD
+            </option>
+            <option value="New Player Dues" price="150">
+              New Player Dues - 150 USD
+            </option>
+          </select>
+          <select style={{ visibility: "hidden" }} id="quantitySelect"></select>
+        </div>
+        <div id="paypal-button-container"></div>
+      </div>
     </div>
   );
 };
