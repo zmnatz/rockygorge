@@ -17,10 +17,23 @@ export default () => {
     getRoster().then(setRoster);
   }, []);
   return (
-    <div
-      dangerouslySetInnerHTML={{
-        __html: roster
-      }}
-    />
+    <>
+      <p>
+        Not on the list?{" "}
+        <a
+          href="https://usarugby.sportlomo.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Click here to register
+        </a>
+        .
+      </p>
+      <div
+        dangerouslySetInnerHTML={{
+          __html: roster
+        }}
+      />
+    </>
   );
 };

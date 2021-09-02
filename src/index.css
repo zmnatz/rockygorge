@@ -5,12 +5,12 @@ body {
 }
 
 .ant-layout-header h1 {
-  color: #CCCCCC;
+  color: #cccccc;
   font-size: 20px;
 }
 
-.ant-row-flex.ant-row-flex-center > div {
-  padding: 15px;
+.ant-row {
+  padding: 10px;
 }
 
 p.description {
@@ -21,13 +21,4 @@ p.description {
 
 .store-card {
   width: 200px;
-}
-
-.store-card .ant-card-head {
-  background-color: #001529;
-  color: #CCCCCC;
-}
-
-.isCurrent .store-card .ant-card-head {
-  background-color: #1d71be;
 }

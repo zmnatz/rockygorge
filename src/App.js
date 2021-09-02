@@ -2,12 +2,12 @@ import React, { Component } from "react";
 import { Layout } from "antd";
 import { Router, Link } from "@reach/router";
 import Home from "./routes/Home";
-import Dues from "./components/Products/Dues";
+import Dues from "./routes/Dues";
 import Calendar from "./routes/Calendar";
+import Roster from "./routes/Roster";
+
 import "antd/dist/antd.css";
 import "./App.css";
-import Subscriptions from "./components/Products/Subscriptions";
-import Roster from "./routes/Roster";
 
 class App extends Component {
   render() {
@@ -23,7 +23,6 @@ class App extends Component {
             <Home default />
             <Dues path="/dues" />
             <Calendar path="/calendar" />
-            <Subscriptions path="/subscriptions" />
             <Roster path="/roster" />
           </Router>
         </Layout.Content>

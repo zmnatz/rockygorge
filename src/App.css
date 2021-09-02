@@ -12,3 +12,16 @@ table {
   margin: 0 0 20px 0;
   font-size: 13px;
 }
+
+.ant-card {
+  margin: 10px;
+}
+
+.ant-card-head {
+  background-color: #001529;
+  color: #cccccc;
+}
+
+.isCurrent .store-card .ant-card-head {
+  background-color: #1d71be;
+}
