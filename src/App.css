@@ -25,3 +25,17 @@ table {
 .isCurrent .store-card .ant-card-head {
   background-color: #1d71be;
 }
+
+
+.ant-layout-content {
+  padding: 10px;
+}
+
+.ant-radio-group {
+  padding: 20px;
+  font-size: x-large;
+}
+
+.ant-radio-group .ant-radio-wrapper span {
+  font-size: large;
+}
