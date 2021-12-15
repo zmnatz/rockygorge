@@ -5,6 +5,7 @@ import Home from "./routes/Home";
 import Dues from "./routes/Dues";
 import Calendar from "./routes/Calendar";
 import Roster from "./routes/Roster";
+import Savannah from "./routes/Savannah";
 
 import "antd/dist/antd.css";
 import "./App.css";
@@ -20,18 +21,22 @@ class App extends Component {
           </Link>
         </Layout.Header>
         <Layout.Content>
-          <PayPalScriptProvider options={{
-            "client-id": 'ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt',
-            "enable-funding": 'venmo',
-            currency: 'USD'
-          }}>
+          <PayPalScriptProvider
+            options={{
+              "client-id":
+                "ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt",
+              "enable-funding": "venmo",
+              currency: "USD"
+            }}
+          >
             <Router className="ant-row-flex ant-row-flex-center">
               <Home default />
               <Dues path="/dues" />
+              <Savannah path="/savannah" />
               <Calendar path="/calendar" />
               <Roster path="/roster" />
             </Router>
-        </PayPalScriptProvider>
+          </PayPalScriptProvider>
         </Layout.Content>
       </div>
     );
