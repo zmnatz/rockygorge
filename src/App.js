@@ -2,10 +2,9 @@ import React, { Component } from "react";
 import { Layout } from "antd";
 import { Router, Link } from "@reach/router";
 import Home from "./routes/Home";
-import Dues from "./routes/Dues";
 import Calendar from "./routes/Calendar";
 import Roster from "./routes/Roster";
-import Savannah from "./routes/Savannah";
+import products, {Dues, Savannah} from './components/Products'
 
 import "antd/dist/antd.css";
 import "./App.css";
