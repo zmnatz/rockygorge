@@ -5,9 +5,9 @@ export const DUES = 175;
 export const NEW_PLAYER_DISCOUNT = 25
 
 export const OPTIONS = [
-  {name: 'Player Dues', value: DUES},
-  {name: 'New Player Dues', value: DUES - NEW_PLAYER_DISCOUNT},
-  {name: 'Old Boy Dues', value: 50 }
+  {name: `Player Dues - $${DUES}`, value: DUES},
+  {name: `New Player Dues - $${DUES - NEW_PLAYER_DISCOUNT}`, value: DUES - NEW_PLAYER_DISCOUNT},
+  {name: 'Old Boy Dues - $50', value: 50 }
 ]
 
 export default function Dues() {
