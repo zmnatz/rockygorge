@@ -4,7 +4,7 @@ import { Router, Link } from "@reach/router";
 import Home from "./routes/Home";
 import Calendar from "./routes/Calendar";
 import Roster from "./routes/Roster";
-import products, {Dues, Savannah} from './components/Products'
+import { Dues, Gear, Savannah } from "./components/Products";
 
 import "antd/dist/antd.css";
 import "./App.css";
@@ -31,6 +31,7 @@ class App extends Component {
             <Router className="ant-row-flex ant-row-flex-center">
               <Home default />
               <Dues path="/dues" />
+              <Gear path="/gear" />
               <Savannah path="/savannah" />
               <Calendar path="/calendar" />
               <Roster path="/roster" />
