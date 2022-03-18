@@ -15,9 +15,8 @@ export default (_) => (
       </Col>
       <Col>
         <Product title="Player Dues" link="/dues">
-          <Typography>$175 Spring Season</Typography>
+          <Typography>Spring Season: $200</Typography>
           <Typography>$25 off for new players</Typography>
-          <Typography>Dues are discounted $25 until March 1</Typography>
         </Product>
       </Col>
     </Row>
