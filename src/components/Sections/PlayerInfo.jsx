@@ -6,10 +6,10 @@ export default (_) => (
   <>
     <Row type="flex">
       <Col>
-        <Product title="Savannah Tourney" link="/savannah">
-          <Typography>$200</Typography>
+        <Product title="Spring Banquet" link="/banquet">
+          <Typography>June 4: $65 Tickets</Typography>
           <Typography>
-            Covers transporation, lodging, and tournament fee.
+            Celebrating the 10th anniversary of our National Championship.
           </Typography>
         </Product>
       </Col>
