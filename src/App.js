@@ -5,6 +5,7 @@ import Home from "./routes/Home";
 import Calendar from "./routes/Calendar";
 import Roster from "./routes/Roster";
 import { Dues, Gear, Savannah, Banquet } from "./components/Products";
+import NewSponsors from "./components/Products/NewSponsors";
 
 import "antd/dist/antd.css";
 import "./App.css";
@@ -36,6 +37,7 @@ class App extends Component {
               <Savannah path="/savannah" />
               <Calendar path="/calendar" />
               <Roster path="/roster" />
+              <NewSponsors path="/newSponsors" />
             </Router>
           </PayPalScriptProvider>
         </Layout.Content>

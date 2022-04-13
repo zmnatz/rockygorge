@@ -19,6 +19,11 @@ export default (_) => (
           <Typography>$25 off for new players</Typography>
         </Product>
       </Col>
+      <Col>
+        <Product title="Advertise with Us" link="/newSponsors">
+          <Typography>Become a jersey sponsor.</Typography>
+        </Product>
+      </Col>
     </Row>
     <Row>
       <Col>
