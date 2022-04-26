@@ -22,7 +22,7 @@ export default function Banquet() {
         Join us in celebrating the 10th anniversary of our club's first National
         Championship.
       </Typography.Title>
-      <Typography.Title level={4}>When: June 4, 6pm - 10pm</Typography.Title>
+      <Typography.Title level={4}>When: June 4, 7pm - 11pm</Typography.Title>
       <Typography.Title level={4}>
         Where: The Meeting House, 5885 Robert Oliver Place, Columbia MD
       </Typography.Title>
