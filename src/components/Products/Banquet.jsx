@@ -26,6 +26,9 @@ export default function Banquet() {
       <Typography.Title level={4}>
         Where: The Meeting House, 5885 Robert Oliver Place, Columbia MD
       </Typography.Title>
+      <Typography>
+        RSVP and sign up for updates on <a href="http://evite.me/vdRm5RTyCm">Evite</a>
+      </Typography>
 
       <Typography>
         Enjoy food, drinks and entertainment with master of ceremony, our very
