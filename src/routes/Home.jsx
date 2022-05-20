@@ -6,11 +6,17 @@ const Home = () => (
   <>
     <Row>
       <Col md={22} lg={22} style={{ textAlign: "center" }}>
-        <h2>Event Registration</h2>
+        <h2>One of the premiere rugby clubs in the Mid Atlantic. Competing in Division I and Division III men's rugby</h2>
         <h2>2012 and 2014 Division II National Champions</h2>
         <p className="description">
-          This is our storefront for signing up for upcoming events. Register
-          for upcoming tournaments, social events, and fundraisers.
+          <a
+            href="https://discord.gg/B563CpDdgn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Join our discord
+          </a>{" "}
+          to stay engaged and get immediate notifications on your phone for important announcements.
         </p>
         <p className="description">
           <a
@@ -31,6 +37,16 @@ const Home = () => (
             Join our alumni list
           </a>{" "}
           for social announcements, fan information, and old boy happy hours.
+        </p>
+        <p className="description">
+          <a
+            href="https://groups.google.com/forum/#!forum/rocky-gorge"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            New Players: Join Our Mailing List
+          </a>{" "}
+          for team announcements, practice times, and player information.
         </p>
       </Col>
     </Row>
