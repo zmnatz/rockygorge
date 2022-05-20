@@ -38,16 +38,6 @@ const Home = () => (
           </a>{" "}
           for social announcements, fan information, and old boy happy hours.
         </p>
-        <p className="description">
-          <a
-            href="https://groups.google.com/forum/#!forum/rocky-gorge"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            New Players: Join Our Mailing List
-          </a>{" "}
-          for team announcements, practice times, and player information.
-        </p>
       </Col>
     </Row>
     <Row gutter={20} type="flex">
