@@ -7,6 +7,8 @@ export const OPTIONS = [
   { name: "U19 Side - $200", value: 200 }
 ];
 
+export const MAIL_TO = "mailto:slugfest@rockygorgerugby.com&subject=Register my Team&body=Register my team for Slugfest 10s: <Team Name>"
+
 export default function Slugfest() {
   return <Layout.Content>
     <h1>Slugfest 10s</h1>
@@ -31,7 +33,7 @@ export default function Slugfest() {
     </p>
     <h3>Register your team</h3>
     <p>
-      Contact <a href="mailto:slugfest@rockygorgerugby.com">slugfest@rockygorgerugby.com</a> to register your team.
+      Contact <a href={MAIL_TO}>slugfest@rockygorgerugby.com</a> to register your team.
     </p>
     <PaypalProduct options={OPTIONS} defaultAmount={300}>
     </PaypalProduct>
