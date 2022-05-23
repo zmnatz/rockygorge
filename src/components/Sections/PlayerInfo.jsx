@@ -14,8 +14,16 @@ export default (_) => (
         </Product>
       </Col>
       <Col>
+        <Product title="Slugfest 10s" link="/slugfest">
+          <Typography>June 25: $300 per team</Typography>
+          <Typography>
+            Men's, Women's and U19 divisions.
+          </Typography>
+        </Product>
+      </Col>
+      <Col>
         <Product title="Player Dues" link="/dues">
-          <Typography>Spring Season: $200</Typography>
+          <Typography>Fall Season: $200</Typography>
           <Typography>$25 off for new players</Typography>
         </Product>
       </Col>
