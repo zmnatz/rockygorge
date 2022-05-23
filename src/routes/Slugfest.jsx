@@ -7,7 +7,7 @@ export const OPTIONS = [
   { name: "U19 Side - $200", value: 200 }
 ];
 
-export const MAIL_TO = "mailto:slugfest@rockygorgerugby.com&subject=Register my Team&body=Register my team for Slugfest 10s: <Team Name>"
+export const MAIL_TO = "mailto:slugfest@rockygorgerugby.com"
 
 export default function Slugfest() {
   return <Layout.Content>
