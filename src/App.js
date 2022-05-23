@@ -10,6 +10,14 @@ import NewSponsors from "./components/Products/NewSponsors";
 import "antd/dist/antd.css";
 import "./App.css";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Slugfest from "./routes/Slugfest";
+
+const PAYPAL_SETTINGS = {
+  "client-id":
+    "ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt",
+  "enable-funding": "venmo",
+  currency: "USD"
+}
 
 class App extends Component {
   render() {
@@ -21,14 +29,7 @@ class App extends Component {
           </Link>
         </Layout.Header>
         <Layout.Content>
-          <PayPalScriptProvider
-            options={{
-              "client-id":
-                "ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt",
-              "enable-funding": "venmo",
-              currency: "USD"
-            }}
-          >
+          <PayPalScriptProvider options={PAYPAL_SETTINGS}>
             <Router className="ant-row-flex ant-row-flex-center">
               <Home default />
               <Dues path="/dues" />
@@ -38,6 +39,7 @@ class App extends Component {
               <Calendar path="/calendar" />
               <Roster path="/roster" />
               <NewSponsors path="/newSponsors" />
+              <Slugfest path="/slugfest" />
             </Router>
           </PayPalScriptProvider>
         </Layout.Content>
