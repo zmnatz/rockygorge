@@ -14,7 +14,10 @@ export default function Slugfest() {
     <h1>Slugfest 10s</h1>
     <h3>Divisions</h3>
     <p>
-      The tournament will consist of Men's open, Women's open, and a U19 7s division.
+      The tournament will consist of Men's social, Women's social, and a U19 7s division.
+    </p>
+    <p>
+      Rugby 10s consists of 2 10 minute halves. This is a social tournament so rolling subs are a given. That means more playing time for everyone but plenty of rest.
     </p>
     <h3>Where</h3>
     <p>
