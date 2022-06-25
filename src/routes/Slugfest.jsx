@@ -15,6 +15,7 @@ export default function Slugfest() {
   const [amount, setAmount] = useState(5)
   return <Layout.Content>
     <h1>Slugfest 10s</h1>
+    <h3><a href="https://slugfest.netlify.app" target="_blank">Scores and Schedule</a></h3>
     <h3>Concessions</h3>
     <ul>
       <li>BBQ Chicken Sandwich: $5</li>
