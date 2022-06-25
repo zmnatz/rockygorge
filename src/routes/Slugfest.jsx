@@ -1,4 +1,6 @@
-import { Layout } from "antd";
+import { Button, Input, Layout } from "antd";
+import { useState } from 'react'
+import PaypalPayment from '../components/PaypalPayment'
 import PaypalProduct from "../components/PaypalProduct";
 
 export const OPTIONS = [
@@ -10,15 +12,22 @@ export const OPTIONS = [
 export const MAIL_TO = "mailto:slugfest@rockygorgerugby.com"
 
 export default function Slugfest() {
+  const [amount, setAmount] = useState(5)
   return <Layout.Content>
     <h1>Slugfest 10s</h1>
-    <h3>Divisions</h3>
-    <p>
-      The tournament will consist of Men's social, Women's social, and a U19 7s division.
-    </p>
-    <p>
-      Rugby 10s consists of 2 10 minute halves. This is a social tournament so rolling subs are a given. That means more playing time for everyone but plenty of rest.
-    </p>
+    <h3>Concessions</h3>
+    <ul>
+      <li>BBQ Chicken Sandwich: $5</li>
+      <li>Pulled Pork Sandwich: $5</li>
+      <li>Bottled Water: $1</li>
+    </ul>
+    <PaypalPayment amount={5} description="Concessions">
+      <form>
+        <label>Concession Charge</label>
+        <Input type="number" value={amount} onChange={({ target }) => setAmount(target.value)} />
+      </form>
+
+    </PaypalPayment>
     <h3>Where</h3>
     <p>
       East Columbia Library Park<br />
@@ -34,6 +43,9 @@ export default function Slugfest() {
       $300 for senior sides; $500 for two sides.
       $200 for U19 sides.
     </p>
+
+
+
     <h3>Register your team</h3>
     <p>
       Contact <a href={MAIL_TO}>slugfest@rockygorgerugby.com</a> to register your team.
