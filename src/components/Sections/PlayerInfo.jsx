@@ -15,6 +15,8 @@ export default (_) => (
         <Product title="Savannah Trip" link="/savannah">
           <Typography>St Patricks Day Tournament</Typography>
           <Typography>$275: Bus, hotels, tournament fees</Typography>
+        </Product>
+      </Col>
       <Col>
         <Product title="Advertise with Us" link="/newSponsors">
           <Typography>Become a jersey sponsor.</Typography>
