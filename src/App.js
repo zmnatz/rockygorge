@@ -4,6 +4,7 @@ import { Router, Link } from "@reach/router";
 import Home from "./routes/Home";
 import Calendar from "./routes/Calendar";
 import Roster from "./routes/Roster";
+import Standings from './routes/Standings'
 import { Dues, Gear, Savannah, Banquet } from "./components/Products";
 import NewSponsors from "./components/Products/NewSponsors";
 
@@ -40,6 +41,7 @@ class App extends Component {
               <Roster path="/roster" />
               <NewSponsors path="/newSponsors" />
               <Slugfest path="/slugfest" />
+              <Standings path="/standings" />
             </Router>
           </PayPalScriptProvider>
         </Layout.Content>

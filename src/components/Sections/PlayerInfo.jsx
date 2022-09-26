@@ -31,8 +31,8 @@ export default (_) => (
         </Product>
       </Col>
       <Col>
-        <Product title="Active Roster" link="/roster">
-          <Typography>Register with USA Rugby</Typography>
+        <Product title="Standings" link="/standings">
+          <Typography>Standings for the 2022/2023 season</Typography>
         </Product>
       </Col>
     </Row>
