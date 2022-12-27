@@ -24,6 +24,7 @@ export default function Dues() {
       defaultAmount={DUES}
       options={OPTIONS}
       description="Rocky Gorge Dues"
+      flexiblePayment
     >
       <Typography.Title level={3}>Pay your dues. Play rugby.</Typography.Title>
     </PaypalProduct>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Row, Col, Typography } from "antd";
+import { amount } from '../Products/Savannah'
 import Product from "../Product";
 
 export default (_) => (
@@ -14,7 +15,7 @@ export default (_) => (
       <Col>
         <Product title="Savannah Trip" link="/savannah">
           <Typography>St Patricks Day Tournament</Typography>
-          <Typography>$275: Bus, hotels, tournament fees</Typography>
+          <Typography>${amount}: Bus, hotels, tournament fees</Typography>
         </Product>
       </Col>
       <Col>
@@ -30,11 +31,11 @@ export default (_) => (
           <Typography>Shirts: $15</Typography>
         </Product>
       </Col>
-      <Col>
+      {/* <Col>
         <Product title="Standings" link="/standings">
           <Typography>Standings for the 2022/2023 season</Typography>
         </Product>
-      </Col>
+      </Col> */}
     </Row>
   </>
 );

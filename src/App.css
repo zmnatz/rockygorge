@@ -26,6 +26,10 @@ table {
   background-color: #1d71be;
 }
 
+.store-card.big {
+  width: 500px
+}
+
 
 .ant-layout-content {
   padding: 10px;
