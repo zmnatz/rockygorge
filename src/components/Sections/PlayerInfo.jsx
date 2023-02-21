@@ -8,7 +8,7 @@ export default (_) => (
     <Row type="flex">
       <Col>
         <Product title="Player Dues" link="/dues">
-          <Typography>Fall Season: $200</Typography>
+          <Typography>Spring Season: $200</Typography>
           <Typography>$25 off for new players</Typography>
         </Product>
       </Col>
