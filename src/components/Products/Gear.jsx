@@ -3,7 +3,7 @@ import PaypalProduct from "../PaypalProduct";
 
 export const OPTIONS = [
   { name: `Shorts - $30`, value: 30 },
-  { name: "Shirt - $15", value: 15 }
+  { name: "Shirt - $20", value: 20 }
 ];
 
 export default function Gear() {
