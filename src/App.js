@@ -12,6 +12,7 @@ import "antd/dist/antd.css";
 import "./App.css";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Slugfest from "./routes/Slugfest";
+import Subscription from "./components/Products/Subscription";
 
 const PAYPAL_SETTINGS = {
   "client-id":
@@ -42,6 +43,7 @@ class App extends Component {
               <NewSponsors path="/newSponsors" />
               <Slugfest path="/slugfest" />
               <Standings path="/standings" />
+              <Subscription path="/subscribe"
             </Router>
           </PayPalScriptProvider>
         </Layout.Content>
