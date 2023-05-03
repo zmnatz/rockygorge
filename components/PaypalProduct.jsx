@@ -26,7 +26,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
   }, [amount, description])
 
   const handleApprove = useCallback(async (data, actions) => {
-    await actions.order.capture();
+    await actions.order.capture();A
     setStatus('SUCCESS');
   }, [])
 
