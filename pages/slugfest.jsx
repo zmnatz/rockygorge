@@ -1,6 +1,6 @@
-import { Button, Input, Layout } from "antd";
+import { Layout } from "antd";
 import { useState } from 'react'
-import PaypalPayment from '../components/PaypalPayment'
+import Link from 'next/link'
 import PaypalProduct from "../components/PaypalProduct";
 
 export const OPTIONS = [
@@ -16,19 +16,19 @@ export default function Slugfest() {
   return <Layout.Content>
     <h1>Slugfest 10s</h1>
     <h3><a href="https://slugfest.netlify.app" target="_blank">Scores and Schedule</a></h3>
-    <h3>Concessions</h3>
+    {/* <h3>Concessions</h3>
     <ul>
       <li>BBQ Chicken Sandwich: $5</li>
       <li>Pulled Pork Sandwich: $5</li>
       <li>Bottled Water: $1</li>
     </ul>
-    <PaypalPayment amount={5} description="Concessions">
+    <PaypalProduct amount={5} description="Concessions">
       <form>
         <label>Concession Charge</label>
         <Input type="number" value={amount} onChange={({ target }) => setAmount(target.value)} />
       </form>
 
-    </PaypalPayment>
+    </PaypalProduct> */}
     <h3>Where</h3>
     <p>
       East Columbia Library Park<br />

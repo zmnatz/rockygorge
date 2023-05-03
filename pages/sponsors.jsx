@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import PaypalProduct from "../PaypalProduct";
+import PaypalProduct from "../components/PaypalProduct";
 
 export const TICKET = 65;
 
@@ -10,7 +10,7 @@ export const OPTIONS = [
   { name: `Shorts - $300`, value: 300 }
 ];
 
-export default function Banquet() {
+export default function NewSponsors() {
   return (
     <PaypalProduct
       defaultAmount={TICKET * 2}
