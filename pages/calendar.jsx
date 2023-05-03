@@ -1,6 +1,6 @@
 import React from "react";
 
-export default () => {
+export default function Calendar () {
   return (
     <iframe
       title="Rocky Gorge Team Calendar"

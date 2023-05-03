@@ -2,10 +2,6 @@
   command = "npm run build" # the command you run to build this file
   publish = "build" # create-react-app builds to this folder, Netlify should serve all these files statically
 [[redirects]]
-  from = "/api/roster"
-  to = "https://usarugby.sportlomo.com/wp-admin/admin-ajax.php?action=getClubMembers&id=6721"
-  status=200
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
