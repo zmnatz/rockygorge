@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import PaypalProduct from "../../components/PaypalProduct";
+import PaypalProduct from "../components/PaypalProduct";
 
 export const OPTIONS = [
   { name: `Shorts - $30`, value: 30 },

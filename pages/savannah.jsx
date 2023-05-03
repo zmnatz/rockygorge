@@ -1,4 +1,4 @@
-import PaypalProduct from "../../components/PaypalProduct";
+import PaypalProduct from "../components/PaypalProduct";
 export const amount = 300
 export const smallFee = 20
 

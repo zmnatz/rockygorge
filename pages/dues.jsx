@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import PaypalProduct from "../../components/PaypalProduct";
+import PaypalProduct from "../components/PaypalProduct";
 
 export const DUES = 200;
 export const NEW_PLAYER_DISCOUNT = 25;

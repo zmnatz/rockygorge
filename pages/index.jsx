@@ -2,7 +2,7 @@ import { Col, Row, Typography } from "antd";
 import Link from 'next/link'
 import Calendar from "../components/Calendar";
 import Product from "../components/Product";
-import {amount} from './products/savannah'
+import {amount} from './savannah'
 
 const Home = () => (
   <>
@@ -62,11 +62,11 @@ const Home = () => (
             </Product>
           </Col>
           <Col>
-            <Product title="Advertise with Us" link="/newSponsors">
+            <Product title="Advertise with Us" link="/sponsors">
               <Typography>Become a jersey sponsor.</Typography>
             </Product>
           </Col>
-        </Row>
+        </Row>n
         <Row>
           <Col>
             <Product title="Team Gear" link="/gear">
