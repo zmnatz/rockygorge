@@ -1,0 +1,24 @@
+import { Col, Row, Typography } from "antd";
+import Link from "next/link";
+import Calendar from "../components/Calendar";
+import Product from "../components/Product";
+import CardLink from "../components/CardLink";
+
+import Intro from '../sections/Intro.mdx'
+import ProductLinks from '../sections/ProductLinks.mdx'
+
+<Row>
+  <Col md={22} lg={22} style={{ textAlign: "center" }}>
+    <Intro/>
+  </Col>
+</Row>
+<Row gutter={20} type="flex">
+  <Col md={22} lg={11}>
+    <ProductLinks />
+  </Col>
+  <Col md={22} lg={11}>
+    <Link href="/calendar">
+      <Calendar />
+    </Link>
+  </Col>
+</Row>

@@ -1,4 +1,7 @@
+import Image from 'next/image';
+import {Row, Col} from 'antd'
 import PaypalProduct from "../components/PaypalProduct";
+import SlugfestBanner from '../assets/slugfest.jpg'
 // import Concessions from "../components/Concessions";
 
 export const OPTIONS = [
@@ -7,7 +10,12 @@ export const OPTIONS = [
   { name: "U19 Side - $200", value: 200 }
 ];
 
-# Slugfest 10s
+<Row gutter={20} type="flex">
+<Col md={11}>
+  <Image style={{maxWidth: '100%', height: 'auto'}} src={SlugfestBanner} alt="Slugfest 10s"/>
+</Col>
+
+<Col md={11}>
 ### <a href="https://slugfest.netlify.app" target="_blank">Scores and Schedule</a>
 
 {/* 
@@ -30,7 +38,12 @@ Social to follow at Oliver's Old Town Tavern
 ### Cost
 $300 for senior sides; $500 for two sides.<br/>
 $200 for U19 sides.
-
+</Col>
+</Row>
+<Row>
+<Col>
 ### Register your team
 Contact [slugfest@rockygorgerugby.com](mailto:slugfest@rockygorgerugby.com) to register your team.
 <PaypalProduct options={OPTIONS} defaultAmount={300}/>
+</Col>
+</Row>

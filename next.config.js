@@ -3,6 +3,7 @@ const nextConfig = {
   experimental: {
     appDir: false,
   },
+  images: { unoptimized: true },
   output: "export",
   distDir: 'build',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
