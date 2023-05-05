@@ -9,7 +9,8 @@ export const OPTIONS = [
   { name: "U19 Side - $200", value: 200 }
 ];
 
-export const MAIL_TO = "mailto:slugfest@rockygorgerugby.com"
+const EMAIL = 'slugfest@rockygorgerugby.com'
+export const MAIL_TO = `mailto:${EMAIL}`
 
 export default function Slugfest() {
   const [amount, setAmount] = useState(5)
@@ -36,7 +37,7 @@ export default function Slugfest() {
     </p>
     <h3>When</h3>
     <p>
-      June 25 - 9:00AM-3:00PM<br />
+      June 10 - 9:00AM-3:00PM<br />
       Social to follow at Oliver's Old Town Tavern
     </p>
     <h3>Cost</h3>
@@ -49,7 +50,7 @@ export default function Slugfest() {
 
     <h3>Register your team</h3>
     <p>
-      Contact <a href={MAIL_TO}>slugfest@rockygorgerugby.com</a> to register your team.
+      Contact <a href={MAIL_TO}>{email}</a> to register your team.
     </p>
     <PaypalProduct options={OPTIONS} defaultAmount={300}>
     </PaypalProduct>
