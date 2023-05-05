@@ -50,7 +50,7 @@ export default function Slugfest() {
 
     <h3>Register your team</h3>
     <p>
-      Contact <a href={MAIL_TO}>{email}</a> to register your team.
+      Contact <a href={MAIL_TO}>{EMAIL}</a> to register your team.
     </p>
     <PaypalProduct options={OPTIONS} defaultAmount={300}>
     </PaypalProduct>
