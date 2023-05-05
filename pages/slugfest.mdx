@@ -1,0 +1,36 @@
+import PaypalProduct from "../components/PaypalProduct";
+// import Concessions from "../components/Concessions";
+
+export const OPTIONS = [
+  { name: `One Side - $300`, value: 300 },
+  { name: `Two Sides - $500`, value: 500 },
+  { name: "U19 Side - $200", value: 200 }
+];
+
+# Slugfest 10s
+### <a href="https://slugfest.netlify.app" target="_blank">Scores and Schedule</a>
+
+{/* 
+### Concessions
+* BBQ Chicken Sandwich: $5
+* Pulled Pork Sandwich: $5
+* Bottled Water: $1
+
+<Concessions/>
+*/}
+
+### Where
+East Columbia Library Park<br />
+6600 Cradlerock Way, Columbia, MD 21045
+
+### When
+June 10 - 9:00AM-3:00PM<br />
+Social to follow at Oliver's Old Town Tavern
+
+### Cost
+$300 for senior sides; $500 for two sides.<br/>
+$200 for U19 sides.
+
+### Register your team
+Contact [slugfest@rockygorgerugby.com](mailto:slugfest@rockygorgerugby.com) to register your team.
+<PaypalProduct options={OPTIONS} defaultAmount={300}/>
