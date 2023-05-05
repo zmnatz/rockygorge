@@ -55,6 +55,12 @@ const Home = () => (
               <Typography>$25 off for new players</Typography>
             </Product>
           </Col>
+          <Col>
+            <Product title="Slugfest 10s" link="/slugfest">
+              <Typography>June 10, East Columbia Library</Typography>
+              <Typography>Enter a team today</Typography>
+            </Product>
+          </Col>
           {/* <Col>
             <Product title="Savannah Trip" link="/savannah">
               <Typography>St Patricks Day Tournament</Typography>
