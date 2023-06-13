@@ -1,7 +1,12 @@
 import PaypalProduct from "../components/PaypalProduct";
+import Image from 'next/image';
+import Map from '../assets/apl map.png'
+import Champs from '../assets/champions.PNG'
+import BanquetTickets from '../components/BanquetTickets'
+
 
 export const TICKET = 30;
-export const KIDS = 20
+export const KIDS = 10
 
 export const OPTIONS = [
   { name: `2 Tickets - $${TICKET * 2}`, value: TICKET * 2 },
@@ -11,14 +16,22 @@ export const OPTIONS = [
   }
 ];
 
-<PaypalProduct defaultAmount={TICKET * 2} options={OPTIONS} description="Banquet Tickets">
+<BanquetTickets defaultAmount={TICKET * 2} options={OPTIONS} description="Banquet Tickets">
+
+<Image style={{maxHeight: '300px', width: 'auto'}} src={Champs} alt="MAC Champions"/>
 
 ## Join us in celebrating the 2023 MAC Championship
 
-### When: June 25, 3pm-6pm
+### When: July 9, 2pm-8pm
 
-### Where: TBA
+### Where: 
 
-## RSVP and sign up for updates on [Evite](http://evite.me/vdRm5RTyCm)
+APL Pavilion<br/>
+11100 John Hopkins Road<br/>
+Laurel, MD 20723
 
-</PaypalProduct>
+## RSVP and sign up for updates on [Evite](http://evite.me/Eyf4nd9YXa)
+
+</BanquetTickets>
+
+<Image src={Map} style={{maxHeight: "300px", width: "auto"}}/>
