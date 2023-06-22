@@ -7,7 +7,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
   children,
   flexiblePayment
 }) {
-  const [amount, setAmount] = useState(defaultAmount);
+  const [amount, setAmount] = useState();
   const [status, setStatus] = useState();
 
   const handleSelect = useCallback(e => setAmount(e?.target?.value), [])
@@ -18,12 +18,12 @@ export default function PaypalProduct({ options = Array.prototype, description,
           description,
           amount: {
             currency_code: "USD",
-            value: amount
+            value: amount ?? defaultAmount
           }
         }
       ]
     })
-  }, [amount, description])
+  }, [amount, defaultAmount, description])
 
   const handleApprove = useCallback(async (data, actions) => {
     await actions.order.capture();A
@@ -50,7 +50,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
             <Typography>If you've arranged to pay a different amount, enter it below before clicking "Buy Now".</Typography>
             <input type="number" value={amount} onChange={({ target }) => setAmount(target.value)}></input>
           </Card>}
-          <PayPalButtons forceReRender={[amount]} createOrder={createOrder} onApprove={handleApprove} onError={handleError} style={{
+          <PayPalButtons forceReRender={[amount, defaultAmount]} createOrder={createOrder} onApprove={handleApprove} onError={handleError} style={{
             shape: "pill",
             color: "blue",
             layout: "vertical",
