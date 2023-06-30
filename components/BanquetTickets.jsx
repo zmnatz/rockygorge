@@ -32,7 +32,7 @@ export default function BanquetTickets({ children }) {
   }, [amount, description])
 
   const handleApprove = useCallback(async (data, actions) => {
-    await actions.order.capture(); A
+    await actions.order.capture();
     setStatus('SUCCESS');
   }, [])
 
