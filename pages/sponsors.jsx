@@ -7,7 +7,7 @@ export const OPTIONS = [
   { name: `Full Front - $1000`, value: 1000 },
   { name: `Arm Patch - $250`, value: 250 },
   { name: `Back Logo - $500`, value: 500 },
-  { name: `Shorts - $300`, value: 300 }
+  { name: `Shorts - $300`, value: 300 },
 ];
 
 export default function NewSponsors() {
@@ -18,7 +18,7 @@ export default function NewSponsors() {
       description="Sponsorship"
     >
       <Typography>
-        Rocky Gorge is looking for sponsors for our 2022/2023 season. Please
+        Rocky Gorge is looking for sponsors for our 2023/2024 season. Please
         send logos to{" "}
         <a href="mailto:sponsor@rockygorgerugby.com">
           sponsor@rockygorgerugby.com
