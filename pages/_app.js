@@ -25,6 +25,9 @@ export default function App({ Component, pageProps }) {
         <Link href="/">
           <h1>Rocky Gorge Rugby</h1>
         </Link>
+        <Link href="/contacts">
+          <h3>Contacts</h3>
+        </Link>
       </Layout.Header>
       <Layout.Content>
         <PayPalScriptProvider options={PAYPAL_SETTINGS}>
