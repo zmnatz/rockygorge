@@ -17,6 +17,9 @@ export default function () {
         ))}
       </Row>
       <Row>
+        <CardLink title="Rocky Gorge Plus" link="/plus">
+          Monthly rugby access for a low price.
+        </CardLink>
         <CardLink title="Advertise with Us" link="/sponsors">
           Become a jersey sponsor.
         </CardLink>
