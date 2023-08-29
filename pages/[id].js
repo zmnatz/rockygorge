@@ -15,7 +15,7 @@ export async function getStaticProps({ params }) {
 }
 
 export default function StoreItem({
-  defaultValue,
+  defaultAmount,
   description,
   options,
   title,
@@ -23,7 +23,7 @@ export default function StoreItem({
 }) {
   return (
     <PaypalProduct
-      defaultAmount={defaultValue}
+      defaultAmount={defaultAmount}
       options={options}
       description={description}
       flexiblePayment

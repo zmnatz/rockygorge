@@ -1,7 +1,7 @@
 export default [
   {
     name: "dues",
-    defaultOption: 200,
+    defaultAmount: 200,
     description: "Player Dues",
     info: "Fall Season: $200",
     options: [
@@ -13,7 +13,7 @@ export default [
   },
   {
     name: "gear",
-    defaultOption: 30,
+    defaultAmount: 30,
     description: "Team Gear",
     info: "Shirts and Shorts",
     title: "Buy team gear",
@@ -24,7 +24,7 @@ export default [
   },
   // {
   //   name: "savannah",
-  //   defaultOption: 300,
+  //   defaultAmount: 300,
   //   description: "Savannah",
   //   title: "Savannah Tournament",
   //   details:

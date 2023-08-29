@@ -7,7 +7,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
   children,
   flexiblePayment
 }) {
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState(defaultAmount);
   const [status, setStatus] = useState();
 
   const handleSelect = useCallback(e => setAmount(e?.target?.value), [])
