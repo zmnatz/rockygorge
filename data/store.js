@@ -3,7 +3,7 @@ export default [
     name: "dues",
     defaultAmount: 200,
     description: "Player Dues",
-    info: "Fall Season: $200",
+    info: "Spring Season: $200",
     options: [
       { name: "Player Dues - $200", value: 200 },
       { name: "New Player Dues - $175", value: 175 },

@@ -1,0 +1,16 @@
+import React from "react";
+
+export default function JerseyReport() {
+  return (
+    <iframe 
+      src="https://docs.google.com/forms/d/e/1FAIpQLSfDxsBp6WzSFpB7WqIitIsvUeEbJ6P72Cd6F4N7khqC7O_S0Q/viewform?embedded=true" 
+      width="640" 
+      height="1307" 
+      frameborder="0" 
+      marginheight="0"
+      marginwidth="0"
+    >
+      Loading…
+    </iframe>
+  );
+};
