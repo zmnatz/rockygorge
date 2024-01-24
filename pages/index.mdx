@@ -6,6 +6,7 @@ import CardLink from "../components/CardLink";
 
 import Intro from "../sections/Intro.mdx";
 import ProductLinks from "../sections/ProductLinks";
+import Links from "../sections/Links";
 
 <Row>
   <Col md={22} lg={22} style={{ textAlign: "center" }}>
@@ -15,11 +16,7 @@ import ProductLinks from "../sections/ProductLinks";
 <Row gutter={20} type="flex">
   <Col md={22} lg={11}>
     <ProductLinks />
-    <Row>
-      <CardLink title="Jersey Report" link={`/jerseyReport`}>
-        Captains please fill this out after games.
-      </CardLink>
-    </Row>
+    <Links/>
   </Col>
   <Col md={22} lg={11}>
     <Link href="/calendar">
