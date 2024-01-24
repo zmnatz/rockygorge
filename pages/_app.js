@@ -28,6 +28,9 @@ export default function App({ Component, pageProps }) {
         <Link href="/contacts">
           <h3>Contacts</h3>
         </Link>
+        <Link href="/hallOfFame">
+          <h3>Hall of Fame</h3>
+        </Link>
       </Layout.Header>
       <Layout.Content>
         <PayPalScriptProvider options={PAYPAL_SETTINGS}>
