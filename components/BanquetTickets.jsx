@@ -9,11 +9,13 @@ const STYLE = {
   label: "buynow"
 }
 
+export const TICKET = 100
+
 export default function BanquetTickets({ children }) {
   const [adult, setAdults] = useState(2)
-  const [child, setChild] = useState(0)
-  const amount = adult * 30 + Math.min(child, 2) * 10
-  const description = `Banquet Tickets (${adult} adult, ${child} children)`
+  // const [child, setChild] = useState(0)
+  const amount = adult * TICKET;// + Math.min(child, 2) * 10
+  const description = `Banquet Tickets (${adult} adult${adult > 1 ? 's' : ''})`
 
   const [status, setStatus] = useState();
 
@@ -49,11 +51,11 @@ export default function BanquetTickets({ children }) {
       <Form.Item label="Adults">
         <InputNumber addonBefore="Adults" min={1} type="number" value={adult} onChange={setAdults} />
       </Form.Item>
-      <Form.Item label="Children" extra="You'll only be charged for the first two. Please enter total number for a head count." >
+      {/* <Form.Item label="Children" extra="You'll only be charged for the first two. Please enter total number for a head count." >
         <InputNumber type="number" value={child}
           onChange={setChild}
         />
-      </Form.Item>
+      </Form.Item> */}
       <h3>Total: ${amount}</h3>
     </Form>
     {
