@@ -4,7 +4,7 @@ export default [
   {"name": "JB", "time": "1:46.7"},
   {"name": "Luc", "time": "1:46.7"},
   {"name": "Kevin", "time": "1:47"},
-  {"name": "James", "time": "1:47.3"},
+  {"name": "James", "time": "1:45.4"},
   {"name": "Wiley", "time": "1:50.7"},
   {"name": "Jose", "time": "1:52"},
   {"name": "Jake", "time": "1:54.8"},
