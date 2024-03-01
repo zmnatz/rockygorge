@@ -8,7 +8,7 @@ export default [
   {"name": "Wiley", "time": "1:50.7"},
   {"name": "Jose", "time": "1:52"},
   {"name": "Jake", "time": "1:54.8"},
-  {"name": "Kris", "time": "2:00.7"},
+  {"name": "Kris", "time": "1:54.8"},
   {"name": "Z", "time": "1:58.1"},
   {"name": "Mikey", "time": "1:57"}
 ]
