@@ -1,6 +1,6 @@
 export default [
   {"name": "Nutty", "time": "1:39.6"},
-  {"name": "Tristan", "time": "1:44"},
+  {"name": "Tristan", "time": "1:41.7"},
   {"name": "JB", "time": "1:46.7"},
   {"name": "Luc", "time": "1:46.7"},
   {"name": "Kevin", "time": "1:47"},
