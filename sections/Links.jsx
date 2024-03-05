@@ -1,6 +1,6 @@
 import { Row} from "antd";
 import CardLink from "../components/CardLink";
-import links from "../data/links";
+import links from "../data/links.yml";
 
 export default function Links () {
   return (

@@ -1,6 +1,6 @@
 import { Typography } from "antd";
 import PaypalProduct from "../components/PaypalProduct";
-import items from "../data/store";
+import items from "../data/store.yml";
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
