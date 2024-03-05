@@ -10,5 +10,6 @@ export default [
   {"name": "Jake", "time": "1:54.8"},
   {"name": "Kris", "time": "1:54.3"},
   {"name": "Z", "time": "1:58.1"},
-  {"name": "Mikey", "time": "1:57"}
+  {"name": "Mikey", "time": "1:57"},
+  {"name": "Cam", "time": "1:44"}
 ]
