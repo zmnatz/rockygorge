@@ -22,5 +22,7 @@ const withMDX = require('@next/mdx')({
   },
 });
 
+const withYml = require('next-plugin-yaml')
 
-module.exports = withMDX(nextConfig);
+
+module.exports = withYml(withMDX(nextConfig));
