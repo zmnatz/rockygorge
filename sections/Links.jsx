@@ -5,7 +5,7 @@ import links from "../data/links.yml";
 export default function Links () {
   return (
     <Row type="flex">
-      {links.map((item) => (
+      {links.filter(item => item.header !== true).map((item) => (
         <CardLink 
           key={item?.link}
           title={item?.title}

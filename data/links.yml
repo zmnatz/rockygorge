@@ -1,6 +1,20 @@
 - link: '/jerseyReport'
   title: 'Jersey Report'
   description: 'Captains please fill this out after games'
+  header: false
 - link: '/hallOfFame/nominations'
   title: 'HOF Nominations'
   description: "Nominate contributors for the 2024 Hall of Fame"
+  header: false
+- link: '/contacts'
+  title: Contacts
+  description: 'club contacts'
+  header: true
+- link: '/hallOfFame'
+  title: Hall of Fame
+  description: Recognized members of the Rocky Gorge Hall of Fame
+  header: true
+- link: '/gauntlet'
+  title: 'Gauntlet'
+  description: 'Gorge gauntlet leaderboard'
+  header: true

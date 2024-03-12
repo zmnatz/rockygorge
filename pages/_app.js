@@ -1,9 +1,11 @@
-import { Layout } from "antd";
+import { Layout} from "antd";
+import {HomeOutlined} from '@ant-design/icons'
 import Link from 'next/link'
 
 import "antd/dist/antd.css";
 import "./index.css";
 import "./app.css"
+import links from '../data/links.yml'
 
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Head from "next/head";
@@ -24,16 +26,15 @@ export default function App({ Component, pageProps }) {
       <Layout.Header>
         <Link href="/">
           <h1>Rocky Gorge Rugby</h1>
+          <h3 class="home-icon"><HomeOutlined /></h3>
         </Link>
-        <Link href="/contacts">
-          <h3>Contacts</h3>
-        </Link>
-        <Link href="/hallOfFame">
-          <h3>Hall of Fame</h3>
-        </Link>
-        <Link href="/gauntlet">
-          <h3>Gauntlet</h3>
-        </Link>
+        {links.filter(({header}) => header)
+          .map(({link, title, description}) => (
+            <Link key={link} href={link} title={description}>
+              <h3>{title}</h3>
+            </Link>
+          ))
+        }
       </Layout.Header>
       <Layout.Content>
         <PayPalScriptProvider options={PAYPAL_SETTINGS}>
