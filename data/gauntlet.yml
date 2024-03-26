@@ -34,9 +34,6 @@
 - name: Cam
   time: 1:44
   position: forward
-- name: Z
-  time: 1:54.9
-  position: forward
 - name: Bert
   time: 1:49
   position: forward
