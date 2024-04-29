@@ -9,10 +9,10 @@ const STYLE = {
   label: "buynow"
 }
 
-export const TICKET = 100
+export const TICKET = 65
 
 export default function BanquetTickets({ children }) {
-  const [adult, setAdults] = useState(2)
+  const [adult, setAdults] = useState(1)
   // const [child, setChild] = useState(0)
   const amount = adult * TICKET;// + Math.min(child, 2) * 10
   const description = `Banquet Tickets (${adult} adult${adult > 1 ? 's' : ''})`
