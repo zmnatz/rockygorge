@@ -9,7 +9,7 @@ const STYLE = {
   label: "buynow"
 }
 
-export const TICKET = 65
+export const TICKET = 60
 
 export default function BanquetTickets({ children }) {
   const [adult, setAdults] = useState(1)
