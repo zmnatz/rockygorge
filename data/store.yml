@@ -6,8 +6,6 @@
   options: 
   - name: "Player Dues - $200"
     value: 200
-  - name: "New Player Dues - $175"
-    value: 175
   - name: "Old Boy Dues - $50"
     value: 50
 - name: gear
