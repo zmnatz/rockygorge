@@ -20,9 +20,6 @@ export default function () {
         <CardLink title="Rocky Gorge Plus" link="/plus">
           Monthly rugby access for a low price.
         </CardLink>
-        <CardLink title="2024 Banquet" link="/banquet">
-          Get your tickets for the Hall of Fame Banquet
-        </CardLink>
         <CardLink title="Advertise with Us" link="/sponsors">
           Become a jersey sponsor.
         </CardLink>
