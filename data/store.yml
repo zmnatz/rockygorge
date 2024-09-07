@@ -6,8 +6,8 @@
   options: 
   - name: "Player Dues - $200"
     value: 200
-  - name: "Old Boy Dues - $50"
-    value: 50
+  - name: "Old Boy Dues - $100"
+    value: 100
 - name: gear
   defaultAmount: 30
   description: Team Gear
