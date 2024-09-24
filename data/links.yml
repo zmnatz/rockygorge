@@ -1,3 +1,11 @@
+- link: /plus
+  title: Rocky Gorge Plus
+  description: Monthly rugby access for a low price
+  header: false
+- link: /sponsors
+  title: Advertise with Us
+  description: Become a jersey sponsor
+  header: false
 - link: '/jerseyReport'
   title: 'Jersey Report'
   description: 'Captains please fill this out after games'

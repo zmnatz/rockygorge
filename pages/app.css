@@ -15,11 +15,25 @@ table {
 
 .ant-card {
   margin: 10px;
+  min-width: 200px;
 }
 
 .ant-card-head {
   background-color: #001529;
   color: #cccccc;
+  padding: 0px 16px;
+  min-height: 0px;
+}
+
+.ant-card-head-title {
+  padding: 8px 0px;
+}
+
+.ant-card-body {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  flex-wrap: wrap;
 }
 
 .isCurrent .store-card .ant-card-head {
@@ -58,4 +72,8 @@ table {
   .ant-layout-header .home-icon {
     display: none;
   }
+}
+
+.score-card {
+  
 }
