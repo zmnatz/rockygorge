@@ -26,7 +26,7 @@ export default function App({ Component, pageProps }) {
       <Layout.Header>
         <Link href="/">
           <h1>Rocky Gorge Rugby</h1>
-          <h3 class="home-icon"><HomeOutlined /></h3>
+          <h3 className="home-icon"><HomeOutlined /></h3>
         </Link>
         {links.filter(({header}) => header)
           .map(({link, title, description}) => (

@@ -20,12 +20,14 @@ export default function StoreItem({
   options,
   title,
   details,
+  subscriptions
 }) {
   return (
     <PaypalProduct
       defaultAmount={defaultAmount}
       options={options}
       description={description}
+      subscriptions={subscriptions}
       flexiblePayment
     >
       <Typography.Title level={3}>{title}</Typography.Title>

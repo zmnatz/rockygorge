@@ -11,7 +11,10 @@ export default function () {
           title={item?.description}
           link={`/${item.name}`}
         >
-          {item.info}
+          <span><p>{item.info}</p>
+          {item.subscriptions != null &&
+            <p>Monthly Option Available</p>
+          }</span>
         </CardLink>
       ))}
     </Row>

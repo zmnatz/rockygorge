@@ -8,6 +8,24 @@
     value: 200
   - name: "Old Boy Dues - $100"
     value: 100
+  subscriptions:
+  - name: Player's Tier
+    id: SFWCNPKX3WKF2
+    description: Covers team gear, player dues, film analysis.
+    options:
+    - label: 'Option 1 : $35.00 USD - monthly'
+      value: Option 1
+    - label: 'Option 2 : $400.00 USD - yearly'
+      value: Option 2
+  - name: GODs Tier
+    id: SQ4FBM547W67C
+    value: DUES
+    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller.
+    options:
+      - label: 'GODs : $20.00 USD - monthly'
+        value: GODs
+      - label: 'Sponsor a Player : $200.00 USD - yearly'
+        value: Sponsor a Player
 - name: gear
   defaultAmount: 30
   description: Team Gear
