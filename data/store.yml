@@ -38,3 +38,11 @@
     value: 30
   - name: Misc Lost Stuff - $5
     value: 5
+- name: camp
+  defaultAmount: 60
+  description: Training Camp
+  info: Overnight Player and Coaches camp on March 1. 
+  title: Training Camp
+  options:
+  - name: Lodging
+    value: 60 
