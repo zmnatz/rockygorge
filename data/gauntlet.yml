@@ -1,6 +1,6 @@
 - name: Koch
   position: Forward
-  time: 1:42.5
+  time: 1:40.1
 - name: Tristan
   position: Forward
   time: 1:38.9
@@ -28,3 +28,9 @@
 - name: Jake
   time: 1:53
   position: Forward
+- name: Ben
+  time: 1:52.8
+  position: Forward
+- name: Jake H
+  time: 1:54
+  position: Unknown
