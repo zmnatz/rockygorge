@@ -2,14 +2,6 @@
   title: Advertise with Us
   description: Become a jersey sponsor
   header: false
-- link: '/jerseyReport'
-  title: 'Jersey Report'
-  description: 'Captains please fill this out after games'
-  header: false
-- link: '/hallOfFame/nominations'
-  title: 'HOF Nominations'
-  description: "Nominate contributors for the 2024 Hall of Fame"
-  header: false
 - link: '/contacts'
   title: Contacts
   description: 'club contacts'
