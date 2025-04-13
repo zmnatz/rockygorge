@@ -11,7 +11,7 @@
   - name: "Donation - $100"
     value: 100
   donation: true
-  details: "Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support!"
+  details: "Your donation will help cover transportation and lodging expenses for the club rugby national championship. For many of the players this will be their first opportunity to compete on the national level. Thank you for your support!"
 - name: dues
   defaultAmount: 200
   description: Player Dues
