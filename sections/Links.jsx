@@ -4,7 +4,7 @@ import links from "../data/links.yml";
 import forms from "../data/forms.yml"
 
 export default function Links () {
-  return (
+  return (<>
     <Row type="flex">
       {links.filter(item => item.header !== true).map((item) => (
         <CardLink 
@@ -27,5 +27,5 @@ export default function Links () {
         </CardLink>
       ))}
     </Row>
-  );
+  </>);
 }
