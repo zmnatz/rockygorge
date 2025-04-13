@@ -20,6 +20,7 @@ export default function StoreItem({
   options,
   title,
   details,
+  donation,
   subscriptions
 }) {
   return (
@@ -28,6 +29,7 @@ export default function StoreItem({
       options={options}
       description={description}
       subscriptions={subscriptions}
+      donation={donation}
       flexiblePayment
     >
       <Typography.Title level={3}>{title}</Typography.Title>

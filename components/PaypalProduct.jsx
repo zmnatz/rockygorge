@@ -8,7 +8,8 @@ export default function PaypalProduct({ options = Array.prototype, description,
   defaultAmount,
   children,
   flexiblePayment,
-  subscriptions = []
+  subscriptions = [],
+  donation = false
 }) {
   const [amount, setAmount] = useState(defaultAmount);
   const [status, setStatus] = useState();
@@ -49,15 +50,21 @@ export default function PaypalProduct({ options = Array.prototype, description,
               </Radio>
             ))}
           </Radio.Group>
-          {flexiblePayment && <Card title="Flexible Payment" className="big store-card">
-            <Typography>If you've arranged to pay a different amount, enter it below before clicking "Buy Now".</Typography>
+          {flexiblePayment && <Card title={donation ? "Flexible Amount" : "Flexible Payment"} className="big store-card">
+            <Typography>If you've arranged to pay a different amount, enter it below before 
+              clicking {donation ? "Donate" : "Buy Now"}.
+            </Typography>
             <input type="number" value={amount} onChange={({ target }) => setAmount(target.value)}></input>
           </Card>}
-          <PayPalButtons forceReRender={[amount, defaultAmount]} createOrder={createOrder} onApprove={handleApprove} onError={handleError} style={{
+          <PayPalButtons forceReRender={[amount, defaultAmount]} 
+            createOrder={createOrder} 
+            fundingSource={donation ? "paypal" : undefined}
+
+            onApprove={handleApprove} onError={handleError} style={{
             shape: "pill",
             color: "blue",
             layout: "vertical",
-            label: "buynow"
+            label: donation ? "donate" : "buynow"
           }} />
         </>
     }

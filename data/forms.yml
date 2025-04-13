@@ -1,7 +1,19 @@
 - id: asr
   formId: 1FAIpQLScbaHKjZJsbRLBW-JllVHwC70dTMPgiNUre9JxNpC6xdqsirA
   name: ASR Travel Form
-  description: Info for travel to 2025 Atlantic Super Regionals
+  description: Travel information for the Atlantic Super Regionals tournament.
   width: 640 
   height: 2731
-  hide: false
+- id: jerseys
+  formId: 1FAIpQLSfDxsBp6WzSFpB7WqIitIsvUeEbJ6P72Cd6F4N7khqC7O_S0Q 
+  name: Jersey Report
+  description: Captains please report who brought equipment after the game.
+  width: 640
+  height: 1307
+- id: contact
+  formId: 1FAIpQLSdcsvnYSIRksBvbRCLr8ZjXsw2TgHxXhwyRNgGj2WXntKvW0w
+  name: Player Interest Form
+  description: Interested in joining the team? Fill out this form and we'll get back to you.
+  width: 640
+  height: 1496
+  hide: true

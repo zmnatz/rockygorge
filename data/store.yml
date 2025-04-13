@@ -1,3 +1,17 @@
+- name: donations
+  defaultAmount: 50
+  description: Donations
+  info: "Support Rocky Gorge's travel for the club rugby national championship with a donation."
+  title: "Support the team with a donation."
+  options:
+  - name: "Donation - $25"
+    value: 25
+  - name: "Donation - $50"
+    value: 50
+  - name: "Donation - $100"
+    value: 100
+  donation: true
+  details: "Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support!"
 - name: dues
   defaultAmount: 200
   description: Player Dues
@@ -32,9 +46,7 @@
   info: Shirts and Shorts
   title: Buy team gear
   options:
-  - name: "Shirt - $20"
-    value: 20
-  - name: "Shorts - $30"
+  - name: D3 Championship Shirt - $30
     value: 30
-  - name: Misc Lost Stuff - $5
-    value: 5
+  # - name: Misc Lost Stuff - $5
+  #   value: 5
