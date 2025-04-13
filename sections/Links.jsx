@@ -21,7 +21,7 @@ export default function Links () {
         <CardLink 
           key={item?.id}
           title={item?.name}
-          link={'forms/${item?.id}'}
+          link={`forms/${item?.id}`}
         >
           {item.description}
         </CardLink>
