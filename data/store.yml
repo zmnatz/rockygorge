@@ -48,5 +48,9 @@
   options:
   - name: D3 Championship Shirt - $30
     value: 30
+  - name: Cotton Tank - $20
+    value: 20
+  - name: Miami Jersey Tank - $50
+    value: 50
   # - name: Misc Lost Stuff - $5
   #   value: 5
