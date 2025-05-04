@@ -4,6 +4,7 @@
   description: Travel information for the Atlantic Super Regionals tournament.
   width: 640 
   height: 2731
+  hide: true
 - id: jerseys
   formId: 1FAIpQLSfDxsBp6WzSFpB7WqIitIsvUeEbJ6P72Cd6F4N7khqC7O_S0Q 
   name: Jersey Report
