@@ -21,7 +21,8 @@ export default function StoreItem({
   title,
   details,
   donation,
-  subscriptions
+  subscriptions,
+  supporters
 }) {
   return (
     <PaypalProduct
@@ -30,6 +31,7 @@ export default function StoreItem({
       description={description}
       subscriptions={subscriptions}
       donation={donation}
+      supporters={supporters}
       flexiblePayment
     >
       <Typography.Title level={3}>{title}</Typography.Title>

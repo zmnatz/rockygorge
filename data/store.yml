@@ -8,10 +8,46 @@
     value: 25
   - name: "Donation - $50"
     value: 50
-  - name: "Donation - $100"
+  - name: "Donation - $100 - Medal Club"
     value: 100
   donation: true
-  details: "Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support!"
+  details: Rocky Gorge has won the Atlantic Super Regional and will be headed to the National Championship in Indianapolis from May 15 to May 18. Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support! And thank you to everyone that has donated already.
+  supporters:
+    - James Rehak
+    - Joshua Cherriman
+    - Charles Dyson
+    - Bryan Perez
+    - Andrew Kendall
+    - Michael Peuse
+    - Brady Frantz
+    - Thomas von Kurthausen
+    - Peter Ressler
+    - Allen Kaczmarek
+    - Lynn Tippett
+    - Eoghan Doherty
+    - Erik Woodworth
+    - Elizabeth Otta
+    - Sanil Parekh
+    - Jason Brooks
+    - Joseph Burns
+    - Molly Burns
+    - Jonathan Biermann
+    - Catrina Dolan
+    - Jennifer Smith
+    - Bruce Heise
+    - Katherine Munson
+    - Natasha Owen
+    - Cassandra Kanas
+    - Alexandra Clarke
+    - sam ausden
+    - ellen burns
+    - Adam Klein
+    - Madeline Florenzo
+    - Barbara Borowy
+    - Richard Santangelo
+    - Keith Gasior
+    - John Long
+    - Jack Hume
 - name: dues
   defaultAmount: 200
   description: Player Dues

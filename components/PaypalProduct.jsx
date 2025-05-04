@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { Radio, Layout, Typography, Card } from "antd";
+import { Radio, Layout, Typography, Card, List } from "antd";
 
 import {Subscription} from './Subscription'
 
@@ -9,7 +9,8 @@ export default function PaypalProduct({ options = Array.prototype, description,
   children,
   flexiblePayment,
   subscriptions = [],
-  donation = false
+  donation = false,
+  supporters
 }) {
   const [amount, setAmount] = useState(defaultAmount);
   const [status, setStatus] = useState();
@@ -66,6 +67,12 @@ export default function PaypalProduct({ options = Array.prototype, description,
             layout: "vertical",
             label: donation ? "donate" : "buynow"
           }} />
+          {supporters && <>
+            <Typography>Thank you to all our supporters who have made a donation.</Typography>
+            <List style={{height: 400, overflowY: 'scroll'}} bordered>
+              {supporters.reverse().map(s => <List.Item key={s.id}>{s}</List.Item>)}
+            </List>
+          </>}
         </>
     }
     {subscriptions.length > 0 && <>
