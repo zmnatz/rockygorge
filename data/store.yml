@@ -13,6 +13,15 @@
   donation: true
   details: Rocky Gorge has won the Atlantic Super Regional and will be headed to the National Championship in Indianapolis from May 15 to May 18. Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support! And thank you to everyone that has donated already.
   supporters:
+    - Lucy Florenzo
+    - Adam Klein
+    - Madeline Florenzo
+    - Barbara Borowy
+    - Richard Santangelo
+    - Keith Gasior
+    - John Long
+    - Jack Hume
+    - Cam Hoppman
     - James Rehak
     - Joshua Cherriman
     - Charles Dyson
@@ -41,14 +50,6 @@
     - Alexandra Clarke
     - sam ausden
     - ellen burns
-    - Adam Klein
-    - Madeline Florenzo
-    - Barbara Borowy
-    - Richard Santangelo
-    - Keith Gasior
-    - John Long
-    - Jack Hume
-    - Cam Hoppman
 - name: dues
   defaultAmount: 200
   description: Player Dues

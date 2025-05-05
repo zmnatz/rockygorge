@@ -70,7 +70,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
           {supporters && <>
             <Typography>Thank you to all our supporters who have made a donation.</Typography>
             <List style={{height: 400, overflowY: 'scroll'}} bordered>
-              {supporters.reverse().map(s => <List.Item key={s.id}>{s}</List.Item>)}
+              {supporters.map(s => <List.Item key={s.id}>{s}</List.Item>)}
             </List>
           </>}
         </>
