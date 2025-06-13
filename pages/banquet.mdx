@@ -1,26 +1,24 @@
 import PaypalProduct from "../components/PaypalProduct";
 import Image from 'next/image';
-import Map from '../assets/apl.png'
 import Champs from '../assets/champions.png'
-import BanquetTickets, {TICKET} from '../components/BanquetTickets'
+import BanquetTickets from '../components/BanquetTickets'
 
 export const OPTIONS = [
-  { name: `2 Tickets - $${TICKET * 2}`, value: TICKET * 2 },
+  { name: `Couples - $80`, value: 80 },
   {
-    name: `1 Ticket - $${TICKET}`,
-    value: TICKET
+    name: `Player - $50`,
+    value: 50
   }
 ];
 
-<BanquetTickets defaultAmount={TICKET} options={OPTIONS} description="Banquet Tickets">
+<BanquetTickets defaultAmount={80} options={OPTIONS} description="Banquet Tickets">
 
-## Join us for our 2024 Rocky Gorge Hall of Fame Banquet
+## Join us for our 2025 Rocky Gorge Banquet
 
-### When: June 29
+### When: July 12
 
 ### Where: The Meeting House, 5885 Robert Oliver Place, Columbia , MD 21075
 
 More details to come
 
-[RSVP on Evite](http://evite.me/6AjARuyyWm)
 </BanquetTickets>
