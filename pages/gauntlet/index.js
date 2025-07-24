@@ -3,7 +3,8 @@ import data from '../../data/gauntlet.yml'
 const columns = [
     {title: 'Rank', dataIndex: 'rank', key: 'rank'}, 
     { title: 'Player', dataIndex: 'name', key: 'name' }, 
-    { title: 'Time', dataIndex: 'time', key: 'time' }
+    { title: 'Time', dataIndex: 'time', key: 'time' },
+    { title: 'Stroke Rate', dataIndex: 'stroke', key: 'stroke' },
 ]
 
 export function getStaticProps() {
