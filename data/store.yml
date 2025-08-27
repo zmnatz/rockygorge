@@ -109,16 +109,14 @@
       - label: 'Sponsor a Player : $200.00 USD - yearly'
         value: Sponsor a Player
 - name: gear
-  defaultAmount: 30
+  defaultAmount: 5
   description: Team Gear
   info: Shirts and Shorts
   title: Buy team gear
   options:
-  - name: D3 Championship Shirt - $30
-    value: 30
-  - name: Cotton Tank - $20
-    value: 20
-  - name: Miami Jersey Tank - $50
-    value: 50
+  - name: James' Ball Pump
+    value: 5
+  - name: The Next Lost Item
+    value: 6
   # - name: Misc Lost Stuff - $5
   #   value: 5
