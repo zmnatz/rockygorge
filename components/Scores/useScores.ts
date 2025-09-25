@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import {Team, Score} from './types'
+import { Score } from './types'
 
 export function useScores() {
   const [scores, setScores] = useState<Score[]>([])

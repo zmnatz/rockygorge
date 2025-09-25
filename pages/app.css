@@ -18,35 +18,11 @@ table {
   min-width: 200px;
 }
 
-.ant-card-head {
-  background-color: #001529;
-  color: #cccccc;
-  padding: 0px 16px;
-  min-height: 0px;
-}
-
-.ant-card-head-title {
-  padding: 8px 0px;
-}
-
 .ant-card-body {
   display: flex;
   justify-content: space-between;
   padding: 12px;
   flex-wrap: wrap;
-}
-
-.isCurrent .store-card .ant-card-head {
-  background-color: #1d71be;
-}
-
-.store-card.big {
-  width: 500px
-}
-
-
-.ant-layout-content {
-  padding: 10px;
 }
 
 .ant-radio-group {
@@ -72,8 +48,4 @@ table {
   .ant-layout-header .home-icon {
     display: none;
   }
-}
-
-.score-card {
-  
 }
