@@ -26,6 +26,9 @@ export default function App({ Component, pageProps }) {
           // colorTextHeading: '#fff',
         },
         components: {
+          Descriptions: {
+            labelColor: 'black',
+          },
           Card: {
             // headerBg: '#001529',
           },
@@ -35,7 +38,7 @@ export default function App({ Component, pageProps }) {
         }
       }}
     >
-      <div className="App">
+      <Layout>
         <Head>
           <title>Rocky Gorge Rugby</title>
           <meta name="description" content="General information for Rocky Gorge Rugby Football Club" />
@@ -58,7 +61,7 @@ export default function App({ Component, pageProps }) {
             <Component {...pageProps} />
           </PayPalScriptProvider>
         </Layout.Content>
-      </div>
+      </Layout>
     </ConfigProvider>
   );
 }

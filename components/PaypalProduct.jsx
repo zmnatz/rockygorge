@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { Radio, Layout, Typography, Card, List } from "antd";
+import { Radio, Typography, List, Descriptions, Input } from "antd";
 
 import {Subscription} from './Subscription'
 
@@ -37,7 +37,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
 
   const handleError = useCallback(err => console.warn(err), []);
 
-  return <Layout.Content>
+  return <>
     {children}
     {options.length > 0 && (
       status === 'SUCCESS' ?
@@ -51,12 +51,17 @@ export default function PaypalProduct({ options = Array.prototype, description,
               </Radio>
             ))}
           </Radio.Group>
-          {flexiblePayment && <Card title={donation ? "Flexible Amount" : "Flexible Payment"} className="big store-card">
-            <Typography>If you've arranged to pay a different amount, enter it below before 
-              clicking {donation ? "Donate" : "Buy Now"}.
-            </Typography>
-            <input type="number" value={amount} onChange={({ target }) => setAmount(target.value)}></input>
-          </Card>}
+          {flexiblePayment && <Descriptions title="Flexible Payments" layout="vertical" size="middle"
+            colon={false}
+            style={{maxWidth: 600}}
+            items={[
+              {
+                key: '1',
+                label: `If you've arranged to pay a different amount, enter it below before submitting payment.`,
+                children: <Input type="number" value={amount} onChange={({ target }) => setAmount(target.value)}/>,
+              },
+            ]} 
+          />}
           <PayPalButtons forceReRender={[amount, defaultAmount]} 
             createOrder={createOrder} 
             fundingSource={donation ? "paypal" : undefined}
@@ -78,5 +83,5 @@ export default function PaypalProduct({ options = Array.prototype, description,
     {subscriptions.length > 0 && <>
       {subscriptions.map(s => <Subscription key={s.id} {...s}/>)}
     </>}
-  </Layout.Content>
+  </>
 };

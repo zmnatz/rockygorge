@@ -1,11 +1,3 @@
-- link: /banquet
-  title: 2025 Banquet
-  description: Buy your tickets for the 2025 banquet.
-  header: false
-- link: /sponsors
-  title: Advertise with Us
-  description: Become a jersey sponsor
-  header: false
 - link: '/contacts'
   title: Contacts
   description: 'club contacts'

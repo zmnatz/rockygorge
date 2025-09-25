@@ -1,6 +1,7 @@
 import { Typography } from "antd";
 import PaypalProduct from "../components/PaypalProduct";
 import items from "../data/store.yml";
+import Markdown from "react-markdown";
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
@@ -35,7 +36,7 @@ export default function StoreItem({
       flexiblePayment
     >
       <Typography.Title level={3}>{title}</Typography.Title>
-      {details && <p>{details}</p>}
+      {details && <Markdown>{details}</Markdown>}
     </PaypalProduct>
   );
 }

@@ -12,6 +12,7 @@
     "next-plugin-yaml": "^1.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
     "sharp": "^0.34.4"
   },
   "scripts": {

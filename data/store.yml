@@ -1,3 +1,87 @@
+- name: dues
+  defaultAmount: 200
+  description: Player Dues
+  info: "Spring Season: $200"
+  title: Pay your dues. Play rugby.
+  options: 
+  - name: "Player Dues - $200"
+    value: 200
+  - name: "Old Boy Dues - $100"
+    value: 100
+  subscriptions:
+  - name: Player's Tier
+    id: SFWCNPKX3WKF2
+    description: Covers team gear, player dues, film analysis.
+    options:
+    - label: 'Option 1 : $35.00 USD - monthly'
+      value: Option 1
+    - label: 'Option 2 : $400.00 USD - yearly'
+      value: Option 2
+  - name: GODs Tier
+    id: SQ4FBM547W67C
+    value: DUES
+    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
+    options:
+      - label: 'GODs: $20.00 USD - monthly'
+        value: GODs
+      - label: 'Livestream Sponsor: $30.00 USD - monthly'
+        value: Livestream Sponsor
+      - label: 'Corporate Sponsor: $50.00 USD - monthly'
+        value: Corporate Sponsor
+      - label: 'Sponsor a Player : $200.00 USD - yearly'
+        value: Sponsor a Player
+- name: supporters
+  defaultAmount: 200
+  description: Supporter Dues
+  info: "Spring Season: $200"
+  title: Pay your dues. Support Rocky Gorge Rugby.
+  options: []
+  subscriptions:
+  - name: GODs Tier
+    id: SQ4FBM547W67C
+    value: DUES
+    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
+    options:
+      - label: 'GODs: $20.00 USD - monthly'
+        value: GODs
+      - label: 'Livestream Sponsor: $30.00 USD - monthly'
+        value: Sponsor
+      - label: 'Corporate Sponsor: $50.00 USD - monthly'
+        value: Corporate Sponsor
+      - label: 'Sponsor a Player : $300.00 USD - yearly'
+        value: Sponsor a Player
+- name: gear
+  defaultAmount: 5
+  description: Team Gear
+  info: Shirts and Shorts
+  title: Buy team gear
+  options:
+  - name: James' Ball Pump
+    value: 5
+  - name: The Next Lost Item
+    value: 6
+  # - name: Misc Lost Stuff - $5
+  #   value: 5
+- name: sponsors
+  defaultAmount: 1000
+  description: Advertise with us
+  info: Become a jersey sponsor.
+  title: Advertise with us
+  details: >-
+    Rocky Gorge is looking for sponsors for our 2025/2026 season. 
+    
+    
+    Please send logos to [sponsor@rockygorgerugby.com](mailto:sponsor@rockygorgerugby.com).
+  options:
+  - name: Full Front - $1000
+    value: 1000
+  - name: Arm Patch - $250
+    value: 250
+  - name: Back Logo - $500
+    value: 500
+  - name: Shorts - $300
+    value: 300
+
 - name: donations
   hide: true
   defaultAmount: 50
@@ -12,7 +96,9 @@
   - name: "Donation - $100 - Medal Club"
     value: 100
   donation: true
-  details: Rocky Gorge has won the Atlantic Super Regional and will be headed to the National Championship in Indianapolis from May 15 to May 18. Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support! And thank you to everyone that has donated already.
+  details: >-
+    Rocky Gorge has won the Atlantic Super Regional and will be headed to the National 
+    Championship in Indianapolis from May 15 to May 18. Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support! And thank you to everyone that has donated already.
   supporters:
     - Janelle Dunbar
     - Ellen Burns
@@ -81,67 +167,3 @@
     - Alexandra Clarke
     - sam ausden
     - ellen burns
-- name: dues
-  defaultAmount: 200
-  description: Player Dues
-  info: "Spring Season: $200"
-  title: Pay your dues. Play rugby.
-  options: 
-  - name: "Player Dues - $200"
-    value: 200
-  - name: "Old Boy Dues - $100"
-    value: 100
-  subscriptions:
-  - name: Player's Tier
-    id: SFWCNPKX3WKF2
-    description: Covers team gear, player dues, film analysis.
-    options:
-    - label: 'Option 1 : $35.00 USD - monthly'
-      value: Option 1
-    - label: 'Option 2 : $400.00 USD - yearly'
-      value: Option 2
-  - name: GODs Tier
-    id: SQ4FBM547W67C
-    value: DUES
-    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
-    options:
-      - label: 'GODs: $20.00 USD - monthly'
-        value: GODs
-      - label: 'Livestream Sponsor: $30.00 USD - monthly'
-        value: Livestream Sponsor
-      - label: 'Corporate Sponsor: $50.00 USD - monthly'
-        value: Corporate Sponsor
-      - label: 'Sponsor a Player : $200.00 USD - yearly'
-        value: Sponsor a Player
-- name: supporters
-  defaultAmount: 200
-  description: Supporter Dues
-  info: "Spring Season: $200"
-  title: Pay your dues. Support Rocky Gorge Rugby.
-  options: []
-  subscriptions:
-  - name: GODs Tier
-    id: SQ4FBM547W67C
-    value: DUES
-    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
-    options:
-      - label: 'GODs: $20.00 USD - monthly'
-        value: GODs
-      - label: 'Livestream Sponsor: $30.00 USD - monthly'
-        value: Sponsor
-      - label: 'Corporate Sponsor: $50.00 USD - monthly'
-        value: Corporate Sponsor
-      - label: 'Sponsor a Player : $300.00 USD - yearly'
-        value: Sponsor a Player
-- name: gear
-  defaultAmount: 5
-  description: Team Gear
-  info: Shirts and Shorts
-  title: Buy team gear
-  options:
-  - name: James' Ball Pump
-    value: 5
-  - name: The Next Lost Item
-    value: 6
-  # - name: Misc Lost Stuff - $5
-  #   value: 5
