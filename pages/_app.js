@@ -2,8 +2,6 @@ import { ConfigProvider, Layout } from "antd";
 import { HomeOutlined } from '@ant-design/icons'
 import Link from 'next/link'
 
-// import "../node_modules/antd/dist/antd.css";
-import "./index.css";
 import "./app.css"
 import links from '../data/links.yml'
 
