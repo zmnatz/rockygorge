@@ -13,7 +13,6 @@ import Head from "next/head";
 const PAYPAL_SETTINGS = {
   "client-id":
     "ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt",
-  "enable-funding": "venmo",
   currency: "USD"
 }
 export default function App({ Component, pageProps }) {
