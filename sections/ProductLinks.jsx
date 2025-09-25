@@ -5,7 +5,7 @@ import StoreItems from "../data/store.yml";
 export default function () {
   return (
     <Row type="flex">
-      {StoreItems.map((item) => (
+      {StoreItems.filter(item => !item.hide).map((item) => (
         <CardLink
           key={item.description}
           title={item?.description}

@@ -1,4 +1,5 @@
 - name: donations
+  hide: true
   defaultAmount: 50
   description: Donations
   info: "Support Rocky Gorge's travel for the club rugby national championship with a donation."
@@ -102,11 +103,35 @@
   - name: GODs Tier
     id: SQ4FBM547W67C
     value: DUES
-    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller.
+    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
     options:
-      - label: 'GODs : $20.00 USD - monthly'
+      - label: 'GODs: $20.00 USD - monthly'
         value: GODs
+      - label: 'Livestream Sponsor: $30.00 USD - monthly'
+        value: Livestream Sponsor
+      - label: 'Corporate Sponsor: $50.00 USD - monthly'
+        value: Corporate Sponsor
       - label: 'Sponsor a Player : $200.00 USD - yearly'
+        value: Sponsor a Player
+- name: supporters
+  defaultAmount: 200
+  description: Supporter Dues
+  info: "Spring Season: $200"
+  title: Pay your dues. Support Rocky Gorge Rugby.
+  options: []
+  subscriptions:
+  - name: GODs Tier
+    id: SQ4FBM547W67C
+    value: DUES
+    description: Covers team supporter gear, game day film access, and 1 annual compliment from Will Miller. For corporate sponsors please contact club leadership to send us a logo to appear on team livestreams. Rocky Gorge uses Paypal for subscriptions but a paypal account is not required. Click "Pay with debit or credit card" then enter an email address to subscribe.
+    options:
+      - label: 'GODs: $20.00 USD - monthly'
+        value: GODs
+      - label: 'Livestream Sponsor: $30.00 USD - monthly'
+        value: Sponsor
+      - label: 'Corporate Sponsor: $50.00 USD - monthly'
+        value: Corporate Sponsor
+      - label: 'Sponsor a Player : $300.00 USD - yearly'
         value: Sponsor a Player
 - name: gear
   defaultAmount: 5

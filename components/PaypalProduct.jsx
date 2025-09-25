@@ -39,7 +39,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
 
   return <Layout.Content>
     {children}
-    {
+    {options.length > 0 && (
       status === 'SUCCESS' ?
         <Typography>Thank you. Your order has been received.</Typography>
         :
@@ -74,10 +74,8 @@ export default function PaypalProduct({ options = Array.prototype, description,
             </List>
           </>}
         </>
-    }
+    )}
     {subscriptions.length > 0 && <>
-      <h2>Monthly Payment Options</h2>
-      Subscriptions allow you to get all your rugby needs for 1 monthly price. Automatic ordering for any team gear. And most importantly, never being hounded to pay your dues again.
       {subscriptions.map(s => <Subscription key={s.id} {...s}/>)}
     </>}
   </Layout.Content>
