@@ -1,12 +1,15 @@
 - link: '/contacts'
+  key: '/contacts'
   title: Contacts
   description: 'club contacts'
   header: true
 - link: '/hallOfFame'
+  key: '/hallOfFame'
   title: Hall of Fame
   description: Recognized members of the Rocky Gorge Hall of Fame
   header: true
 - link: '/gauntlet'
+  key: '/gauntlet'
   title: 'Gauntlet'
   description: 'Gorge gauntlet leaderboard'
   header: true

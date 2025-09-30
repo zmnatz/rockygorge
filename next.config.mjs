@@ -6,7 +6,9 @@ const nextConfig = {
   images: { unoptimized: true },
   output: "export",
   distDir: 'build',
-  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  pageExtensions: ['js', 'jsx', 'md', 'mdx'],
+  transpilePackages: ["antd", "@ant-design", "rc-util", "rc-pagination", "rc-picker", "rc-notification", "rc-tooltip", "rc-tree", "rc-table"],
+
 }
 
 const withMDX = mdx({

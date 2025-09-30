@@ -33,7 +33,7 @@
 - name: supporters
   defaultAmount: 200
   description: Supporter Dues
-  info: "Spring Season: $200"
+  info: "Help support our club."
   title: Pay your dues. Support Rocky Gorge Rugby.
   options: []
   subscriptions:

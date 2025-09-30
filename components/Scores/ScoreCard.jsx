@@ -2,7 +2,7 @@ import React from "react"
 import { Card } from "antd"
 
 export function ScoreCard({score}) {
-    return <Card size="small" className="score-card" title={score.compName}>
+    return <Card size="small" className="score-card" title={score.compName} type="inner">
       <TeamBadge team={score.homeTeam}/>
       <div style={{textAlign: 'center'}}>
         <div>{score.homeTeam.score} - {score.awayTeam.score} </div>

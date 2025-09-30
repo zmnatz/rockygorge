@@ -12,7 +12,7 @@ export default function () {
           link={`/${item.name}`}
         >
           <span><p>{item.info}</p>
-          {item.subscriptions != null &&
+          {item.subscriptions != null && item.options != null && item.options.length > 0 &&
             <p>Monthly Option Available</p>
           }</span>
         </CardLink>
