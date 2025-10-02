@@ -1,10 +1,10 @@
-import {Col} from 'antd'
-import Product from './Product'
+import { Card } from "antd";
+import Link from "next/link";
 
-export default function CardLink ({title, link, children}) {
-  return <Col>
-    <Product title={title} link={link}>
-      {children}
-    </Product>
-  </Col>
+export default function CardLink(props) {
+  return <Link href={props.link}>
+    <Card title={props.title} type="inner" hoverable>
+      {props.children}
+    </Card>
+  </Link>
 }

@@ -1,0 +1,39 @@
+import { ConfigProvider, Layout, Menu } from "antd";
+import Link from 'next/link'
+
+import "./app.css"
+import links from '../data/links.yml'
+
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Head from "next/head";
+import { theme } from "../utils/theme";
+import { Header } from "antd/es/layout/layout";
+import { PAYPAL_SETTINGS } from "../utils/paypal";
+
+export const navLinks = links.filter(({ header }) => header).map(({ link, title }) => ({
+  key: link,
+  label: <Link href={link}>{title}</Link>
+}))
+
+
+<Head>
+  <title>Rocky Gorge Rugby</title>
+  <meta name="description" content="General information for Rocky Gorge Rugby Football Club" />
+</Head>
+
+<ConfigProvider theme={theme}>
+  <Layout>
+    <Header style={{ display: 'flex', alignItems: 'center' }}>
+      <Menu theme="dark"
+        mode="horizontal"
+        style={{ flex: 1, minWidth: 0 }}
+        items={navLinks} 
+      />
+    </Header>
+    <Layout.Content>
+      <PayPalScriptProvider options={PAYPAL_SETTINGS}>
+        <props.Component {...props.pageProps} />
+      </PayPalScriptProvider>
+    </Layout.Content>
+  </Layout>
+</ConfigProvider>
