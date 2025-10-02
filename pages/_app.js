@@ -10,18 +10,20 @@ import { theme } from "../utils/theme";
 import { Header } from "antd/es/layout/layout";
 import { PAYPAL_SETTINGS } from "../utils/paypal";
 
-const navLinks = [
+export const navLinks = [
   {
     key: '/',
     label: <Link href="/">
       Rocky Gorge Rugby
-    </Link>
+    </Link> 
   },
   ...links.filter(({ header }) => header).map(({ link, title }) => ({
     key: link,
     label: <Link href={link}>{title}</Link>
   }))
 ]
+
+
 
 export default function App({ Component, pageProps }) {
   return (

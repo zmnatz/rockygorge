@@ -1,0 +1,33 @@
+import { List, Typography } from "antd";
+import PaypalProduct from "../components/PaypalProduct";
+import items from "../data/store.yml";
+import Markdown from "react-markdown";
+import { Subscription } from "../components/Subscription";
+
+export async function getStaticPaths() {
+  return {
+    paths: items.map((item) => ({
+      params: { id: item.name },
+    })),
+    fallback: false,
+  };
+}
+
+export async function getStaticProps({ params }) {
+  return { props: items.find((item) => item?.name === params?.id) };
+}
+
+## {props.title}
+
+{props.details}
+
+<PaypalProduct product={props}/>
+
+{(props.subscriptions ?? []).map(s => <Subscription key={s.id} {...s} />)}
+
+{props.supporters != null && <>
+  <Typography>Thank you to all our supporters:</Typography>
+  <List style={{ height: 400, overflowY: 'scroll' }} bordered>
+    {props.supporters.map(s => <List.Item key={s.id}>{s}</List.Item>)}
+  </List>
+</>}

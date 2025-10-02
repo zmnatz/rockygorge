@@ -34,7 +34,7 @@
   defaultAmount: 200
   description: Supporter Dues
   info: "Help support our club."
-  title: Pay your dues. Support Rocky Gorge Rugby.
+  title: Pay your damn dues! Support Rocky Gorge Rugby.
   options: []
   subscriptions:
   - name: GODs Tier
@@ -81,7 +81,6 @@
     value: 500
   - name: Shorts - $300
     value: 300
-
 - name: donations
   hide: true
   defaultAmount: 50

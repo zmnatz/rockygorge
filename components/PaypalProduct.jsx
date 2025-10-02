@@ -4,11 +4,14 @@ import { Radio, Descriptions, Input } from "antd";
 
 import { useRouter } from "next/navigation";
 
-export default function PaypalProduct({ options = Array.prototype, description,
-  defaultAmount,
-  flexiblePayment,
-  donation = false,
-}) {
+export default function PaypalProduct({product}) {
+  const { 
+    options = [], 
+    description,
+    defaultAmount,
+    donation = false,
+  } = product
+  
   const [amount, setAmount] = useState(defaultAmount);
   const router = useRouter();
 
@@ -32,7 +35,11 @@ export default function PaypalProduct({ options = Array.prototype, description,
     router.push('/order/complete')
   }, [])
 
-  const handleError = useCallback(err => router.push('/order/error'), []);
+  const handleError = useCallback(_err => router.push('/order/error'), []);
+
+  if (options.length < 1 && !donation) {
+    return null;
+  }
 
   return <>
     <Radio.Group size="large" onChange={handleSelect} value={amount}>
@@ -42,7 +49,7 @@ export default function PaypalProduct({ options = Array.prototype, description,
         </Radio>
       ))}
     </Radio.Group>
-    {flexiblePayment && <Descriptions title="Flexible Payments" layout="vertical" size="middle"
+    {<Descriptions title="Flexible Payments" layout="vertical" size="middle"
       colon={false}
       style={{ maxWidth: 600 }}
       items={[
