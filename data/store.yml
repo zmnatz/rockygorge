@@ -139,9 +139,7 @@
   info: Shirts and Shorts
   title: Buy team gear
   options:
-  - name: James' Ball Pump
+  - name: Boathouse Warmup Jacket
+    value: 140
+  - name: Misc Lost Stuff - $5
     value: 5
-  - name: The Next Lost Item
-    value: 6
-  # - name: Misc Lost Stuff - $5
-  #   value: 5
