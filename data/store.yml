@@ -141,5 +141,7 @@
   options:
   - name: Boathouse Warmup Jacket
     value: 140
+  - name: Warmup Jacket with Name Only
+    value: 135
   - name: Misc Lost Stuff - $5
     value: 5
