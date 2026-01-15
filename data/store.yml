@@ -13,74 +13,7 @@
     value: 100
   donation: true
   details: Rocky Gorge has won the Atlantic Super Regional and will be headed to the National Championship in Indianapolis from May 15 to May 18. Your donation will help cover travel expenses for the club rugby national championship. Thank you for your support! And thank you to everyone that has donated already.
-  supporters:
-    - Janelle Dunbar
-    - Ellen Burns
-    - Rushan Abayagunawardena
-    - Jay Kaminski
-    - Adam Klein
-    - Josh Brown
-    - Matt Titman
-    - Tony Ayigah
-    - Tom "Tiny" Gregoire
-    - Mark Fredlund
-    - Anthony Cinotti
-    - Michael Canterbury
-    - Micky Bressler
-    - Anthony D'orsaneo
-    - Thomas Harris
-    - Jake Saintcross
-    - Rico Colon
-    - Will Miller
-    - Thomas von Kurthausen
-    - Chris Lafleur
-    - Andre van der Merwe
-    - Lynn Tippett
-    - Sai Ganti
-    - Hunter Shelton
-    - Michael Peuse
-    - Murphy, Falcon & Murphy
-    - Ethan Reese
-    - Jay Benedetti
-    - Maryellen Royalty
-    - Wendy Royalty
-    - Lucy Florenzo
-    - Adam Klein
-    - Madeline Florenzo
-    - Barbara Borowy
-    - Richard Santangelo
-    - Keith Gasior
-    - John Long
-    - Jack Hume
-    - Cam Hoppman
-    - James Rehak
-    - Joshua Cherriman
-    - Charles Dyson
-    - Bryan Perez
-    - Andrew Kendall
-    - Michael Peuse
-    - Brady Frantz
-    - Thomas von Kurthausen
-    - Peter Ressler
-    - Allen Kaczmarek
-    - Lynn Tippett
-    - Eoghan Doherty
-    - Erik Woodworth
-    - Elizabeth Otta
-    - Sanil Parekh
-    - Jason Brooks
-    - Joseph Burns
-    - Molly Burns
-    - Jonathan Biermann
-    - Catrina Dolan
-    - Jennifer Smith
-    - Bruce Heise
-    - Katherine Munson
-    - Natasha Owen
-    - Cassandra Kanas
-    - Alexandra Clarke
-    - sam ausden
-    - ellen burns
+  supporters: []
 - name: dues
   defaultAmount: 200
   description: Player Dues
@@ -145,3 +78,11 @@
     value: 135
   - name: Troll Toll
     value: 15
+- name: camp
+  defaultAmount: 80
+  description: Training Camp
+  info: Spring training camp 2026. 
+  title: Training Camp
+  options:
+  - name: Lodging and Food
+    value: 80
