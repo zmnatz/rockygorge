@@ -15,6 +15,9 @@ const PAYPAL_SETTINGS = {
     "ASmTD9KvSepF8Mr7dKvFYJFlbQHBEld1lMSMyHFRouAAuBfx4tY1x9fMBuBP7buCTZa_Jou7xn7iiBbt",
   currency: "USD"
 }
+
+const headerLinks = links.filter(({header}) => header)
+
 export default function App({ Component, pageProps }) {
   return (
     <div className="App">
@@ -27,9 +30,8 @@ export default function App({ Component, pageProps }) {
           <h1>Rocky Gorge Rugby</h1>
           <h3 className="home-icon"><HomeOutlined /></h3>
         </Link>
-        {links.filter(({header}) => header)
-          .map(({link, title, description}) => (
-            <Link key={link} href={link} title={description}>
+        {headerLinks.map(({id, title, description}) => (
+            <Link key={id} href={id} title={description}>
               <h3>{title}</h3>
             </Link>
           ))

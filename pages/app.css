@@ -74,6 +74,7 @@ table {
   }
 }
 
-.score-card {
-  
+iframe.embed {
+  margin: 0;
+  border: 0;
 }

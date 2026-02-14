@@ -1,20 +1,21 @@
-- link: /banquet
+- id: /banquet
   title: 2025 Banquet
   description: Buy your tickets for the 2025 banquet.
   header: false
-- link: /sponsors
+  hide: true
+- id: /sponsors
   title: Advertise with Us
   description: Become a jersey sponsor
   header: false
-- link: '/contacts'
+- id: '/contacts'
   title: Contacts
   description: 'club contacts'
   header: true
-- link: '/hallOfFame'
+- id: '/hallOfFame'
   title: Hall of Fame
   description: Recognized members of the Rocky Gorge Hall of Fame
   header: true
-- link: '/gauntlet'
+- id: '/gauntlet'
   title: 'Gauntlet'
   description: 'Gorge gauntlet leaderboard'
   header: true

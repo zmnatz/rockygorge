@@ -49,7 +49,7 @@
 - name: supporters
   defaultAmount: 200
   description: Supporter Dues
-  info: "Spring Season: $200"
+  info: Help us support the Rocky Gorge community.
   title: Pay your damn dues! Support Rocky Gorge Rugby.
   options: []
   subscriptions:
@@ -67,22 +67,18 @@
       - label: 'Sponsor a Player : $300.00 USD - yearly'
         value: Sponsor a Player
 - name: gear
-  defaultAmount: 140
+  defaultAmount: 15
   description: Team Gear
   info: Shirts and Shorts
   title: Buy team gear
   options:
-  - name: Boathouse Warmup Jacket - $140
-    value: 140
-  - name: Warmup Jacket with Name Only - $135
-    value: 135
-  - name: Troll Toll
+  - name: Miscellaneous Items - $15
     value: 15
 - name: camp
   defaultAmount: 80
   description: Training Camp
-  info: Spring training camp 2026. 
+  info: Spring training camp. 
   title: Training Camp
   options:
-  - name: Lodging and Food
+  - name: Lodging and Food - $80
     value: 80

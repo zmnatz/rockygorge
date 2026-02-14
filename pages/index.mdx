@@ -3,20 +3,60 @@ import Link from "next/link";
 import Calendar from "../components/Calendar";
 import Product from "../components/Product";
 import CardLink from "../components/CardLink";
+import {Scores} from '../components/Scores'
 
-import Intro from "../sections/Intro.mdx";
-import ProductLinks from "../sections/ProductLinks";
-import Links from "../sections/Links";
+import links from "../data/links.yml";
+import forms from "../data/forms.yml"
+import StoreItems from "../data/store.yml";
 
-<Row>
-  <Col md={22} lg={22} style={{ textAlign: "center" }}>
-    <Intro />
-  </Col>
-</Row>
+export const visibleStoreItems = StoreItems.filter(item => !item.hide);
+export const visibleLinks = links.filter(item => item.header !== true && item.hide !== true);
+export const visibleForms = forms.filter(item => item.hide !== true);
+
+<Row><Col md={22} lg={22} className="rg-centered ">
+    
+## 2025 Division III Capital Region Champions
+
+## 2023 Mid Atlantic Champions
+
+## 2012 and 2014 Division II National Champions
+
+We are one of the premier rugby clubs in the Mid Atlantic. Competing in Division I and Division III men's rugby.
+
+[New Players: FIll out our contact form](./forms/contact) and a club leader will get in touch.
+
+<a
+  href="https://groups.google.com/forum/#!forum/rocky-gorge-alumni"
+  target="_blank"
+  rel="noopener noreferer"
+>Join our alumni list</a> for social announcements, fan information, and old boy happy hours.
+
+  <Scores/>
+</Col></Row>
+
 <Row gutter={20} type="flex">
   <Col md={22} lg={11}>
-    <ProductLinks />
-    <Links/>
+    <Row type="flex">
+      {visibleStoreItems.map((item) => (
+        <CardLink key={item.description} title={item?.description} link={`/${item.name}`}>
+          <span><p>{item.info}</p>
+          {item.subscriptions != null &&
+            <p>Monthly Option Available</p>
+          }</span>
+        </CardLink>
+      ))}
+    </Row>
+
+    <Row type="flex">
+      {visibleLinks.map((item) => (
+        <CardLink key={item?.id} title={item?.title} link={item?.id}>{item.description}</CardLink>
+      ))}
+    </Row>
+    <Row type="flex">
+      {visibleForms.map((item) => (
+        <CardLink key={item?.id} title={item?.title} link={`forms/${item?.id}`}>{item.description}</CardLink>
+      ))}
+    </Row>
   </Col>
   <Col md={22} lg={11}>
     <Link href="/calendar">

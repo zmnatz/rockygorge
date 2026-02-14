@@ -1,27 +1,35 @@
+- id: hallOfFame
+  formId: 1FAIpQLSeEGJv6GCkmKewFfBRUX6t4ozpyyJO8JxOc6i5f8LBBc5tItg
+  title: Hall of Fame
+  description: Nominate a Rocky Gorge club member for the hall of fame.
+  width: 640
+  height: 1300
+  hide: false
 - id: asr
   formId: 1FAIpQLScbaHKjZJsbRLBW-JllVHwC70dTMPgiNUre9JxNpC6xdqsirA
-  name: ASR Travel Form
+  title: ASR Travel Form
   description: Travel information for the Atlantic Super Regionals tournament.
   width: 640 
   height: 2731
   hide: true
 - id: jerseys
   formId: 1FAIpQLSfDxsBp6WzSFpB7WqIitIsvUeEbJ6P72Cd6F4N7khqC7O_S0Q 
-  name: Jersey Report
+  title: Jersey Report
   description: Captains please report who brought equipment after the game.
   width: 640
   height: 1307
+  hide: true
 - id: contact
   formId: 1FAIpQLSdcsvnYSIRksBvbRCLr8ZjXsw2TgHxXhwyRNgGj2WXntKvW0w
-  name: Player Interest Form
+  title: Player Interest Form
   description: Interested in joining the team? Fill out this form and we'll get back to you.
   width: 640
   height: 1496
   hide: true
 - id: nationals
   formId: 1FAIpQLSf-NGqFMyIB47ctM1YMg-iW3SZy79W7V4fEwlffBNRr8W-0qw
-  name: Nationals Travel Form
+  title: Nationals Travel Form
   description: Travel information for the Club National Tournament
   width: 700
   height: 520
-  hide: false
+  hide: true

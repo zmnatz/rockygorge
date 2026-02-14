@@ -39,3 +39,7 @@ p.description {
   height: 90vh;
   width: 100%
 }
+
+.rg-centered {
+  text-align: center;
+}
