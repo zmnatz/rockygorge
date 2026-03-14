@@ -1,4 +1,4 @@
-import forms from "../../data/forms.yml";
+import forms from "@/data/forms.yml";
 
 export async function getStaticPaths() {
   return {

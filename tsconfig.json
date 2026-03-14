@@ -8,7 +8,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": [
+        "*"
+      ]
     },
     "allowJs": true,
     "skipLibCheck": true,
@@ -27,7 +29,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/types/yaml.d.ts"
+    "src/types/yaml.d.ts",
+    "src/types/data.d.ts"
   ],
   "exclude": [
     "node_modules"
