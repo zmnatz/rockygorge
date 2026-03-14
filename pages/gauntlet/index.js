@@ -1,4 +1,4 @@
-import data from '../../data/gauntlet.yml'
+import data from '@/data/gauntlet.yml'
 
 const columns = [
     {title: 'Rank', dataIndex: 'rank', key: 'rank'}, 

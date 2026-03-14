@@ -1,13 +1,13 @@
 import { Col, Row, Typography } from "antd";
 import Link from "next/link";
-import Calendar from "../components/Calendar";
-import Product from "../components/Product";
-import CardLink from "../components/CardLink";
-import {Scores} from '../components/Scores'
+import Calendar from "@/components/Calendar";
+import Product from "@/components/Product";
+import CardLink from "@/components/CardLink";
+import {Scores} from "@/components/Scores";
 
-import links from "../data/links.yml";
-import forms from "../data/forms.yml"
-import StoreItems from "../data/store.yml";
+import links from "@/data/links.yml";
+import forms from "@/data/forms.yml";
+import StoreItems from "@/data/store.yml";
 
 export const visibleStoreItems = StoreItems.filter(item => !item.hide);
 export const visibleLinks = links.filter(item => item.header !== true && item.hide !== true);
