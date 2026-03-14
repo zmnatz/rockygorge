@@ -1,19 +1,21 @@
 import React from 'react';
-import { Card } from 'antd';
-import Link from 'next/link';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
 
 interface ProductProps {
   title: string;
-  link: string;
   children: React.ReactNode;
 }
 
-export default function Product({ title, link, children }: ProductProps): JSX.Element {
+export default function Product({ title, children }: ProductProps): JSX.Element {
   return (
-    <Link href={link}>
-      <Card title={title} className="store-card">
-        {children}
-      </Card>
-    </Link>
+    <Card>
+      <CardActionArea>
+        <CardHeader title={title} />
+        <CardContent>{children}</CardContent>
+      </CardActionArea>
+    </Card>
   );
 }

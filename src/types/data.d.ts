@@ -19,6 +19,8 @@ export interface Product {
   donation?: boolean;
   details?: string;
   supporters?: string[];
+  flexiblePayment?: boolean;
+  children?: React.ReactNode;
   subscriptions?: Array<{
     name: string;
     id: string;

@@ -22,22 +22,24 @@ export function Subscription({ id, options, name, description, value = '' }: Sub
         <input type="hidden" name="cmd" value="_s-xclick" />
         <input type="hidden" name="hosted_button_id" value={id} />
         <table>
-          <tr>
-            <td>
-              <input type="hidden" name="on0" value={value} />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <select name="os0">
-                {options.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <td>
+                <input type="hidden" name="on0" value={value} />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <select name="os0">
+                  {options.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </td>
+            </tr>
+          </tbody>
         </table>
         <input type="hidden" name="currency_code" value="USD" />
         <input
@@ -53,7 +55,6 @@ export function Subscription({ id, options, name, description, value = '' }: Sub
           height="1"
         />
       </form>
-      <br />
     </>
   );
 }

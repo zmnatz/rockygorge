@@ -1,4 +1,5 @@
 import forms from "@/data/forms.yml";
+import { Box } from "@mui/material";
 
 export async function getStaticPaths() {
   return {
@@ -19,12 +20,14 @@ export default function Form({
   height
 }) {
   return (
-    <iframe src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`} 
-      height={height} 
-      width={width}
-      class="embed"
-    >
-      Loading...
-    </iframe>
+    <Box sx={{textAlign: 'center'}}>
+      <iframe src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`} 
+        height={height} 
+        width={width}
+        class="embed"
+      >
+        Loading...
+      </iframe>
+    </Box>
   );
 }

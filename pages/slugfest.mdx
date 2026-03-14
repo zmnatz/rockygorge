@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import {Row, Col} from 'antd'
+import Grid from '@mui/material/Grid'
 import PaypalProduct from "@/components/PaypalProduct";
 import SlugfestBanner from "@/assets/slugfest.jpg";
 import Concessions from "@/components/Concessions";
@@ -8,13 +8,13 @@ export const OPTIONS = [
   { name: "U19 Sevens Side - $200", value: 200 }
 ];
 
-<Row gutter={20} type="flex">
-<Col md={11}>
+<Grid container spacing={2}>
+<Grid item xs={12} md={6}>
   <Image style={{maxWidth: '100%', height: 'auto'}} src={SlugfestBanner} alt="Slugfest 10s"/>
-</Col>
+</Grid>
 
-<Col md={11}>
-### <a href="https://slugfest.netlify.app" target="_blank">Scores and Schedule</a>
+<Grid item xs={12} md={6}>
+### [Scores and Schedule](https://slugfest.netlify.app)
 
 
 ### Concessions
@@ -33,12 +33,12 @@ June 10 - 9:00AM-3:00PM<br />
 
 ### Cost
 $200 for U19 Sevens sides.
-</Col>
-</Row>
-<Row>
-<Col>
+</Grid>
+</Grid>
+<Grid container spacing={2}>
+<Grid item xs={12}>
 ### Register your team
 Contact [slugfest@rockygorgerugby.com](mailto:slugfest@rockygorgerugby.com) to register your team.
 <PaypalProduct options={OPTIONS} defaultAmount={200}/>
-</Col>
-</Row>
+</Grid>
+</Grid>
