@@ -90,58 +90,6 @@ theme.components = {
       },
     },
   },
-  MuiTypography: {
-    variants: [
-      {
-        props: { variant: "h1" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-      {
-        props: { variant: "h2" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-      {
-        props: { variant: "h3" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-      {
-        props: { variant: "h4" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-      {
-        props: { variant: "h5" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-      {
-        props: { variant: "h6" },
-        style: {
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        },
-      },
-    ],
-  },
   MuiButton: {
     defaultProps: {
       disableElevation: true,

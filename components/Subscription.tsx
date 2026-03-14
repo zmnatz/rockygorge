@@ -1,3 +1,4 @@
+import { NativeSelect } from '@mui/material';
 import React from 'react';
 
 interface SubscriptionOption {
@@ -21,26 +22,16 @@ export function Subscription({ id, options, name, description, value = '' }: Sub
       <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
         <input type="hidden" name="cmd" value="_s-xclick" />
         <input type="hidden" name="hosted_button_id" value={id} />
-        <table>
-          <tbody>
-            <tr>
-              <td>
-                <input type="hidden" name="on0" value={value} />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <select name="os0">
-                  {options.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <input type="hidden" name="on0" value={value} />
+        <div>
+          <NativeSelect name="os0">
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option >
+            ))}
+          </NativeSelect>
+        </div>
         <input type="hidden" name="currency_code" value="USD" />
         <input
           type="image"
