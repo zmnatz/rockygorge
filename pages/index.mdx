@@ -34,10 +34,7 @@ export const visibleForms = forms.filter(item => item.hide !== true);
         <Grid item size={{xs: 12, sm: 6, md: 6}} key={item.description}>
           <NextLinkComposed href={`/${item.name}`} style={{ textDecoration: 'none' }}>
             <Product title={item?.description}>
-              <span><p>{item.info}</p>
-              {item.subscriptions != null &&
-                <p>Monthly Option Available</p>
-              }</span>
+              {item.info}
             </Product>
           </NextLinkComposed>
         </Grid>
