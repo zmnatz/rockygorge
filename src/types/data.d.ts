@@ -75,12 +75,12 @@ declare module '@/data/gauntlet-2023-2024.yml' {
   export default gauntlet2023;
 }
 
-declare module '../../data/forms.yml' {
+declare module '../../src/data/forms.yml' {
   const forms: Form[];
   export default forms;
 }
 
-declare module '../../data/gauntlet.yml' {
+declare module '../../src/data/gauntlet.yml' {
   const gauntlet: GauntletEntry[];
   export default gauntlet;
 }

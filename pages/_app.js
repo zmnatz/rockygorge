@@ -10,9 +10,9 @@ import {
 } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
-import { mdxComponents } from '@/src/utils/mdx'
-import { PAYPAL_SETTINGS } from "@/src/utils/paypal";
-import { theme } from "@/src/utils/theme";
+import { mdxComponents } from '@/utils/mdx'
+import { PAYPAL_SETTINGS } from "@/utils/paypal";
+import { theme } from "@/utils/theme";
 import { Toolbar } from '@/components/Toolbar'
 
 

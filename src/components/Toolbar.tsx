@@ -1,4 +1,4 @@
-import { NextLinkComposed } from "@/src/utils/nextLink";
+import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
 import links from "@/data/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";

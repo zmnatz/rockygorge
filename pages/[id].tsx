@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
-import PaypalProduct from "../components/PaypalProduct";
+import PaypalProduct from "@/components/PaypalProduct";
 import items from "@/data/store.yml";
-import { Product } from "@/src/types/data";
+import { Product } from "@/types/data";
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({

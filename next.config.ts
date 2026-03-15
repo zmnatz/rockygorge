@@ -18,8 +18,6 @@ const withMDX = require('@next/mdx')({
     providerImportSource: "@mdx-js/react",
   },
 });
+const withYAML = require('next-plugin-yaml');
 
-const withYml = require('next-plugin-yaml')
-
-
-module.exports = withYml(withMDX(nextConfig));
+export default withMDX(withYAML(nextConfig));
