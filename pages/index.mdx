@@ -14,7 +14,7 @@ export const visibleLinks = links.filter(item => item.header !== true && item.hi
 export const visibleForms = forms.filter(item => item.hide !== true);
 
 <Grid container spacing={2} sx={{ py: 2 }}>
-  <Grid item size={{xs: 12}} sx={{ textAlign: 'center' }}>
+  <Grid size={{xs: 12}} sx={{ textAlign: 'center' }}>
     ## 2025 Division III Capital Region Champions
     ### 2023 Mid Atlantic Champions
     ### 2012 and 2014 Division II National Champions
@@ -28,10 +28,10 @@ export const visibleForms = forms.filter(item => item.hide !== true);
   </Grid>
 
 <Grid container spacing={2}>
-  <Grid item size={{xs: 12, md: 6}}>
+  <Grid size={{xs: 12, md: 6}}>
     <Grid container spacing={2}>
       {visibleStoreItems.map((item) => (
-        <Grid item size={{xs: 12, sm: 6, md: 6}} key={item.description}>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item.description}>
           <NextLinkComposed href={`/${item.name}`} style={{ textDecoration: 'none' }}>
             <Product title={item?.description}>
               {item.info}
@@ -43,7 +43,7 @@ export const visibleForms = forms.filter(item => item.hide !== true);
 
     <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleLinks.map((item) => (
-        <Grid item size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
           <NextLinkComposed href={item?.id} style={{ textDecoration: 'none' }}>
             <Product title={item?.title}>{item.description}</Product>
           </NextLinkComposed>
@@ -52,7 +52,7 @@ export const visibleForms = forms.filter(item => item.hide !== true);
     </Grid>
     <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleForms.map((item) => (
-        <Grid item size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
           <NextLinkComposed href={`forms/${item?.id}`} style={{ textDecoration: 'none' }}>
             <Product title={item?.title}>{item.description}</Product>
           </NextLinkComposed>
@@ -60,7 +60,7 @@ export const visibleForms = forms.filter(item => item.hide !== true);
       ))}
     </Grid>
   </Grid>
-  <Grid item size={{xs: 12, md: 6}}>
+  <Grid size={{xs: 12, md: 6}}>
     <Link href="/calendar">
       <Calendar />
     </Link>

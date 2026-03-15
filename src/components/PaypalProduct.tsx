@@ -129,16 +129,6 @@ export default function PaypalProduct({
                 label: donation ? 'donate' : 'buynow',
               }}
             />
-            {supporters && (
-              <>
-                <Typography>Thank you to all our supporters who have made a donation.</Typography>
-                <List sx={{ maxHeight: 400, overflowY: 'auto' }}>
-                  {supporters.map((s: any) => (
-                    <ListItem key={s.id || s}>{s}</ListItem>
-                  ))}
-                </List>
-              </>
-            )}
           </>
         )
       )}
@@ -148,6 +138,18 @@ export default function PaypalProduct({
             <Subscription key={s.id} {...s} />
           ))}
         </>
+      )}
+      {supporters && (
+        <Card sx={{ mt: 4 }} >
+          <CardHeader title="Thanks to all our supporters!" />
+          <CardContent>
+          <List sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            {supporters.map((s: any) => (
+              <ListItem key={s.id || s}>{s}</ListItem>
+            ))}
+          </List>
+          </CardContent>
+        </Card>
       )}
     </Box>
   );

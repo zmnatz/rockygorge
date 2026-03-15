@@ -46,6 +46,8 @@
         value: Corporate Sponsor
       - label: 'Sponsor a Player : $200.00 USD - yearly'
         value: Sponsor a Player
+      - label: 'Supporter $10.00 USD - monthly'
+        value: Supporter
 - name: supporters
   defaultAmount: 200
   description: Supporter Dues
@@ -66,6 +68,16 @@
         value: Corporate Sponsor
       - label: 'Sponsor a Player : $300.00 USD - yearly'
         value: Sponsor a Player
+      - label: 'Supporter $10.00 USD - monthly'
+        value: Supporter
+  supporters: 
+    - Chuck Moore
+    - Tom Henry
+    - Matt Carroll
+    - Jake Saintcross
+    - Dwayne Jenkins
+    - Zaven Mnatzakanian
+    - Bill Bush
 - name: gear
   defaultAmount: 15
   description: Team Gear
@@ -79,6 +91,7 @@
   description: Training Camp
   info: Spring training camp. 
   title: Training Camp
+  hide: true
   options:
   - name: Lodging and Food - $80
     value: 80
