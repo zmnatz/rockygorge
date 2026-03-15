@@ -8,7 +8,12 @@ export function Scores () {
   return (
     <Grid container spacing={2}>
       {scores.map((score, index) => (
-        <Grid item xs={12} sm={6} key={index}>
+        <Grid
+          key={index}
+          size={{
+            xs: 12,
+            sm: 6
+          }}>
           <ScoreCard score={score} />
         </Grid>
       ))}

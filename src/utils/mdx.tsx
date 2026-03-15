@@ -8,7 +8,13 @@ export const mdxComponents = {
   h4: (props) => <Typography component="h4" variant="subtitle1" gutterBottom {...props} />,
   h5: (props) => <Typography component="h5" variant="subtitle2" gutterBottom {...props} />,
   h6: (props) => <Typography component="h6" variant="body1" gutterBottom {...props} />,
-  p: (props) => <Typography component="p" variant="body1" paragraph {...props} />,
+  p: (props) => <Typography
+    component="p"
+    variant="body1"
+    {...props}
+    sx={{
+      marginBottom: "16px"
+    }} />,
   a: ({ href, children, ...props }) => {
     const isExternal =
       typeof href === "string" &&

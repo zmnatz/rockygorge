@@ -12,9 +12,11 @@ export default function Concessions(): JSX.Element {
           type="number"
           value={amount}
           onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-          InputProps={{ inputProps: { min: 0 } }}
           size="small"
           sx={{ ml: 1 }}
+          slotProps={{
+            input: { inputProps: { min: 0 } }
+          }}
         />
       </form>
     </PaypalProduct>

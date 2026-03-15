@@ -55,8 +55,10 @@ export default function BanquetTickets({ children }: BanquetTicketsProps) {
           type="number"
           value={adult}
           onChange={(e) => setAdults(parseInt(e.target.value, 10) || 0)}
-          inputProps={{ min: 1 }}
           size="small"
+          slotProps={{
+            htmlInput: { min: 1 }
+          }}
         />
         <Typography variant="h6">Total: ${amount}</Typography>
       </Box>
