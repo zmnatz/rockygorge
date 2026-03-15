@@ -3,21 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
     "@mdx-js/loader": "^2.3.0",
     "@mdx-js/react": "^2.3.0",
-    "@next/mdx": "^13.4.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "@paypal/react-paypal-js": "^7.3.3",
-    "antd": "4.15.0",
-    "next": "^13.3.4",
-    "next-plugin-yaml": "^1.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "sharp": "^0.32.1"
   },
   "scripts": {
-    "start": "next dev",
-    "dev": "next dev",
-    "build": "next build",
+    "start": "next dev --webpack",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "lint": "next lint"
   },
   "browserslist": [
@@ -27,7 +27,12 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "eslint": "8.39.0",
-    "eslint-config-next": "13.3.4"
+    "@next/mdx": "^16.1.6",
+    "eslint": "^9.7",
+    "eslint-config-next": "^16.1.6",
+    "next": "^16.1.6",
+    "next-plugin-yaml": "^1.0.1",
+    "typescript": "^5.4.0",
+    "typescript-yaml-plugin": "^1.0.11"
   }
 }

@@ -1,6 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import { PayPalButtons } from '@paypal/react-paypal-js';
-import { Radio, Layout, Typography, Card, List } from 'antd';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import { Subscription } from './Subscription';
 
 interface Option {
@@ -66,34 +78,42 @@ export default function PaypalProduct({
   const handleError = useCallback((err: any) => console.warn(err), []);
 
   return (
-    <Layout.Content>
+    <Box>
       {children}
       {options.length > 0 && (
         status === 'SUCCESS' ? (
           <Typography>Thank you. Your order has been received.</Typography>
         ) : (
           <>
-            <Radio.Group size="large" onChange={handleSelect} value={amount}>
-              {options.map(({ name, value }) => (
-                <Radio key={name} value={value}>
-                  {name}
-                </Radio>
-              ))}
-            </Radio.Group>
+            <FormControl>
+              <FormLabel>{description}</FormLabel>
+              <RadioGroup value={amount} onChange={handleSelect}>
+                {options.map(({ name, value }) => (
+                  <FormControlLabel
+                    key={name}
+                    value={value}
+                    control={<Radio />}
+                    label={name}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
             {flexiblePayment && (
-              <Card
-                title={donation ? 'Flexible Amount' : 'Flexible Payment'}
-                className="big store-card"
-              >
-                <Typography>
-                  If you've arranged to pay a different amount, enter it below before clicking{' '}
-                  {donation ? 'Donate' : 'Buy Now'}.
-                </Typography>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                />
+              <Card className="big store-card">
+                <CardHeader title={donation ? 'Flexible Amount' : 'Flexible Payment'} />
+                <CardContent>
+                  <Typography>
+                    If you've arranged to pay a different amount, enter it below before clicking{' '}
+                    {donation ? 'Donate' : 'Buy Now'}.
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </CardContent>
               </Card>
             )}
             <PayPalButtons
@@ -109,16 +129,6 @@ export default function PaypalProduct({
                 label: donation ? 'donate' : 'buynow',
               }}
             />
-            {supporters && (
-              <>
-                <Typography>Thank you to all our supporters who have made a donation.</Typography>
-                <List style={{ height: 400, overflowY: 'scroll' }} bordered>
-                  {supporters.map((s: any) => (
-                    <List.Item key={s.id || s}>{s}</List.Item>
-                  ))}
-                </List>
-              </>
-            )}
           </>
         )
       )}
@@ -129,6 +139,18 @@ export default function PaypalProduct({
           ))}
         </>
       )}
-    </Layout.Content>
+      {supporters && (
+        <Card sx={{ mt: 4 }} >
+          <CardHeader title="Thanks to all our supporters!" />
+          <CardContent>
+          <List sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            {supporters.map((s: any) => (
+              <ListItem key={s.id || s}>{s}</ListItem>
+            ))}
+          </List>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
   );
 }

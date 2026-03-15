@@ -1,4 +1,5 @@
 import data from '@/data/gauntlet.yml'
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 
 const columns = [
     {title: 'Rank', dataIndex: 'rank', key: 'rank'}, 
@@ -15,7 +16,30 @@ export function getStaticProps() {
         key: d.name,
         time: `${Math.trunc(d.time / 60)}:${(d.time % 60).toFixed(1)}`
     }))
-    return { props: { dataSource, columns, pagination: false } };
+    return { props: { dataSource, columns } };
 }
 
-export { Table as default } from 'antd'
+export default function Gauntlet({ columns, dataSource }) {
+  return (
+    <TableContainer component={Paper} sx={{ mt: 2 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            {columns.map((col) => (
+              <TableCell key={col.key}>{col.title}</TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {dataSource.map((row) => (
+            <TableRow key={row.key}>
+              {columns.map((col) => (
+                <TableCell key={col.key}>{row[col.dataIndex]}</TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}

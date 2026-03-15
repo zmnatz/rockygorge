@@ -1,9 +1,9 @@
-import { Col, Row, Typography } from "antd";
+import { Grid, Typography } from "@mui/material";
 import Link from "next/link";
 import Calendar from "@/components/Calendar";
 import Product from "@/components/Product";
-import CardLink from "@/components/CardLink";
-import {Scores} from "@/components/Scores";
+import { NextLinkComposed } from "@/utils/nextLink";
+import { Scores } from "@/components/Scores";
 
 import links from "@/data/links.yml";
 import forms from "@/data/forms.yml";
@@ -13,54 +13,57 @@ export const visibleStoreItems = StoreItems.filter(item => !item.hide);
 export const visibleLinks = links.filter(item => item.header !== true && item.hide !== true);
 export const visibleForms = forms.filter(item => item.hide !== true);
 
-<Row><Col md={22} lg={22} className="rg-centered ">
-    
-## 2025 Division III Capital Region Champions
+<Grid container spacing={2} sx={{ py: 2 }}>
+  <Grid size={{xs: 12}} sx={{ textAlign: 'center' }}>
+    ## 2025 Division III Atlantic Super Regional Champions
+    ### 2023 Mid Atlantic Champions
+    ### 2012 and 2014 Division II National Champions
 
-## 2023 Mid Atlantic Champions
+    We are one of the premier rugby clubs in the Mid Atlantic. Competing in Division I and Division III men's rugby.
 
-## 2012 and 2014 Division II National Champions
+    [New Players: FIll out our contact form](./forms/contact) and a club leader will get in touch.
 
-We are one of the premier rugby clubs in the Mid Atlantic. Competing in Division I and Division III men's rugby.
+    [Join our alumni list](https://groups.google.com/forum/#!forum/rocky-gorge-alumni) 
+    for social announcements, fan information, and old boy happy hours.
+  </Grid>
 
-[New Players: FIll out our contact form](./forms/contact) and a club leader will get in touch.
-
-<a
-  href="https://groups.google.com/forum/#!forum/rocky-gorge-alumni"
-  target="_blank"
-  rel="noopener noreferer"
->Join our alumni list</a> for social announcements, fan information, and old boy happy hours.
-
-  <Scores/>
-</Col></Row>
-
-<Row gutter={20} type="flex">
-  <Col md={22} lg={11}>
-    <Row type="flex">
+<Grid container spacing={2}>
+  <Grid size={{xs: 12, md: 6}}>
+    <Grid container spacing={2}>
       {visibleStoreItems.map((item) => (
-        <CardLink key={item.description} title={item?.description} link={`/${item.name}`}>
-          <span><p>{item.info}</p>
-          {item.subscriptions != null &&
-            <p>Monthly Option Available</p>
-          }</span>
-        </CardLink>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item.description}>
+          <NextLinkComposed href={`/${item.name}`} style={{ textDecoration: 'none' }}>
+            <Product title={item?.description}>
+              {item.info}
+            </Product>
+          </NextLinkComposed>
+        </Grid>
       ))}
-    </Row>
+    </Grid>
 
-    <Row type="flex">
+    <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleLinks.map((item) => (
-        <CardLink key={item?.id} title={item?.title} link={item?.id}>{item.description}</CardLink>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
+          <NextLinkComposed href={item?.id} style={{ textDecoration: 'none' }}>
+            <Product title={item?.title}>{item.description}</Product>
+          </NextLinkComposed>
+        </Grid>
       ))}
-    </Row>
-    <Row type="flex">
+    </Grid>
+    <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleForms.map((item) => (
-        <CardLink key={item?.id} title={item?.title} link={`forms/${item?.id}`}>{item.description}</CardLink>
+        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
+          <NextLinkComposed href={`forms/${item?.id}`} style={{ textDecoration: 'none' }}>
+            <Product title={item?.title}>{item.description}</Product>
+          </NextLinkComposed>
+        </Grid>
       ))}
-    </Row>
-  </Col>
-  <Col md={22} lg={11}>
+    </Grid>
+  </Grid>
+  <Grid size={{xs: 12, md: 6}}>
     <Link href="/calendar">
       <Calendar />
     </Link>
-  </Col>
-</Row>
+  </Grid>
+</Grid>
+</Grid>

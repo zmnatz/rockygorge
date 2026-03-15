@@ -1,6 +1,7 @@
-import { Typography } from "antd";
-import PaypalProduct from "../components/PaypalProduct";
+import { Typography } from "@mui/material";
+import PaypalProduct from "@/components/PaypalProduct";
 import items from "@/data/store.yml";
+import { Product } from "@/types/data";
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
@@ -23,7 +24,7 @@ export default function StoreItem({
   donation,
   subscriptions,
   supporters
-}) {
+}: Product) {
   return (
     <PaypalProduct
       defaultAmount={defaultAmount}
@@ -34,7 +35,7 @@ export default function StoreItem({
       supporters={supporters}
       flexiblePayment
     >
-      <Typography.Title level={3}>{title}</Typography.Title>
+      <Typography variant="h3">{title}</Typography>
       {details && <p>{details}</p>}
     </PaypalProduct>
   );
