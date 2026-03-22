@@ -1,2 +1,1 @@
-export * from './Scores'
-export * from './useScores'
+export {Scores} from './Scores'
