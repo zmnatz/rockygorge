@@ -1,1 +1,2 @@
-export {Scores} from './Scores'
+export * from './Scores'
+export * from './useScores'

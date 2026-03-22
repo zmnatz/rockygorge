@@ -1,12 +1,10 @@
 import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
-import links from "@/data/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useState } from "react";
+import { Link } from "@/types/data";
 
-const headerLinks = links.filter(({ header }) => header);
-
-export function Toolbar () {
+export function Toolbar ({links}: {links: Link[]}) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -30,7 +28,7 @@ export function Toolbar () {
           Rocky Gorge Rugby
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        {headerLinks.map(({ id, title, description }) => (
+        {links.map(({ id, title, description }) => (
           <Button
             key={id}
             component={NextLinkComposed}
@@ -55,7 +53,7 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {headerLinks.map(({ id, title, description }) => (
+          {links.map(({ id, title, description }) => (
             <MenuItem
               key={id}
               component="a"

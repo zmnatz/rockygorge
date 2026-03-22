@@ -15,6 +15,8 @@ import { PAYPAL_SETTINGS } from "@/utils/paypal";
 import { theme } from "@/utils/theme";
 import { Toolbar } from '@/components/Toolbar'
 
+import links from "@/data/links.yml";
+const headerLinks = links.filter(({ header }) => header);
 
 export default function App({ Component, pageProps }) {
   return (
@@ -25,7 +27,7 @@ export default function App({ Component, pageProps }) {
         <meta name="description" content="General information for Rocky Gorge Rugby Football Club" />
       </Head>
 
-      <Toolbar />
+      <Toolbar links={headerLinks}/>
 
       <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
         <PayPalScriptProvider options={PAYPAL_SETTINGS}>

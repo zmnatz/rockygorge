@@ -15,10 +15,12 @@
     "sharp": "^0.32.1"
   },
   "scripts": {
-    "start": "next dev --webpack",
-    "dev": "next dev --webpack",
+    "start": "npm run dev",
+    "dev": "next dev --webpack --experimental-https",
     "build": "next build --webpack",
-    "lint": "next lint"
+    "lint": "next lint",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "browserslist": [
     ">0.2%",
@@ -27,12 +29,27 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.0.2",
     "@next/mdx": "^16.1.6",
+    "@storybook/addon-a11y": "^10.3.1",
+    "@storybook/addon-docs": "^10.3.1",
+    "@storybook/addon-onboarding": "^10.3.1",
+    "@storybook/addon-themes": "^10.3.1",
+    "@storybook/addon-vitest": "^10.3.1",
+    "@storybook/nextjs-vite": "^10.3.1",
+    "@vitest/browser-playwright": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9.7",
     "eslint-config-next": "^16.1.6",
+    "eslint-plugin-storybook": "^10.3.1",
+    "jest": "^30.3.0",
     "next": "^16.1.6",
     "next-plugin-yaml": "^1.0.1",
+    "playwright": "^1.58.2",
+    "storybook": "^10.3.1",
     "typescript": "^5.4.0",
-    "typescript-yaml-plugin": "^1.0.11"
+    "typescript-yaml-plugin": "^1.0.11",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.0"
   }
 }
