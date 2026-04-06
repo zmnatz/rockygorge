@@ -2,6 +2,10 @@ import { Typography } from "@mui/material";
 import PaypalProduct from "@/components/PaypalProduct";
 import items from "@/data/store.yml";
 import { Product } from "@/types/data";
+
+import { remark } from "remark";
+import remarkHtml from "remark-html";
+
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
@@ -12,7 +16,11 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  return { props: items.find((item) => item?.name === params?.id) };
+  const props = items.find((item) => item?.name === params?.id);
+  if (props.details) {
+    props.details = (await remark().use(remarkHtml).process(props.details)).toString();
+  }
+  return { props };
 }
 
 export default function StoreItem({
@@ -36,7 +44,7 @@ export default function StoreItem({
       flexiblePayment
     >
       <Typography variant="h3">{title}</Typography>
-      {details && <p>{details}</p>}
+      {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
     </PaypalProduct>
   );
 }

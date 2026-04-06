@@ -107,7 +107,6 @@ theme.components = {
   MuiLink: {
     styleOverrides: {
       root: {
-        textDecoration: "none",
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",

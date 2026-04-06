@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { PayPalButtons } from '@paypal/react-paypal-js';
+import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { Subscription } from './Subscription';
+import { PAYPAL_SETTINGS } from '@/utils/paypal';
 
 interface Option {
   name: string;
@@ -116,19 +117,21 @@ export default function PaypalProduct({
                 </CardContent>
               </Card>
             )}
-            <PayPalButtons
-              forceReRender={[amount, defaultAmount]}
-              createOrder={createOrder}
-              fundingSource={donation ? 'paypal' : undefined}
-              onApprove={handleApprove}
-              onError={handleError}
-              style={{
-                shape: 'pill',
-                color: 'blue',
-                layout: 'vertical',
-                label: donation ? 'donate' : 'buynow',
-              }}
-            />
+            <PayPalScriptProvider options={PAYPAL_SETTINGS}>
+              <PayPalButtons
+                forceReRender={[amount, defaultAmount]}
+                createOrder={createOrder}
+                fundingSource={donation ? 'paypal' : undefined}
+                onApprove={handleApprove}
+                onError={handleError}
+                style={{
+                  shape: 'pill',
+                  color: 'blue',
+                  layout: 'vertical',
+                  label: donation ? 'donate' : 'buynow',
+                }}
+              />
+            </PayPalScriptProvider>
           </>
         )
       )}
