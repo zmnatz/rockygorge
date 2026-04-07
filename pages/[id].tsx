@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import PaypalProduct from "@/components/PaypalProduct";
+import PaypalProduct from "@/components/Paypal/PaypalProduct";
 import items from "@/data/store.yml";
 import { Product } from "@/types/data";
 

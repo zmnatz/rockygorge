@@ -3,6 +3,7 @@
   description: Banquet Tickets
   info: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
+  hide: true
   options:
   - name: Couple - $80
     value: 80
