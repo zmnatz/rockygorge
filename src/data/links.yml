@@ -3,10 +3,6 @@
   description: Buy your tickets for the 2025 banquet.
   header: false
   hide: true
-- id: /sponsors
-  title: Advertise with Us
-  description: Become a jersey sponsor
-  header: false
 - id: '/contacts'
   title: Contacts
   description: 'club contacts'

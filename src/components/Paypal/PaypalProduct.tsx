@@ -11,7 +11,7 @@ import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from 
 import { PaypalProvider } from './utils'
 import { PaypalProductProps } from "./types";
 
-export default function PaypalProduct({
+export function PaypalProduct({
   options = [],
   description,
   defaultAmount,

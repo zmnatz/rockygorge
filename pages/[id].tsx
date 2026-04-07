@@ -1,10 +1,11 @@
+import { remark } from "remark";
+import remarkHtml from "remark-html";
 import { Typography } from "@mui/material";
-import PaypalProduct from "@/components/Paypal/PaypalProduct";
+
+import {PaypalProduct} from "@/components/Paypal";
 import items from "@/data/store.yml";
 import { Product } from "@/types/data";
 
-import { remark } from "remark";
-import remarkHtml from "remark-html";
 
 export async function getStaticPaths() {
   return {
