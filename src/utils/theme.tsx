@@ -85,6 +85,7 @@ theme.components = {
   MuiCardHeader: {
     styleOverrides: {
       root: {
+        textDecoration: 'none',
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.primary.contrastText,
       },
@@ -107,7 +108,7 @@ theme.components = {
   MuiLink: {
     styleOverrides: {
       root: {
-        textDecoration: "none",
+        // textDecoration: "none",
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",
