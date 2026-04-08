@@ -4,7 +4,7 @@ import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, Typography } from "@mui/material";
-import { useMatchEvents, usePracticeEvents, CalendarEvent, formatEventTime } from "@/components/Calendar/calendar";
+import { useMatchEvents, usePracticeEvents, CalendarEvent, formatEventTime } from "./api";
 import Link from "next/link";
 
 export default function Calendar(): JSX.Element {
