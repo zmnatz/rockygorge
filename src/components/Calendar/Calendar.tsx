@@ -7,7 +7,7 @@ import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, Typograph
 import { useMatchEvents, usePracticeEvents, CalendarEvent, formatEventTime } from "./api";
 import Link from "next/link";
 
-export default function Calendar(): JSX.Element {
+export function Calendar(): JSX.Element {
   const { data: practices, isFetching } = usePracticeEvents();
   const { data: matches, isFetching: loadingMatches } = useMatchEvents();
   if (practices.length < 1 && matches.length < 1) {
