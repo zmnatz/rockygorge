@@ -1,66 +1,50 @@
-import Box from "@mui/material/Box";
+'use client'
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
-import CircularProgress from "@mui/material/CircularProgress";
-import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, Typography } from "@mui/material";
-import { useMatchEvents, usePracticeEvents, CalendarEvent, formatEventTime } from "./api";
+import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, Typography, Box, CircularProgress } from "@mui/material";
+import { useCalendarEvents, formatEventTime } from "./api";
+import { CalendarEvent } from "./types";
 import Link from "next/link";
 
 export function Calendar(): JSX.Element {
-  const { data: practices, isFetching } = usePracticeEvents();
-  const { data: matches, isFetching: loadingMatches } = useMatchEvents();
-  if (practices.length < 1 && matches.length < 1) {
-    return null;
-  }
-
+  const { data, isFetching } = useCalendarEvents();
   return (
     <Card>
       <CardHeader title="Calendar" component={Link} href="/calendar"/>
-      <CardContent>
-        <List>
-          <ListSubheader><Typography variant="h4">Events</Typography></ListSubheader>
-          {loadingMatches &&  (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-              <CircularProgress />
-            </Box>
+      <CardContent component={List} dense>
+        {isFetching && <ListItem sx={{textAlign: 'center'}}>
+          <CircularProgress/>
+        </ListItem>}
+          {!isFetching &&Object.entries(data).map(([group, events]) =>
+            <CalendarSection key={group} title={group} data={events}/>
           )}
-          {!loadingMatches && matches.length < 1 && <ListItem><ListItemText secondary="No upcoming events"/></ListItem>}
-          {matches.map((item) => (
-            <CalendarItem key={item.start + item.summary} item={item}/>
-          ))}
-          <ListSubheader><Typography variant="h4">Practices</Typography></ListSubheader>
-          {isFetching && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-              <CircularProgress />
-            </Box>
-          )}
-          {practices.map((item) => (
-            <CalendarItem key={item.start + item.summary} item={item}/>
-          ))}
-        </List>
       </CardContent>
     </Card>
   );
 }
 
-
-function CalendarItem ({item}: {item: CalendarEvent}) {
-  return <ListItem
-    key={`${item.htmlLink}-${item.start}`}
-    component={MuiLink}
-    href={item.htmlLink}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <ListItemText
-      sx={{ whiteSpace: "normal" }}
-      slotProps={{
-        primary: { noWrap: false },
-        secondary: {noWrap: false }
-      }}
-      primary={`${formatEventTime(item.start, item.end)} · ${item.summary}`}
-      secondary={item.location}
-    />
-  </ListItem>
+function CalendarSection({ title, data}: {title: string, data: CalendarEvent[]}) {
+  return <>
+    <ListSubheader>{title}</ListSubheader>
+    {data.length < 1 && 
+      <ListItem><ListItemText secondary={`No upcoming ${title.toLowerCase()}`}/></ListItem>
+    }
+    {data.map((item) => (
+      <ListItem key={`${item.htmlLink}-${item.start}`}>
+        <ListItemText
+          sx={{ whiteSpace: "normal" }}
+          slotProps={{
+            primary: { noWrap: false },
+            secondary: {noWrap: false }
+          }}
+          secondary={item.location}
+        >
+          <MuiLink href={item.htmlLink} target="_blank" rel="noopener noreferrer">
+            {formatEventTime(item.start, item.end)} · {item.summary}
+          </MuiLink>
+        </ListItemText>
+      </ListItem>
+    ))}
+  </>
 }

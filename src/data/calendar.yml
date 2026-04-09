@@ -1,0 +1,7 @@
+months: 3
+filters:
+- name: Practices
+  limit: 4
+  matches: practice
+- name: Events
+  notMatches: practice|board|OG|Africa

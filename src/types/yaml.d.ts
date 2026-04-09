@@ -34,3 +34,16 @@ declare module '../../data/gauntlet.yml' {
   const gauntlet: GauntletEntry[];
   export default gauntlet;
 }
+
+declare module '@/data/calendar.yml' {
+  const calendarInfo: {
+    months: number,
+    filters: {
+      name: string;
+      matches?: string;
+      notMatches?: string;
+      limit?: number;
+    }[]
+  };
+  export default calendarInfo;
+}

@@ -121,6 +121,11 @@ theme.components = {
       },
     },
   },
+  MuiListSubheader: {
+    styleOverrides: {
+      root: {fontSize: '1.2rem'}
+    }
+  },
   MuiTableRow: {
     styleOverrides: {
       root: {

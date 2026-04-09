@@ -44,6 +44,8 @@ export function Toolbar () {
         ))}
         <IconButton
           color="inherit"
+          aria-label="app menu"
+          title="Application Menu"
           sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
           onClick={handleOpenMenu}
         >

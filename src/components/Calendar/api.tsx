@@ -1,73 +1,64 @@
+'use client'
 import { useQuery } from "@tanstack/react-query";
 
-export type CalendarEvent = {
-  summary: string;
-  location: string;
-  htmlLink: string;
-  start: string;
-  end: string;
-};
+import calendarInfo from '@/data/calendar.yml'
+import { CalendarEvent, CalendarFilter } from "./types";
 
-export async function fetchCalendarEvents(query: string) {
-  const params = [
-    query,
-    "singleEvents=true",
-    "orderBy=startTime",
-    `timeMin=${new Date().toISOString()}`,
-  ]
-    .filter(Boolean)
-    .join("&");
 
-  const response = await fetch(`/api/calendar?${params}`);
-  const json = await response.json();
-  const summary = json.items.map(({summary, location, htmlLink, start, end}) => ({
-    summary,
-    location,
-    htmlLink,
-    start: start.dateTime ?? start.date,
-    end: end.dateTime ?? end.date,
-  }));
-  return summary;
-}
+const startOfDay = new Date();
+startOfDay.setHours(0, 0, 0, 0);
+const endOfTime = new Date(startOfDay);
+endOfTime.setMonth(endOfTime.getMonth() + calendarInfo.months);
+endOfTime.setHours(23, 59, 59, 999);
 
-export async function getPracticeEvents() {
-  const now = new Date();
-  const endOfNextWeek = new Date(now);
-  endOfNextWeek.setDate(endOfNextWeek.getDate() + (13 - endOfNextWeek.getDay()));
-  endOfNextWeek.setHours(23, 59, 59, 999);
-  const timeMax = endOfNextWeek.toISOString();
-  
-  return await fetchCalendarEvents(`q=practice&maxResults=4&singleEvents=true&orderBy=startTime&timeMax=${timeMax}`);
-}
-
-export function usePracticeEvents() {
-  return useQuery<CalendarEvent[]>({
-    queryKey: ["practiceEvents"],
-    queryFn: getPracticeEvents,
+export function useCalendarEvents() {
+  return useQuery({
+    queryKey: [
+      "/api/calendar",
+      "singleEvents=true",
+      "orderBy=startTime",
+      `timeMin=${startOfDay.toISOString()}`,
+      `timeMax=${endOfTime.toISOString()}`,
+    ],
     staleTime: 1000 * 60 * 5,
-    placeholderData: []
+    placeholderData: {
+      items: []
+    },
+    select: data => {
+      const events = data.items.map(({summary, location, htmlLink, start, end}) => ({
+        summary,
+        location,
+        htmlLink,
+        start: start.dateTime ?? start.date,
+        end: end.dateTime ?? end.date,
+      }));
+
+      return calendarInfo.filters.reduce(
+        (results, filter) => ({
+            ...results,
+            [filter.name]: filterEvents(events, filter)
+        }), {} as Record<string, CalendarEvent[]>
+      )
+    }
   });
 }
 
-export async function getMatchEvents() {
-  const now = new Date();
-  const endOfTwoMonths = new Date(now);
-  endOfTwoMonths.setMonth(endOfTwoMonths.getMonth() + 2);
-  endOfTwoMonths.setHours(23, 59, 59, 999);
-  const timeMax = endOfTwoMonths.toISOString();
-  
-  return await fetchCalendarEvents(`timeMax=${timeMax}`)
+function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
+  const { matches, notMatches, limit } = criteria;
+
+  let results = events;
+  if (matches) {
+    results = results.filter(event => event.summary.match(new RegExp(matches, 'ig')));
+  }
+  if (notMatches) {
+    results = results.filter(event => !event.summary.match(new RegExp(notMatches, 'ig')));
+  }
+  if (limit) {
+    results = results.slice(0, limit);
+  }
+  return results;
 }
 
-export function useMatchEvents() {
-  return useQuery<CalendarEvent[]>({
-    queryKey: ['matchEvents'],
-    queryFn: getMatchEvents,
-    staleTime: 1000 & 60 * 5,
-    select: (data) => data.filter(event => !event.summary.match(/practice|board|OG|Africa/ig)),
-    placeholderData: []
-  })
-}
 export function formatEventTime(start: string, end: string) {
   const startDate = new Date(start);
   const endDate = new Date(end);
