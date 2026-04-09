@@ -76,8 +76,8 @@ theme.components = {
         borderRadius: theme.shape.borderRadius,
         marginBottom: theme.spacing(2),
         [theme.breakpoints.down("sm")]: {
-          marginLeft: theme.spacing(2),
-          marginRight: theme.spacing(2),
+          marginLeft: theme.spacing(3),
+          marginRight: theme.spacing(3),
         },
       },
     },
