@@ -3,5 +3,6 @@ filters:
 - name: Practices
   limit: 4
   matches: practice
+  hideSummary: true
 - name: Events
   notMatches: practice|board|OG|Africa

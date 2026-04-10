@@ -44,7 +44,7 @@ export function useCalendarEvents() {
 }
 
 function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
-  const { matches, notMatches, limit } = criteria;
+  const { matches, notMatches, limit, hideSummary } = criteria;
 
   let results = events;
   if (matches) {
@@ -55,6 +55,12 @@ function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
   }
   if (limit) {
     results = results.slice(0, limit);
+  }
+  if (hideSummary) {
+    results = results.map(event => ({
+      ...event,
+      summary: ''
+    }));
   }
   return results;
 }

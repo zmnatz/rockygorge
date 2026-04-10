@@ -43,6 +43,7 @@ declare module '@/data/calendar.yml' {
       matches?: string;
       notMatches?: string;
       limit?: number;
+      hideSummary?: boolean;
     }[]
   };
   export default calendarInfo;

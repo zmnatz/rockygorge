@@ -41,7 +41,8 @@ function CalendarSection({ title, data}: {title: string, data: CalendarEvent[]})
           secondary={item.location}
         >
           <MuiLink href={item.htmlLink} target="_blank" rel="noopener noreferrer">
-            {formatEventTime(item.start, item.end)} · {item.summary}
+            {item.summary.length > 0 && <div>{item.summary}</div>}
+            {formatEventTime(item.start, item.end)}
           </MuiLink>
         </ListItemText>
       </ListItem>

@@ -123,7 +123,18 @@ theme.components = {
   },
   MuiListSubheader: {
     styleOverrides: {
-      root: {fontSize: '1.2rem'}
+      root: {
+        fontSize: '1.2rem',
+        lineHeight: 1.2
+      }
+    }
+  },
+  MuiListItem: {
+    styleOverrides: {
+      root: {
+        paddingTop: theme.spacing(.25),
+        paddingBottom: theme.spacing(.25),
+      }
     }
   },
   MuiTableRow: {

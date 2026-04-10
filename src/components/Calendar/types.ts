@@ -14,6 +14,7 @@ export interface CalendarFilter {
   matches?: string;
   notMatches?: string;
   limit?: number;
+  hideSummary?: boolean;
 }
 
 export interface CalendarAPIResponse {
