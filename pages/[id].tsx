@@ -1,8 +1,10 @@
+import dynamic from "next/dynamic";
 import { remark } from "remark";
 import remarkHtml from "remark-html";
 import { Typography } from "@mui/material";
 
-import {PaypalProduct} from "@/components/Paypal";
+const PaypalProduct = dynamic(() => import("@/components/Paypal").then(mod => mod.PaypalProduct), { ssr: false });
+
 import items from "@/data/store.yml";
 import { Product } from "@/types/data";
 
