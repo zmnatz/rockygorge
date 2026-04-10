@@ -76,8 +76,8 @@ theme.components = {
         borderRadius: theme.shape.borderRadius,
         marginBottom: theme.spacing(2),
         [theme.breakpoints.down("sm")]: {
-          marginLeft: theme.spacing(2),
-          marginRight: theme.spacing(2),
+          marginLeft: theme.spacing(3),
+          marginRight: theme.spacing(3),
         },
       },
     },
@@ -85,6 +85,7 @@ theme.components = {
   MuiCardHeader: {
     styleOverrides: {
       root: {
+        textDecoration: 'none',
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.primary.contrastText,
       },
@@ -107,7 +108,6 @@ theme.components = {
   MuiLink: {
     styleOverrides: {
       root: {
-        textDecoration: "none",
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -120,6 +120,22 @@ theme.components = {
         },
       },
     },
+  },
+  MuiListSubheader: {
+    styleOverrides: {
+      root: {
+        fontSize: '1.2rem',
+        lineHeight: 1.2
+      }
+    }
+  },
+  MuiListItem: {
+    styleOverrides: {
+      root: {
+        paddingTop: theme.spacing(.25),
+        paddingBottom: theme.spacing(.25),
+      }
+    }
   },
   MuiTableRow: {
     styleOverrides: {

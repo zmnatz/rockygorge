@@ -1,3 +1,19 @@
+- name: banquet
+  defaultAmount: 80
+  description: Banquet Tickets
+  info: Buy your tickets for the 2026 banquet.
+  title: 2026 Banquet
+  hide: true
+  options:
+  - name: Couple - $80
+    value: 80
+  - name: Individual - $50
+    value: 50
+  details: |-
+    Join us for our 2026 Rocky Gorge Banquet 
+    #### When: June 17 
+    #### Where: The Meeting House, 5885 Robert Oliver Place, Columbia , MD 21075
+
 - name: donations
   hide: true
   defaultAmount: 50
@@ -95,3 +111,20 @@
   options:
   - name: Lodging and Food - $80
     value: 80
+- name: sponsors
+  defaultAmount: 250
+  description: Sponsorship
+  info: Become a jersey sponsor
+  title: Advertise with Rocky Gorge
+  options: 
+  - name: Full Front - $1000
+    value: 1000
+  - name: Arm Patch - $250
+    value: 250
+  - name: Back Logo - $500
+    value: 500
+  - name: Shorts - $300
+    value: 300
+  details: |-
+    Rocky Gorge is looking for sponsors for our 2026/2027 season. Please send logos to
+    [sponsor@rockygorgerugby.com](mailto:sponsor@rockygorgerugby.com).

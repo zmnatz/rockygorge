@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react"
-import {Team, Score} from './types'
+import { useQuery } from "@tanstack/react-query"
+import { Score } from './types'
 
 export function useScores() {
-  const [scores, setScores] = useState<Score[]>([])
-  useEffect(() => {
-    async function load() {
-      setScores(await fetchScores());
-    }
-    load();
-  }, [])
-  return scores;
+  const query = useQuery({
+    queryKey: ['scores'],
+    queryFn: fetchScores,
+    placeholderData: []
+  })
+  return query.data;
 }
 
 async function fetchScores() {

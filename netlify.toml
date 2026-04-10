@@ -1,3 +1,9 @@
 [build]
   command = "npm run build"
   publish = "build" 
+[[redirects]]
+  from = "/api/calendar"
+  to = "https://www.googleapis.com/calendar/v3/calendars/t1s0l2ucm1fl084olhmj69pme8@group.calendar.google.com/events"
+  force = true
+  status = 200
+  headers = {X-goog-api-key = "AIzaSyDnoONpe29Y9gWIbhRKb_btifHo5X-d_Xo"}

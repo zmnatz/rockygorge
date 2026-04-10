@@ -1,9 +1,8 @@
 import { Grid, Typography } from "@mui/material";
 import Link from "next/link";
-import Calendar from "@/components/Calendar";
+import {Calendar} from "@/components/Calendar";
 import Product from "@/components/Product";
 import { NextLinkComposed } from "@/utils/nextLink";
-import { Scores } from "@/components/Scores";
 
 import links from "@/data/links.yml";
 import forms from "@/data/forms.yml";
@@ -39,9 +38,6 @@ export const visibleForms = forms.filter(item => item.hide !== true);
           </NextLinkComposed>
         </Grid>
       ))}
-    </Grid>
-
-    <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleLinks.map((item) => (
         <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
           <NextLinkComposed href={item?.id} style={{ textDecoration: 'none' }}>
@@ -49,8 +45,6 @@ export const visibleForms = forms.filter(item => item.hide !== true);
           </NextLinkComposed>
         </Grid>
       ))}
-    </Grid>
-    <Grid container spacing={2} sx={{ py: 2 }}>
       {visibleForms.map((item) => (
         <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
           <NextLinkComposed href={`forms/${item?.id}`} style={{ textDecoration: 'none' }}>
@@ -61,9 +55,7 @@ export const visibleForms = forms.filter(item => item.hide !== true);
     </Grid>
   </Grid>
   <Grid size={{xs: 12, md: 6}}>
-    <Link href="/calendar">
-      <Calendar />
-    </Link>
+    <Calendar />
   </Grid>
 </Grid>
 </Grid>
