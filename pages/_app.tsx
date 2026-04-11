@@ -9,6 +9,7 @@ import { theme } from "@/utils/theme";
 import { Toolbar } from "@/components/Toolbar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/utils/queryClient";
+import GoogleAnalytics from "@/utils/analytics.mdx";
 
 export default function App({ Component, pageProps }) {
   return (
@@ -22,6 +23,7 @@ export default function App({ Component, pageProps }) {
             content="General information for Rocky Gorge Rugby Football Club"
           />
         </Head>
+        <GoogleAnalytics />
         <Toolbar />
         <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
           <MDXProvider components={mdxComponents}>

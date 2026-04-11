@@ -1,5 +1,6 @@
 import React from 'react';
 import NextLink, { LinkProps as NextLinkProps } from 'next/link';
+import { Link } from '@mui/material';
 
 // A helper component for using Next.js navigation with MUI components.
 // It ensures the rendered element is an <a> and forwards refs correctly.
@@ -11,9 +12,9 @@ export const NextLinkComposed = React.forwardRef<HTMLAnchorElement, NextLinkComp
     const { href, ...other } = props;
 
     return (
-      <NextLink href={href} ref={ref} {...other}>
+      <Link component={NextLink} href={href} ref={ref} {...other}>
 
-      </NextLink>
+      </Link>
     );
   }
 );

@@ -82,6 +82,13 @@ theme.components = {
       },
     },
   },
+  MuiCardContent: {
+    styleOverrides: {
+      root: {
+        whiteSpace: 'wrap'
+      },
+    },
+  },
   MuiCardHeader: {
     styleOverrides: {
       root: {
@@ -134,6 +141,15 @@ theme.components = {
       root: {
         paddingTop: theme.spacing(.25),
         paddingBottom: theme.spacing(.25),
+      }
+    }
+  },
+  MuiListItemText: {
+    defaultProps: {
+      sx: { whiteSpace: "normal" },
+      slotProps: {
+        primary: { noWrap: false },
+        secondary: {noWrap: false }
       }
     }
   },
