@@ -6,3 +6,7 @@ filters:
   hideSummary: true
 - name: Events
   notMatches: practice|board|OG|Africa
+- name: Board Meetings
+  hideSummary: true
+  matches: Board
+  limit: 1

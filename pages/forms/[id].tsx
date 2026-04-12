@@ -24,7 +24,7 @@ export default function Form({
       <iframe src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`} 
         height={height} 
         width={width}
-        class="embed"
+        className="embed"
       >
         Loading...
       </iframe>

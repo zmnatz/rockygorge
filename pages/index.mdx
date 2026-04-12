@@ -1,16 +1,10 @@
-import { Grid, Typography } from "@mui/material";
-import Link from "next/link";
-import {Calendar} from "@/components/Calendar";
-import Product from "@/components/Product";
-import { NextLinkComposed } from "@/utils/nextLink";
-
 import links from "@/data/links.yml";
 import forms from "@/data/forms.yml";
 import StoreItems from "@/data/store.yml";
 
 export const visibleStoreItems = StoreItems.filter(item => !item.hide);
-export const visibleLinks = links.filter(item => item.header !== true && item.hide !== true);
-export const visibleForms = forms.filter(item => item.hide !== true);
+export const visibleLinks = [...links, ...forms]
+  .filter(item => item.header !== true && item.hide !== true);
 
 <Grid container spacing={2} sx={{ py: 2 }}>
   <Grid size={{xs: 12}} sx={{ textAlign: 'center' }}>
@@ -26,36 +20,19 @@ export const visibleForms = forms.filter(item => item.hide !== true);
     for social announcements, fan information, and old boy happy hours.
   </Grid>
 
-<Grid container spacing={2}>
-  <Grid size={{xs: 12, md: 6}}>
-    <Grid container spacing={2}>
-      {visibleStoreItems.map((item) => (
-        <Grid size={{xs: 12, sm: 6, md: 6}} key={item.description}>
-          <NextLinkComposed href={`/${item.name}`} style={{ textDecoration: 'none' }}>
-            <Product title={item?.description}>
-              {item.info}
-            </Product>
-          </NextLinkComposed>
-        </Grid>
-      ))}
-      {visibleLinks.map((item) => (
-        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
-          <NextLinkComposed href={item?.id} style={{ textDecoration: 'none' }}>
-            <Product title={item?.title}>{item.description}</Product>
-          </NextLinkComposed>
-        </Grid>
-      ))}
-      {visibleForms.map((item) => (
-        <Grid size={{xs: 12, sm: 6, md: 6}} key={item?.id}>
-          <NextLinkComposed href={`forms/${item?.id}`} style={{ textDecoration: 'none' }}>
-            <Product title={item?.title}>{item.description}</Product>
-          </NextLinkComposed>
-        </Grid>
-      ))}
+  <Grid container spacing={2}>
+    <Grid size={{xs: 12, md: 6}}>
+      <Grid container spacing={2}>
+        {visibleStoreItems.map((item) => (
+          <ProductCard key={item.name}title={item?.description} href={`/${item.name}`}>{item.info}</ProductCard>
+        ))}
+        {visibleLinks.map((item) => (
+          <ProductCard key={item.href} title={item.title} href={item.href}>{item.description}</ProductCard>
+        ))}
+      </Grid>
+    </Grid>
+    <Grid size={{xs: 12, md: 6}}>
+      <CalendarCard calendars={['Practices', 'Events']} />
     </Grid>
   </Grid>
-  <Grid size={{xs: 12, md: 6}}>
-    <Calendar />
-  </Grid>
-</Grid>
 </Grid>
