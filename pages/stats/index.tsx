@@ -2,13 +2,14 @@ import stats from '@/data/stats/stats.yml'
 import { 
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   Select, MenuItem, FormControl, InputLabel, Box, Tabs, Tab, TableSortLabel, 
-  TextField // 1. Added TextField import
+  TextField 
 } from '@mui/material'
 import { useState, useMemo } from 'react'
 
-// ... (formatColumnTitle and aggregatePlayerStats functions remain the same as previous response)
+// ... (formatColumnTitle and aggregatePlayerStats helpers remain the same)
 function formatColumnTitle(key: string) {
   if (key === 'name') return 'Player'
+  if (key === 'game') return 'Opponent'
   return key.replace(/_/g, ' ').split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
@@ -92,7 +93,7 @@ export async function getStaticProps() {
   const firstPlayer = games?.[0]?.players?.[0] || {}
   const playerColumns = [
     { title: 'Player', dataIndex: 'name', key: 'name' },
-    ...Object.keys(firstPlayer).filter((key) => key !== 'name').map((key) => ({
+    ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game').map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
   ]
@@ -117,26 +118,40 @@ export async function getStaticProps() {
 
 export default function StatsPage({ playerColumns, playerDataByGame, gameList, teamColumns, teamData }) {
   const [activeTab, setActiveTab] = useState(0)
-  const [selectedGame, setSelectedGame] = useState('')
-  const [playerSearch, setPlayerSearch] = useState('') // 2. State for text search
+  const [selectedGame, setSelectedGame] = useState('') // '' = Aggregate, 'all_detailed' = Individual, 'OpponentName' = Filtered
+  const [playerSearch, setPlayerSearch] = useState('')
 
+  // 1. Dynamically adjust columns based on the view mode
   const displayPlayerColumns = useMemo(() => {
-    return playerColumns.filter((col) => col.key !== 'game')
-  }, [playerColumns])
+    if (selectedGame === 'all_detailed') {
+      // Add "Opponent" as the first column in Detailed view
+      return [
+        { title: 'Opponent', dataIndex: 'game', key: 'game' },
+        ...playerColumns
+      ]
+    }
+    return playerColumns //-'game' is already filtered out in getStaticProps
+  }, [playerColumns, selectedGame])
 
-  // 3. Updated useMemo to handle BOTH game selection AND text search
+  // 2. Updated data logic to handle the "all_detailed" case
   const filteredPlayerData = useMemo(() => {
-    // Step A: Filter by Game or Aggregate
-    let data = selectedGame 
-      ? playerDataByGame.filter((row) => row.game === selectedGame)
-      : aggregatePlayerStats(playerDataByGame)
+    let data = []
 
-    // Step B: Filter by Player Name (Case Insensitive)
+    if (selectedGame === 'all_detailed') {
+      // Show every row for every game
+      data = playerDataByGame
+    } else if (selectedGame) {
+      // Show specific game
+      data = playerDataByGame.filter((row) => row.game === selectedGame)
+    } else {
+      // Aggregate all games
+      data = aggregatePlayerStats(playerDataByGame)
+    }
+
+    // Apply text search to whichever dataset we have
     if (playerSearch) {
       const searchLower = playerSearch.toLowerCase()
-      data = data.filter((player) => 
-        player.name?.toLowerCase().includes(searchLower)
-      )
+      data = data.filter((player) => player.name?.toLowerCase().includes(searchLower))
     }
 
     return data
@@ -144,6 +159,8 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
 
   return (
     <Box sx={{ width: '100%', p: 2 }}>
+      <h2>Team Statistics</h2>
+      
       <Tabs 
         value={activeTab} 
         onChange={(_, newValue) => setActiveTab(newValue)} 
@@ -155,16 +172,17 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
 
       {activeTab === 0 && (
         <Box>
-          {/* 4. Filter Row: Game Select and Text Search side-by-side */}
           <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Filter by Game</InputLabel>
+              <InputLabel>View Mode / Game</InputLabel>
               <Select 
                 value={selectedGame} 
                 onChange={(e) => setSelectedGame(e.target.value)} 
-                label="Filter by Game"
+                label="View Mode / Game"
               >
                 <MenuItem value=""><em>All Games (Aggregated)</em></MenuItem>
+                <MenuItem value="all_detailed"><strong>Show All Games (Detailed)</strong></MenuItem>
+                <MenuItem disabled><em>Specific Game:</em></MenuItem>
                 {gameList.map((game) => (
                   <MenuItem key={game} value={game}>{game}</MenuItem>
                 ))}
