@@ -20,7 +20,7 @@ games:
       total_knocks_opponent: 7
       double_tackles: 32
     players:
-      - name: "Hoppman"
+      - name: "Cameron Hoppman"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 8
@@ -38,7 +38,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Cole"
+      - name: "Tristan Cole"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 9
@@ -56,7 +56,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "L. Williams"
+      - name: "Larry Williams"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -74,7 +74,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Brown"
+      - name: "Joshua Brown"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 18
@@ -92,7 +92,7 @@ games:
         off_loads: 2
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Nutland"
+      - name: "James Nutland"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 20
@@ -110,7 +110,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "diving in ruck"
-      - name: "Koch"
+      - name: "Kevin Koch"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 15
@@ -128,7 +128,7 @@ games:
         off_loads: 0
         penalties_conceded: 2
         penalty_reasons: "not rolling away, leaving feet in ruck"
-      - name: "Park"
+      - name: "James Park"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 15
@@ -146,7 +146,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "diving in ruck"
-      - name: "Wiley"
+      - name: "Adam Wiley"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 17
@@ -164,7 +164,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "B. Drumm"
+      - name: "Brandon Drummond"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 6
@@ -182,7 +182,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Hulbert"
+      - name: "Jamison Hulbert"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 6
@@ -200,7 +200,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Bland"
+      - name: "Jason Bland"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 4
@@ -218,7 +218,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "O'Connell"
+      - name: "Keagan O'Connell"
         turnovers_given: 3
         try_assists: 0
         tackles_made: 6
@@ -236,7 +236,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Desroches"
+      - name: "Luc Desroches"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -254,7 +254,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Speight"
+      - name: "Donte Speight"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 0
@@ -272,7 +272,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Shelton"
+      - name: "Hunter Shelton"
         turnovers_given: 1
         try_assists: 1
         tackles_made: 3
@@ -290,7 +290,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "G. Smith"
+      - name: "Gabriel Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -308,7 +308,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Gough"
+      - name: "Kristopher Gough"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 10
@@ -326,7 +326,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "not rolling away"
-      - name: "C. Drumm"
+      - name: "Cordell Drummond"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -344,7 +344,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "W. Miller"
+      - name: "William Miller"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 9
@@ -362,7 +362,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Florenzo"
+      - name: "Alexander Florenzo"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 9
@@ -380,7 +380,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Alvarez"
+      - name: "Julian Alvarez"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 0
@@ -398,7 +398,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Jones"
+      - name: "Preston Jones"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 1
@@ -416,7 +416,6 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-
   - opponent: "BC (50min)"
     team_stats:
       scrums_won: 5
@@ -438,7 +437,7 @@ games:
       total_knocks_opponent: 5
       double_tackles: 7
     players:
-      - name: "Gough"
+      - name: "Kristopher Gough"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 5
@@ -456,7 +455,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "offside"
-      - name: "Cole"
+      - name: "Tristan Cole"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 11
@@ -474,7 +473,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "L. Williams"
+      - name: "Larry Williams"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 3
@@ -492,7 +491,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "hands in the ruck"
-      - name: "W. Miller"
+      - name: "William Miller"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -510,7 +509,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "playing the 9"
-      - name: "Hardy"
+      - name: "Seth Hardy"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -528,7 +527,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Florenzo"
+      - name: "Alexander Florenzo"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 7
@@ -546,7 +545,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "E. Miller"
+      - name: "Evan Miller"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 3
@@ -564,7 +563,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Wiley"
+      - name: "Adam Wiley"
         turnovers_given: 3
         try_assists: 0
         tackles_made: 3
@@ -582,7 +581,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "not rolling away"
-      - name: "M. Williams"
+      - name: "Michael Williams"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 1
@@ -600,7 +599,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Hulbert"
+      - name: "Jamison Hulbert"
         turnovers_given: 1
         try_assists: 2
         tackles_made: 1
@@ -618,7 +617,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Jones"
+      - name: "Preston Jones"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 5
@@ -636,7 +635,7 @@ games:
         off_loads: 1
         penalties_conceded: 1
         penalty_reasons: "not rolling away"
-      - name: "O'Connell"
+      - name: "Keagan O'Connell"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 7
@@ -654,7 +653,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Alvarez"
+      - name: "Julian Alvarez"
         turnovers_given: 2
         try_assists: 1
         tackles_made: 7
@@ -672,7 +671,7 @@ games:
         off_loads: 1
         penalties_conceded: 1
         penalty_reasons: "entering ruck from the side"
-      - name: "Bland"
+      - name: "Jason Bland"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 1
@@ -690,7 +689,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Shelton"
+      - name: "Hunter Shelton"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 2
@@ -708,7 +707,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "G. Smith"
+      - name: "Gabriel Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 4
@@ -726,7 +725,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Speight"
+      - name: "Donte Speight"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 1
@@ -744,7 +743,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "J. Smith"
+      - name: "Justin Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 0
@@ -762,7 +761,6 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-
   - opponent: "Wash Irish"
     team_stats:
       scrums_won: "N/A"
@@ -784,7 +782,7 @@ games:
       total_knocks_opponent: 10
       double_tackles: 14
     players:
-      - name: "Hoppman"
+      - name: "Cameron Hoppman"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -802,7 +800,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "off feet in ruck"
-      - name: "Cole"
+      - name: "Tristan Cole"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -820,7 +818,7 @@ games:
         off_loads: 0
         penalties_conceded: 2
         penalty_reasons: "not releasing, not releasing"
-      - name: "L. Williams"
+      - name: "Larry Williams"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 3
@@ -838,7 +836,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Nutland"
+      - name: "James Nutland"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 10
@@ -856,7 +854,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "W. Miller"
+      - name: "William Miller"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 5
@@ -874,7 +872,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Florenzo"
+      - name: "Alexander Florenzo"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 8
@@ -892,7 +890,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Koch"
+      - name: "Kevin Koch"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 5
@@ -910,7 +908,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "playing ball on ground"
-      - name: "Wiley"
+      - name: "Adam Wiley"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 12
@@ -928,7 +926,7 @@ games:
         off_loads: 1
         penalties_conceded: 2
         penalty_reasons: "not rolling away, tackler not releasing"
-      - name: "B. Drumm"
+      - name: "Brandon Drummond"
         turnovers_given: 0
         try_assists: 1
         tackles_made: 1
@@ -946,7 +944,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Hulbert"
+      - name: "Jamison Hulbert"
         turnovers_given: 2
         try_assists: 5
         tackles_made: 3
@@ -964,7 +962,7 @@ games:
         off_loads: 2
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Jones"
+      - name: "Preston Jones"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -982,7 +980,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "O'Connell"
+      - name: "Keagan O'Connell"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 4
@@ -1000,7 +998,7 @@ games:
         off_loads: 1
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Alvarez"
+      - name: "Julian Alvarez"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 8
@@ -1018,7 +1016,7 @@ games:
         off_loads: 2
         penalties_conceded: 3
         penalty_reasons: "leaving feet in ruck, leaving feet in ruck, high tackle"
-      - name: "Speight"
+      - name: "Donte Speight"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -1036,7 +1034,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Shelton"
+      - name: "Hunter Shelton"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 1
@@ -1054,7 +1052,7 @@ games:
         off_loads: 2
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "G. Smith"
+      - name: "Gabriel Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 4
@@ -1072,7 +1070,7 @@ games:
         off_loads: 0
         penalties_conceded: 2
         penalty_reasons: "hands in ruck, leaving feet in ruck"
-      - name: "Gough"
+      - name: "Kristopher Gough"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 2
@@ -1090,7 +1088,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "high tackle"
-      - name: "C. Drumm"
+      - name: "Cordell Drummond"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -1108,7 +1106,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Peuse"
+      - name: "Michael Peuse"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 2
@@ -1126,7 +1124,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Bradley"
+      - name: "Austin Bradley"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 5
@@ -1144,7 +1142,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Desroches"
+      - name: "Luc Desroches"
         turnovers_given: 1
         try_assists: 1
         tackles_made: 3
@@ -1162,7 +1160,7 @@ games:
         off_loads: 2
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Kastle"
+      - name: "Quinn Kastle"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 0
@@ -1180,7 +1178,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Bland"
+      - name: "Jason Bland"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 3
@@ -1198,7 +1196,6 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "off feet in ruck"
-
   - opponent: "North Bay"
     team_stats:
       scrums_won: 5
@@ -1220,7 +1217,7 @@ games:
       total_knocks_opponent: 4
       double_tackles: 31
     players:
-      - name: "Nutland"
+      - name: "James Nutland"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -1238,7 +1235,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Cole"
+      - name: "Tristan Cole"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 18
@@ -1256,7 +1253,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "tackler not releasing"
-      - name: "C. Drumm"
+      - name: "Cordell Drummond"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 16
@@ -1274,7 +1271,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "leaving feet in ruck"
-      - name: "Brown"
+      - name: "Joshua Brown"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 11
@@ -1292,7 +1289,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "offside"
-      - name: "Hardy"
+      - name: "Seth Hardy"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 8
@@ -1310,7 +1307,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "E. Miller"
+      - name: "Evan Miller"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 17
@@ -1328,7 +1325,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "not rolling away"
-      - name: "Park"
+      - name: "James Park"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 14
@@ -1346,7 +1343,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Wiley"
+      - name: "Adam Wiley"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 19
@@ -1364,7 +1361,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "offside"
-      - name: "M. Williams"
+      - name: "Michael Williams"
         turnovers_given: 0
         try_assists: 2
         tackles_made: 3
@@ -1382,7 +1379,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Hulbert"
+      - name: "Jamison Hulbert"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 7
@@ -1400,7 +1397,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "not rolling away"
-      - name: "Bland"
+      - name: "Jason Bland"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 5
@@ -1418,7 +1415,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "O'Connell"
+      - name: "Keagan O'Connell"
         turnovers_given: 5
         try_assists: 0
         tackles_made: 15
@@ -1436,7 +1433,7 @@ games:
         off_loads: 3
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Desroches"
+      - name: "Luc Desroches"
         turnovers_given: 3
         try_assists: 1
         tackles_made: 11
@@ -1454,7 +1451,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Speight"
+      - name: "Donte Speight"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -1472,7 +1469,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Shelton"
+      - name: "Hunter Shelton"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -1490,7 +1487,7 @@ games:
         off_loads: 2
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "G. Smith"
+      - name: "Gabriel Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 5
@@ -1506,9 +1503,9 @@ games:
         tries_scored: 0
         tackle_breaks: 0
         off_loads: 0
-        penalties_conceded: 0
-        penalty_reasons: ""
-      - name: "Gough"
+        penalties_conceded: 2
+        penalty_reasons: "hands in ruck, leaving feet in ruck"
+      - name: "Kristopher Gough"
         turnovers_given: 2
         try_assists: 0
         tackles_made: 7
@@ -1526,7 +1523,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Hoppman"
+      - name: "Cameron Hoppman"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 9
@@ -1544,7 +1541,7 @@ games:
         off_loads: 2
         penalties_conceded: 2
         penalty_reasons: "leaving feet in ruck, Dump tackle"
-      - name: "W. Miller"
+      - name: "William Miller"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 8
@@ -1562,7 +1559,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Leard"
+      - name: "Aidan Leaird"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 8
@@ -1580,7 +1577,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "hands in the ruck"
-      - name: "J. Smith"
+      - name: "Justin Smith"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 5
@@ -1598,7 +1595,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Alvarez"
+      - name: "Julian Alvarez"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -1616,7 +1613,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Noble"
+      - name: "D'Montae Noble"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 4
@@ -1634,7 +1631,6 @@ games:
         off_loads: 1
         penalties_conceded: 2
         penalty_reasons: "Double movement, talking to ref"
-
   - opponent: "BC (D3)"
     team_stats:
       scrums_won: 7
@@ -1656,7 +1652,7 @@ games:
       total_knocks_opponent: 4
       double_tackles: "N/A"
     players:
-      - name: "Kris Townsel"
+      - name: "Kristofer Townsel"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -1674,7 +1670,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "not releasing"
-      - name: "Sam Gregoire"
+      - name: "Samuel Gregoire"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 12
@@ -1710,7 +1706,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "AJ Conway"
+      - name: "Alexander Conway"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -1728,7 +1724,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "off feet in ruck"
-      - name: "DK"
+      - name: "Derrell Kittrell"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 0
@@ -1746,7 +1742,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Greg Teliczan"
+      - name: "Gregory Teliczan"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 3
@@ -1764,7 +1760,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Nick Defrietas"
+      - name: "Nick DeFreitas"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 3
@@ -1800,7 +1796,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Max Keller"
+      - name: "Maxxim Keller"
         turnovers_given: 3
         try_assists: 2
         tackles_made: 9
@@ -1818,7 +1814,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Jake Rampolla"
+      - name: "Jacob Rampolla"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 1
@@ -1854,7 +1850,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Ayo Abraham"
+      - name: "Ayooluwa Abraham"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 6
@@ -2070,7 +2066,6 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-
   - opponent: "OG (D3)"
     team_stats:
       scrums_won: 9
@@ -2092,7 +2087,7 @@ games:
       total_knocks_opponent: 11
       double_tackles: "N/A"
     players:
-      - name: "Kris Townsel"
+      - name: "Kristofer Townsel"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 10
@@ -2110,7 +2105,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Sam Gregoire"
+      - name: "Samuel Gregoire"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 8
@@ -2164,7 +2159,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "DK"
+      - name: "Derrell Kittrell"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 7
@@ -2182,7 +2177,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Nick Defrietas"
+      - name: "Nick DeFreitas"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 7
@@ -2236,7 +2231,7 @@ games:
         off_loads: 1
         penalties_conceded: 2
         penalty_reasons: "not releasing, not releasing"
-      - name: "Matt Phillips"
+      - name: "Matthew Phillips"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 4
@@ -2290,7 +2285,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "High tackle"
-      - name: "Ayo Abraham"
+      - name: "Ayooluwa Abraham"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 6
@@ -2398,7 +2393,7 @@ games:
         off_loads: 0
         penalties_conceded: 2
         penalty_reasons: "not releasing, not releasing"
-      - name: "Ben Wardell"
+      - name: "Ben Wardwell"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 2
@@ -2416,7 +2411,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "Collapsing the scrum"
-      - name: "AJ Conway"
+      - name: "Alexander Conway"
         turnovers_given: 1
         try_assists: 0
         tackles_made: 2
@@ -2506,7 +2501,7 @@ games:
         off_loads: 0
         penalties_conceded: 1
         penalty_reasons: "playing on the ground"
-      - name: "Max Keller"
+      - name: "Maxxim Keller"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 4
@@ -2542,7 +2537,7 @@ games:
         off_loads: 1
         penalties_conceded: 1
         penalty_reasons: "high tackle"
-      - name: "Greg Teliczan"
+      - name: "Gregory Teliczan"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 3
@@ -2596,7 +2591,7 @@ games:
         off_loads: 0
         penalties_conceded: 0
         penalty_reasons: ""
-      - name: "Arya Koolae"
+      - name: "Arya Koolaee"
         turnovers_given: 0
         try_assists: 0
         tackles_made: 2
