@@ -2,9 +2,25 @@ import stats from '@/data/stats/stats.yml'
 import { 
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   Select, MenuItem, FormControl, InputLabel, Box, Tabs, Tab, TableSortLabel, 
-  TextField 
+  TextField, Link as MuiLink, ToggleButton, ToggleButtonGroup, Typography
 } from '@mui/material'
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
+
+const STAT_CATEGORIES: Record<string, string[]> = {
+  Offensive: ['tries_scored', 'try_assists', 'positive_carries', 'negative_carries', 'line_breaks', 'attacking_rucks', 'tackle_breaks', 'off_loads'],
+  Defensive: ['tackles_made', 'tackles_missed', 'dominant_tackles', 'steals', 'defensive_rucks', 'turnovers_forced'],
+  Penalties: ['penalties_conceded', 'penalty_reasons', 'turnovers_given']
+}
+
+const slugify = (text: string) =>
+  text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 
 // ... (formatColumnTitle and aggregatePlayerStats helpers remain the same)
 function formatColumnTitle(key: string) {
@@ -23,7 +39,7 @@ function aggregatePlayerStats(playerDataByGame: any[]) {
         const value = row[key]
         if (typeof value === 'number') {
           aggregated[playerName][key] = (aggregated[playerName][key] || 0) + value
-        } else if (typeof value === 'string' && !isNaN(Number(value))) {
+        } else if (typeof value === 'string' && !isNaN(parseFloat(value))) {
           aggregated[playerName][key] = (aggregated[playerName][key] || 0) + parseFloat(value)
         } else {
           aggregated[playerName][key] = value
@@ -34,7 +50,13 @@ function aggregatePlayerStats(playerDataByGame: any[]) {
   return Object.values(aggregated).map((player) => ({ key: `agg-${player.name}`, ...player }))
 }
 
-function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
+const TEAM_STAT_CATEGORIES: Record<string, string[]> = {
+  Offensive: ['ruckable_carries', 'ruck_arrivals', 'avg_players_committed_to_ruck', 'maul_success', 'lineouts_won', 'scrums_won'],
+  Defensive: ['total_tackles_made', 'total_tackles_missed', 'tackle_percentage', 'double_tackles', 'lineouts_stolen', 'scrums_stolen'],
+  Penalties: ['total_penalties_gorge', 'total_penalties_opponent', 'total_knocks_gorge', 'total_knocks_opponent', 'lineouts_lost', 'scrums_lost']
+}
+
+function SortableTable({ columns, data, isTeamStats = false }: { columns: any[], data: any[], isTeamStats?: boolean }) {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
     key: columns[0]?.key || '',
     direction: 'asc',
@@ -48,21 +70,68 @@ function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
   const sortedData = useMemo(() => {
     if (!sortConfig.key || !sortConfig.direction) return data
     return [...data].sort((a, b) => {
-      const aValue = a[sortConfig.key]
-      const bValue = b[sortConfig.key]
+      let aValue = a[sortConfig.key]
+      let bValue = b[sortConfig.key]
+
+      if (sortConfig.key === 'name') {
+        const getSortableName = (name: string) => {
+          const parts = name.trim().split(/\s+/)
+          const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0]
+          const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : ''
+          return `${lastName}, ${firstName}`.toLowerCase()
+        }
+        aValue = getSortableName(aValue as string)
+        bValue = getSortableName(bValue as string)
+      }
+
       if (aValue === bValue) return 0
       const comparison = aValue < bValue ? -1 : 1
       return sortConfig.direction === 'asc' ? comparison : -comparison
     })
   }, [data, sortConfig])
 
+  const columnGroups = useMemo(() => {
+    const groups: { title: string; colSpan: number }[] = []
+    
+    // Always show Opponent/Player as the first group
+    const baseCols = columns.filter(c => c.key === 'game' || c.key === 'name')
+    if (baseCols.length > 0) {
+      groups.push({ title: '', colSpan: baseCols.length })
+    }
+
+    const categories = isTeamStats ? TEAM_STAT_CATEGORIES : STAT_CATEGORIES
+
+    Object.entries(categories).forEach(([category, fields]) => {
+      const count = columns.filter(c => fields.includes(c.key)).length
+      if (count > 0) {
+        groups.push({ title: category, colSpan: count })
+      }
+    })
+
+    return groups
+  }, [columns, isTeamStats])
+
   return (
     <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table>
+      <Table size="small">
         <TableHead>
+          {columnGroups && (
+            <TableRow>
+              {columnGroups.map((group, idx) => (
+                <TableCell 
+                  key={idx} 
+                  align="center" 
+                  colSpan={group.colSpan}
+                  sx={{ borderBottom: group.title ? '1px solid rgba(224, 224, 224, 1)' : 'none', fontWeight: 'bold' }}
+                >
+                  {group.title}
+                </TableCell>
+              ))}
+            </TableRow>
+          )}
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col.key}>
+              <TableCell key={col.key} sx={{ minWidth: col.minWidth }}>
                 <TableSortLabel
                   active={sortConfig.key === col.key}
                   direction={sortConfig.key === col.key ? sortConfig.direction : 'asc'}
@@ -78,7 +147,19 @@ function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
           {sortedData.map((row) => (
             <TableRow key={row.key}>
               {columns.map((col) => (
-                <TableCell key={col.key}>{row[col.dataIndex]}</TableCell>
+                <TableCell key={col.key}>
+                  {col.key === 'name' ? (
+                    <Link href={`/stats/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
+                      <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
+                    </Link>
+                  ) : col.key === 'game' ? (
+                    <Link href={`/stats/game/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
+                      <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
+                    </Link>
+                  ) : (
+                    row[col.dataIndex]
+                  )}
+                </TableCell>
               ))}
             </TableRow>
           ))}
@@ -92,14 +173,14 @@ export async function getStaticProps() {
   const games = Array.isArray(stats.games) ? stats.games : []
   const firstPlayer = games?.[0]?.players?.[0] || {}
   const playerColumns = [
-    { title: 'Player', dataIndex: 'name', key: 'name' },
+    { title: 'Player', dataIndex: 'name', key: 'name', minWidth: 200 },
     ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game').map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
   ]
   const playerDataByGame = games.flatMap((game) =>
     Array.isArray(game.players) ? game.players.map((player) => ({
-      key: `${game.opponent}-${player.name}`, game: game.opponent, ...player,
+      key: `${game.opponent}-${player.name}`, game: game.opponent, season: game.season, ...player,
     })) : []
   )
   const gameList = games.map((game) => game.opponent)
@@ -120,18 +201,35 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
   const [activeTab, setActiveTab] = useState(0)
   const [selectedGame, setSelectedGame] = useState('') // '' = Aggregate, 'all_detailed' = Individual, 'OpponentName' = Filtered
   const [playerSearch, setPlayerSearch] = useState('')
+  const [visibleCategories, setVisibleCategories] = useState<string[]>(['Offensive', 'Defensive', 'Penalties'])
 
-  // 1. Dynamically adjust columns based on the view mode
+  const handleCategoryChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newCategories: string[],
+  ) => {
+    if (newCategories.length) {
+      setVisibleCategories(newCategories)
+    }
+  }
+
+  // 1. Dynamically adjust columns based on the view mode and category filters
   const displayPlayerColumns = useMemo(() => {
+    let cols = playerColumns
     if (selectedGame === 'all_detailed') {
-      // Add "Opponent" as the first column in Detailed view
-      return [
+      cols = [
         { title: 'Opponent', dataIndex: 'game', key: 'game' },
+        { title: 'Season', dataIndex: 'season', key: 'season' },
         ...playerColumns
       ]
     }
-    return playerColumns //-'game' is already filtered out in getStaticProps
-  }, [playerColumns, selectedGame])
+
+    return cols.filter(col => {
+      if (col.key === 'game' || col.key === 'name' || col.key === 'season') return true
+      return Object.entries(STAT_CATEGORIES).some(([category, fields]) => 
+        visibleCategories.includes(category) && fields.includes(col.key)
+      )
+    })
+  }, [playerColumns, selectedGame, visibleCategories])
 
   // 2. Updated data logic to handle the "all_detailed" case
   const filteredPlayerData = useMemo(() => {
@@ -159,7 +257,9 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
 
   return (
     <Box sx={{ width: '100%', p: 2 }}>
-      <h2>Team Statistics</h2>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <h2>Team Statistics</h2>
+      </Box>
       
       <Tabs 
         value={activeTab} 
@@ -172,13 +272,14 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
 
       {activeTab === 0 && (
         <Box>
-          <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel>View Mode / Game</InputLabel>
               <Select 
                 value={selectedGame} 
                 onChange={(e) => setSelectedGame(e.target.value)} 
                 label="View Mode / Game"
+                size="small"
               >
                 <MenuItem value=""><em>All Games (Aggregated)</em></MenuItem>
                 <MenuItem value="all_detailed"><strong>Show All Games (Detailed)</strong></MenuItem>
@@ -197,6 +298,26 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
               onChange={(e) => setPlayerSearch(e.target.value)}
               sx={{ minWidth: 250 }}
             />
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Filter Categories:</Typography>
+              <ToggleButtonGroup
+                value={visibleCategories}
+                onChange={handleCategoryChange}
+                aria-label="stat categories"
+                size="small"
+              >
+                <ToggleButton value="Offensive" aria-label="offensive">
+                  Offensive
+                </ToggleButton>
+                <ToggleButton value="Defensive" aria-label="defensive">
+                  Defensive
+                </ToggleButton>
+                <ToggleButton value="Penalties" aria-label="penalties">
+                  Penalties
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
           </Box>
           
           <SortableTable columns={displayPlayerColumns} data={filteredPlayerData} />
@@ -204,7 +325,7 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
       )}
 
       {activeTab === 1 && (
-        <SortableTable columns={teamColumns} data={teamData} />
+        <SortableTable columns={teamColumns} data={teamData} isTeamStats />
       )}
     </Box>
   )

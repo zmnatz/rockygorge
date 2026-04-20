@@ -1,5 +1,6 @@
 games:
   - opponent: "PERC"
+    season: "2025/2026"
     team_stats:
       scrums_won: 7
       scrums_lost: 2
@@ -417,6 +418,7 @@ games:
         penalties_conceded: 0
         penalty_reasons: ""
   - opponent: "BC (50min)"
+    season: "2025/2026"
     team_stats:
       scrums_won: 5
       scrums_lost: 0
@@ -762,6 +764,7 @@ games:
         penalties_conceded: 0
         penalty_reasons: ""
   - opponent: "Wash Irish"
+    season: "2025/2026"
     team_stats:
       scrums_won: "N/A"
       scrums_lost: "N/A"
@@ -1197,6 +1200,7 @@ games:
         penalties_conceded: 1
         penalty_reasons: "off feet in ruck"
   - opponent: "North Bay"
+    season: "2025/2026"
     team_stats:
       scrums_won: 5
       scrums_lost: 0
@@ -1632,6 +1636,7 @@ games:
         penalties_conceded: 2
         penalty_reasons: "Double movement, talking to ref"
   - opponent: "BC (D3)"
+    season: "2025/2026"
     team_stats:
       scrums_won: 7
       scrums_lost: 0
@@ -2067,6 +2072,7 @@ games:
         penalties_conceded: 0
         penalty_reasons: ""
   - opponent: "OG (D3)"
+    season: "2025/2026"
     team_stats:
       scrums_won: 9
       scrums_lost: 4
