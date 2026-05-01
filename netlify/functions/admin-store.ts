@@ -9,12 +9,13 @@ export const handler = async (event: any) => {
     if (event.httpMethod === 'GET') {
         try {
             const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
+            const octokit = new Octokit({ auth: GITHUB_TOKEN });
             const OWNER = 'zmnatz';
             const REPO = 'rockygorge';
             const FILE_PATH = 'src/data/store.yml';
             const baseBranch = 'main';
 
-            const response = await Octokit.rest.repos.getContent({
+            const response = await octokit.rest.repos.getContent({
                 owner: OWNER,
                 repo: REPO,
                 path: FILE_PATH,
@@ -44,19 +45,20 @@ export const handler = async (event: any) => {
             const data = body;
 
             const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
+            const octokit = new Octokit({ auth: GITHUB_TOKEN });
             const OWNER = 'zmnatz';
             const REPO = 'rockygorge';
             const FILE_PATH = 'src/data/store.yml';
             const baseBranch = 'main';
 
-            const { data: refData } = await Octokit.rest.git.getRef({
+            const { data: refData } = await octokit.rest.git.getRef({
                 owner: OWNER,
                 repo: REPO,
                 ref: `heads/${baseBranch}`,
             });
 
             const branchName = `admin-store-${Date.now()}`;
-            await Octokit.rest.git.createRef({
+            await octokit.rest.git.createRef({
                 owner: OWNER,
                 repo: REPO,
                 ref: `refs/heads/${branchName}`,
@@ -65,7 +67,7 @@ export const handler = async (event: any) => {
 
             let fileData;
             try {
-                const response = await Octokit.rest.repos.getContent({
+                const response = await octokit.rest.repos.getContent({
                     owner: OWNER,
                     repo: REPO,
                     path: FILE_PATH,
@@ -91,9 +93,9 @@ export const handler = async (event: any) => {
                 updateParams.sha = fileData.sha;
             }
 
-            await Octokit.rest.repos.createOrUpdateFileContents(updateParams);
+            await octokit.rest.repos.createOrUpdateFileContents(updateParams);
 
-            await Octokit.rest.pulls.create({
+            await octokit.rest.pulls.create({
                 owner: OWNER,
                 repo: REPO,
                 title: 'Update store.yml',
