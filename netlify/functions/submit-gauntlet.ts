@@ -29,7 +29,7 @@ export const handler = async (event: any) => {
         const OWNER = 'zmnatz';
         const REPO = 'rockygorge';
         const FILE_PATH = 'src/data/gauntlet/index.yml';
-        const baseBranch = 'main';
+        const baseBranch = 'master';
         const { data: refData } = await octokit.rest.git.getRef({
             owner: OWNER,
             repo: REPO,
