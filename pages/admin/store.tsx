@@ -54,7 +54,7 @@ export default function StoreAdmin() {
 
   const handleSaveItem = () => {
     if (!editingItem) return;
-    const newItems = items.map(item => item.name === editingItem.name ? editingItem : item);
+    const newItems = Array.isArray(items) ? items.map(item => item.name === editingItem.name ? editingItem : item) : [];
     setItems(newItems);
     setEditingItem(null);
   };
@@ -92,7 +92,7 @@ export default function StoreAdmin() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((item) => (
+            {Array.isArray(items) && items.map((item) => (
               <TableRow key={item.name}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.title}</TableCell>
