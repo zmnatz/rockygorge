@@ -58,7 +58,7 @@ export const handler = async (event: any) => {
             });
             fileData = response.data as any;
             const content = Buffer.from(fileData.content, 'base64').toString();
-            entries = yaml.load(content) || [];
+            entries = (yaml.load(content) as any[]) || [];
         } catch (error: any) {
             if (error.status !== 404) throw error;
         }
