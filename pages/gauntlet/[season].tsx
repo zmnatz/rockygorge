@@ -1,8 +1,10 @@
-import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Button } from '@mui/material'
 import { GetStaticProps, GetStaticPaths, NextPage } from 'next'
+import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
-import { columns, Column, GauntletDataSource } from './utils'
+import yaml from 'js-yaml'
+import { columns, Column, GauntletDataSource } from '@/utils/gauntlet'
 import { GauntletEntry } from '@/types/data'
 
 const DATA_DIR = path.join(process.cwd(), 'src/data/gauntlet')
@@ -27,10 +29,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         return { props: { dataSource: [], columns, season } }
     }
 
-    // Using require to load the yaml file since next-plugin-yaml handles it
-    const data: GauntletEntry[] = require(filePath)
+    const fileContents = fs.readFileSync(filePath, 'utf8')
+    const data = yaml.load(fileContents) as GauntletEntry[]
 
-    if (!data || (Array.isArray(data) && data.length === 0)) {
+    if (!Array.isArray(data) || data.length === 0) {
         return { props: { dataSource: [], columns, season } }
     }
 
@@ -95,8 +97,15 @@ const GauntletSeason: NextPage<GauntletSeasonProps> = ({ columns, dataSource, se
                     About the Gorge Gauntlet
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    The Gorge Gauntlet is the ultimate test of rowing endurance and explosive power. Athletes battle through four grueling 500M intervals, with only a fleeting 60-second reprieve between sets to recover. To claim your place on the leaderboard, submit a photo of your time splits as proof of your grit. Do you have what it takes to conquer the Gauntlet?
+                    The Gorge Gauntlet consists of four 500m intervals with 60 seconds of rest between sets. Please submit your time via the form below and send a photo of your time splits to the team WhatsApp.
                 </Typography>
+                <Box sx={{ mt: 2 }}>
+                    <Link href="/gauntlet/submit" passHref>
+                        <Button variant="outlined" size="small">
+                            Submit Your Time
+                        </Button>
+                    </Link>
+                </Box>
             </Box>
         </TableContainer>
     )
