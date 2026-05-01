@@ -1,1 +1,4 @@
-{}
+- name: zaven
+  time: '12:22'
+  position: forward
+  stroke: 12
