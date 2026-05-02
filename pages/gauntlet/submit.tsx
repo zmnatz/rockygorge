@@ -11,19 +11,8 @@ interface GauntletSubmitProps {
 }
 
 export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps) {
-    const router = useRouter()
-    const [formData, setFormData] = useState({
-        name: '',
-        position: '',
-        time: '',
-        stroke: '',
-    })
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
     const [submitting, setSubmitting] = useState(false)
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
-    }
 
     const validateTime = (time: string) => {
         const timeRegex = /^([0-9]+):([0-9]{1,2}(\.[0-9]+)?)$/;
@@ -34,7 +23,21 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
         e.preventDefault()
         setStatus(null)
 
-        if (!validateTime(formData.time)) {
+        const form = e.currentTarget as HTMLFormElement
+        const formData = new FormData(form)
+        const data = {
+            name: formData.get('name') as string,
+            position: formData.get('position') as string,
+            time: formData.get('time') as string,
+            stroke: formData.get('stroke') as string,
+        }
+
+        if (!data.name || !data.time) {
+            setStatus({ type: 'error', message: 'Name and Time are required' })
+            return
+        }
+
+        if (!validateTime(data.time)) {
             setStatus({ type: 'error', message: 'Please enter time in a valid format (e.g., 1:45.2)' })
             return
         }
@@ -45,12 +48,12 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
             const response = await fetch('/.netlify/functions/submit-gauntlet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(data),
             })
 
             if (response.ok) {
                 setStatus({ type: 'success', message: 'Submission received! A pull request has been created for review.' })
-                setFormData({ name: '', position: '', time: '', stroke: '' })
+                form.reset()
             } else {
                 const errorData = await response.json()
                 setStatus({ type: 'error', message: errorData.error || 'Something went wrong. Please try again.' })
@@ -82,13 +85,12 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
                     <Autocomplete
                         freeSolo
                         options={playerNames}
-                        value={formData.name}
-                        onChange={(_, newValue) => setFormData({ ...formData, name: newValue || '' })}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
                                 label="Name"
                                 required
+                                name="name"
                                 sx={{ mb: 2 }}
                             />
                         )}
@@ -98,8 +100,6 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
                         <RadioGroup
                             row
                             name="position"
-                            value={formData.position}
-                            onChange={handleChange}
                         >
                             <FormControlLabel value="forward" control={<Radio />} label="Forward" />
                             <FormControlLabel value="back" control={<Radio />} label="Back" />
@@ -109,8 +109,6 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
                         fullWidth
                         label="Time (e.g. 1:45.2)"
                         name="time"
-                        value={formData.time}
-                        onChange={handleChange}
                         required
                         sx={{ mb: 2 }}
                     />
@@ -119,8 +117,6 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
                         label="Stroke Rate"
                         name="stroke"
                         type="number"
-                        value={formData.stroke}
-                        onChange={handleChange}
                         sx={{ mb: 3 }}
                     />
                     <Button

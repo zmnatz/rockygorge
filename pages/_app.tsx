@@ -16,13 +16,13 @@ export default function App({ Component, pageProps }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Head>
-          <title>Rocky Gorge Rugby</title>
-          <meta
-            name="description"
-            content="General information for Rocky Gorge Rugby Football Club"
-          />
-        </Head>
+         <Head>
+           <title>Rocky Gorge Rugby | Premier Rugby Club in Central Maryland</title>
+           <meta
+             name="description"
+             content="Join Rocky Gorge Rugby, the premier rugby club in Central Maryland and Howard County. Division I and III men's rugby in Columbia, MD and surrounding areas."
+           />
+         </Head>
         <GoogleAnalytics />
         <Toolbar />
         <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
