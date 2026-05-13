@@ -1,18 +1,19 @@
 - name: banquet
-  defaultAmount: 80
+  defaultAmount: 100
   description: Banquet Tickets
   info: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
-  hide: true
+  hide: false
   options:
-    - name: Couple - $80
-      value: 80
-    - name: Individual - $50
-      value: 50
+    - name: Couple - $100
+      value: 100
+    - name: Individual - $60
+      value: 60
   details: |-
     Join us for our 2026 Rocky Gorge Banquet 
-    #### When: June 17 
+    #### When: June 20 
     #### Where: The Meeting House, 5885 Robert Oliver Place, Columbia , MD 21075
+    Please RSVP using the google form at [rockygorgerugby.com/forms/banquet](/forms/banquet)
 - name: donations
   hide: true
   defaultAmount: 50

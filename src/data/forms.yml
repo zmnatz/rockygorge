@@ -39,3 +39,10 @@
   width: 700
   height: 520
   hide: true
+- id: banquet
+  href: forms/banquet
+  formId: 1FAIpQLSf4r-x7KGl4c9S11uk0m8D-GNpqbsoJ0eIZ0MKRBbRJrKKUhg
+  title: 2026 Banquet
+  hide: false
+  width: 700
+  height: 1500
