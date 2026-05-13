@@ -20,7 +20,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { Delete, Edit, Save, Add } from '@mui/icons-material';
 
@@ -137,16 +139,25 @@ export default function StoreAdmin() {
               value={editingItem?.defaultAmount || ''} 
               onChange={e => setEditingItem(prev => prev ? { ...prev, defaultAmount: Number(e.target.value) } : null)} 
             />
-            <TextField 
-              label="Details" 
-              multiline 
-              rows={4} 
-              fullWidth 
-              value={editingItem?.details || ''} 
-              onChange={e => setEditingItem(prev => prev ? { ...prev, details: e.target.value } : null)} 
-            />
-            
-            <Typography variant="h6">Options</Typography>
+             <TextField 
+               label="Details" 
+               multiline 
+               rows={4} 
+               fullWidth 
+               value={editingItem?.details || ''} 
+               onChange={e => setEditingItem(prev => prev ? { ...prev, details: e.target.value } : null)} 
+             />
+             <FormControlLabel
+               control={
+                 <Checkbox 
+                   checked={editingItem?.hide || false} 
+                   onChange={e => setEditingItem(prev => prev ? { ...prev, hide: e.target.checked } : null)} 
+                 />
+               }
+               label="Hide Item"
+             />
+             
+             <Typography variant="h6">Options</Typography>
             <List>
               {editingItem?.options?.map((opt, idx) => (
                 <ListItem key={idx} secondaryAction={
