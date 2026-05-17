@@ -10,7 +10,7 @@ interface ScoreCardProps {
   score: Score;
 }
 
-export function ScoreCard({ score }: ScoreCardProps): JSX.Element {
+export function ScoreCard({ score }: ScoreCardProps) {
   return (
     <Card className="score-card">
       <CardHeader title={score.compName} />
@@ -34,7 +34,7 @@ interface TeamBadge2Props {
   team: Team;
 }
 
-function TeamBadge2({ team }: TeamBadge2Props): JSX.Element {
+function TeamBadge2({ team }: TeamBadge2Props) {
   return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
 }
 
@@ -42,6 +42,6 @@ interface TeamBadgeProps {
   team: Team;
 }
 
-function TeamBadge({ team }: TeamBadgeProps): JSX.Element {
+function TeamBadge({ team }: TeamBadgeProps) {
   return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
 }

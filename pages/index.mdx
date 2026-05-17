@@ -21,17 +21,17 @@ export const visibleLinks = [...links, ...forms]
   </Grid>
 
   <Grid container spacing={2}>
-    <Grid size={{xs: 12, md: 6}}>
+    <Grid size={{ xs: 12, md: 6 }}>
       <Grid container spacing={2}>
         {visibleStoreItems.map((item) => (
-          <ProductCard key={item.name}title={item?.description} href={`/${item.name}`}>{item.info}</ProductCard>
+          <ProductCard key={item.name} title={item?.description} href={`/${item.name}`}>{item.info}</ProductCard>
         ))}
         {visibleLinks.map((item) => (
           <ProductCard key={item.href} title={item.title} href={item.href}>{item.description}</ProductCard>
         ))}
       </Grid>
     </Grid>
-    <Grid size={{xs: 12, md: 6}}>
+    <Grid size={{ xs: 12, md: 6 }}>
       <CalendarCard calendars={['Practices', 'Events']} />
     </Grid>
   </Grid>

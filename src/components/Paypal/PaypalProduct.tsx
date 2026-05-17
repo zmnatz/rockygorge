@@ -20,7 +20,7 @@ export function PaypalProduct({
   subscriptions = [],
   donation = false,
   supporters,
-}: PaypalProductProps): JSX.Element {
+}: PaypalProductProps) {
   const [editAmount, setEditAmount] = useState<number>();
   const amount = editAmount ?? defaultAmount;
   const router = useRouter();

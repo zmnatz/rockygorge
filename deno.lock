@@ -20,6 +20,7 @@
         "npm:@next/mdx@^16.1.6",
         "npm:@paypal/react-paypal-js@^7.3.3",
         "npm:@tanstack/react-query@^5.96.2",
+        "npm:@types/js-yaml@^4.0.9",
         "npm:eslint-config-next@^16.1.6",
         "npm:eslint@^9.7.0",
         "npm:js-yaml@^4.1.1",

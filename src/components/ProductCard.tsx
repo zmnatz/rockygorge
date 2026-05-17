@@ -16,7 +16,7 @@ export function ProductCard({
   title,
   children,
   href,
-}: ProductProps): JSX.Element {
+}: ProductProps) {
   return (
     <Grid size={{xs: 12, sm: 6, md: 6}}>
       <Link href={href}>
