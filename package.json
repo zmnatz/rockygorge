@@ -19,6 +19,10 @@
     "remark-html": "^16.0.1",
     "sharp": "^0.34.5"
   },
+  "overrides": {
+    "@octokit/request": "10.0.8",
+    "type-is": "2.0.0"
+  },
   "scripts": {
     "netlify": "netlify dev",
     "start": "next dev --webpack",
