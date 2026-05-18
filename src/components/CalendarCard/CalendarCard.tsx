@@ -10,7 +10,7 @@ interface CalendarCardProps {
   calendars: string[]
 }
 
-export function CalendarCard({calendars}: CalendarCardProps): JSX.Element {
+export function CalendarCard({calendars}: CalendarCardProps) {
   const { data, isFetching, error } = useCalendarEvents();
   return (
     <Card>

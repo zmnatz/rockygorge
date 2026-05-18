@@ -14,7 +14,7 @@ interface SubscriptionProps {
   value?: string;
 }
 
-export function Subscription({ id, options, name, description, value = '' }: SubscriptionProps): JSX.Element {
+export function Subscription({ id, options, name, description, value = '' }: SubscriptionProps) {
   return (
     <>
       <h3>{name}</h3>

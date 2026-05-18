@@ -1,6 +1,7 @@
 import { remark } from "remark";
 import remarkHtml from "remark-html";
 import { Typography } from "@mui/material";
+import Head from "next/head";
 
 import {PaypalProduct} from "@/components/Paypal";
 import items from "@/data/store.yml";
@@ -35,17 +36,23 @@ export default function StoreItem({
   supporters
 }: Product) {
   return (
-    <PaypalProduct
-      defaultAmount={defaultAmount}
-      options={options}
-      description={description}
-      subscriptions={subscriptions}
-      donation={donation}
-      supporters={supporters}
-      flexiblePayment
-    >
-      <Typography variant="h3">{title}</Typography>
-      {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
-    </PaypalProduct>
+    <>
+      <Head>
+        <title>{title} | Rocky Gorge Rugby</title>
+        <meta name="description" content={description || `Get ${title} from the Rocky Gorge Rugby store.`} />
+      </Head>
+      <PaypalProduct
+        defaultAmount={defaultAmount}
+        options={options}
+        description={description}
+        subscriptions={subscriptions}
+        donation={donation}
+        supporters={supporters}
+        flexiblePayment
+      >
+        <Typography variant="h3">{title}</Typography>
+        {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
+      </PaypalProduct>
+    </>
   );
 }
