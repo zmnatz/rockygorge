@@ -6,6 +6,7 @@ export interface Team {
 }
   
 export interface Score {
+    id: string;
     homeTeam: Team;
     awayTeam: Team;
     dateTime: Date;
