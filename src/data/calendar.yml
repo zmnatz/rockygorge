@@ -1,7 +1,7 @@
 months: 3
 filters:
 - name: Practices
-  limit: 4
+  limit: 2
   matches: practice|training
   hideSummary: true
 - name: Events
