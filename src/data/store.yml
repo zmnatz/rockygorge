@@ -20,7 +20,6 @@
   description: Team Packages
   info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
-  hide: false
   options:
   - name: Individual - $125
     value: 125
