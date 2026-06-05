@@ -32,14 +32,14 @@
   - name: Event Sponsorship - $1,500
     value: 1500
   details: |-
-  Support the 2026 Rocky Gorge Open!
+    Support the 2026 Rocky Gorge Open!
 
-  #### Tier Details:
-  - **Individual**: individual buy in
-  - **Team Package**: 4 person Buy-in
-  - **Hole Sponsor + Team**: Team Buy in + Hole sponsorship
-  - **Hole Sponsorship**: Sponsor a hole
-  - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
+    #### Tier Details:
+    - **Individual**: individual buy in
+    - **Team Package**: 4 person Buy-in
+    - **Hole Sponsor + Team**: Team Buy in + Hole sponsorship
+    - **Hole Sponsorship**: Sponsor a hole
+    - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
   
 - name: lights
   title: Lights Raffle
