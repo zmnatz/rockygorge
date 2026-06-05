@@ -17,7 +17,7 @@
 - name: open
   defaultAmount: 450
   hide: true
-  description: Team Packages
+  description: Rocky Gorge Open
   info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
   options:
