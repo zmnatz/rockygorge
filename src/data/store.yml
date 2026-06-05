@@ -14,14 +14,14 @@
     #### When: June 20 
     #### Where: The Meeting House, 5885 Robert Oliver Place, Columbia , MD 21075
     Please RSVP using the google form at [rockygorgerugby.com/forms/banquet](/forms/banquet)
-name: golf
-defaultAmount: 450
-hide: true
-description: Team Packages
-info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
-title: 2026 Rocky Gorge Open
-hide: false
-options:
+- name: golf
+  defaultAmount: 450
+  hide: true
+  description: Team Packages
+  info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
+  title: 2026 Rocky Gorge Open
+  hide: false
+  options:
   - name: Individual - $125
     value: 125
   - name: Team Package - $450
@@ -32,7 +32,7 @@ options:
     value: 300
   - name: Event Sponsorship - $1,500
     value: 1500
-details: |-
+  details: |-
   Support the 2026 Rocky Gorge Open!
 
   #### Tier Details:
