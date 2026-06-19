@@ -15,30 +15,17 @@ import {
   Dialog, 
   DialogTitle, 
   DialogContent, 
-  DialogActions 
+  DialogActions
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
-
-interface Column<T> {
-  header: string;
-  render: (item: T) => React.ReactNode;
-}
-
-interface AdminPageProps<T> {
-  title: string;
-  endpoint: string;
-  columns: Column<T>[];
-  renderEditForm: (item: T, onChange: (updated: T) => void) => React.ReactNode;
-  getItemId: (item: T) => string;
-  initialDataTransform?: (data: any) => T[];
-  saveDataTransform?: (items: T[]) => any;
-}
+import { AdminPageProps } from './types';
+import { FormField } from './FormField';
 
 export function AdminPage<T>({
   title,
   endpoint,
   columns,
-  renderEditForm,
+  fields,
   getItemId,
   initialDataTransform = (data) => data,
   saveDataTransform = (items) => items,
@@ -115,7 +102,14 @@ export function AdminPage<T>({
         <DialogTitle>Edit: {getItemId(editingItem || {} as T)}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            {editingItem && renderEditForm(editingItem, (updated) => setEditingItem(updated))}
+            {editingItem && fields.map(field => (
+              <FormField 
+                key={String(field.name)} 
+                field={field} 
+                item={editingItem} 
+                onChange={(updated) => setEditingItem(updated)} 
+              />
+            ))}
           </Box>
         </DialogContent>
         <DialogActions>

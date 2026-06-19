@@ -1,11 +1,13 @@
 export interface Form {
   id: string;
+  href: string;
   formId: string;
   title: string;
   description: string;
   width: number;
   height: number;
   hide: boolean;
+  formLink?: string;
 }
 
 export interface Product {
