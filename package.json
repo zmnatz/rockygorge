@@ -28,7 +28,7 @@
     "start": "next dev --webpack",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
-    "lint": "eslint ."
+    "lint": "eslint . --ignore-pattern '.netlify/'"
   },
   "browserslist": [
     ">0.2%",

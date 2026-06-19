@@ -34,6 +34,7 @@ export interface Product {
 
 export interface Link {
   id: string;
+  href: string;
   title: string;
   description: string;
   header: boolean;

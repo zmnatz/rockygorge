@@ -1,34 +1,4 @@
 import React from 'react';
-import { 
-  Box, 
-  TextField, 
-  Typography, 
-  FormControlLabel,
-  Checkbox,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Button
-} from '@mui/material';
-import { Delete, Add } from '@mui/icons-material';
-import { AdminPage } from '../../src/components/AdminPage';
-
-interface StoreItem {
-  name: string;
-  title?: string;
-  description?: string;
-  info?: string;
-  defaultAmount?: number;
-  hide?: boolean;
-  options?: { name: string; value: number | string }[];
-  subscriptions?: { name: string; id: string; description?: string; value?: string; options?: { label: string; value: string }[] }[];
-  supporters?: string[];
-  donation?: boolean;
-  details?: string;
-}
-
-import React from 'react';
 import { AdminPage } from '../../src/components/AdminPage';
 
 interface StoreItem {
