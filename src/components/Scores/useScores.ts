@@ -31,9 +31,10 @@ async function fetchScores() {
       })
     });
     if (response.ok) {
-      return (await response.json())?.data?.getEntityFixturesAndResults.filter(
+      const data = (await response.json())?.data?.getEntityFixturesAndResults.filter(
         (score: Score) => score.homeTeam.name.includes('Rocky Gorge') || score.awayTeam.name.includes('Rocky Gorge')
-      )
+      );
+      return data.sort((a: Score, b: Score) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
     } else {
       console.info('Unable to load scores', response.status)
       return [];

@@ -7,3 +7,10 @@
   force = true
   status = 200
   headers = {X-goog-api-key = "AIzaSyDnoONpe29Y9gWIbhRKb_btifHo5X-d_Xo"}
+
+[[redirects]]
+  from = "/rugby-data/*"
+  to = "https://xplorer.rugby/:splat"
+  status = 200
+  force = true
+

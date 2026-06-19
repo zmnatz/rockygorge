@@ -111,3 +111,14 @@ To fetch data for Rocky Gorge Rugby (Club ID: `91273`):
 1. Send a `POST` request to the endpoint.
 2. Include the `Content-Type: application/json; charset=utf-8` header.
 3. Provide the `operationName`, `variables`, and `query` in the request body.
+
+## Individual Game Data
+Individual game details (e.g., Commentary, Player Lineups) are loaded from Next.js data JSON files.
+
+### URL Pattern
+`/rugby-data/_next/data/{buildId}/{clubSlug}/match-centre/{matchId}.json?tab={tab}&club={clubSlug}&comp={matchId}`
+
+### Examples
+- **Commentary**: `/rugby-data/_next/data/xPqU49OMRXdY91yiD34E3/rocky-gorge-rugby/match-centre/f2989ffad89ae4b2d.json?tab=Commentary&club=rocky-gorge-rugby&comp=f2989ffad89ae4b2d`
+- **Player Lineup**: `/rugby-data/_next/data/xPqU49OMRXdY91yiD34E3/rocky-gorge-rugby/match-centre/f2989ffad89ae4b2d.json?tab=Player-Lineup&club=rocky-gorge-rugby&comp=f2989ffad89ae4b2d`
+
