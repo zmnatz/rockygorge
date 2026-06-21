@@ -162,8 +162,8 @@ def daterange_chunks(start, end, max_days):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("start_date", help="Start date, YYYY-MM-DD")
-    parser.add_argument("end_date", help="End date, YYYY-MM-DD (inclusive)")
+    parser.add_argument("start_date", nargs="?", help="Start date, YYYY-MM-DD (defaults to 3 months ago)")
+    parser.add_argument("end_date", nargs="?", help="End date, YYYY-MM-DD (inclusive) (defaults to today)")
     parser.add_argument("-o", "--output", help="Output CSV path (default: reports/paypal_<start>_<end>.csv)")
     parser.add_argument("--sandbox", action="store_true", help="Use the PayPal sandbox API instead of live")
     parser.add_argument("--env-file", default=".env", help="Path to a .env file with PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET")
@@ -177,12 +177,27 @@ def main():
         print("Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (env vars or --env-file).", file=sys.stderr)
         sys.exit(1)
 
-    try:
-        start = datetime.strptime(args.start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        end = datetime.strptime(args.end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)
-    except ValueError:
-        print("Dates must be in YYYY-MM-DD format.", file=sys.stderr)
-        sys.exit(1)
+    start = None
+    end = None
+
+    if args.start_date:
+        try:
+            start = datetime.strptime(args.start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except ValueError:
+            print("Start date must be in YYYY-MM-DD format.", file=sys.stderr)
+            sys.exit(1)
+
+    if args.end_date:
+        try:
+            end = datetime.strptime(args.end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)
+        except ValueError:
+            print("End date must be in YYYY-MM-DD format.", file=sys.stderr)
+            sys.exit(1)
+
+    if not start:
+        start = (datetime.now(timezone.utc) - timedelta(days=90)).replace(hour=0, minute=0, second=0, microsecond=0)
+    if not end:
+        end = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
 
     base_url = SANDBOX_BASE if args.sandbox else LIVE_BASE
     token = get_access_token(base_url, client_id, client_secret)
@@ -198,7 +213,13 @@ def main():
             )
         )
 
-    output = args.output or f"reports/paypal_{args.start_date}_{args.end_date}.csv"
+    if args.output:
+        output = args.output
+    else:
+        s_str = args.start_date if args.start_date else start.strftime("%Y-%m-%d")
+        e_str = args.end_date if args.end_date else (end - timedelta(days=1)).strftime("%Y-%m-%d")
+        output = f"reports/paypal_{s_str}_{e_str}.csv"
+    
     out_dir = os.path.dirname(output)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)

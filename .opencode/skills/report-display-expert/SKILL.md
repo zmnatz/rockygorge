@@ -15,12 +15,13 @@ Use this script to pull transaction data from the PayPal API.
 
 - **Prerequisites**:
     - Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` as environment variables or in a `.env` file.
+    - If not present, create them by logging into the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/), creating a REST app, and copying the Client ID and Secret.
 - **Usage**:
-    - `python3 scripts/fetch_paypal_report.py <start_date> <end_date>`
-    - `python3 scripts/fetch_paypal_report.py <start_date> <end_date> -o <output_path> --sandbox`
+    - `python3 scripts/fetch_paypal_report.py [<start_date>] [<end_date>]`
+    - `python3 scripts/fetch_paypal_report.py [<start_date>] [<end_date>] -o <output_path> --sandbox`
 - **Arguments**:
-    - `<start_date>`: Start date in `YYYY-MM-DD` format.
-    - `<end_date>`: End date in `YYYY-MM-DD` format.
+    - `[<start_date>]`: (Optional) Start date in `YYYY-MM-DD` format (defaults to 3 months ago).
+    - `[<end_date>]`: (Optional) End date in `YYYY-MM-DD` format (defaults to today).
     - `-o`, `--output`: Path to the output CSV file (default: `reports/paypal_<start>_<end>.csv`).
     - `--sandbox`: Use the PayPal sandbox environment.
     - `--env-file`: Path to the `.env` file (default: `.env`).
