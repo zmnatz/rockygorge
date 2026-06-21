@@ -9,6 +9,13 @@ export interface FieldConfig<T> {
   render?: (item: T, onChange: (updated: T) => void) => React.ReactNode;
 }
 
+export interface GlobalFieldConfig {
+  name: string;
+  label: string;
+  type?: FieldType;
+  render?: (value: any, onChange: (newValue: any) => void) => React.ReactNode;
+}
+
 export interface Column<T> {
   header: string;
   render: (item: T) => React.ReactNode;
@@ -20,6 +27,9 @@ export interface AdminPageProps<T> {
   columns: Column<T>[];
   fields: FieldConfig<T>[];
   getItemId: (item: T) => string;
+  initialData?: any;
   initialDataTransform?: (data: any) => T[];
-  saveDataTransform?: (items: T[]) => any;
+  initialGlobalsTransform?: (data: any) => any;
+  saveDataTransform?: (items: T[], globals?: any) => any;
+  globalFields?: GlobalFieldConfig[];
 }
