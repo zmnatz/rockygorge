@@ -1,12 +1,12 @@
 months: 3
 filters:
-- name: Practices
-  limit: 2
-  matches: practice|training
-  hideSummary: true
-- name: Events
-  notMatches: practice|board|OG|Africa|training
-- name: Board Meetings
-  hideSummary: true
-  matches: Board
-  limit: 1
+  - name: Practices
+    limit: 2
+    matches: practice|training
+    hideSummary: true
+  - name: Events
+    notMatches: practice|board|OG|training
+  - name: Board Meetings
+    hideSummary: true
+    matches: Board
+    limit: 1
