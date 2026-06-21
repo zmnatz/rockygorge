@@ -6,39 +6,6 @@ export const config = {
 };
 
 export const handler = async (event: any) => {
-    if (event.httpMethod === 'GET') {
-        try {
-            const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
-            const octokit = new Octokit({ auth: GITHUB_TOKEN });
-            const OWNER = 'zmnatz';
-            const REPO = 'rockygorge';
-            const FILE_PATH = 'src/data/forms.yml';
-            const baseBranch = 'master';
-
-            const response = await octokit.rest.repos.getContent({
-                owner: OWNER,
-                repo: REPO,
-                path: FILE_PATH,
-                ref: baseBranch,
-            });
-
-            const fileData = response.data as any;
-            const content = Buffer.from(fileData.content, 'base64').toString();
-            const data = yaml.load(content);
-
-            return {
-                statusCode: 200,
-                body: JSON.stringify(data),
-            };
-        } catch (error: any) {
-            console.error(error);
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
-            };
-        }
-    }
-
     if (event.httpMethod === 'POST') {
         try {
             const body = JSON.parse(event.body);

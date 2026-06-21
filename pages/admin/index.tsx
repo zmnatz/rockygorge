@@ -10,15 +10,9 @@ import {
   Paper 
 } from '@mui/material';
 import Link from 'next/link';
+import adminYaml from '../../src/data/admin.yml';
 
-const ADMIN_PAGES = [
-  { name: 'Store Admin', href: '/admin/store' },
-  { name: 'Forms Admin', href: '/admin/forms' },
-  { name: 'Links Admin', href: '/admin/links' },
-  { name: 'Calendar Admin', href: '/admin/calendar' },
-];
-
-export default function AdminIndex() {
+export default function AdminIndex({ adminPages }) {
   return (
     <Container sx={{ mt: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -32,7 +26,7 @@ export default function AdminIndex() {
 
       <Paper elevation={2}>
         <List>
-          {ADMIN_PAGES.map((page) => (
+          {adminPages.map((page) => (
             <ListItem key={page.href} disablePadding>
               <ListItemButton 
                 component={Link} 
@@ -52,4 +46,17 @@ export default function AdminIndex() {
       </Paper>
     </Container>
   );
+}
+
+export async function getStaticProps() {
+  const adminPages = Object.entries(adminYaml).map(([type, config]: [string, any]) => ({
+    name: config.title,
+    href: `/admin/${type}`,
+  }));
+
+  return {
+    props: {
+      adminPages,
+    },
+  };
 }

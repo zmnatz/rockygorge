@@ -27,21 +27,36 @@ export function AdminPage<T>({
   columns,
   fields,
   getItemId,
+  initialData,
   initialDataTransform = (data) => data,
-  saveDataTransform = (items) => items,
+  initialGlobalsTransform,
+  saveDataTransform = (items, globals) => items,
+  globalFields,
 }: AdminPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
+  const [globals, setGlobals] = useState<any>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
-    fetch(`/.netlify/functions/${endpoint}`)
-      .then(res => res.json())
-      .then(data => {
-        setItems(initialDataTransform(data));
-        setLoading(false);
-      });
-  }, [endpoint, initialDataTransform]);
+    if (initialData) {
+      setItems(initialDataTransform(initialData));
+      if (initialGlobalsTransform) {
+        setGlobals(initialGlobalsTransform(initialData));
+      }
+      setLoading(false);
+    } else {
+      fetch(`/.netlify/functions/${endpoint}`)
+        .then(res => res.json())
+        .then(data => {
+          setItems(initialDataTransform(data));
+          if (initialGlobalsTransform) {
+            setGlobals(initialGlobalsTransform(data));
+          }
+          setLoading(false);
+        });
+    }
+  }, [endpoint, initialData, initialDataTransform, initialGlobalsTransform]);
 
   const handleSaveItem = () => {
     if (!editingItem) return;
@@ -53,7 +68,7 @@ export function AdminPage<T>({
     const res = await fetch(`/.netlify/functions/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(saveDataTransform(items)),
+      body: JSON.stringify(saveDataTransform(items, globals)),
     });
     if (res.ok) {
       alert(`${title} updated and committed successfully!`);
@@ -70,6 +85,21 @@ export function AdminPage<T>({
         <Typography variant="h4">{title}</Typography>
         <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
       </Box>
+
+      {globalFields && globalFields.length > 0 && (
+        <Paper sx={{ p: 3, mb: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {globalFields.map(field => (
+              <FormField 
+                key={field.name} 
+                field={field as any} 
+                item={globals} 
+                onChange={(updated) => setGlobals(updated)} 
+              />
+            ))}
+          </Box>
+        </Paper>
+      )}
 
       <TableContainer component={Paper}>
         <Table>

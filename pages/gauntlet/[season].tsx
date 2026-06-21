@@ -9,6 +9,13 @@ import { GauntletEntry } from '@/types/data'
 
 const DATA_DIR = path.join(process.cwd(), 'src/data/gauntlet')
 
+const parseTime = (time: string | number): number => {
+    if (typeof time === 'number') return time;
+    const [minutes, seconds] = time.split(':');
+    if (minutes === undefined || seconds === undefined) return 999999;
+    return parseInt(minutes, 10) * 60 + parseFloat(seconds);
+};
+
 export const getStaticPaths: GetStaticPaths = async () => {
     const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith('.yml'))
     
@@ -38,12 +45,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     const dataArray = [...data]
     
-    dataArray.sort((a, b) => {
-        const timeA = typeof a.time === 'number' ? a.time : 999999
-        const timeB = typeof b.time === 'number' ? b.time : 999999
-        return timeA - timeB
-    })
-
+    dataArray.sort((a, b) => parseTime(a.time) - parseTime(b.time))
+    
     const dataSource: GauntletDataSource[] = dataArray.map((d, index) => ({
         ...d,
         rank: index + 1,
