@@ -3,7 +3,7 @@
   description: Banquet Tickets
   info: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
-  hide: false
+  hide: true
   options:
     - name: Couple - $100
       value: 100
@@ -46,20 +46,6 @@
     - **Hole Sponsor + Team**: Team Buy in + Hole sponsorship
     - **Hole Sponsorship**: Sponsor a hole
     - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
-- name: lights
-  title: Lights Raffle
-  default: 10
-  description: Do the lights work?
-  info: Do the lights work?
-  options:
-    - name: 'Yes'
-      value: 5
-    - name: 'No'
-      value: 10
-  details: >-
-    Place your bets. Do the lights work or not? When the lights get tested a
-    winner will be picked from whichever side gets it right. 50% will go to the
-    club.
 - name: donations
   hide: true
   defaultAmount: 50
@@ -85,7 +71,7 @@
   supporters: []
 - name: dues
   defaultAmount: 200
-  description: Player Dues
+  description: Fall Dues
   info: 'Fall Season: $200'
   title: Pay your dues. Play rugby.
   options:
@@ -160,6 +146,7 @@
     - Zaven Mnatzakanian
     - Bill Bush
     - Mason McIlwee
+    - John Bratt
 - name: gear
   defaultAmount: 15
   description: Team Gear
