@@ -2,46 +2,71 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import { Score, Team } from './types';
+import Link from 'next/link';
+import { Score } from './types';
 
 interface ScoreCardProps {
   score: Score;
 }
 
 export function ScoreCard({ score }: ScoreCardProps) {
+  const cleanTeamName = (name: string) => {
+    return name.replace(/\s+(MD\d+|D\d+)\s*$/, '').trim();
+  };
+
   return (
-    <Card className="score-card">
-      <CardHeader title={score.compName} />
-      <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <TeamBadge team={score.homeTeam} />
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6">
-            {score.homeTeam.score} - {score.awayTeam.score}
+    <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Card className="score-card" sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}>
+        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 2 }}>
+              {score.awayTeam.crest && (
+                <Box 
+                  component="img" 
+                  src={score.awayTeam.crest} 
+                  alt={score.awayTeam.name} 
+                  sx={{ width: 40, height: 40, objectFit: 'contain', mb: 0.5 }} 
+                />
+              )}
+              <Typography variant="caption" sx={{ fontWeight: 'medium', textAlign: 'center', lineHeight: 1.2 }}>
+                {cleanTeamName(score.awayTeam.name)}
+              </Typography>
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              {score.awayTeam.score}
+            </Typography>
+          </Box>
+          
+          <Typography variant="h6" sx={{ mx: 3, color: 'text.secondary', fontWeight: 'bold' }}>
+            vs
           </Typography>
-          <Typography variant="caption">
-            {new Date(score.dateTime).toLocaleDateString()}
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', flex: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              {score.homeTeam.score}
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', ml: 2 }}>
+              {score.homeTeam.crest && (
+                <Box 
+                  component="img" 
+                  src={score.homeTeam.crest} 
+                  alt={score.homeTeam.name} 
+                  sx={{ width: 40, height: 40, objectFit: 'contain', mb: 0.5 }} 
+                />
+              )}
+              <Typography variant="caption" sx={{ fontWeight: 'medium', textAlign: 'center', lineHeight: 1.2 }}>
+                {cleanTeamName(score.homeTeam.name)}
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+        <Box sx={{ textAlign: 'center', pb: 2 }}>
+          <Typography variant="caption" color="textSecondary">
+            {score.compName} • {new Date(score.dateTime).toLocaleDateString()}
           </Typography>
         </Box>
-        <TeamBadge team={score.awayTeam} />
-      </CardContent>
-    </Card>
+      </Card>
+    </Link>
   );
-}
-
-interface TeamBadge2Props {
-  team: Team;
-}
-
-function TeamBadge2({ team }: TeamBadge2Props) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
-}
-
-interface TeamBadgeProps {
-  team: Team;
-}
-
-function TeamBadge({ team }: TeamBadgeProps) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
 }

@@ -1,6 +1,7 @@
 import links from "@/data/links.yml";
 import forms from "@/data/forms.yml";
 import StoreItems from "@/data/store.yml";
+import Scores from "@/components/Scores/Scores";
 
 export const visibleStoreItems = StoreItems.filter(item => !item.hide);
 export const visibleLinks = [...links, ...forms]
@@ -19,6 +20,8 @@ export const visibleLinks = [...links, ...forms]
     [Join our alumni list](https://groups.google.com/forum/#!forum/rocky-gorge-alumni) 
     for social announcements, fan information, and old boy happy hours.
   </Grid>
+
+  <Scores />
 
   <Grid container spacing={2}>
     <Grid size={{ xs: 12, md: 6 }}>

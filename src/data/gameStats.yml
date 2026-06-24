@@ -1,0 +1,51 @@
+f2989ffad89ae4b2d:
+  competition: MAC Men D1
+  date: "2026-04-18"
+  homeTeam: Rocky Gorge MD1
+  awayTeam: Schuylkill River Exiles MD1
+  homeScore: 15
+  awayScore: 22
+  events:
+    - { minute: "12", type: "Try", comment: "Try - Luc Desroches", isHome: true }
+    - { minute: "12", type: "Penalty Goal", comment: "Penalty Goal - Brandon Drummond", isHome: true }
+    - { minute: "12", type: "Conversion", comment: "Conversion - Brandon Drummond", isHome: true }
+    - { minute: "12", type: "Try", comment: "Try", isHome: true }
+    - { minute: "27", type: "Field Goal", comment: "Field Goal - Daniel Giannascoli", isHome: false }
+    - { minute: "33", type: "Try", comment: "Try - Riley Giles", isHome: false }
+    - { minute: "33", type: "Conversion", comment: "Conversion - Daniel Giannascoli", isHome: false }
+    - { minute: "39", type: "Try", comment: "Try - Daniel Deal", isHome: false }
+    - { minute: "69", type: "Try", comment: "Try - Cesar Da Fonseca", isHome: false }
+    - { minute: "69", type: "Conversion", comment: "Conversion - Daniel Giannascoli", isHome: false }
+  lineup:
+    home:
+      - { name: "Joshua Brown", position: "4", shirtNumber: "4" }
+      - { name: "Larry Williams", position: "3", shirtNumber: "3" }
+      - { name: "Keagan O'Connell", position: "12", shirtNumber: "12" }
+      - { name: "Hunter Shelton", position: "15", shirtNumber: "15" }
+      - { name: "Kevin Koch", position: "6", shirtNumber: "6" }
+      - { name: "Brandon Drummond", position: "9", shirtNumber: "9" }
+      - { name: "Jamison Hulbert", position: "10", shirtNumber: "10" }
+      - { name: "Cameron Hoppman", position: "1", shirtNumber: "1" }
+      - { name: "James Nutland", position: "5", shirtNumber: "5" }
+      - { name: "James Park", position: "7", shirtNumber: "7" }
+      - { name: "Adam Wiley", position: "8", shirtNumber: "8" }
+      - { name: "Jason Bland", position: "11", shirtNumber: "11" }
+      - { name: "Donte Speight", position: "14", shirtNumber: "14" }
+      - { name: "Luc Desroches", position: "13", shirtNumber: "13" }
+      - { name: "Tristan Cole", position: "2", shirtNumber: "2" }
+    away:
+      - { name: "Samuel Devine", position: "2", shirtNumber: "2" }
+      - { name: "Mike Washington", position: "3", shirtNumber: "3" }
+      - { name: "Ethan Mabilog", position: "7", shirtNumber: "7" }
+      - { name: "Sean Barnes", position: "14", shirtNumber: "14" }
+      - { name: "Tyler Small", position: "6", shirtNumber: "6" }
+      - { name: "Riley Giles", position: "13", shirtNumber: "13" }
+      - { name: "Daniel Giannascoli", position: "10", shirtNumber: "10" }
+      - { name: "John Davis", position: "12", shirtNumber: "12" }
+      - { name: "Daniel Berger", position: "1", shirtNumber: "1" }
+      - { name: "Ian Glatts", position: "4", shirtNumber: "4" }
+      - { name: "Louis Snyder", position: "5", shirtNumber: "5" }
+      - { name: "Benjamin Janssen", position: "8", shirtNumber: "8" }
+      - { name: "Daniel Deal", position: "11", shirtNumber: "11" }
+      - { name: "Brian Keown", position: "9", shirtNumber: "9" }
+      - { name: "Cesar Da Fonseca", position: "15", shirtNumber: "15" }
