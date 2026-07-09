@@ -1,6 +1,8 @@
 import links from "@/data/links.yml";
 import forms from "@/data/forms.yml";
 import StoreItems from "@/data/store.yml";
+import events from "@/data/events.yml";
+import { Grid, Typography } from "@mui/material";
 
 export const visibleStoreItems = StoreItems.filter(item => !item.hide);
 export const visibleLinks = [...links, ...forms]
@@ -25,6 +27,15 @@ export const visibleLinks = [...links, ...forms]
       <Grid container spacing={2}>
         {visibleStoreItems.map((item) => (
           <ProductCard key={item.name} title={item?.description} href={`/${item.name}`}>{item.info}</ProductCard>
+        ))}
+        {events.filter(event => !event.hide).map((event) => (
+          <ProductCard key={event.name} title={event.title} href={`/events/${event.name}`}>
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>{event.description}</Typography>
+            {event.info}
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Organizers: {event.organizers.join(", ")}
+            </Typography>
+          </ProductCard>
         ))}
         {visibleLinks.map((item) => (
           <ProductCard key={item.href} title={item.title} href={item.href}>{item.description}</ProductCard>

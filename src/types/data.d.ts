@@ -1,3 +1,13 @@
+export interface Event {
+  name: string;
+  hide?: boolean;
+  description: string;
+  info: string;
+  title: string;
+  details?: string;
+  organizers: string[];
+}
+
 export interface Form {
   id: string;
   href: string;
@@ -46,6 +56,11 @@ export interface GauntletEntry {
   position?: string;
   time: string;
   stroke?: number;
+}
+
+declare module '@/data/events.yml' {
+  const events: Event[];
+  export default events;
 }
 
 declare module '*.yml' {
