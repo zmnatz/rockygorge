@@ -144,6 +144,57 @@ export function FormField<T>({
           </List>
         </Box>
       );
+    case 'textKeyValueMap':
+      return (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">{field.label}</Typography>
+          <List>
+            {(value || []).map((pair: any, idx: number) => (
+              <ListItem key={idx} secondaryAction={
+                <IconButton edge="end" onClick={() => {
+                  const newList = [...(value || [])];
+                  newList.splice(idx, 1);
+                  updateValue(newList);
+                }}>
+                  <Delete />
+                </IconButton>
+              }>
+                <ListItemText 
+                  primary={
+                    <TextField 
+                      size="small" 
+                      label="Key" 
+                      value={pair.name || pair.key || ''} 
+                      onChange={e => {
+                        const newList = [...(value || [])];
+                        const keyName = pair.name !== undefined ? 'name' : 'key';
+                        newList[idx][keyName] = e.target.value;
+                        updateValue(newList);
+                      }}
+                    />
+                  }
+                  secondary={
+                    <TextField 
+                      size="small" 
+                      label="Value" 
+                      value={pair.value ?? ''} 
+                      onChange={e => {
+                        const newList = [...(value || [])];
+                        newList[idx].value = e.target.value;
+                        updateValue(newList);
+                      }}
+                    />
+                  }
+                />
+              </ListItem>
+            ))}
+            <Button startIcon={<Add />} onClick={() => {
+              updateValue([...(value || []), { name: '', value: '' }]);
+            }}>Add Pair</Button>
+          </List>
+        </Box>
+      );
+
     case 'text':
     default:
       return (

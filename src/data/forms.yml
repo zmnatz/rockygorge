@@ -5,7 +5,7 @@
   description: Nominate a Rocky Gorge club member for the hall of fame.
   width: 640
   height: 1300
-  hide: false
+  hide: true
 - id: asr
   href: 'forms/asr'
   formId: 1FAIpQLSfwXVgSwfl4cBA2ETcMo4iwK2mFTbzQ0LA1wKVOj3TiQJZLcQ
@@ -43,13 +43,14 @@
   href: forms/banquet
   formId: 1FAIpQLSf4r-x7KGl4c9S11uk0m8D-GNpqbsoJ0eIZ0MKRBbRJrKKUhg
   title: 2026 Banquet
-  hide: false
+  hide: true
   width: 700
   height: 1500
 - id: open
   href: forms/open
   formId: 1FAIpQLSfUw99Ufbzd1tvwepfaTx1ky4yLebaEbuM7qWvNBAAp-geYJg
   title: Rocky Gorge Open
+  description: Sign up to join us for the first annual Rocky Gorge Open
   hide: false
   width: 700
   height: 1600

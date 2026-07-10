@@ -66,11 +66,25 @@ function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
 }
 
 export function formatEventTime(start: string, end: string) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+  const parseDate = (dateStr: string) => {
+    if (!dateStr.includes("T")) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date(dateStr);
+  };
+
+  const startDate = parseDate(start);
+  let endDate = parseDate(end);
 
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
     return start;
+  }
+
+  // Google Calendar all-day events have an exclusive end date.
+  // If both are date-only, subtract one day from the end date for display.
+  if (!start.includes("T") && !end.includes("T")) {
+    endDate.setDate(endDate.getDate() - 1);
   }
 
   const sameDay = startDate.getFullYear() === endDate.getFullYear() &&
@@ -113,4 +127,35 @@ export function formatEventTime(start: string, end: string) {
     minute: "2-digit",
   })}`;
   return `${formattedStart} - ${formattedEnd}`;
+}
+
+export function formatStartDate(start: string) {
+  const parseDate = (dateStr: string) => {
+    if (!dateStr.includes("T")) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date(dateStr);
+  };
+
+  const startDate = parseDate(start);
+  if (Number.isNaN(startDate.getTime())) return start;
+
+  const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleString("en-US", options);
+  const isDateOnly = (value: string) => !value.includes("T");
+
+  const formattedStartDate = formatDate(startDate, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  if (isDateOnly(start)) {
+    return formattedStartDate;
+  }
+
+  return `${formattedStartDate} ${formatDate(startDate, {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
 }

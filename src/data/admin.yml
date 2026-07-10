@@ -27,6 +27,29 @@ store:
     - name: "supporters"
       type: "textList"
 
+events:
+  title: "Events Admin"
+  endpoint: "admin-events"
+  dataFilePath: "src/data/events.yml"
+  getItemId: "name"
+  columns:
+    - field: "name"
+    - field: "title"
+    - field: "hide"
+      render: "boolean"
+  fields:
+    - name: "title"
+      type: "text"
+    - name: "description"
+      type: "text"
+    - name: "info"
+      type: "text"
+    - name: "hide"
+      label: "Hide Event"
+      type: "boolean"
+    - name: "organizers"
+      type: "textList"
+
 links:
   title: "Links Admin"
   endpoint: "admin-links"
@@ -108,3 +131,21 @@ calendar:
       type: "number"
     - name: "hideSummary"
       type: "boolean"
+
+link_mappings:
+  title: "Link Mappings Admin"
+  endpoint: "admin-link-mappings"
+  dataFilePath: "src/data/link_mappings.yml"
+  getItemId: "type"
+  transforms: "linkMappings"
+  columns:
+    - field: "type"
+    - field: "default"
+  fields:
+    - name: "type"
+      type: "text"
+    - name: "default"
+      type: "text"
+    - name: "mappings"
+      label: "Mappings (Label -> Regex)"
+      type: "textKeyValueMap"

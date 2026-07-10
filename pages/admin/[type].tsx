@@ -30,6 +30,35 @@ const TRANSFORM_MAPPINGS: Record<string, {
       filters: items,
     }),
   },
+  linkMappings: {
+    initialDataTransform: (data) => [
+      { 
+        type: 'store', 
+        mappings: Object.entries(data.store?.mappings || {}).map(([name, value]) => ({ name, value })), 
+        default: data.store?.default 
+      },
+      { 
+        type: 'forms', 
+        mappings: Object.entries(data.forms?.mappings || {}).map(([name, value]) => ({ name, value })), 
+        default: data.forms?.default 
+      },
+    ],
+    initialGlobalsTransform: () => ({}),
+    saveDataTransform: (items) => {
+      const result = {};
+      items.forEach((item: any) => {
+        const mappings = {};
+        (item.mappings || []).forEach((m: any) => {
+          mappings[m.name] = m.value;
+        });
+        result[item.type] = {
+          mappings,
+          default: item.default,
+        };
+      });
+      return result;
+    },
+  },
 };
 
 export default function GenericAdmin({ initialData, type }) {

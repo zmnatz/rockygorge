@@ -1,15 +1,11 @@
-- name: banquet
-  hide: true
-  description: Annual Banquet
-  info: Join us for our 2026 Rocky Gorge Banquet.
-  title: 2026 Banquet
-  organizers:
-    - Chuck Moore
-    - Tom Henry
 - name: open
   description: Rocky Gorge Open
-  info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
+  info: Sign up for the event or sponsor a hole for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
+  hide: true
   organizers:
-    - Matt Carroll
-    - Jake Saintcross
+    - Jameson Hulbert
+    - Sam Gregoire
+    - Adam Wiley
+    - Alex Florenzo
+    - Justin Blocker

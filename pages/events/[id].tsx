@@ -2,8 +2,25 @@ import { remark } from "remark";
 import remarkHtml from "remark-html";
 import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListItem } from "@mui/material";
 import Head from "next/head";
+import Link from "next/link";
+import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
 import events from "@/data/events.yml";
-import { Event } from "@/types/data";
+import store from "@/data/store.yml";
+import forms from "@/data/forms.yml";
+import linkMappings from "@/data/link_mappings.yml";
+import { Event, Product, Form } from "@/types/data";
+
+function getLinkText(type: 'store' | 'forms', item: any) {
+  const mapping = linkMappings[type];
+  const text = (item.info || item.description || item.title || "").toLowerCase();
+  
+  for (const [label, pattern] of Object.entries(mapping.mappings)) {
+    if (new RegExp(pattern, 'i').test(text)) {
+      return label;
+    }
+  }
+  return mapping.default;
+}
 
 export async function getStaticPaths() {
   return {
@@ -15,8 +32,19 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const props = events.find((event) => event?.name === params?.id);
-  if (props?.details) {
+  const event = events.find((event) => event?.name === params?.id);
+  if (!event) return { notFound: true };
+
+  const storeItem = store.find((item) => item.name === event.name);
+  const form = forms.find((f) => f.id === event.name);
+
+  const props = {
+    ...event,
+    storeItem,
+    form,
+  };
+
+  if (props.details) {
     props.details = (await remark().use(remarkHtml).process(props.details)).toString();
   }
   return { props };
@@ -27,8 +55,10 @@ export default function EventPage({
   description,
   details,
   organizers,
-  info
-}: Event) {
+  info,
+  storeItem,
+  form
+}: Event & { storeItem?: Product; form?: Form }) {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Head>
@@ -39,10 +69,26 @@ export default function EventPage({
         <Typography variant="h3" gutterBottom>{title}</Typography>
         <Typography variant="h6" color="text.secondary" gutterBottom>{description}</Typography>
         <Typography variant="body1" sx={{ mb: 2 }}>{info}</Typography>
+        
+        <CalendarEventDetail title={title} />
+
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          {storeItem && (
+            <Link href={`/${storeItem.name}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+              {getLinkText('store', storeItem)}
+            </Link>
+          )}
+          {form && (
+            <Link href={`/forms/${form.id}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+              {getLinkText('forms', form)}
+            </Link>
+          )}
+        </Box>
+
         {details && <Box sx={{ my: 3 }} dangerouslySetInnerHTML={{__html: details}}/>}
         {organizers && organizers.length > 0 && (
           <Card sx={{ mt: 4 }}>
-            <CardHeader title="Contact Organizers for more detail" />
+            <CardHeader title="Contact organizers for more detail" />
             <CardContent>
               <List sx={{ maxHeight: 400, overflowY: "auto" }}>
                 {organizers.map((o) => (
