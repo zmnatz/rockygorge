@@ -9,18 +9,7 @@ import store from "@/data/store.yml";
 import forms from "@/data/forms.yml";
 import linkMappings from "@/data/link_mappings.yml";
 import { Event, Product, Form } from "@/types/data";
-
-function getLinkText(type: 'store' | 'forms', item: any) {
-  const mapping = linkMappings[type];
-  const text = (item.info || item.description || item.title || "").toLowerCase();
-  
-  for (const [label, pattern] of Object.entries(mapping.mappings)) {
-    if (new RegExp(pattern, 'i').test(text)) {
-      return label;
-    }
-  }
-  return mapping.default;
-}
+import { getLinkText } from "@/utils/links";
 
 export async function getStaticPaths() {
   return {

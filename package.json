@@ -21,6 +21,7 @@
   },
   "overrides": {
     "@octokit/request": "10.0.8",
+    "@opentelemetry/api": "~1.8.0",
     "type-is": "2.0.0"
   },
   "scripts": {
@@ -29,6 +30,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "lint": "eslint . --ignore-pattern '.netlify/'",
+    "test": "vitest run",
     "prepare": "husky"
   },
   "browserslist": [
@@ -40,6 +42,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@next/mdx": "^16.1.6",
+    "@rollup/plugin-yaml": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.1.6",
@@ -49,7 +52,8 @@
     "next": "^16.1.6",
     "next-plugin-yaml": "^1.0.1",
     "typescript": "^6.0.3",
-    "typescript-yaml-plugin": "^1.0.11"
+    "typescript-yaml-plugin": "^1.0.11",
+    "vitest": "^4.1.10"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mdx}": "eslint"
@@ -60,6 +64,7 @@
     "netlify-cli@26.2.0": true,
     "sharp@0.34.5": true,
     "unix-dgram@2.0.7": true,
-    "unrs-resolver@1.11.1": true
+    "unrs-resolver@1.11.1": true,
+    "fsevents@2.3.3": true
   }
 }

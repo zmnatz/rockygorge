@@ -16,7 +16,7 @@ function getFormLinkText(form: Form) {
   const text = (form.description + " " + form.title).toLowerCase();
   
   for (const [label, pattern] of Object.entries(mapping.mappings)) {
-    if (new RegExp(pattern, 'i').test(text)) {
+    if (new RegExp(pattern as string, 'i').test(text)) {
       return label;
     }
   }
