@@ -36,7 +36,7 @@ export async function getStaticProps({ params }) {
   const item = items.find((item) => item?.name === params?.id);
   if (!item) return { notFound: true };
 
-  const form = forms.find((f) => f.id === item.name);
+  const form = forms.find((f) => f.id === item.name) ?? null;
 
   const props = {
     ...item,
