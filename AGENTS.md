@@ -24,3 +24,17 @@
 - Add new content pages as `.mdx` files in `pages/`.
 - Store structured content in `src/data/*.yml`.
 - Follow MUI patterns for styling and components.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (uses the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role label vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
