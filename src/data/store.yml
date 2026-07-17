@@ -1,7 +1,7 @@
-- name: banquet
+- slug: banquet
   defaultAmount: 100
   description: Banquet Tickets
-  info: Buy your tickets for the 2026 banquet.
+  summary: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
   hide: true
   options:
@@ -20,11 +20,11 @@
 
     Please RSVP using the google form at
     [rockygorgerugby.com/forms/banquet](/forms/banquet)
-- name: open
+- slug: open
   defaultAmount: 450
   hide: false
   description: Rocky Gorge Open
-  info: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
+  summary: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
   options:
     - name: Individual - $125
@@ -46,11 +46,11 @@
     - **Hole Sponsor + Team**: Team Buy in + Hole sponsorship
     - **Hole Sponsorship**: Sponsor a hole
     - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
-- name: donations
+- slug: donations
   hide: true
   defaultAmount: 50
   description: Donations
-  info: >-
+  summary: >-
     Support Rocky Gorge's travel for the club rugby national championship with a
     donation.
   title: Support the team with a donation.
@@ -69,10 +69,10 @@
     Thank you for your support! And thank you to everyone that has donated
     already.
   supporters: []
-- name: dues
+- slug: dues
   defaultAmount: 200
   description: Fall Dues
-  info: 'Fall Season: $200'
+  summary: 'Fall Season: $200'
   title: Pay your dues. Play rugby.
   options:
     - name: Player Dues - $200
@@ -109,10 +109,10 @@
           value: Sponsor a Player
         - label: "Supporter $10.00\_USD - monthly"
           value: Supporter
-- name: supporters
+- slug: supporters
   defaultAmount: 200
   description: Supporter Dues
-  info: Help us support the Rocky Gorge community.
+  summary: Help us support the Rocky Gorge community.
   title: Pay your damn dues! Support Rocky Gorge Rugby.
   options: []
   subscriptions:
@@ -147,27 +147,27 @@
     - Bill Bush
     - Mason McIlwee
     - John Bratt
-- name: gear
+- slug: gear
   defaultAmount: 15
   description: Team Gear
-  info: Shirts and Shorts
+  summary: Shirts and Shorts
   title: Buy team gear
   options:
     - name: Miscellaneous Items - $15
       value: 15
-- name: camp
+- slug: camp
   defaultAmount: 80
   description: Training Camp
-  info: Spring training camp.
+  summary: Spring training camp.
   title: Training Camp
   hide: true
   options:
     - name: Lodging and Food - $80
       value: 80
-- name: sponsors
+- slug: sponsors
   defaultAmount: 250
   description: Sponsorship
-  info: Become a jersey sponsor
+  summary: Become a jersey sponsor
   title: Advertise with Rocky Gorge
   options:
     - name: Full Front - $1000
