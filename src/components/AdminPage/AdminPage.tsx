@@ -56,16 +56,10 @@ export function AdminPage<T>({
           setLoading(false);
         });
     }
-  }, [endpoint, initialData, initialDataTransform, initialGlobalsTransform]);
+  }, [endpoint, initialData]);
 
   const handleSaveItem = () => {
     if (!editingItem) return;
-    console.log('SAVE ITEM:', {
-      editingSlug: (editingItem as any).slug,
-      editingHide: (editingItem as any).hide,
-      itemsCount: items.length,
-      matchingPrev: items.map((i: any) => ({ slug: i.slug, hide: i.hide, willMatch: getItemId(i) === getItemId(editingItem) })),
-    });
     setItems(prev => prev.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item));
     setEditingItem(null);
   };
@@ -74,18 +68,6 @@ export function AdminPage<T>({
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item)
       : items;
-    if (editingItem) {
-      console.log('DEBUG (dialog open):', {
-        editingHide: (editingItem as any).hide,
-        matchingItem: items.find(i => getItemId(i) === getItemId(editingItem)),
-        itemsToSaveHide: (itemsToSave.find(i => getItemId(i) === getItemId(editingItem)) as any)?.hide,
-      });
-    }
-    console.log('DEBUG (all items):', {
-      editingItemIsNull: editingItem === null,
-      itemsCount: items.length,
-      allHides: itemsToSave.map((i: any) => ({ slug: i.slug, hide: i.hide })),
-    });
     const res = await fetch(`/.netlify/functions/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
