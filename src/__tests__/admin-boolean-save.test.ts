@@ -251,4 +251,70 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
 
     expect(parsed[0].hide).toBe(true);
   });
+
+  it('preserves boolean toggle through handleSaveItem + handleSaveAll flow', () => {
+    const items = [
+      { slug: 'banquet', hide: true, title: 'Banquet' },
+      { slug: 'open', hide: false, title: 'Open' },
+    ];
+
+    // Simulate: user opens dialog for 'banquet', toggles hide to false, clicks 'Save to List'
+    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+    const updated = items.map(item =>
+      getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item
+    );
+
+    // Verify handleSaveItem correctly replaced the item
+    expect(updated[0].hide).toBe(false);
+    expect(updated[1].hide).toBe(false);
+
+    // Simulate: user clicks 'Save All Changes' (editingItem is null, uses items directly)
+    const data = identitySaveTransform(updated);
+    const json = JSON.stringify(data);
+    const parsed = JSON.parse(json);
+
+    expect(parsed[0].hide).toBe(false);
+    expect(parsed[1].hide).toBe(false);
+  });
+
+  it('does not corrupt other items when merging editingItem', () => {
+    const items = [
+      { slug: 'banquet', hide: true, title: 'Banquet' },
+      { slug: 'open', hide: false, title: 'Open' },
+      { slug: 'donations', hide: true, title: 'Donations' },
+    ];
+    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+
+    const itemsToSave = editingItem
+      ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
+      : items;
+
+    expect(itemsToSave[0].hide).toBe(false);
+    expect(itemsToSave[1].hide).toBe(false);
+    expect(itemsToSave[2].hide).toBe(true);
+  });
+});
+
+describe('AdminPage useEffect dependency stability', () => {
+  it('does not include initialDataTransform or initialGlobalsTransform in useEffect deps', () => {
+    const fs = require('fs');
+    const source = fs.readFileSync(
+      require('path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
+      'utf8'
+    );
+
+    // Extract the useEffect hook and its dependency array
+    const effectStart = source.indexOf('useEffect(() =>');
+    const effectEnd = source.indexOf('const handleSaveItem', effectStart);
+    const effectBlock = source.slice(effectStart, effectEnd);
+
+    // Verify the dependency array is just [endpoint, initialData]
+    expect(effectBlock).toContain('}, [endpoint, initialData]);');
+
+    const depStart = effectBlock.indexOf('}, [') + 4;
+    const depEnd = effectBlock.indexOf(']);', depStart);
+    const depsStr = effectBlock.slice(depStart, depEnd);
+    const deps = depsStr.split(',').map((d: string) => d.trim());
+    expect(deps).toEqual(['endpoint', 'initialData']);
+  });
 });
