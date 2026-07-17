@@ -60,6 +60,12 @@ export function AdminPage<T>({
 
   const handleSaveItem = () => {
     if (!editingItem) return;
+    console.log('SAVE ITEM:', {
+      editingSlug: (editingItem as any).slug,
+      editingHide: (editingItem as any).hide,
+      itemsCount: items.length,
+      matchingPrev: items.map((i: any) => ({ slug: i.slug, hide: i.hide, willMatch: getItemId(i) === getItemId(editingItem) })),
+    });
     setItems(prev => prev.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item));
     setEditingItem(null);
   };
