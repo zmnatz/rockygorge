@@ -65,15 +65,18 @@ function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
   return results;
 }
 
-export function formatEventTime(start: string, end: string) {
-  const parseDate = (dateStr: string) => {
-    if (!dateStr.includes("T")) {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    }
-    return new Date(dateStr);
-  };
+const parseDate = (dateStr: string) => {
+  if (!dateStr.includes("T")) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+};
 
+const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleString("en-US", options);
+const isDateOnly = (value: string) => !value.includes("T");
+
+export function formatEventTime(start: string, end: string) {
   const startDate = parseDate(start);
   let endDate = parseDate(end);
 
@@ -90,9 +93,6 @@ export function formatEventTime(start: string, end: string) {
   const sameDay = startDate.getFullYear() === endDate.getFullYear() &&
     startDate.getMonth() === endDate.getMonth() &&
     startDate.getDate() === endDate.getDate();
-
-  const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleString("en-US", options);
-  const isDateOnly = (value: string) => !value.includes("T");
 
   const formattedStartDate = formatDate(startDate, {
     weekday: "short",
@@ -130,19 +130,8 @@ export function formatEventTime(start: string, end: string) {
 }
 
 export function formatStartDate(start: string) {
-  const parseDate = (dateStr: string) => {
-    if (!dateStr.includes("T")) {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    }
-    return new Date(dateStr);
-  };
-
   const startDate = parseDate(start);
   if (Number.isNaN(startDate.getTime())) return start;
-
-  const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleString("en-US", options);
-  const isDateOnly = (value: string) => !value.includes("T");
 
   const formattedStartDate = formatDate(startDate, {
     weekday: "short",
