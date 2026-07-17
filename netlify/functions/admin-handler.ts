@@ -1,0 +1,94 @@
+import { Octokit } from 'octokit';
+import yaml from 'js-yaml';
+
+interface AdminHandlerConfig {
+  filePath: string;
+  branchPrefix: string;
+  label: string;
+}
+
+export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
+  return async (event: any) => {
+    if (event.httpMethod === 'POST') {
+      try {
+        const body = JSON.parse(event.body);
+        const data = body;
+
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
+        const octokit = new Octokit({ auth: GITHUB_TOKEN });
+        const OWNER = 'zmnatz';
+        const REPO = 'rockygorge';
+        const baseBranch = 'master';
+
+        const { data: refData } = await octokit.rest.git.getRef({
+          owner: OWNER,
+          repo: REPO,
+          ref: `heads/${baseBranch}`,
+        });
+
+        const branchName = `${branchPrefix}-${Date.now()}`;
+        await octokit.rest.git.createRef({
+          owner: OWNER,
+          repo: REPO,
+          ref: `refs/heads/${branchName}`,
+          sha: refData.object.sha,
+        });
+
+        let fileData;
+        try {
+          const response = await octokit.rest.repos.getContent({
+            owner: OWNER,
+            repo: REPO,
+            path: filePath,
+            ref: baseBranch,
+          });
+          fileData = response.data as any;
+        } catch (error: any) {
+          if (error.status !== 404) throw error;
+        }
+
+        const updatedYaml = yaml.dump(data);
+
+        const updateParams: any = {
+          owner: OWNER,
+          repo: REPO,
+          path: filePath,
+          message: `Update ${filePath.split('/').pop()}`,
+          content: Buffer.from(updatedYaml).toString('base64'),
+          branch: branchName,
+        };
+
+        if (fileData?.sha) {
+          updateParams.sha = fileData.sha;
+        }
+
+        await octokit.rest.repos.createOrUpdateFileContents(updateParams);
+
+        await octokit.rest.pulls.create({
+          owner: OWNER,
+          repo: REPO,
+          title: `Update ${filePath.split('/').pop()}`,
+          head: branchName,
+          base: baseBranch,
+          body: `Updated ${label} data via admin page`,
+        });
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
+        };
+      } catch (error: any) {
+        console.error(error);
+        return {
+          statusCode: 500,
+          body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
+        };
+      }
+    }
+
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
+  };
+}

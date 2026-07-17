@@ -1,0 +1,17 @@
+store:
+  mappings:
+    "Buy Tickets": "ticket"
+    "Sponsor the Event": "sponsor"
+    "Make a Donation": "donation"
+    "Pay Dues": "dues"
+    "Buy Gear": "gear"
+  default: "View Item"
+
+forms:
+  mappings:
+    "Nominate Member": "nominate"
+    "Submit Travel Info": "travel"
+    "Interest Form": "interested|join"
+    "Sign Up": "sign up"
+    "RSVP": "rsvp"
+  default: "Fill out Form"

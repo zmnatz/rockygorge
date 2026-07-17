@@ -1,24 +1,36 @@
 import { remark } from "remark";
 import remarkHtml from "remark-html";
-import { Typography } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import Head from "next/head";
+import Link from "next/link";
+import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
 
 import {PaypalProduct} from "@/components/Paypal";
 import items from "@/data/store.yml";
-import { Product } from "@/types/data";
-
+import forms from "@/data/forms.yml";
+import { Product, Form } from "@/types/data";
+import { getLinkText } from "@/utils/links";
 
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
-      params: { id: item.name },
+      params: { id: item.slug },
     })),
     fallback: false,
   };
 }
 
 export async function getStaticProps({ params }) {
-  const props = items.find((item) => item?.name === params?.id);
+  const item = items.find((item) => item?.slug === params?.id);
+  if (!item) return { notFound: true };
+
+  const form = forms.find((f) => f.slug === item.slug) ?? null;
+
+  const props = {
+    ...item,
+    form,
+  };
+
   if (props.details) {
     props.details = (await remark().use(remarkHtml).process(props.details)).toString();
   }
@@ -33,8 +45,9 @@ export default function StoreItem({
   details,
   donation,
   subscriptions,
-  supporters
-}: Product) {
+  supporters,
+  form
+}: Product & { form?: Form }) {
   return (
     <>
       <Head>
@@ -52,7 +65,17 @@ export default function StoreItem({
       >
         <Typography variant="h3">{title}</Typography>
         {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
+        
       </PaypalProduct>
+      {form && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Link href={`/forms/${form.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+            {getLinkText('forms', form)}
+          </Link>
+        </Box>
+      )}
+
+      <CalendarEventDetail title={title} />
     </>
   );
 }

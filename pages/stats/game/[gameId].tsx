@@ -6,27 +6,8 @@ import {
 } from '@mui/material'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-
-const STAT_CATEGORIES: Record<string, string[]> = {
-  Offensive: ['tries_scored', 'try_assists', 'positive_carries', 'negative_carries', 'line_breaks', 'attacking_rucks', 'tackle_breaks', 'off_loads'],
-  Defensive: ['tackles_made', 'tackles_missed', 'dominant_tackles', 'steals', 'defensive_rucks', 'turnovers_forced'],
-  Penalties: ['penalties_conceded', 'penalty_reasons', 'turnovers_given']
-}
-
-function formatColumnTitle(key: string) {
-  if (key === 'name') return 'Player'
-  if (key === 'game') return 'Opponent'
-  return key.replace(/_/g, ' ').split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-}
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
+import { STAT_CATEGORIES, TEAM_STAT_CATEGORIES, formatColumnTitle, getSortableName } from '@/utils/stats'
+import { slugify } from '@/utils/slugify'
 
 function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
@@ -46,12 +27,6 @@ function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
       let bValue = b[sortConfig.key]
 
       if (sortConfig.key === 'name') {
-        const getSortableName = (name: string) => {
-          const parts = name.trim().split(/\s+/)
-          const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0]
-          const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : ''
-          return `${lastName}, ${firstName}`.toLowerCase()
-        }
         aValue = getSortableName(aValue as string)
         bValue = getSortableName(bValue as string)
       }
@@ -159,12 +134,6 @@ export async function getStaticProps({ params }) {
   ]
 
   return { props: { game, allColumns } }
-}
-
-const TEAM_STAT_CATEGORIES: Record<string, string[]> = {
-  Offensive: ['ruckable_carries', 'ruck_arrivals', 'avg_players_committed_to_ruck', 'maul_success', 'lineouts_won', 'scrums_won'],
-  Defensive: ['total_tackles_made', 'total_tackles_missed', 'tackle_percentage', 'double_tackles', 'lineouts_stolen', 'scrums_stolen'],
-  Penalties: ['total_penalties_gorge', 'total_penalties_opponent', 'total_knocks_gorge', 'total_knocks_opponent', 'lineouts_lost', 'scrums_lost']
 }
 
 export default function GameStatsPage({ game, allColumns }) {

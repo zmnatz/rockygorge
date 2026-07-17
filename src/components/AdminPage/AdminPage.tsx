@@ -56,7 +56,7 @@ export function AdminPage<T>({
           setLoading(false);
         });
     }
-  }, [endpoint, initialData, initialDataTransform, initialGlobalsTransform]);
+  }, [endpoint, initialData]);
 
   const handleSaveItem = () => {
     if (!editingItem) return;
@@ -65,10 +65,13 @@ export function AdminPage<T>({
   };
 
   const handleSaveAll = async () => {
+    const itemsToSave = editingItem
+      ? items.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item)
+      : items;
     const res = await fetch(`/.netlify/functions/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(saveDataTransform(items, globals)),
+      body: JSON.stringify(saveDataTransform(itemsToSave, globals)),
     });
     if (res.ok) {
       alert(`${title} updated and committed successfully!`);

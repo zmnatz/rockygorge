@@ -6,18 +6,8 @@ import {
 } from '@mui/material'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-
-const STAT_CATEGORIES: Record<string, string[]> = {
-  Offensive: ['tries_scored', 'try_assists', 'positive_carries', 'negative_carries', 'line_breaks', 'attacking_rucks', 'tackle_breaks', 'off_loads'],
-  Defensive: ['tackles_made', 'tackles_missed', 'dominant_tackles', 'steals', 'defensive_rucks', 'turnovers_forced'],
-  Penalties: ['penalties_conceded', 'penalty_reasons', 'turnovers_given']
-}
-
-function formatColumnTitle(key: string) {
-  if (key === 'name') return 'Player'
-  if (key === 'game') return 'Opponent'
-  return key.replace(/_/g, ' ').split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-}
+import { STAT_CATEGORIES, formatColumnTitle, getSortableName } from '@/utils/stats'
+import { slugify } from '@/utils/slugify'
 
 function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
@@ -37,12 +27,6 @@ function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
       let bValue = b[sortConfig.key]
 
       if (sortConfig.key === 'name') {
-        const getSortableName = (name: string) => {
-          const parts = name.trim().split(/\s+/)
-          const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0]
-          const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : ''
-          return `${lastName}, ${firstName}`.toLowerCase()
-        }
         aValue = getSortableName(aValue as string)
         bValue = getSortableName(bValue as string)
       }
@@ -124,15 +108,6 @@ function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
     </TableContainer>
   )
 }
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
 
 export async function getStaticPaths() {
   const games = Array.isArray(stats.games) ? stats.games : []
