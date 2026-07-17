@@ -1,4 +1,3 @@
-import React from 'react';
 import { AdminPage } from '../../src/components/AdminPage';
 import adminYaml from '../../src/data/admin.yml';
 import { generateLabel } from '../../src/utils/labels';
@@ -8,6 +7,8 @@ import path from 'path';
 
 const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
   slug: (item) => item.slug,
+  name: (item) => item.name,
+  type: (item) => item.type,
 };
 
 const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {
@@ -74,7 +75,7 @@ export default function GenericAdmin({ initialData, type }) {
       title={yamlConfig.title}
       endpoint={yamlConfig.endpoint}
       initialData={initialData}
-      getItemId={ITEM_ID_MAPPINGS[yamlConfig.getItemId] || ITEM_ID_MAPPINGS.id}
+      getItemId={ITEM_ID_MAPPINGS[yamlConfig.getItemId] ?? ((item: any) => item.id)}
       initialDataTransform={transform?.initialDataTransform}
       initialGlobalsTransform={transform?.initialGlobalsTransform}
       saveDataTransform={transform?.saveDataTransform}

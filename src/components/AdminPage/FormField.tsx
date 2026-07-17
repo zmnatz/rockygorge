@@ -1,4 +1,3 @@
-import React from 'react';
 import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem, ListItemText, IconButton, Button } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
 import { FieldConfig } from './types';
