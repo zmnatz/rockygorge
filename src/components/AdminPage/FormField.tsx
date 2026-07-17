@@ -108,6 +108,7 @@ export function FormField<T>({
                 </IconButton>
               }>
                 <ListItemText 
+                  slotProps={{ secondary: { component: 'div' as any } }}
                   primary={
                     <TextField 
                       size="small" 
@@ -159,6 +160,7 @@ export function FormField<T>({
                 </IconButton>
               }>
                 <ListItemText 
+                  slotProps={{ secondary: { component: 'div' as any } }}
                   primary={
                     <TextField 
                       size="small" 
