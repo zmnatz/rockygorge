@@ -8,35 +8,23 @@ import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDeta
 import {PaypalProduct} from "@/components/Paypal";
 import items from "@/data/store.yml";
 import forms from "@/data/forms.yml";
-import linkMappings from "@/data/link_mappings.yml";
 import { Product, Form } from "@/types/data";
-
-function getFormLinkText(form: Form) {
-  const mapping = linkMappings.forms;
-  const text = (form.description + " " + form.title).toLowerCase();
-  
-  for (const [label, pattern] of Object.entries(mapping.mappings)) {
-    if (new RegExp(pattern as string, 'i').test(text)) {
-      return label;
-    }
-  }
-  return mapping.default;
-}
+import { getLinkText } from "@/utils/links";
 
 export async function getStaticPaths() {
   return {
     paths: items.map((item) => ({
-      params: { id: item.name },
+      params: { id: item.slug },
     })),
     fallback: false,
   };
 }
 
 export async function getStaticProps({ params }) {
-  const item = items.find((item) => item?.name === params?.id);
+  const item = items.find((item) => item?.slug === params?.id);
   if (!item) return { notFound: true };
 
-  const form = forms.find((f) => f.id === item.name) ?? null;
+  const form = forms.find((f) => f.slug === item.slug) ?? null;
 
   const props = {
     ...item,
@@ -81,8 +69,8 @@ export default function StoreItem({
       </PaypalProduct>
       {form && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Link href={`/forms/${form.id}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
-            {getFormLinkText(form)}
+          <Link href={`/forms/${form.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+            {getLinkText('forms', form)}
           </Link>
         </Box>
       )}

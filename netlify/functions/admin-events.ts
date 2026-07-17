@@ -1,11 +1,11 @@
 import { createAdminHandler } from './admin-handler';
 
 export const config = {
-    path: '/api/admin-calendar',
+    path: '/api/admin-events',
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/calendar.yml',
-    branchPrefix: 'admin-calendar',
-    label: 'calendar',
+    filePath: 'src/data/events.yml',
+    branchPrefix: 'admin-events',
+    label: 'events',
 });

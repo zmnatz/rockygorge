@@ -4,11 +4,11 @@ import { getLinkText } from '@/utils/links';
 describe('getLinkText', () => {
   describe('store type', () => {
     it('returns "Buy Tickets" for ticket-related items', () => {
-      expect(getLinkText('store', { info: 'Buy tickets for the tournament' })).toBe('Buy Tickets');
+      expect(getLinkText('store', { summary: 'Buy tickets for the tournament' })).toBe('Buy Tickets');
     });
 
     it('returns "Sponsor the Event" for sponsor-related items', () => {
-      expect(getLinkText('store', { info: 'Sponsor the event and get recognition' })).toBe('Sponsor the Event');
+      expect(getLinkText('store', { summary: 'Sponsor the event and get recognition' })).toBe('Sponsor the Event');
     });
 
     it('returns "Make a Donation" for donation-related items', () => {
@@ -20,21 +20,21 @@ describe('getLinkText', () => {
     });
 
     it('returns "Buy Gear" for gear-related items', () => {
-      expect(getLinkText('store', { info: 'Buy gear for the season' })).toBe('Buy Gear');
+      expect(getLinkText('store', { summary: 'Buy gear for the season' })).toBe('Buy Gear');
     });
 
     it('returns default when no pattern matches', () => {
-      expect(getLinkText('store', { info: 'Some random item' })).toBe('View Item');
+      expect(getLinkText('store', { summary: 'Some random item' })).toBe('View Item');
     });
 
-    it('falls back through info -> description -> title', () => {
+    it('falls back through summary -> description -> title', () => {
       expect(getLinkText('store', { description: 'sponsor something', title: 'Other' })).toBe('Sponsor the Event');
     });
   });
 
   describe('forms type', () => {
     it('returns "Nominate Member" for nomination forms', () => {
-      expect(getLinkText('forms', { info: 'Nominate a member for the award' })).toBe('Nominate Member');
+      expect(getLinkText('forms', { summary: 'Nominate a member for the award' })).toBe('Nominate Member');
     });
 
     it('returns "Submit Travel Info" for travel forms', () => {
@@ -42,7 +42,7 @@ describe('getLinkText', () => {
     });
 
     it('returns "Interest Form" for interest/join forms', () => {
-      expect(getLinkText('forms', { info: 'Fill out this interest form to join' })).toBe('Interest Form');
+      expect(getLinkText('forms', { summary: 'Fill out this interest form to join' })).toBe('Interest Form');
     });
 
     it('returns "RSVP" for RSVP forms', () => {
@@ -50,7 +50,7 @@ describe('getLinkText', () => {
     });
 
     it('returns default when no pattern matches', () => {
-      expect(getLinkText('forms', { info: 'Something else' })).toBe('Fill out Form');
+      expect(getLinkText('forms', { summary: 'Something else' })).toBe('Fill out Form');
     });
   });
 });

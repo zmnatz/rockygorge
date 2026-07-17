@@ -26,15 +26,15 @@ export const visibleLinks = [...links, ...forms]
     <Grid size={{ xs: 12, md: 6 }}>
       <Grid container spacing={2}>
         {visibleStoreItems.map((item) => (
-          <ProductCard key={item.name} title={item?.description} href={`/${item.name}`}>{item.info}</ProductCard>
+          <ProductCard key={item.slug} title={item?.description} href={`/${item.slug}`}>{item.summary}</ProductCard>
         ))}
 {events.filter(event => !event.hide).map((event) => (
-  <ProductCard key={event.name} title={event.title} href={`/events/${event.name}`}>
-    {event.info}
+  <ProductCard key={event.slug} title={event.title} href={`/events/${event.slug}`}>
+    {event.summary}
   </ProductCard>
 ))}
         {visibleLinks.map((item) => (
-          <ProductCard key={item.href} title={item.title} href={item.href}>{item.description}</ProductCard>
+          <ProductCard key={item.href} title={item.title} href={item.href}>{item.summary}</ProductCard>
         ))}
       </Grid>
     </Grid>

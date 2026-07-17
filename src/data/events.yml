@@ -1,6 +1,6 @@
-- name: open
+- slug: open
   description: Rocky Gorge Open
-  info: Sign up for the event or sponsor a hole for the 2026 Rocky Gorge Open.
+  summary: Sign up for the event or sponsor a hole for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
   hide: true
   organizers:

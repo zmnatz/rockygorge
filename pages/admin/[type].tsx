@@ -7,8 +7,7 @@ import yaml from 'js-yaml';
 import path from 'path';
 
 const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
-  name: (item) => item.name,
-  id: (item) => item.id,
+  slug: (item) => item.slug,
 };
 
 const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {

@@ -1,4 +1,3 @@
-'use client'
 import { useCalendarEvents, formatStartDate } from "./api";
 import { Typography, Box, CircularProgress } from "@mui/material";
 

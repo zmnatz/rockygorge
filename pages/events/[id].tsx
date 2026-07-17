@@ -14,18 +14,18 @@ import { getLinkText } from "@/utils/links";
 export async function getStaticPaths() {
   return {
     paths: events.map((event) => ({
-      params: { id: event.name },
+      params: { id: event.slug },
     })),
     fallback: false,
   };
 }
 
 export async function getStaticProps({ params }) {
-  const event = events.find((event) => event?.name === params?.id);
+  const event = events.find((event) => event?.slug === params?.id);
   if (!event) return { notFound: true };
 
-  const storeItem = store.find((item) => item.name === event.name) ?? null;
-  const form = forms.find((f) => f.id === event.name) ?? null;
+  const storeItem = store.find((item) => item.slug === event.slug) ?? null;
+  const form = forms.find((f) => f.slug === event.slug) ?? null;
 
   const props = {
     ...event,
@@ -44,7 +44,7 @@ export default function EventPage({
   description,
   details,
   organizers,
-  info,
+  summary,
   storeItem,
   form
 }: Event & { storeItem?: Product; form?: Form }) {
@@ -57,18 +57,18 @@ export default function EventPage({
       <Box>
         <Typography variant="h3" gutterBottom>{title}</Typography>
         <Typography variant="h6" color="text.secondary" gutterBottom>{description}</Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>{info}</Typography>
+        <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>
         
         <CalendarEventDetail title={title} />
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           {storeItem && (
-            <Link href={`/${storeItem.name}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+            <Link href={`/${storeItem.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
               {getLinkText('store', storeItem)}
             </Link>
           )}
           {form && (
-            <Link href={`/forms/${form.id}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
+            <Link href={`/forms/${form.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
               {getLinkText('forms', form)}
             </Link>
           )}

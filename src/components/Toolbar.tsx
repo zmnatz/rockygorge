@@ -30,14 +30,14 @@ export function Toolbar () {
           Rocky Gorge Rugby
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        {headerLinks.map(({ id, title, description }) => (
+        {headerLinks.map(({ slug, href, title, summary }) => (
           <Button
-            key={id}
+            key={slug}
             component={NextLinkComposed}
-            href={id}
+            href={href}
             color="inherit"
             sx={{ textTransform: "none", display: { xs: 'none', sm: 'inline-flex' } }}
-            title={description}
+            title={summary}
           >
             {title}
           </Button>
@@ -57,13 +57,13 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {headerLinks.map(({ id, title, description }) => (
+          {headerLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
-              key={id}
+              key={slug}
               component="a"
-              href={id}
+              href={href}
               onClick={handleCloseMenu}
-              title={description}
+              title={summary}
             >
               {title}
             </MenuItem>
