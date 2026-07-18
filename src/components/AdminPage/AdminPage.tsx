@@ -20,6 +20,7 @@ import {
 import { Edit } from '@mui/icons-material';
 import { AdminPageProps } from './types';
 import { FormField } from './FormField';
+import { get, post } from '@/utils/api';
 
 export function AdminPage<T>({
   title,
@@ -46,15 +47,13 @@ export function AdminPage<T>({
       }
       setLoading(false);
     } else {
-      fetch(`/.netlify/functions/${endpoint}`)
-        .then(res => res.json())
-        .then(data => {
-          setItems(initialDataTransform(data));
-          if (initialGlobalsTransform) {
-            setGlobals(initialGlobalsTransform(data));
-          }
-          setLoading(false);
-        });
+      get<any>(`/.netlify/functions/${endpoint}`).then(data => {
+        setItems(initialDataTransform(data));
+        if (initialGlobalsTransform) {
+          setGlobals(initialGlobalsTransform(data));
+        }
+        setLoading(false);
+      });
     }
   }, [endpoint, initialData]);
 
@@ -68,14 +67,10 @@ export function AdminPage<T>({
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item)
       : items;
-    const res = await fetch(`/.netlify/functions/${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(saveDataTransform(itemsToSave, globals)),
-    });
-    if (res.ok) {
+    try {
+      await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
       alert(`${title} updated and committed successfully!`);
-    } else {
+    } catch {
       alert(`Failed to update ${title}.`);
     }
   };

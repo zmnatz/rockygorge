@@ -1,111 +1,13 @@
 import stats from '@/data/stats/stats.yml'
 import { 
-  Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Box, TableSortLabel, Typography, Breadcrumbs, Link as MuiLink,
+  Paper, Box, Typography, Breadcrumbs, Link as MuiLink,
   ToggleButton, ToggleButtonGroup, Grid
 } from '@mui/material'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { STAT_CATEGORIES, TEAM_STAT_CATEGORIES, formatColumnTitle, getSortableName } from '@/utils/stats'
+import { STAT_CATEGORIES, TEAM_STAT_CATEGORIES, formatColumnTitle } from '@/utils/stats'
 import { slugify } from '@/utils/slugify'
-
-function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
-    key: columns[0]?.key || '',
-    direction: 'asc',
-  })
-
-  const handleRequestSort = (property: string) => {
-    const isAsc = sortConfig.key === property && sortConfig.direction === 'asc'
-    setSortConfig({ key: property, direction: isAsc ? 'desc' : 'asc' })
-  }
-
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key || !sortConfig.direction) return data
-    return [...data].sort((a, b) => {
-      let aValue = a[sortConfig.key]
-      let bValue = b[sortConfig.key]
-
-      if (sortConfig.key === 'name') {
-        aValue = getSortableName(aValue as string)
-        bValue = getSortableName(bValue as string)
-      }
-
-      if (aValue === bValue) return 0
-      const comparison = aValue < bValue ? -1 : 1
-      return sortConfig.direction === 'asc' ? comparison : -comparison
-    })
-  }, [data, sortConfig])
-
-  const columnGroups = useMemo(() => {
-    const groups: { title: string; colSpan: number }[] = []
-    
-    const baseCols = columns.filter(c => c.key === 'name')
-    if (baseCols.length > 0) {
-      groups.push({ title: '', colSpan: baseCols.length })
-    }
-
-    Object.entries(STAT_CATEGORIES).forEach(([category, fields]) => {
-      const count = columns.filter(c => fields.includes(c.key)).length
-      if (count > 0) {
-        groups.push({ title: category, colSpan: count })
-      }
-    })
-
-    return groups
-  }, [columns])
-
-  return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {columnGroups.map((group, idx) => (
-              <TableCell 
-                key={idx} 
-                align="center" 
-                colSpan={group.colSpan}
-                sx={{ borderBottom: group.title ? '1px solid rgba(224, 224, 224, 1)' : 'none', fontWeight: 'bold' }}
-              >
-                {group.title}
-              </TableCell>
-            ))}
-          </TableRow>
-          <TableRow>
-            {columns.map((col) => (
-              <TableCell key={col.key} sx={{ minWidth: col.minWidth }}>
-                <TableSortLabel
-                  active={sortConfig.key === col.key}
-                  direction={sortConfig.key === col.key ? sortConfig.direction : 'asc'}
-                  onClick={() => handleRequestSort(col.key)}
-                >
-                  {col.title}
-                </TableSortLabel>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortedData.map((row) => (
-            <TableRow key={row.name}>
-              {columns.map((col) => (
-                <TableCell key={col.key}>
-                  {col.key === 'name' ? (
-                    <Link href={`/stats/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
-                      <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
-                    </Link>
-                  ) : (
-                    row[col.dataIndex]
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  )
-}
+import { SortableTable } from '@/components/SortableTable'
 
 export async function getStaticPaths() {
   const games = Array.isArray(stats.games) ? stats.games : []
@@ -218,7 +120,23 @@ export default function GameStatsPage({ game, allColumns }) {
         </ToggleButtonGroup>
       </Box>
       
-      <SortableTable columns={filteredColumns} data={game.players} />
+      <SortableTable 
+        columns={filteredColumns} 
+        data={game.players} 
+        categories={STAT_CATEGORIES}
+        baseColumnFilter={(c) => c.key === 'name'}
+        rowKey={(row) => row.name}
+        renderCell={(col, row) => {
+          if (col.key === 'name') {
+            return (
+              <Link href={`/stats/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
+                <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
+              </Link>
+            )
+          }
+          return row[col.dataIndex]
+        }}
+      />
     </Box>
   )
 }

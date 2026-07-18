@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEventTime, formatStartDate } from '@/components/CalendarCard/api';
+import { formatEventTime, formatStartDate } from '@/utils/calendar';
 
 describe('formatEventTime', () => {
   it('formats same-day time events', () => {

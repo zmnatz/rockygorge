@@ -5,6 +5,7 @@ import { GetStaticProps } from 'next'
 import yaml from 'js-yaml'
 import fs from 'fs'
 import path from 'path'
+import { post } from '@/utils/api'
 
 interface GauntletSubmitProps {
     playerNames: string[];
@@ -45,21 +46,12 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
         setSubmitting(true)
 
         try {
-            const response = await fetch('/.netlify/functions/submit-gauntlet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-
-            if (response.ok) {
-                setStatus({ type: 'success', message: 'Submission received! A pull request has been created for review.' })
-                form.reset()
-            } else {
-                const errorData = await response.json()
-                setStatus({ type: 'error', message: errorData.error || 'Something went wrong. Please try again.' })
-            }
+            await post('/.netlify/functions/submit-gauntlet', data)
+            setStatus({ type: 'success', message: 'Submission received! A pull request has been created for review.' })
+            form.reset()
         } catch (error) {
-            setStatus({ type: 'error', message: 'Network error. Please check your connection.' })
+            const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+            setStatus({ type: 'error', message })
         } finally {
             setSubmitting(false)
         }

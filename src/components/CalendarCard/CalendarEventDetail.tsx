@@ -1,4 +1,5 @@
-import { useCalendarEvents, formatStartDate } from "./api";
+import { useCalendarEvents } from "@/api/calendar";
+import { formatStartDate } from "@/utils/calendar";
 import { Typography, Box, CircularProgress } from "@mui/material";
 
 interface CalendarEventDetailProps {

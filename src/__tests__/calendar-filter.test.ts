@@ -1,28 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CalendarEvent, CalendarFilter } from '@/components/CalendarCard/types';
-
-// Extract filterEvents logic for testing (it's not exported from api.tsx)
-function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
-  const { matches, notMatches, limit, hideSummary } = criteria;
-
-  let results = events;
-  if (matches) {
-    results = results.filter(event => event.summary.match(new RegExp(matches, 'ig')));
-  }
-  if (notMatches) {
-    results = results.filter(event => !event.summary.match(new RegExp(notMatches, 'ig')));
-  }
-  if (limit) {
-    results = results.slice(0, limit);
-  }
-  if (hideSummary) {
-    results = results.map(event => ({
-      ...event,
-      summary: ''
-    }));
-  }
-  return results;
-}
+import { filterEvents } from '@/utils/calendar';
 
 const mockEvents: CalendarEvent[] = [
   { summary: 'Rugby Practice', location: 'Field A', htmlLink: '', start: '2026-07-15T18:00:00', end: '2026-07-15T20:00:00' },

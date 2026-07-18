@@ -8,6 +8,60 @@ interface FormFieldProps<T> {
   onChange: (updated: T) => void;
 }
 
+function KeyValueMapField({ label, value, onChange, valueType }: { label: string; value: any[]; onChange: (v: any[]) => void; valueType: 'number' | 'string' }) {
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6">{label}</Typography>
+      <List>
+        {(value || []).map((pair: any, idx: number) => (
+          <ListItem key={idx} secondaryAction={
+            <IconButton edge="end" onClick={() => {
+              const newList = [...(value || [])];
+              newList.splice(idx, 1);
+              onChange(newList);
+            }}>
+              <Delete />
+            </IconButton>
+          }>
+            <ListItemText 
+              slotProps={{ secondary: { component: 'div' as any } }}
+              primary={
+                <TextField 
+                  size="small" 
+                  label="Key" 
+                  value={pair.name || pair.key || ''} 
+                  onChange={e => {
+                    const newList = [...(value || [])];
+                    const keyName = pair.name !== undefined ? 'name' : 'key';
+                    newList[idx][keyName] = e.target.value;
+                    onChange(newList);
+                  }}
+                />
+              }
+              secondary={
+                <TextField 
+                  size="small" 
+                  label="Value" 
+                  type={valueType === 'number' ? 'number' : undefined}
+                  value={pair.value ?? ''} 
+                  onChange={e => {
+                    const newList = [...(value || [])];
+                    newList[idx].value = valueType === 'number' ? Number(e.target.value) : e.target.value;
+                    onChange(newList);
+                  }}
+                />
+              }
+            />
+          </ListItem>
+        ))}
+        <Button startIcon={<Add />} onClick={() => {
+          onChange([...(value || []), { name: '', value: valueType === 'number' ? 0 : '' }]);
+        }}>Add Pair</Button>
+      </List>
+    </Box>
+  );
+}
+
 export function FormField<T>({ 
   field, 
   item, 
@@ -94,106 +148,11 @@ export function FormField<T>({
       );
     case 'keyValueMap':
       return (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">{field.label}</Typography>
-          <List>
-            {(value || []).map((pair: any, idx: number) => (
-              <ListItem key={idx} secondaryAction={
-                <IconButton edge="end" onClick={() => {
-                  const newList = [...(value || [])];
-                  newList.splice(idx, 1);
-                  updateValue(newList);
-                }}>
-                  <Delete />
-                </IconButton>
-              }>
-                <ListItemText 
-                  slotProps={{ secondary: { component: 'div' as any } }}
-                  primary={
-                    <TextField 
-                      size="small" 
-                      label="Key" 
-                      value={pair.name || pair.key || ''} 
-                      onChange={e => {
-                        const newList = [...(value || [])];
-                        const keyName = pair.name !== undefined ? 'name' : 'key';
-                        newList[idx][keyName] = e.target.value;
-                        updateValue(newList);
-                      }}
-                    />
-                  }
-                  secondary={
-                    <TextField 
-                      size="small" 
-                      label="Value" 
-                      type="number" 
-                      value={pair.value ?? ''} 
-                      onChange={e => {
-                        const newList = [...(value || [])];
-                        newList[idx].value = Number(e.target.value);
-                        updateValue(newList);
-                      }}
-                    />
-                  }
-                />
-              </ListItem>
-            ))}
-            <Button startIcon={<Add />} onClick={() => {
-              updateValue([...(value || []), { name: '', value: 0 }]);
-            }}>Add Pair</Button>
-          </List>
-        </Box>
+        <KeyValueMapField label={field.label} value={value || []} onChange={updateValue} valueType="number" />
       );
     case 'textKeyValueMap':
       return (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">{field.label}</Typography>
-          <List>
-            {(value || []).map((pair: any, idx: number) => (
-              <ListItem key={idx} secondaryAction={
-                <IconButton edge="end" onClick={() => {
-                  const newList = [...(value || [])];
-                  newList.splice(idx, 1);
-                  updateValue(newList);
-                }}>
-                  <Delete />
-                </IconButton>
-              }>
-                <ListItemText 
-                  slotProps={{ secondary: { component: 'div' as any } }}
-                  primary={
-                    <TextField 
-                      size="small" 
-                      label="Key" 
-                      value={pair.name || pair.key || ''} 
-                      onChange={e => {
-                        const newList = [...(value || [])];
-                        const keyName = pair.name !== undefined ? 'name' : 'key';
-                        newList[idx][keyName] = e.target.value;
-                        updateValue(newList);
-                      }}
-                    />
-                  }
-                  secondary={
-                    <TextField 
-                      size="small" 
-                      label="Value" 
-                      value={pair.value ?? ''} 
-                      onChange={e => {
-                        const newList = [...(value || [])];
-                        newList[idx].value = e.target.value;
-                        updateValue(newList);
-                      }}
-                    />
-                  }
-                />
-              </ListItem>
-            ))}
-            <Button startIcon={<Add />} onClick={() => {
-              updateValue([...(value || []), { name: '', value: '' }]);
-            }}>Add Pair</Button>
-          </List>
-        </Box>
+        <KeyValueMapField label={field.label} value={value || []} onChange={updateValue} valueType="string" />
       );
 
     case 'text':

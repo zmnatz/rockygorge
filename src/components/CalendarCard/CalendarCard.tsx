@@ -2,7 +2,8 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, CircularProgress, Alert } from "@mui/material";
-import { useCalendarEvents, formatEventTime } from "./api";
+import { useCalendarEvents } from "@/api/calendar";
+import { formatEventTime } from "@/utils/calendar";
 import { CalendarEvent } from "./types";
 import Link from "next/link";
 

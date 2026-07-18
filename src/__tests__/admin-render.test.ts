@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-
-const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {
-  boolean: (item, field) => item[field] ? 'Yes' : 'No',
-  calendarMatches: (item) => item.matches || item.notMatches || '-',
-  default: (item, field) => item[field],
-};
+import { RENDER_MAPPINGS } from '@/utils/admin-config';
 
 describe('RENDER_MAPPINGS', () => {
   describe('boolean', () => {
