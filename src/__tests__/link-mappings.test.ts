@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import linkMappings from '@/data/link_mappings.yml';
+import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
 describe('link_mappings.yml', () => {
   it('has store mappings', () => {
@@ -34,33 +35,11 @@ describe('link_mappings.yml', () => {
 
 describe('linkMappings transform roundtrip', () => {
   function initialDataTransform(data: any) {
-    return [
-      {
-        type: 'store',
-        mappings: Object.entries(data.store?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.store?.default,
-      },
-      {
-        type: 'forms',
-        mappings: Object.entries(data.forms?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.forms?.default,
-      },
-    ];
+    return TRANSFORM_MAPPINGS.linkMappings.initialDataTransform(data);
   }
 
   function saveDataTransform(items: any[]) {
-    const result: any = {};
-    items.forEach((item: any) => {
-      const mappings: any = {};
-      (item.mappings || []).forEach((m: any) => {
-        mappings[m.name] = m.value;
-      });
-      result[item.type] = {
-        mappings,
-        default: item.default,
-      };
-    });
-    return result;
+    return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
   }
 
   it('roundtrips through transform and save', () => {

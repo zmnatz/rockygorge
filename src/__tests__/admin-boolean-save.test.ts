@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
-
-const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
-  slug: (item) => item.slug,
-  name: (item) => item.name,
-  type: (item) => item.type,
-};
+import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
 function getItemId(item: any, strategy: string = 'slug'): string {
   const fn = ITEM_ID_MAPPINGS[strategy] || ((item: any) => item.id);
@@ -17,25 +12,11 @@ function identitySaveTransform(items: any[], globals?: any) {
 }
 
 function calendarSaveTransform(items: any[], globals: any) {
-  return {
-    months: globals.months,
-    filters: items,
-  };
+  return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals);
 }
 
 function linkMappingsSaveTransform(items: any[]) {
-  const result: Record<string, any> = {};
-  items.forEach((item: any) => {
-    const mappings: Record<string, any> = {};
-    (item.mappings || []).forEach((m: any) => {
-      mappings[m.name] = m.value;
-    });
-    result[item.type] = {
-      mappings,
-      default: item.default,
-    };
-  });
-  return result;
+  return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
 }
 
 function serializeToYaml(data: any): string {

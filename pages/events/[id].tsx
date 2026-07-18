@@ -1,5 +1,3 @@
-import { remark } from "remark";
-import remarkHtml from "remark-html";
 import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListItem } from "@mui/material";
 import Head from "next/head";
 import Link from "next/link";
@@ -9,6 +7,7 @@ import store from "@/data/store.yml";
 import forms from "@/data/forms.yml";
 import { Event, Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
+import { markdownToHtml } from "@/utils/markdown";
 
 export async function getStaticPaths() {
   return {
@@ -33,7 +32,7 @@ export async function getStaticProps({ params }) {
   };
 
   if (props.details) {
-    props.details = (await remark().use(remarkHtml).process(props.details)).toString();
+    props.details = await markdownToHtml(props.details);
   }
   return { props };
 }
