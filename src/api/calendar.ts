@@ -1,8 +1,7 @@
-'use client'
 import { useQuery } from "@tanstack/react-query";
 
 import calendarInfo from '@/data/calendar.yml'
-import { CalendarEvent } from "./types";
+import { CalendarEvent, CalendarAPIResponse } from "@/components/CalendarCard/types";
 import { filterEvents } from "@/utils/calendar";
 
 
@@ -25,7 +24,7 @@ export function useCalendarEvents() {
     placeholderData: {
       items: []
     },
-    select: data => {
+    select: (data: CalendarAPIResponse) => {
       const events = data.items.map(({summary, location, htmlLink, start, end}) => ({
         summary,
         location,
