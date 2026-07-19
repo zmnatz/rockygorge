@@ -6,7 +6,7 @@ import {
 import Box from "@mui/material/Box";
 import { useRouter } from "next/navigation";
 
-import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription } from "./components";
+import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CardFieldsForm } from "./components";
 import { PaypalProvider } from "./utils";
 import { PaypalProductProps } from "./types";
 
@@ -63,6 +63,11 @@ export function PaypalProduct({
               onApprove={handleApprove}
               onError={handleError}
               type={donation ? "donate" : "buynow"}
+            />
+            <CardFieldsForm
+              createOrder={createOrder}
+              onApprove={handleApprove}
+              onError={handleError}
             />
           </PaypalProvider>
         </>
