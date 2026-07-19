@@ -6,7 +6,7 @@ export function PaypalProvider({ children }: { children: ReactNode }) {
     <PayPalProviderV6
       clientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}
       environment={(process.env.NEXT_PUBLIC_PAYPAL_ENV as "sandbox" | "production") || "production"}
-      components={["paypal-payments", "card-fields"]}
+      components={["paypal-payments", "card-fields", "applepay-payments", "googlepay-payments"]}
       pageType="checkout"
     >
       {children}
