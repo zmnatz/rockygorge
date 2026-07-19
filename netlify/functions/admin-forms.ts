@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/forms.yml',
+    filePath: 'content/forms.yml',
     branchPrefix: 'admin-forms',
     label: 'forms',
 });

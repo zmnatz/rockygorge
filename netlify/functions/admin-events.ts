@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/events.yml',
+    filePath: 'content/events.yml',
     branchPrefix: 'admin-events',
     label: 'events',
 });

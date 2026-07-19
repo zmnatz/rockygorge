@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/store.yml',
+    filePath: 'content/store.yml',
     branchPrefix: 'admin-store',
     label: 'store',
 });

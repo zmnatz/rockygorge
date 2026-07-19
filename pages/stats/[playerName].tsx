@@ -1,4 +1,4 @@
-import stats from '@/data/stats/stats.yml'
+import stats from '@content/stats/stats.yml'
 import { 
   Box, Typography, Breadcrumbs, Link as MuiLink,
   ToggleButton, ToggleButtonGroup

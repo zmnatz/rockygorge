@@ -9,6 +9,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@content/*": [
+        "./content/*"
+      ],
+      "@config/*": [
+        "./config/*"
       ]
     },
     "allowJs": true,

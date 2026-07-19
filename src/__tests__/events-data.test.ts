@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import events from '@/data/events.yml';
+import events from '@content/events.yml';
 import { Event } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 

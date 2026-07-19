@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/calendar.yml',
+    filePath: 'content/calendar.yml',
     branchPrefix: 'admin-calendar',
     label: 'calendar',
 });

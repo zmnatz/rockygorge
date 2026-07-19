@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/links.yml',
+    filePath: 'content/links.yml',
     branchPrefix: 'admin-links',
     label: 'links',
 });

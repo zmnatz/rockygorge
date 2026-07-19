@@ -1,7 +1,7 @@
 store:
   title: "Store Admin"
   endpoint: "admin-store"
-  dataFilePath: "src/data/store.yml"
+  dataFilePath: "content/store.yml"
   getItemId: "slug"
   columns:
     - field: "slug"
@@ -30,7 +30,7 @@ store:
 events:
   title: "Events Admin"
   endpoint: "admin-events"
-  dataFilePath: "src/data/events.yml"
+  dataFilePath: "content/events.yml"
   getItemId: "slug"
   columns:
     - field: "slug"
@@ -53,7 +53,7 @@ events:
 links:
   title: "Links Admin"
   endpoint: "admin-links"
-  dataFilePath: "src/data/links.yml"
+  dataFilePath: "content/links.yml"
   getItemId: "slug"
   columns:
     - field: "slug"
@@ -77,7 +77,7 @@ links:
 forms:
   title: "Forms Admin"
   endpoint: "admin-forms"
-  dataFilePath: "src/data/forms.yml"
+  dataFilePath: "content/forms.yml"
   getItemId: "slug"
   columns:
     - field: "slug"
@@ -107,7 +107,7 @@ forms:
 calendar:
   title: "Calendar Admin"
   endpoint: "admin-calendar"
-  dataFilePath: "src/data/calendar.yml"
+  dataFilePath: "content/calendar.yml"
   getItemId: "name"
   transforms: "calendar"
   globalFields:
@@ -135,7 +135,7 @@ calendar:
 link_mappings:
   title: "Link Mappings Admin"
   endpoint: "admin-link-mappings"
-  dataFilePath: "src/data/link_mappings.yml"
+  dataFilePath: "config/link_mappings.yml"
   getItemId: "type"
   transforms: "linkMappings"
   columns:

@@ -5,7 +5,7 @@ export const config = {
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/link_mappings.yml',
+    filePath: 'config/link_mappings.yml',
     branchPrefix: 'admin-link-mappings',
     label: 'link mappings',
 });

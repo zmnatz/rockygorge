@@ -1,5 +1,5 @@
 import { AdminPage } from '../../src/components/AdminPage';
-import adminYaml from '../../src/data/admin.yml';
+import adminYaml from '@config/admin.yml';
 import { generateLabel } from '../../src/utils/labels';
 import { ITEM_ID_MAPPINGS, RENDER_MAPPINGS, TRANSFORM_MAPPINGS } from '../../src/utils/admin-config';
 import fs from 'fs';
