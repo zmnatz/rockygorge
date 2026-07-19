@@ -6,9 +6,10 @@ import {
 import Box from "@mui/material/Box";
 import { useRouter } from "next/navigation";
 
-import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CardFieldsForm, AppleGooglePay } from "./components";
+import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CreditCardButton, AppleGooglePay } from "./components";
 import { PaypalProvider } from "./utils";
 import { PaypalProductProps } from "./types";
+import { createPaypalOrder, capturePaypalOrder } from "@/utils/api";
 
 export function PaypalProduct({
   options = [],
@@ -26,22 +27,10 @@ export function PaypalProduct({
 
   const handleSelect = (e: any) => setEditAmount(e?.target?.value);
 
-  const createOrder = async () => {
-    const response = await fetch("/.netlify/functions/paypal-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create", description, amount: amount.toString() }),
-    });
-    const { orderId } = await response.json();
-    return { orderId };
-  };
+  const createOrder = () => createPaypalOrder(description, amount.toString());
 
   const handleApprove = async ({ orderId }: OnApproveDataOneTimePayments) => {
-    await fetch("/.netlify/functions/paypal-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "capture", orderId }),
-    });
+    await capturePaypalOrder(orderId);
     router.push("/purchase/success");
   };
 
@@ -64,7 +53,7 @@ export function PaypalProduct({
               onError={handleError}
               type={donation ? "donate" : "buynow"}
             />
-            <CardFieldsForm
+            <CreditCardButton
               createOrder={createOrder}
               onApprove={handleApprove}
               onError={handleError}

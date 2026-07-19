@@ -30,3 +30,18 @@ export function post<T>(url: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
 }
+
+export function createPaypalOrder(description: string, amount: string): Promise<{ orderId: string }> {
+  return post<{ orderId: string }>("/.netlify/functions/paypal-order", {
+    action: "create",
+    description,
+    amount,
+  });
+}
+
+export function capturePaypalOrder(orderId: string): Promise<void> {
+  return post<void>("/.netlify/functions/paypal-order", {
+    action: "capture",
+    orderId,
+  });
+}
