@@ -2,9 +2,9 @@ import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListIt
 import Head from "next/head";
 import Link from "next/link";
 import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
-import events from "@/data/events.yml";
-import store from "@/data/store.yml";
-import forms from "@/data/forms.yml";
+import events from "@content/events.yml";
+import store from "@content/store.yml";
+import forms from "@content/forms.yml";
 import { Event, Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
 import { markdownToHtml } from "@/utils/markdown";

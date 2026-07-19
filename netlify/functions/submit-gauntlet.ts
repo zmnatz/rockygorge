@@ -28,7 +28,7 @@ export const handler = async (event: any) => {
         const octokit = new Octokit({ auth: GITHUB_TOKEN });
         const OWNER = 'zmnatz';
         const REPO = 'rockygorge';
-        const FILE_PATH = 'src/data/gauntlet/index.yml';
+        const FILE_PATH = 'content/gauntlet/index.yml';
         const baseBranch = 'master';
         const { data: refData } = await octokit.rest.git.getRef({
             owner: OWNER,

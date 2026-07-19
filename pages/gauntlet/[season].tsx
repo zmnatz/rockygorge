@@ -7,7 +7,7 @@ import yaml from 'js-yaml'
 import { columns, Column, GauntletDataSource } from '@/utils/gauntlet'
 import { GauntletEntry } from '@/types/data'
 
-const DATA_DIR = path.join(process.cwd(), 'src/data/gauntlet')
+const DATA_DIR = path.join(process.cwd(), 'content/gauntlet')
 
 const parseTime = (time: string | number): number => {
     if (typeof time === 'number') return time;

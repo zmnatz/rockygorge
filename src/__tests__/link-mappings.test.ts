@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import linkMappings from '@/data/link_mappings.yml';
+import linkMappings from '@config/link_mappings.yml';
 import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
 describe('link_mappings.yml', () => {
