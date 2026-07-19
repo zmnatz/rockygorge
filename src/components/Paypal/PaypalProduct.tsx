@@ -6,7 +6,7 @@ import {
 import Box from "@mui/material/Box";
 import { useRouter } from "next/navigation";
 
-import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CardFieldsForm } from "./components";
+import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CardFieldsForm, AppleGooglePay } from "./components";
 import { PaypalProvider } from "./utils";
 import { PaypalProductProps } from "./types";
 
@@ -68,6 +68,12 @@ export function PaypalProduct({
               createOrder={createOrder}
               onApprove={handleApprove}
               onError={handleError}
+            />
+            <AppleGooglePay
+              createOrder={createOrder}
+              onApprove={handleApprove}
+              onError={handleError}
+              amount={amount?.toString() || "0"}
             />
           </PaypalProvider>
         </>
