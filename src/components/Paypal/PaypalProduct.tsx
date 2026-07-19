@@ -27,7 +27,7 @@ export function PaypalProduct({
   const handleSelect = (e: any) => setEditAmount(e?.target?.value);
 
   const createOrder = async () => {
-    const response = await fetch("/api/paypal-order", {
+    const response = await fetch("/.netlify/functions/paypal-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "create", description, amount: amount.toString() }),
@@ -37,7 +37,7 @@ export function PaypalProduct({
   };
 
   const handleApprove = async ({ orderId }: OnApproveDataOneTimePayments) => {
-    await fetch("/api/paypal-order", {
+    await fetch("/.netlify/functions/paypal-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "capture", orderId }),
