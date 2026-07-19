@@ -1,15 +1,15 @@
 import { useState } from "react";
 import {
-  CreateOrderBraintreeActions,
-  OnApproveBraintreeActions,
-  PayPalButtons,
-} from "@paypal/react-paypal-js";
+  PayPalOneTimePaymentButton,
+  type OnApproveDataOneTimePayments,
+} from "@paypal/react-paypal-js/sdk-v6";
 import Box from "@mui/material/Box";
 import { useRouter } from "next/navigation";
 
-import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
-import { PaypalProvider } from './utils'
+import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription, CreditCardButton, AppleGooglePay } from "./components";
+import { PaypalProvider } from "./utils";
 import { PaypalProductProps } from "./types";
+import { createPaypalOrder, capturePaypalOrder } from "@/utils/api";
 
 export function PaypalProduct({
   options = [],
@@ -26,15 +26,14 @@ export function PaypalProduct({
   const router = useRouter();
 
   const handleSelect = (e: any) => setEditAmount(e?.target?.value);
-  const createOrder = async (
-    _data: object,
-    actions: CreateOrderBraintreeActions,
-  ) => actions.order.create(generateOrderInfo(description, amount));
 
-  const handleApprove = async (_data: any, actions: OnApproveBraintreeActions) => {
-    await actions.order.capture();
+  const createOrder = () => createPaypalOrder(description, amount.toString());
+
+  const handleApprove = async ({ orderId }: OnApproveDataOneTimePayments) => {
+    await capturePaypalOrder(orderId);
     router.push("/purchase/success");
   };
+
   const handleError = () => router.push("/purchase/error");
 
   return (
@@ -47,45 +46,30 @@ export function PaypalProduct({
             <FlexiblePaymentForm donation={donation} value={amount} onChange={setEditAmount} />
           )}
           <PaypalProvider>
-            <PayPalButtons
-              forceReRender={[amount]}
+            <PayPalOneTimePaymentButton
+              key={amount}
               createOrder={createOrder}
-              fundingSource={donation ? "paypal" : undefined}
               onApprove={handleApprove}
               onError={handleError}
-              style={{
-                shape: "pill",
-                color: "blue",
-                layout: "vertical",
-                label: donation ? "donate" : "buynow",
-              }}
+              type={donation ? "donate" : "buynow"}
+            />
+            <CreditCardButton
+              createOrder={createOrder}
+              onApprove={handleApprove}
+              onError={handleError}
+            />
+            <AppleGooglePay
+              createOrder={createOrder}
+              onApprove={handleApprove}
+              onError={handleError}
+              amount={amount?.toString() || "0"}
             />
           </PaypalProvider>
         </>
       )}
-      {subscriptions.length > 0 && (
-        subscriptions.map((s) => (
-          <Subscription key={s.id} {...s} />
-        ))
-      )}
-      {supporters && <SupporterCard supporters={supporters}/>}
+      {subscriptions.length > 0 &&
+        subscriptions.map((s) => <Subscription key={s.id} {...s} />)}
+      {supporters && <SupporterCard supporters={supporters} />}
     </Box>
   );
 }
-
-
-
-function generateOrderInfo(description: string, amount: number): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
-  return {
-    purchase_units: [
-      {
-        description,
-        amount: {
-          currency_code: "USD",
-          value: amount + "",
-        },
-      },
-    ],
-  };
-}
-
