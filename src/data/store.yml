@@ -22,7 +22,7 @@
     [rockygorgerugby.com/forms/banquet](/forms/banquet)
 - slug: open
   defaultAmount: 450
-  hide: false
+  hide: true
   description: Rocky Gorge Open
   summary: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
