@@ -54,3 +54,11 @@
   hide: false
   width: 700
   height: 1600
+- slug: playerAdvocateNomination
+  href: forms/playerAdvocateNomination
+  formId: 1FAIpQLSelNBHeBWyMGPMfoou9n5lj3u3Q-n_74Hy3xSMvO_B2VTwnwA
+  title: Player Advocate Nomination
+  summary: Nominate a player to be the next Player Advocate
+  hide: false
+  height: 695
+  weight: 640
