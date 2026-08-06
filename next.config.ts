@@ -7,6 +7,14 @@ const nextConfig = {
   experimental: {
     useTypeScriptCli: true,
   },
+  turbopack: {
+    rules: {
+      '*.yml': {
+        loaders: ['yaml-loader'],
+        as: '*.js',
+      },
+    },
+  },
 }
 
 const withMDX = require('@next/mdx')({
@@ -21,6 +29,5 @@ const withMDX = require('@next/mdx')({
     providerImportSource: "@mdx-js/react",
   },
 });
-const withYAML = require('next-plugin-yaml');
 
-export default withMDX(withYAML(nextConfig));
+export default withMDX(nextConfig);
