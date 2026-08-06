@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import forms from '@/data/forms.yml';
+import forms from '@content/forms.yml';
 import { Form } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import links from '@/data/links.yml';
+import links from '@content/links.yml';
 import { Link } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 

@@ -1,4 +1,4 @@
-import linkMappings from '@/data/link_mappings.yml';
+import linkMappings from '@config/link_mappings.yml';
 
 export function getLinkText(type: 'store' | 'forms', item: { summary?: string; description?: string; title?: string }) {
   const mapping = linkMappings[type];

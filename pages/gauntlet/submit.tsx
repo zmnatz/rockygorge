@@ -128,7 +128,7 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
 
 export const getStaticProps: GetStaticProps = async () => {
     try {
-        const filePath = path.join(process.cwd(), 'src/data/stats/stats.yml');
+        const filePath = path.join(process.cwd(), 'content/stats/stats.yml');
         const fileContents = fs.readFileSync(filePath, 'utf8');
         const data = yaml.load(fileContents) as any;
         

@@ -9,7 +9,7 @@ import {
   Paper 
 } from '@mui/material';
 import Link from 'next/link';
-import adminYaml from '../../src/data/admin.yml';
+import adminYaml from '@config/admin.yml';
 
 export default function AdminIndex({ adminPages }) {
   return (

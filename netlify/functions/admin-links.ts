@@ -1,11 +1,12 @@
 import { createAdminHandler } from './admin-handler';
+import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
 
 export const config = {
     path: '/api/admin-links',
 };
 
 export const handler = createAdminHandler({
-    filePath: 'src/data/links.yml',
+    filePath: ADMIN_FILE_PATHS.links,
     branchPrefix: 'admin-links',
     label: 'links',
 });

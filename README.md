@@ -70,9 +70,10 @@ PAYPAL_CLIENT_SECRET=<your_paypal_client_secret>
 
 ```
 pages/                  # Route definitions (mix of .tsx and .mdx)
+content/                # YAML site data (events, calendar, store, forms, links, gauntlet, stats)
+config/                 # YAML application configuration (admin, link_mappings)
 src/
   components/           # Shared UI components (AdminPage, CalendarCard, Paypal, Scores, etc.)
-  data/                 # YAML data files (store, events, links, forms, stats, gauntlet)
   types/                # TypeScript type definitions
   utils/                # Helpers (theme, stats, markdown, analytics, etc.)
   __tests__/            # Test files
@@ -83,7 +84,7 @@ docs/                   # Agent documentation
 
 ## How It Works
 
-Content is stored in YAML files under `src/data/` and imported as ES modules at build time. This gives human-readable, version-controlled data without a CMS.
+Content is stored in YAML files under `content/` and `config/` and imported as ES modules at build time. This gives human-readable, version-controlled data without a CMS.
 
 The admin panel lets staff edit data through the web UI. Changes are submitted via Netlify serverless functions, which use the GitHub API to open a pull request — ensuring all content goes through code review before merging.
 

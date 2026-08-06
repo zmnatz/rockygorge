@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import calendarInfo from '@/data/calendar.yml';
+import calendarInfo from '@content/calendar.yml';
 
 describe('calendar.yml', () => {
   it('has a positive months value', () => {
