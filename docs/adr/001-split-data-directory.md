@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The `src/data/` directory mixed two distinct concerns — site content (events, calendar, store, stats) and application configuration (admin permissions, link mappings) — in a single folder nested inside `src/`. This created:
+The `src/data/` directory mixed two distinct concerns — site content (events, calendar, store, forms, links, gauntlet, stats) and application configuration (admin permissions, link mappings) — in a single folder nested inside `src/`. This created:
 
 1. **Conceptual ambiguity**: Content files (things users see) sat alongside config files (things that drive app behavior) with no distinction.
 2. **Poor discoverability**: Data files were buried inside `src/`, requiring navigation past components, utils, and types.

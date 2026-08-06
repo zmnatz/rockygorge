@@ -1,17 +1,22 @@
 declare module '*.yml';
 
 declare module '@content/forms.yml' {
-  const forms: Form[];
+  const forms: import('./data').Form[];
   export default forms;
 }
 
+declare module '@content/events.yml' {
+  const events: import('./data').Event[];
+  export default events;
+}
+
 declare module '@content/store.yml' {
-  const store: Product[];
+  const store: import('./data').Product[];
   export default store;
 }
 
 declare module '@content/links.yml' {
-  const links: Link[];
+  const links: import('./data').Link[];
   export default links;
 }
 

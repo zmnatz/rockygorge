@@ -1,11 +1,12 @@
 import { createAdminHandler } from './admin-handler';
+import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
 
 export const config = {
     path: '/api/admin-store',
 };
 
 export const handler = createAdminHandler({
-    filePath: 'content/store.yml',
+    filePath: ADMIN_FILE_PATHS.store,
     branchPrefix: 'admin-store',
     label: 'store',
 });

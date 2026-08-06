@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import adminYaml from '@config/admin.yml';
+import { ADMIN_FILE_PATHS } from '../utils/admin-file-paths';
 
 const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap'];
 
@@ -11,6 +12,14 @@ describe('admin.yml', () => {
     expect(Object.keys(adminYaml).length).toBeGreaterThan(0);
   });
 
+  it('every admin type has a registered file path pointing to an existing file', () => {
+    Object.keys(adminYaml).forEach((type) => {
+      expect(ADMIN_FILE_PATHS[type]).toBeTypeOf('string');
+      const filePath = path.join(process.cwd(), ADMIN_FILE_PATHS[type]);
+      expect(fs.existsSync(filePath)).toBe(true);
+    });
+  });
+
   Object.keys(adminYaml).forEach((type) => {
     const config = (adminYaml as any)[type];
 
@@ -18,15 +27,9 @@ describe('admin.yml', () => {
       it('has required top-level fields', () => {
         expect(typeof config.title).toBe('string');
         expect(typeof config.endpoint).toBe('string');
-        expect(typeof config.dataFilePath).toBe('string');
         expect(typeof config.getItemId).toBe('string');
         expect(Array.isArray(config.columns)).toBe(true);
         expect(Array.isArray(config.fields)).toBe(true);
-      });
-
-      it('dataFilePath points to an existing file', () => {
-        const filePath = path.join(process.cwd(), config.dataFilePath);
-        expect(fs.existsSync(filePath)).toBe(true);
       });
 
       it('getItemId is a valid key name', () => {
