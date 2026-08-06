@@ -28,12 +28,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "module": "esnext",
-    "plugins": [
-      {
-        "name": "typescript-yaml-plugin"
-      }
-    ]
+    "module": "esnext"
   },
   "include": [
     "next-env.d.ts",

@@ -45,14 +45,13 @@
     "@rollup/plugin-yaml": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "^16.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "netlify-cli": "^26.0.2",
-    "next": "^16.1.6",
+    "next": "^16.3.0",
     "next-plugin-yaml": "^1.0.1",
-    "typescript": "^6.0.3",
-    "typescript-yaml-plugin": "^1.0.11",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
   "lint-staged": {
