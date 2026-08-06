@@ -32,4 +32,7 @@ export interface AdminPageProps<T> {
   initialGlobalsTransform?: (data: any) => any;
   saveDataTransform?: (items: T[], globals?: any) => any;
   globalFields?: GlobalFieldConfig[];
+  creatable?: boolean;
+  createDefaults?: Record<string, unknown>;
+  idFieldName?: string;
 }
