@@ -1,45 +1,20 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Button } from '@mui/material'
 import { GetStaticProps, GetStaticPaths, NextPage } from 'next'
 import Link from 'next/link'
-import fs from 'fs'
-import path from 'path'
-import yaml from 'js-yaml'
-import { columns, Column, GauntletDataSource } from '@/utils/gauntlet'
-import { GauntletEntry } from '@/types/data'
-
-const DATA_DIR = path.join(process.cwd(), 'content/gauntlet')
-
-const parseTime = (time: string | number): number => {
-    if (typeof time === 'number') return time;
-    const [minutes, seconds] = time.split(':');
-    if (minutes === undefined || seconds === undefined) return 999999;
-    return parseInt(minutes, 10) * 60 + parseFloat(seconds);
-};
+import { columns, Column, GauntletDataSource, parseTime } from '@/utils/gauntlet'
+import { seasons } from '@content/gauntlet'
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith('.yml'))
-    
-    const paths = files.map(file => {
-        const season = file === 'index.yml' ? 'current' : file.replace('.yml', '')
-        return { params: { season } }
-    })
-    
+    const paths = Object.keys(seasons).map(season => ({ params: { season } }))
+
     return { paths, fallback: false }
 }
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const season = params?.season as string
-    const filename = season === 'current' ? 'index.yml' : `${season}.yml`
-    const filePath = path.join(DATA_DIR, filename)
+    const data = seasons[season]
 
-    if (!fs.existsSync(filePath)) {
-        return { props: { dataSource: [], columns, season } }
-    }
-
-    const fileContents = fs.readFileSync(filePath, 'utf8')
-    const data = yaml.load(fileContents) as GauntletEntry[]
-
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!data || data.length === 0) {
         return { props: { dataSource: [], columns, season } }
     }
 

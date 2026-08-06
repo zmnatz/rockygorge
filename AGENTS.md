@@ -1,14 +1,14 @@
 # Agent Guidance: Rocky Gorge
 
 ## Developer Commands
-- `npm run dev`: Start development server (uses `--webpack`)
-- `npm run build`: Production build (uses `--webpack`)
+- `npm run dev`: Start development server (Turbopack)
+- `npm run build`: Production build (Turbopack)
 - `npm run lint`: Lint codebase
 
 ## Architecture & Tech Stack
 - **Framework**: Next.js (Pages Router)
 - **Content**: Mixed `.tsx` and `.mdx` in `pages/`.
-- **Data**: YAML files in `content/` (user-facing site data) and `config/` (application configuration), powered by `next-plugin-yaml`.
+- **Data**: YAML files in `content/` (user-facing site data) and `config/` (application configuration), powered by `yaml-loader` via Turbopack `turbopack.rules`.
 - **UI**: Material UI (MUI) with Emotion.
 - **Data Fetching**: TanStack Query.
 - **Language**: TypeScript.

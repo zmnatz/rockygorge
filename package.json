@@ -27,9 +27,9 @@
   },
   "scripts": {
     "netlify": "netlify dev",
-    "start": "next dev --webpack",
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "start": "next dev",
+    "dev": "next dev",
+    "build": "next build",
     "lint": "eslint . --ignore-pattern '.netlify/'",
     "test": "vitest run",
     "prepare": "husky"
@@ -51,9 +51,9 @@
     "lint-staged": "^17.0.8",
     "netlify-cli": "^26.0.2",
     "next": "^16.3.0",
-    "next-plugin-yaml": "^1.0.1",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "yaml-loader": "^0.8.1"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mdx}": "eslint"

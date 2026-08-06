@@ -11,6 +11,9 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   {
+    ignores: [".next/**", "build/**", ".netlify/**"],
+  },
+  {
     rules: {
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",

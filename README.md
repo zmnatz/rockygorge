@@ -19,7 +19,7 @@ The official website for [Rocky Gorge Rugby Football Club](https://rockygorgerug
 | Language | TypeScript |
 | UI | Material UI (MUI) + Emotion |
 | Content | MDX |
-| Data | YAML files (via `next-plugin-yaml`) |
+| Data | YAML files (via `yaml-loader` + Turbopack) |
 | Data Fetching | TanStack Query |
 | Payments | PayPal (`@paypal/react-paypal-js`) |
 | Deployment | Netlify (static export) |
