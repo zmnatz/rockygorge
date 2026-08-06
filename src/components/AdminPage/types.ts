@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList';
+export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'options' | 'textList';
 
 export interface FieldConfig<T> {
   name: keyof T;
