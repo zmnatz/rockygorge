@@ -4,6 +4,9 @@ const nextConfig = {
   output: "export",
   distDir: 'build',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  experimental: {
+    useTypeScriptCli: true,
+  },
 }
 
 const withMDX = require('@next/mdx')({
