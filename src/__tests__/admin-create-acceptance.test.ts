@@ -106,10 +106,17 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
     const shape = PAGE_SHAPES[type];
 
     describe(type, () => {
+      it('defaults the visibility boolean to hidden for pages with a hide field', () => {
+        const item = buildDefaultItem(type);
+        if (type === 'calendar') {
+          expect(item.hideSummary).toBe(false);
+        } else {
+          expect(item.hide).toBe(true);
+        }
+      });
+
       it('saves a default item with only its id filled in and survives the YAML roundtrip', () => {
         const item = buildDefaultItem(type);
-        expect(item.hide ?? item.hideSummary).toBeDefined();
-
         item[shape.idField] = `test-${type}`;
 
         const saved = saveForPage(type, [item]);

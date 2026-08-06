@@ -39,13 +39,16 @@ export function validateItemId<T>(
   idLabel = 'id'
 ): string | null {
   const id = getId(candidate);
-  const trimmed = typeof id === 'string' ? id.trim() : '';
-  if (!trimmed) {
+  const normalizedId = typeof id === 'string' ? id.trim() : '';
+  if (!normalizedId) {
     return `The ${idLabel} must not be blank.`;
   }
-  const isDuplicate = items.some(
-    (item) => getId(item) !== originalId && getId(item) === id
-  );
+  const normalizedOriginalId = originalId === null ? null : String(originalId).trim();
+  const isDuplicate = items.some((item) => {
+    const otherId = String(getId(item)).trim();
+    if (normalizedOriginalId !== null && otherId === normalizedOriginalId) return false;
+    return otherId === normalizedId;
+  });
   if (isDuplicate) {
     return `An item with the ${idLabel} "${id}" already exists.`;
   }

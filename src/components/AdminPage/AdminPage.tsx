@@ -34,7 +34,7 @@ export function AdminPage<T>({
   initialGlobalsTransform,
   saveDataTransform = (items, globals) => items,
   globalFields,
-  creatable = true,
+  editOnly = false,
   createDefaults = {},
   idFieldName = 'id',
 }: AdminPageProps<T>) {
@@ -110,7 +110,7 @@ export function AdminPage<T>({
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4">{title}</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {creatable && (
+          {!editOnly && (
             <Button variant="contained" onClick={openCreateEditor} startIcon={<Add />}>Add</Button>
           )}
           <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
@@ -152,7 +152,7 @@ export function AdminPage<T>({
                   <IconButton onClick={() => openEditEditor(item)}>
                     <Edit />
                   </IconButton>
-                  {creatable && (
+                  {!editOnly && (
                     <IconButton onClick={() => handleDeleteItem(item)}>
                       <Delete />
                     </IconButton>

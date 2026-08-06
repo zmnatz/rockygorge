@@ -75,14 +75,14 @@ describe('admin.yml', () => {
     const creatableTypes = ['store', 'events', 'links', 'forms', 'calendar'];
     const editOnlyTypes = ['link_mappings'];
 
-    it('the five content pages are creatable', () => {
+    it('the five content pages are not edit-only', () => {
       creatableTypes.forEach((type) => {
-        expect((adminYaml as any)[type].creatable).not.toBe(false);
+        expect((adminYaml as any)[type].editOnly).toBeFalsy();
       });
     });
 
     it('link_mappings keeps edit-only behavior', () => {
-      expect((adminYaml as any).link_mappings.creatable).toBe(false);
+      expect((adminYaml as any).link_mappings.editOnly).toBe(true);
     });
 
     it('every creatable page has a field for its id', () => {
@@ -102,11 +102,17 @@ describe('admin.yml', () => {
       expect(forms.createDefaults.height).toBe(1000);
     });
 
-    it('creatable is either omitted or a boolean when present', () => {
+    it('editOnly is either omitted or a boolean when present', () => {
       Object.values(adminYaml as any).forEach((config: any) => {
-        if (config.creatable !== undefined) {
-          expect(typeof config.creatable).toBe('boolean');
+        if (config.editOnly !== undefined) {
+          expect(typeof config.editOnly).toBe('boolean');
         }
+      });
+    });
+
+    it('edit-only pages cannot also declare create defaults', () => {
+      editOnlyTypes.forEach((type) => {
+        expect((adminYaml as any)[type].createDefaults).toBeUndefined();
       });
     });
 

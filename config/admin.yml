@@ -144,7 +144,7 @@ link_mappings:
   title: "Link Mappings Admin"
   endpoint: "admin-link-mappings"
   getItemId: "type"
-  creatable: false
+  editOnly: true
   transforms: "linkMappings"
   columns:
     - field: "type"

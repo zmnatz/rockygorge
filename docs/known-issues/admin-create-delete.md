@@ -40,18 +40,30 @@ already had `type`.
 
 ### 3. Delete and create are gated by one flag
 
-`creatable: false` on link_mappings removes both the Add button and the row
-delete action. The component treats "not creatable" as "edit-only". If a page
-ever needs create-without-delete, this should be split into two flags.
+`editOnly: true` on link_mappings removes both the Add button and the row
+delete action. The component treats "edit-only" as "no create, no delete". If a
+page ever needs create-without-delete (or delete-without-create), this should
+be split into two flags.
 
 ## Open questions / gaps
 
+- **Calendar filters have no `hide` field.** The issue's "hide: true so a new
+  item never appears on the public site" cannot be expressed for calendar
+  filters, which have no visibility toggle. In practice a brand-new filter does
+  not surface publicly anyway: the homepage `CalendarCard` only renders filter
+  names hardcoded on `pages/index.mdx` (`['Training', 'Matches', 'Events']`),
+  and the id guard prevents a new filter from reusing one of those names. A
+  `hide` field for filters was deliberately not added — it would have no effect
+  on the public site, and `hideSummary` (which defaults to `false`) is about
+  event summaries, not filter visibility. If filters are ever surfaced by name
+  dynamically, revisit this.
 - **No server-side or CI-side validation of new items.** Id uniqueness is
   enforced only in the client dialog (`validateItemId`). A malformed item can
   still be saved via the editor (e.g. an invalid `matches` regex on a calendar
   filter, or a `limit: 0` typed by hand) and would surface as a failing CI
   check on the generated PR. The issue explicitly scoped this to client-side,
-  so this is accepted.
+  so this is accepted. Duplicate detection compares trimmed ids, so a
+  whitespace variant of an existing id is blocked too.
 - **Delete is immediate with no confirmation.** Accidental deletes are
   reversible only by not pressing "Save All Changes" — once saved, the item is
   gone on the PR branch (still reviewable, but the PR flow is the only safety

@@ -84,9 +84,18 @@ describe('validateItemId', () => {
     expect(error).toContain('open');
   });
 
+  it('blocks an id that collides with an existing id modulo whitespace', () => {
+    expect(validateItemId(items, { slug: 'open ' }, null, getId)).not.toBeNull();
+    expect(validateItemId(items, { slug: ' open' }, null, getId)).not.toBeNull();
+  });
+
   it('returns an error when an existing item is renamed into a collision', () => {
     const error = validateItemId(items, { slug: 'open' }, 'banquet', getId);
     expect(error).not.toBeNull();
+  });
+
+  it('blocks a rename into a collision modulo whitespace', () => {
+    expect(validateItemId(items, { slug: 'open  ' }, 'banquet', getId)).not.toBeNull();
   });
 
   it('allows editing an item with an unchanged id', () => {
