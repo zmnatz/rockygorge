@@ -17,10 +17,11 @@ import {
   DialogContent, 
   DialogActions
 } from '@mui/material';
-import { Edit } from '@mui/icons-material';
+import { Add, Delete, Edit } from '@mui/icons-material';
 import { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { get, post } from '@/utils/api';
+import { applyItemChange, createDefaultItem, removeItemById, validateItemId } from '@/utils/admin-items';
 
 export function AdminPage<T>({
   title,
@@ -33,10 +34,14 @@ export function AdminPage<T>({
   initialGlobalsTransform,
   saveDataTransform = (items, globals) => items,
   globalFields,
+  editOnly = false,
+  createDefaults = {},
+  idFieldName = 'id',
 }: AdminPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<any>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
+  const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
@@ -57,15 +62,34 @@ export function AdminPage<T>({
     }
   }, [endpoint, initialData]);
 
+  const openCreateEditor = () => {
+    setEditingOriginalId(null);
+    setEditingItem(createDefaultItem(fields, createDefaults) as T);
+  };
+
+  const openEditEditor = (item: T) => {
+    setEditingOriginalId(getItemId(item));
+    setEditingItem(item);
+  };
+
+  const closeEditor = () => {
+    setEditingOriginalId(null);
+    setEditingItem(null);
+  };
+
   const handleSaveItem = () => {
     if (!editingItem) return;
-    setItems(prev => prev.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item));
-    setEditingItem(null);
+    setItems(prev => applyItemChange(prev, editingItem, editingOriginalId, getItemId));
+    closeEditor();
+  };
+
+  const handleDeleteItem = (item: T) => {
+    setItems(prev => removeItemById(prev, getItemId(item), getItemId));
   };
 
   const handleSaveAll = async () => {
     const itemsToSave = editingItem
-      ? items.map(item => getItemId(item) === getItemId(editingItem) ? editingItem : item)
+      ? applyItemChange(items, editingItem, editingOriginalId, getItemId)
       : items;
     try {
       await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
@@ -75,13 +99,22 @@ export function AdminPage<T>({
     }
   };
 
+  const validationError = editingItem
+    ? validateItemId(items, editingItem, editingOriginalId, getItemId, idFieldName)
+    : null;
+
   if (loading) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
 
   return (
     <Container sx={{ mt: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4">{title}</Typography>
-        <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {!editOnly && (
+            <Button variant="contained" onClick={openCreateEditor} startIcon={<Add />}>Add</Button>
+          )}
+          <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+        </Box>
       </Box>
 
       {globalFields && globalFields.length > 0 && (
@@ -116,9 +149,14 @@ export function AdminPage<T>({
                   <TableCell key={colIdx}>{col.render(item)}</TableCell>
                 ))}
                 <TableCell align="right">
-                  <IconButton onClick={() => setEditingItem(item)}>
+                  <IconButton onClick={() => openEditEditor(item)}>
                     <Edit />
                   </IconButton>
+                  {!editOnly && (
+                    <IconButton onClick={() => handleDeleteItem(item)}>
+                      <Delete />
+                    </IconButton>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -126,8 +164,8 @@ export function AdminPage<T>({
         </Table>
       </TableContainer>
 
-      <Dialog open={!!editingItem} onClose={() => setEditingItem(null)} maxWidth="md" fullWidth>
-        <DialogTitle>Edit: {getItemId(editingItem || {} as T)}</DialogTitle>
+      <Dialog open={!!editingItem} onClose={closeEditor} maxWidth="md" fullWidth>
+        <DialogTitle>{editingOriginalId === null ? 'Add Item' : `Edit: ${getItemId(editingItem || {} as T)}`}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {editingItem && fields.map(field => (
@@ -139,10 +177,13 @@ export function AdminPage<T>({
               />
             ))}
           </Box>
+          {validationError && (
+            <Typography color="error" sx={{ mt: 2 }}>{validationError}</Typography>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingItem(null)}>Cancel</Button>
-          <Button onClick={handleSaveItem} variant="contained">Save to List</Button>
+          <Button onClick={closeEditor}>Cancel</Button>
+          <Button onClick={handleSaveItem} variant="contained" disabled={!!validationError}>Save to List</Button>
         </DialogActions>
       </Dialog>
     </Container>

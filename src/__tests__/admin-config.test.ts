@@ -70,4 +70,60 @@ describe('admin.yml', () => {
       });
     });
   });
+
+  describe('create and delete capabilities', () => {
+    const creatableTypes = ['store', 'events', 'links', 'forms', 'calendar'];
+    const editOnlyTypes = ['link_mappings'];
+
+    it('the five content pages are not edit-only', () => {
+      creatableTypes.forEach((type) => {
+        expect((adminYaml as any)[type].editOnly).toBeFalsy();
+      });
+    });
+
+    it('link_mappings keeps edit-only behavior', () => {
+      expect((adminYaml as any).link_mappings.editOnly).toBe(true);
+    });
+
+    it('every creatable page has a field for its id', () => {
+      creatableTypes.forEach((type) => {
+        const config = (adminYaml as any)[type];
+        const idField = config.getItemId;
+        const fieldNames = config.fields.map((f: any) => f.name);
+        expect(fieldNames).toContain(idField);
+      });
+    });
+
+    it('store and forms supply the documented page-level create defaults', () => {
+      const store = (adminYaml as any).store;
+      const forms = (adminYaml as any).forms;
+      expect(store.createDefaults.defaultAmount).toBe(0);
+      expect(forms.createDefaults.width).toBe(640);
+      expect(forms.createDefaults.height).toBe(1000);
+    });
+
+    it('editOnly is either omitted or a boolean when present', () => {
+      Object.values(adminYaml as any).forEach((config: any) => {
+        if (config.editOnly !== undefined) {
+          expect(typeof config.editOnly).toBe('boolean');
+        }
+      });
+    });
+
+    it('edit-only pages cannot also declare create defaults', () => {
+      editOnlyTypes.forEach((type) => {
+        expect((adminYaml as any)[type].createDefaults).toBeUndefined();
+      });
+    });
+
+    it('createDefaults values are primitives, arrays, or maps', () => {
+      Object.values(adminYaml as any).forEach((config: any) => {
+        if (config.createDefaults) {
+          Object.values(config.createDefaults).forEach((value: any) => {
+            expect(['string', 'number', 'boolean', 'object']).toContain(typeof value);
+          });
+        }
+      });
+    });
+  });
 });

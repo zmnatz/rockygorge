@@ -40,6 +40,9 @@ export default function GenericAdmin({ initialData, type }) {
         ...f,
         label: f.label || generateLabel(f.name),
       }))}
+      editOnly={yamlConfig.editOnly === true}
+      createDefaults={yamlConfig.createDefaults || {}}
+      idFieldName={yamlConfig.getItemId}
     />
   );
 }

@@ -2,12 +2,16 @@ store:
   title: "Store Admin"
   endpoint: "admin-store"
   getItemId: "slug"
+  createDefaults:
+    defaultAmount: 0
   columns:
     - field: "slug"
     - field: "title"
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "description"
@@ -36,6 +40,8 @@ events:
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "description"
@@ -58,6 +64,8 @@ links:
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "summary"
@@ -75,12 +83,17 @@ forms:
   title: "Forms Admin"
   endpoint: "admin-forms"
   getItemId: "slug"
+  createDefaults:
+    width: 640
+    height: 1000
   columns:
     - field: "slug"
     - field: "title"
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "summary"
@@ -131,6 +144,7 @@ link_mappings:
   title: "Link Mappings Admin"
   endpoint: "admin-link-mappings"
   getItemId: "type"
+  editOnly: true
   transforms: "linkMappings"
   columns:
     - field: "type"
