@@ -1,5 +1,4 @@
 import { NativeSelect } from '@mui/material';
-import React from 'react';
 
 interface SubscriptionOption {
   label: string;

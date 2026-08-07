@@ -1,138 +1,13 @@
-import stats from '@/data/stats/stats.yml'
+import stats from '@content/stats/stats.yml'
 import { 
-  Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Box, TableSortLabel, Typography, Breadcrumbs, Link as MuiLink,
+  Box, Typography, Breadcrumbs, Link as MuiLink,
   ToggleButton, ToggleButtonGroup
 } from '@mui/material'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-
-const STAT_CATEGORIES: Record<string, string[]> = {
-  Offensive: ['tries_scored', 'try_assists', 'positive_carries', 'negative_carries', 'line_breaks', 'attacking_rucks', 'tackle_breaks', 'off_loads'],
-  Defensive: ['tackles_made', 'tackles_missed', 'dominant_tackles', 'steals', 'defensive_rucks', 'turnovers_forced'],
-  Penalties: ['penalties_conceded', 'penalty_reasons', 'turnovers_given']
-}
-
-function formatColumnTitle(key: string) {
-  if (key === 'name') return 'Player'
-  if (key === 'game') return 'Opponent'
-  return key.replace(/_/g, ' ').split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-}
-
-function SortableTable({ columns, data }: { columns: any[], data: any[] }) {
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
-    key: columns[0]?.key || '',
-    direction: 'asc',
-  })
-
-  const handleRequestSort = (property: string) => {
-    const isAsc = sortConfig.key === property && sortConfig.direction === 'asc'
-    setSortConfig({ key: property, direction: isAsc ? 'desc' : 'asc' })
-  }
-
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key || !sortConfig.direction) return data
-    return [...data].sort((a, b) => {
-      let aValue = a[sortConfig.key]
-      let bValue = b[sortConfig.key]
-
-      if (sortConfig.key === 'name') {
-        const getSortableName = (name: string) => {
-          const parts = name.trim().split(/\s+/)
-          const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0]
-          const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : ''
-          return `${lastName}, ${firstName}`.toLowerCase()
-        }
-        aValue = getSortableName(aValue as string)
-        bValue = getSortableName(bValue as string)
-      }
-
-      if (aValue === bValue) return 0
-      const comparison = aValue < bValue ? -1 : 1
-      return sortConfig.direction === 'asc' ? comparison : -comparison
-    })
-  }, [data, sortConfig])
-
-  // Group columns by their category for the multi-level header
-  const columnGroups = useMemo(() => {
-    const groups: { title: string; colSpan: number }[] = []
-    
-    // Always show Opponent/Game as the first group
-    const baseCols = columns.filter(c => c.key === 'game' || c.key === 'name')
-    if (baseCols.length > 0) {
-      groups.push({ title: '', colSpan: baseCols.length })
-    }
-
-    Object.entries(STAT_CATEGORIES).forEach(([category, fields]) => {
-      const count = columns.filter(c => fields.includes(c.key)).length
-      if (count > 0) {
-        groups.push({ title: category, colSpan: count })
-      }
-    })
-
-    return groups
-  }, [columns])
-
-  return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {columnGroups.map((group, idx) => (
-              <TableCell 
-                key={idx} 
-                align="center" 
-                colSpan={group.colSpan}
-                sx={{ borderBottom: group.title ? '1px solid rgba(224, 224, 224, 1)' : 'none', fontWeight: 'bold' }}
-              >
-                {group.title}
-              </TableCell>
-            ))}
-          </TableRow>
-          <TableRow>
-            {columns.map((col) => (
-              <TableCell key={col.key} sx={{ minWidth: col.minWidth }}>
-                <TableSortLabel
-                  active={sortConfig.key === col.key}
-                  direction={sortConfig.key === col.key ? sortConfig.direction : 'asc'}
-                  onClick={() => handleRequestSort(col.key)}
-                >
-                  {col.title}
-                </TableSortLabel>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortedData.map((row) => (
-            <TableRow key={row.key}>
-              {columns.map((col) => (
-                <TableCell key={col.key}>
-                  {col.key === 'game' ? (
-                    <Link href={`/stats/game/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
-                      <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
-                    </Link>
-                  ) : (
-                    row[col.dataIndex]
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  )
-}
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
+import { STAT_CATEGORIES, formatColumnTitle } from '@/utils/stats'
+import { slugify } from '@/utils/slugify'
+import { SortableTable } from '@/components/SortableTable'
 
 export async function getStaticPaths() {
   const games = Array.isArray(stats.games) ? stats.games : []
@@ -256,7 +131,21 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns }) 
           <Typography variant="h5" gutterBottom sx={{ borderBottom: '2px solid', borderColor: 'primary.main', display: 'inline-block', pb: 0.5 }}>
             Season: {season}
           </Typography>
-          <SortableTable columns={filteredColumns} data={logs} />
+          <SortableTable 
+            columns={filteredColumns} 
+            data={logs} 
+            categories={STAT_CATEGORIES}
+            renderCell={(col, row) => {
+              if (col.key === 'game') {
+                return (
+                  <Link href={`/stats/game/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
+                    <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
+                  </Link>
+                )
+              }
+              return row[col.dataIndex]
+            }}
+          />
         </Box>
       ))}
     </Box>

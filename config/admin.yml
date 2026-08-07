@@ -1,19 +1,22 @@
 store:
   title: "Store Admin"
   endpoint: "admin-store"
-  dataFilePath: "src/data/store.yml"
-  getItemId: "name"
+  getItemId: "slug"
+  createDefaults:
+    defaultAmount: 0
   columns:
-    - field: "name"
+    - field: "slug"
     - field: "title"
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "description"
       type: "text"
-    - name: "info"
+    - name: "summary"
       type: "text"
     - name: "defaultAmount"
       type: "number"
@@ -27,20 +30,45 @@ store:
     - name: "supporters"
       type: "textList"
 
-links:
-  title: "Links Admin"
-  endpoint: "admin-links"
-  dataFilePath: "src/data/links.yml"
-  getItemId: "id"
+events:
+  title: "Events Admin"
+  endpoint: "admin-events"
+  getItemId: "slug"
   columns:
-    - field: "id"
+    - field: "slug"
     - field: "title"
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
     - name: "description"
+      type: "text"
+    - name: "summary"
+      type: "text"
+    - name: "hide"
+      label: "Hide Event"
+      type: "boolean"
+    - name: "organizers"
+      type: "textList"
+
+links:
+  title: "Links Admin"
+  endpoint: "admin-links"
+  getItemId: "slug"
+  columns:
+    - field: "slug"
+    - field: "title"
+    - field: "hide"
+      render: "boolean"
+  fields:
+    - name: "slug"
+      type: "text"
+    - name: "title"
+      type: "text"
+    - name: "summary"
       type: "text"
     - name: "href"
       type: "text"
@@ -54,17 +82,21 @@ links:
 forms:
   title: "Forms Admin"
   endpoint: "admin-forms"
-  dataFilePath: "src/data/forms.yml"
-  getItemId: "id"
+  getItemId: "slug"
+  createDefaults:
+    width: 640
+    height: 1000
   columns:
-    - field: "id"
+    - field: "slug"
     - field: "title"
     - field: "hide"
       render: "boolean"
   fields:
+    - name: "slug"
+      type: "text"
     - name: "title"
       type: "text"
-    - name: "description"
+    - name: "summary"
       type: "text"
     - name: "formId"
       label: "Form ID"
@@ -84,7 +116,6 @@ forms:
 calendar:
   title: "Calendar Admin"
   endpoint: "admin-calendar"
-  dataFilePath: "src/data/calendar.yml"
   getItemId: "name"
   transforms: "calendar"
   globalFields:
@@ -108,3 +139,21 @@ calendar:
       type: "number"
     - name: "hideSummary"
       type: "boolean"
+
+link_mappings:
+  title: "Link Mappings Admin"
+  endpoint: "admin-link-mappings"
+  getItemId: "type"
+  editOnly: true
+  transforms: "linkMappings"
+  columns:
+    - field: "type"
+    - field: "default"
+  fields:
+    - name: "type"
+      type: "text"
+    - name: "default"
+      type: "text"
+    - name: "mappings"
+      label: "Mappings (Label -> Regex)"
+      type: "textKeyValueMap"

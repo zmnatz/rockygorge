@@ -10,7 +10,7 @@
 - This is a **Next.js (v13)** site using `output: "export"` (static export) and `pageExtensions` includes `.mdx`.
 - Content is a mix of:
   - **Pages**: `pages/*.js`, `pages/*.mdx`, plus dynamic routes in `pages/[id].js` and `pages/forms/[id].js`
-  - **Data files**: YAML under `data/*.yml` (loaded via `next-plugin-yaml`)
+  - **Data files**: YAML under `content/*.yml` (loaded via `yaml-loader` + Turbopack)
   - **React components** in `components/` (mostly plain `.jsx` + some `.tsx`)
 
 ## Key patterns to follow

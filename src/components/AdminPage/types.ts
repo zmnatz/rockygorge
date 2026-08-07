@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList';
+export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList' | 'textKeyValueMap';
 
 export interface FieldConfig<T> {
   name: keyof T;
@@ -32,4 +32,7 @@ export interface AdminPageProps<T> {
   initialGlobalsTransform?: (data: any) => any;
   saveDataTransform?: (items: T[], globals?: any) => any;
   globalFields?: GlobalFieldConfig[];
+  editOnly?: boolean;
+  createDefaults?: Record<string, unknown>;
+  idFieldName?: string;
 }

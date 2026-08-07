@@ -11,6 +11,13 @@ export interface Column {
     key: string;
 }
 
+export const parseTime = (time: string | number): number => {
+    if (typeof time === 'number') return time;
+    const [minutes, seconds] = time.split(':');
+    if (minutes === undefined || seconds === undefined) return 999999;
+    return parseInt(minutes, 10) * 60 + parseFloat(seconds);
+};
+
 export const columns: Column[] = [
     { title: 'Rank', dataIndex: 'rank', key: 'rank' },
     { title: 'Player', dataIndex: 'name', key: 'name' },

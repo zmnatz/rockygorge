@@ -9,6 +9,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@content/*": [
+        "./content/*"
+      ],
+      "@config/*": [
+        "./config/*"
       ]
     },
     "allowJs": true,
@@ -22,12 +28,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "module": "esnext",
-    "plugins": [
-      {
-        "name": "typescript-yaml-plugin"
-      }
-    ]
+    "module": "esnext"
   },
   "include": [
     "next-env.d.ts",
@@ -36,6 +37,7 @@
     "**/*.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "build"
   ]
 }

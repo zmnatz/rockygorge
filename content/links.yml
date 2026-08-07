@@ -1,0 +1,26 @@
+- slug: /banquet
+  href: '/banquet'
+  title: 2025 Banquet
+  summary: Buy your tickets for the 2025 banquet.
+  header: false
+  hide: true
+- slug: '/contacts'
+  href: '/contacts'
+  title: Contacts
+  summary: 'club contacts'
+  header: true
+- slug: '/hallOfFame'
+  href: '/hallOfFame'
+  title: Hall of Fame
+  summary: Recognized members of the Rocky Gorge Hall of Fame
+  header: true
+- slug: '/gauntlet'
+  href: '/gauntlet'
+  title: 'Gauntlet'
+  summary: 'Gorge gauntlet leaderboard'
+  header: true
+- slug: '/calendar'
+  href: '/calendar'
+  title: 'Calendar'
+  summary: 'Gorge calendar'
+  header: true

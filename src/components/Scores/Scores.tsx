@@ -1,6 +1,6 @@
 import React from "react";
 import Grid from '@mui/material/Grid';
-import {useScores} from './useScores'
+import { useScores } from '@/api/scores'
 import { ScoreCard } from "./ScoreCard";
 
 export function Scores () {

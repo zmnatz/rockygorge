@@ -12,4 +12,4 @@ This skill maintains the type safety and integrity of the project's TypeScript d
 - **Naming**: Use PascalCase for types and interfaces. Avoid using the `I` prefix (e.g., use `User` instead of `IUser`).
 - **Type Safety**: Prefer `interface` for object definitions and `type` for unions or aliases.
 - **Generics**: Use generics to create reusable and flexible types where appropriate.
-- **Consistency**: Ensure that types for YAML data match the actual structure of the `.yml` files in `src/data/`.
+- **Consistency**: Ensure that types for YAML data match the actual structure of the `.yml` files in `content/` and `config/`.

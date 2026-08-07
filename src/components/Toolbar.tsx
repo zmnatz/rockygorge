@@ -1,6 +1,6 @@
 import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
-import links from "@/data/links.yml";
+import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useState } from "react";
 
@@ -30,14 +30,14 @@ export function Toolbar () {
           Rocky Gorge Rugby
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        {headerLinks.map(({ id, title, description }) => (
+        {headerLinks.map(({ slug, href, title, summary }) => (
           <Button
-            key={id}
+            key={slug}
             component={NextLinkComposed}
-            href={id}
+            href={href}
             color="inherit"
             sx={{ textTransform: "none", display: { xs: 'none', sm: 'inline-flex' } }}
-            title={description}
+            title={summary}
           >
             {title}
           </Button>
@@ -57,13 +57,13 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {headerLinks.map(({ id, title, description }) => (
+          {headerLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
-              key={id}
+              key={slug}
               component="a"
-              href={id}
+              href={href}
               onClick={handleCloseMenu}
-              title={description}
+              title={summary}
             >
               {title}
             </MenuItem>

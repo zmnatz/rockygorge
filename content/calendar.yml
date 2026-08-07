@@ -1,0 +1,12 @@
+months: 3
+filters:
+  - name: Training
+    limit: 2
+    matches: practice|training|wrestling
+    hideSummary: false
+  - name: Events
+    notMatches: practice|board|OG|training|wrestling|volunteering
+  - name: Board Meetings
+    hideSummary: true
+    matches: Board
+    limit: 1
