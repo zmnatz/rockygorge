@@ -6,6 +6,12 @@
   NETLIFY_USE_BUN = "true"
   BUN_VERSION = "1.3.14"
 
+[[plugins]]
+  package = "netlify-plugin-cache"
+
+  [plugins.inputs]
+    paths = [".next/cache"]
+
 [[redirects]]
   from = "/api/calendar"
   to = "https://www.googleapis.com/calendar/v3/calendars/t1s0l2ucm1fl084olhmj69pme8@group.calendar.google.com/events"
