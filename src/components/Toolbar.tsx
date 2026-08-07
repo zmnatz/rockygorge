@@ -2,13 +2,17 @@ import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
 import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
+import { useAuth0 } from "@auth0/auth0-react";
 import { useState } from "react";
 
 const headerLinks = links.filter(({ header }) => header);
 
 export function Toolbar () {
+  const { isAuthenticated } = useAuth0();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const visibleLinks = headerLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,7 +34,7 @@ export function Toolbar () {
           Rocky Gorge Rugby
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        {headerLinks.map(({ slug, href, title, summary }) => (
+        {visibleLinks.map(({ slug, href, title, summary }) => (
           <Button
             key={slug}
             component={NextLinkComposed}
@@ -57,7 +61,7 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {headerLinks.map(({ slug, href, title, summary }) => (
+          {visibleLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
               key={slug}
               component="a"

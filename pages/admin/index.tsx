@@ -6,44 +6,56 @@ import {
   ListItem, 
   ListItemButton, 
   ListItemText, 
-  Paper 
+  Paper,
+  Button
 } from '@mui/material';
 import Link from 'next/link';
+import { useAuth0 } from '@auth0/auth0-react';
+import { RequireAuth } from '@/components/RequireAuth';
 import adminYaml from '@config/admin.yml';
 
 export default function AdminIndex({ adminPages }) {
+  const { logout } = useAuth0();
+
   return (
-    <Container sx={{ mt: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Admin Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+    <RequireAuth>
+      <Container sx={{ mt: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography variant="h4">
+            Admin Dashboard
+          </Typography>
+          <Button
+            onClick={() => logout({ logoutParams: { returnTo: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI! } })}
+          >
+            Log out
+          </Button>
+        </Box>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           Manage the site content through the following administration pages.
         </Typography>
-      </Box>
 
-      <Paper elevation={2}>
-        <List>
-          {adminPages.map((page) => (
-            <ListItem key={page.href} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={page.href}
-                sx={{ 
-                  transition: 'background-color 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <ListItemText primary={page.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-    </Container>
+        <Paper elevation={2}>
+          <List>
+            {adminPages.map((page) => (
+              <ListItem key={page.href} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={page.href}
+                  sx={{ 
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                >
+                  <ListItemText primary={page.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    </RequireAuth>
   );
 }
 

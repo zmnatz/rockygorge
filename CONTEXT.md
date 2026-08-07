@@ -43,3 +43,11 @@ _Avoid_: Precise lookup, calendar association
 **Admin handler**:
 The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow.
 _Avoid_: Save endpoint
+
+**Admin Console**:
+The `/admin` route group where Content and Config are managed. Signing in is required to use it.
+_Avoid_: admin pages, admin section, CMS
+
+**Administrator**:
+A person signed in to the Admin Console.
+_Avoid_: admin, user
