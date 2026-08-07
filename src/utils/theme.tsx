@@ -162,7 +162,7 @@ theme.components = {
           minWidth: 0,
         },
         '& .MuiListItemText-secondary': {
-          width: theme.spacing(15),
+          width: theme.spacing(20),
         },
       },
     },
