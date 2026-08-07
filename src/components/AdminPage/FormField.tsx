@@ -12,7 +12,7 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6">{label}</Typography>
-      <List>
+      <List dense>
         {(value || []).map((pair: any, idx: number) => (
           <ListItem key={idx} secondaryAction={
             <IconButton edge="end" onClick={() => {
@@ -28,6 +28,7 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
               primary={
                 <TextField 
                   size="small" 
+                  fullWidth
                   label="Key" 
                   value={pair.name || pair.key || ''} 
                   onChange={e => {
@@ -41,6 +42,7 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
               secondary={
                 <TextField 
                   size="small" 
+                  fullWidth
                   label="Value" 
                   type={valueType === 'number' ? 'number' : undefined}
                   value={pair.value ?? ''} 

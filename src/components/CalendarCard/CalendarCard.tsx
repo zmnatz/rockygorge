@@ -16,7 +16,7 @@ export function CalendarCard({calendars}: CalendarCardProps) {
   return (
     <Card>
       <CardHeader title={calendars.length > 1 ? "Calendar" : calendars[0]} component={Link} href="/calendar"/>
-      <CardContent component={List} dense>
+      <CardContent component={List}>
       {isFetching && <ListItem sx={{textAlign: 'center'}}>
         <CircularProgress/>
       </ListItem>}
