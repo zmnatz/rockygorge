@@ -8,7 +8,7 @@ import { useState } from "react";
 const headerLinks = links.filter(({ header }) => header);
 
 export function Toolbar () {
-  const { isAuthenticated } = useAuth0();
+  const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -46,6 +46,19 @@ export function Toolbar () {
             {title}
           </Button>
         ))}
+        {!isLoading && (
+          <Button
+            color="inherit"
+            sx={{ textTransform: "none", ml: 1 }}
+            onClick={() =>
+              isAuthenticated
+                ? logout({ logoutParams: { returnTo: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI! } })
+                : loginWithRedirect()
+            }
+          >
+            {isAuthenticated ? "Log out" : "Log in"}
+          </Button>
+        )}
         <IconButton
           color="inherit"
           aria-label="app menu"
