@@ -151,7 +151,21 @@ theme.components = {
         primary: { noWrap: false },
         secondary: {noWrap: false }
       }
-    }
+    },
+    styleOverrides: {
+      dense: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(2),
+        '& .MuiListItemText-primary': {
+          flexGrow: 1,
+          minWidth: 0,
+        },
+        '& .MuiListItemText-secondary': {
+          width: theme.spacing(15),
+        },
+      },
+    },
   },
   MuiTableRow: {
     styleOverrides: {

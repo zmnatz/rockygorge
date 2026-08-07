@@ -97,7 +97,7 @@ export function FormField<T>({
       return (
         <Box sx={{ mt: 2 }}>
           <Typography variant="h6">{field.label}</Typography>
-          <List>
+          <List dense>
             {(value || []).map((option: any, idx: number) => (
               <ListItem key={idx} secondaryAction={
                 <IconButton edge="end" onClick={() => {
@@ -108,32 +108,36 @@ export function FormField<T>({
                   <Delete />
                 </IconButton>
               }>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%', pr: 1 }}>
-                  <TextField
-                    size="small"
-                    label="Key"
-                    value={option.name || option.key || ''}
-                    onChange={e => {
-                      const newList = [...(value || [])];
-                      const keyName = option.name !== undefined ? 'name' : 'key';
-                      newList[idx][keyName] = e.target.value;
-                      updateValue(newList);
-                    }}
-                    sx={{ flexGrow: 1 }}
-                  />
-                  <TextField
-                    size="small"
-                    label="Value"
-                    type="number"
-                    value={option.value ?? ''}
-                    onChange={e => {
-                      const newList = [...(value || [])];
-                      newList[idx].value = Number(e.target.value);
-                      updateValue(newList);
-                    }}
-                    sx={{ width: 120 }}
-                  />
-                </Box>
+                <ListItemText
+                  primary={
+                    <TextField
+                      size="small"
+                      fullWidth
+                      label="Key"
+                      value={option.name || option.key || ''}
+                      onChange={e => {
+                        const newList = [...(value || [])];
+                        const keyName = option.name !== undefined ? 'name' : 'key';
+                        newList[idx][keyName] = e.target.value;
+                        updateValue(newList);
+                      }}
+                    />
+                  }
+                  secondary={
+                    <TextField
+                      size="small"
+                      fullWidth
+                      label="Value"
+                      type="number"
+                      value={option.value ?? ''}
+                      onChange={e => {
+                        const newList = [...(value || [])];
+                        newList[idx].value = Number(e.target.value);
+                        updateValue(newList);
+                      }}
+                    />
+                  }
+                />
               </ListItem>
             ))}
             <Button startIcon={<Add />} onClick={() => {
