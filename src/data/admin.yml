@@ -23,7 +23,7 @@ store:
       label: "Hide Item"
       type: "boolean"
     - name: "options"
-      type: "options"
+      type: "keyValueMap"
     - name: "supporters"
       type: "textList"
 

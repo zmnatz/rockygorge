@@ -93,12 +93,12 @@ export function FormField<T>({
           </List>
         </Box>
       );
-    case 'options':
+    case 'keyValueMap':
       return (
         <Box sx={{ mt: 2 }}>
           <Typography variant="h6">{field.label}</Typography>
           <List dense>
-            {(value || []).map((option: any, idx: number) => (
+            {(value || []).map((pair: any, idx: number) => (
               <ListItem key={idx} secondaryAction={
                 <IconButton edge="end" onClick={() => {
                   const newList = [...(value || [])];
@@ -114,10 +114,10 @@ export function FormField<T>({
                       size="small"
                       fullWidth
                       label="Key"
-                      value={option.name || option.key || ''}
+                      value={pair.name || pair.key || ''}
                       onChange={e => {
                         const newList = [...(value || [])];
-                        const keyName = option.name !== undefined ? 'name' : 'key';
+                        const keyName = pair.name !== undefined ? 'name' : 'key';
                         newList[idx][keyName] = e.target.value;
                         updateValue(newList);
                       }}
@@ -129,7 +129,7 @@ export function FormField<T>({
                       fullWidth
                       label="Value"
                       type="number"
-                      value={option.value ?? ''}
+                      value={pair.value ?? ''}
                       onChange={e => {
                         const newList = [...(value || [])];
                         newList[idx].value = Number(e.target.value);
@@ -142,7 +142,7 @@ export function FormField<T>({
             ))}
             <Button startIcon={<Add />} onClick={() => {
               updateValue([...(value || []), { name: '', value: 0 }]);
-            }}>Add Option</Button>
+            }}>Add Pair</Button>
           </List>
         </Box>
       );
