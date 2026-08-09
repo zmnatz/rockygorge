@@ -14,10 +14,19 @@ hero:
 sections:
   - source: store
     # title: Store
+    card:
+      titleField: description
+      hrefPrefix: "/"
   - source: events
     # title: Events
+    card:
+      titleField: title
+      hrefPrefix: "/events/"
   - source: links
     # title: Links
+    card:
+      titleField: title
+      hrefField: href
 
 calendars:
   - Training

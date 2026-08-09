@@ -8,31 +8,13 @@ import { Grid, Typography } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { CalendarCard } from "@/components/CalendarCard";
 import { markdownToReact } from "@/utils/markdown";
+import { toSectionCard } from "@/utils/sections";
 
-export const visibleStoreItems = StoreItems.filter(item => !item.hide);
-export const visibleEvents = events.filter(event => !event.hide);
-export const visibleLinks = [...links, ...forms]
-  .filter(item => item.header !== true && item.hide !== true);
-
-export const sectionItems = {
-  store: visibleStoreItems.map(item => ({
-    key: item.slug,
-    title: item?.description,
-    href: `/${item.slug}`,
-    summary: item.summary
-  })),
-  events: visibleEvents.map(event => ({
-    key: event.slug,
-    title: event.title,
-    href: `/events/${event.slug}`,
-    summary: event.summary
-  })),
-  links: visibleLinks.map(item => ({
-    key: item.href,
-    title: item.title,
-    href: item.href,
-    summary: item.summary
-  }))
+export const itemsBySource = {
+  store: StoreItems.filter(item => !item.hide),
+  events: events.filter(event => !event.hide),
+  links: [...links, ...forms]
+    .filter(item => item.header !== true && item.hide !== true)
 };
 
 <Grid container spacing={2} sx={{ py: 2 }}>
@@ -50,9 +32,12 @@ export const sectionItems = {
                 <Typography variant="h5">{section.title}</Typography>
               </Grid>
             )}
-            {sectionItems[section.source].map((item) => (
-              <ProductCard key={item.key} title={item.title} href={item.href}>{item.summary}</ProductCard>
-            ))}
+            {itemsBySource[section.source].map((item) => {
+              const card = toSectionCard(item, section.card);
+              return (
+                <ProductCard key={card.key} title={card.title} href={card.href}>{card.summary}</ProductCard>
+              );
+            })}
           </Fragment>
         ))}
       </Grid>

@@ -78,3 +78,25 @@ export interface GauntletEntry {
   time: string;
   stroke?: number;
 }
+
+/** The data source a homepage section draws its cards from. */
+export type SectionSource = 'store' | 'events' | 'links';
+
+/** A homepage card derived from a content item. */
+export interface SectionCard {
+  key: string;
+  title: string;
+  href: string;
+  summary: string;
+}
+
+/**
+ * Per-section card mapping in `content/home.yml`: which field becomes the card
+ * title, and how the card href is built (from a slug with `hrefPrefix`, or read
+ * directly from `hrefField`).
+ */
+export interface SectionCardConfig {
+  titleField: 'title' | 'description';
+  hrefPrefix?: string;
+  hrefField?: 'href';
+}

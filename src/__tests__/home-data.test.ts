@@ -17,6 +17,23 @@ describe('home.yml', () => {
     });
   });
 
+  it('each section has a card mapping', () => {
+    home.sections.forEach((section) => {
+      expect(section.card).toBeDefined();
+      expect(['title', 'description']).toContain(section.card.titleField);
+      expect(
+        section.card.hrefField !== undefined ||
+          section.card.hrefPrefix !== undefined
+      ).toBe(true);
+      if (section.card.hrefField !== undefined) {
+        expect(section.card.hrefField).toBe('href');
+      }
+      if (section.card.hrefPrefix !== undefined) {
+        expect(typeof section.card.hrefPrefix).toBe('string');
+      }
+    });
+  });
+
   it('has a list of calendar filters', () => {
     expect(Array.isArray(home.calendars)).toBe(true);
     home.calendars.forEach((calendar) => {

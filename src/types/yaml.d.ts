@@ -40,8 +40,9 @@ declare module '@content/home.yml' {
       markdown: string;
     };
     sections: Array<{
-      source: 'store' | 'events' | 'links';
+      source: import('./data').SectionSource;
       title?: string;
+      card: import('./data').SectionCardConfig;
     }>;
     calendars: string[];
   };
