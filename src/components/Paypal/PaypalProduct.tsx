@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  CreateOrderBraintreeActions,
-  OnApproveBraintreeActions,
+  type CreateOrderBraintreeActions,
+  type OnApproveBraintreeActions,
   PayPalButtons,
 } from "@paypal/react-paypal-js";
 import Box from "@mui/material/Box";
@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
 import { PaypalProvider } from './utils'
-import { PaypalProductProps } from "./types";
+import type { PaypalProductProps } from "./types";
 
 export function PaypalProduct({
   options = [],
@@ -25,13 +25,13 @@ export function PaypalProduct({
   const amount = editAmount ?? defaultAmount;
   const router = useRouter();
 
-  const handleSelect = (e: any) => setEditAmount(e?.target?.value);
+  const handleSelect = (_event: React.ChangeEvent<HTMLInputElement>, value: string) => setEditAmount(Number(value));
   const createOrder = async (
     _data: object,
     actions: CreateOrderBraintreeActions,
   ) => actions.order.create(generateOrderInfo(description, amount));
 
-  const handleApprove = async (_data: any, actions: OnApproveBraintreeActions) => {
+  const handleApprove = async (_data: object, actions: OnApproveBraintreeActions) => {
     await actions.order.capture();
     router.push("/purchase/success");
   };
@@ -82,7 +82,7 @@ function generateOrderInfo(description: string, amount: number): import("@paypal
         description,
         amount: {
           currency_code: "USD",
-          value: amount + "",
+          value: `${amount}`,
         },
       },
     ],

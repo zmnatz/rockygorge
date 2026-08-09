@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 export const PAYPAL_SETTINGS = {

@@ -23,8 +23,20 @@ export function getSortableName(name: string) {
   return `${lastName}, ${firstName}`.toLowerCase()
 }
 
-export function aggregatePlayerStats(playerDataByGame: any[]) {
-  const aggregated: Record<string, any> = {}
+export interface PlayerStatRow {
+  name: string;
+  game?: string;
+  key?: string;
+  [key: string]: unknown;
+}
+
+export interface AggregatedPlayerStats extends Record<string, unknown> {
+  key: string;
+  name: string;
+}
+
+export function aggregatePlayerStats(playerDataByGame: PlayerStatRow[]): AggregatedPlayerStats[] {
+  const aggregated: Record<string, Record<string, unknown>> = {}
   playerDataByGame.forEach((row) => {
     const playerName = row.name
     if (!aggregated[playerName]) aggregated[playerName] = { name: playerName }
@@ -32,14 +44,17 @@ export function aggregatePlayerStats(playerDataByGame: any[]) {
       if (key !== 'name' && key !== 'game' && key !== 'key') {
         const value = row[key]
         if (typeof value === 'number') {
-          aggregated[playerName][key] = (aggregated[playerName][key] || 0) + value
-        } else if (typeof value === 'string' && !isNaN(parseFloat(value))) {
-          aggregated[playerName][key] = (aggregated[playerName][key] || 0) + parseFloat(value)
+          aggregated[playerName][key] = (Number(aggregated[playerName][key]) || 0) + value
+        } else if (typeof value === 'string' && !Number.isNaN(parseFloat(value))) {
+          aggregated[playerName][key] = (Number(aggregated[playerName][key]) || 0) + parseFloat(value)
         } else {
           aggregated[playerName][key] = value
         }
       }
     })
   })
-  return Object.values(aggregated).map((player) => ({ key: `agg-${player.name}`, ...player }))
+  return Object.values(aggregated).map((player) => ({
+    key: `agg-${String(player.name)}`,
+    ...player,
+  })) as AggregatedPlayerStats[]
 }

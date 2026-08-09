@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -18,7 +18,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
-import { AdminPageProps } from './types';
+import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { get, post } from '@/utils/api';
 import { applyItemChange, createDefaultItem, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
@@ -32,7 +32,7 @@ export function AdminPage<T>({
   initialData,
   initialDataTransform = (data) => data,
   initialGlobalsTransform,
-  saveDataTransform = (items, globals) => items,
+  saveDataTransform = (items, _globals) => items,
   globalFields,
   editOnly = false,
   reorderable = false,
@@ -45,6 +45,7 @@ export function AdminPage<T>({
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialData);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read once from initialData; adding them to deps would refetch on every render.
   useEffect(() => {
     if (initialData) {
       setItems(initialDataTransform(initialData));
@@ -141,8 +142,8 @@ export function AdminPage<T>({
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((col, idx) => (
-                <TableCell key={idx}>{col.header}</TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.header}>{col.header}</TableCell>
               ))}
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -150,8 +151,8 @@ export function AdminPage<T>({
           <TableBody>
             {items.map((item, idx) => (
               <TableRow key={getItemId(item) || idx}>
-                {columns.map((col, colIdx) => (
-                  <TableCell key={colIdx}>{col.render(item)}</TableCell>
+                {columns.map((col) => (
+                  <TableCell key={col.header}>{col.render(item)}</TableCell>
                 ))}
                 <TableCell align="right">
                   {reorderable && (

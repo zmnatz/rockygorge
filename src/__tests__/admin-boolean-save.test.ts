@@ -7,16 +7,12 @@ function getItemId(item: any, strategy: string = 'slug'): string {
   return fn(item);
 }
 
-function identitySaveTransform(items: any[], globals?: any) {
+function identitySaveTransform(items: any[], _globals?: any) {
   return items;
 }
 
 function calendarSaveTransform(items: any[], globals: any) {
   return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals);
-}
-
-function linkMappingsSaveTransform(items: any[]) {
-  return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
 }
 
 function serializeToYaml(data: any): string {
@@ -278,9 +274,9 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
 
 describe('AdminPage useEffect dependency stability', () => {
   it('does not include initialDataTransform or initialGlobalsTransform in useEffect deps', () => {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const source = fs.readFileSync(
-      require('path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
+      require('node:path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
       'utf8'
     );
 

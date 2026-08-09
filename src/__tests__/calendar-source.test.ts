@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CalendarSourceItem } from '@/components/CalendarCard/types';
+import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 import { mapCalendarSourceItem, mapCalendarSourceItems } from '@/utils/calendar';
 
 const timedItem = {

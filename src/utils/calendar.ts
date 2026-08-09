@@ -1,4 +1,4 @@
-import { CalendarEvent, CalendarFilter, CalendarSourceItem, CalendarAPIResponse } from "@/components/CalendarCard/types";
+import type { CalendarEvent, CalendarFilter, CalendarSourceItem, CalendarAPIResponse } from "@/components/CalendarCard/types";
 
 const parseDate = (dateStr: string) => {
   if (!dateStr.includes("T")) {
@@ -35,7 +35,7 @@ export function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) 
 
 export function formatEventTime(start: string, end: string) {
   const startDate = parseDate(start);
-  let endDate = parseDate(end);
+  const endDate = parseDate(end);
 
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
     return start;

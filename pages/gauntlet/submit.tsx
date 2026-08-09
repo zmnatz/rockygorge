@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Box, Button, Container, TextField, Typography, Paper, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Autocomplete } from '@mui/material'
-import { useRouter } from 'next/router'
-import { GetStaticProps } from 'next'
+import { Button, Container, TextField, Typography, Paper, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Autocomplete } from '@mui/material'
+import type { GetStaticProps } from 'next'
 import yaml from 'js-yaml'
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import { post } from '@/utils/api'
 
 interface GauntletSubmitProps {
@@ -126,17 +125,25 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
     )
 }
 
+interface StatsFileData {
+    games?: Array<{
+        players?: Array<{
+            name?: string;
+        }>;
+    }>;
+}
+
 export const getStaticProps: GetStaticProps = async () => {
     try {
         const filePath = path.join(process.cwd(), 'content/stats/stats.yml');
         const fileContents = fs.readFileSync(filePath, 'utf8');
-        const data = yaml.load(fileContents) as any;
+        const data = yaml.load(fileContents) as StatsFileData;
         
         const playerNames = new Set<string>();
-        if (data && data.games) {
-            data.games.forEach((game: any) => {
+        if (data?.games) {
+            data.games.forEach((game) => {
                 if (game.players) {
-                    game.players.forEach((player: any) => {
+                    game.players.forEach((player) => {
                         if (player.name) playerNames.add(player.name);
                     });
                 }

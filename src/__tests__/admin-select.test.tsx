@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import yaml from 'js-yaml';
 import { FormField } from '@/components/AdminPage/FormField';
-import { FieldConfig } from '@/components/AdminPage/types';
+import type { FieldConfig } from '@/components/AdminPage/types';
 import { applyItemChange, createDefaultItem } from '@/utils/admin-items';
 
 interface SectionItem {
@@ -38,9 +37,9 @@ describe('FormField select', () => {
   });
 
   it('offers a blank placeholder option alongside the configured options', () => {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const source = fs.readFileSync(
-      require('path').join(__dirname, '../components/AdminPage/FormField.tsx'),
+      require('node:path').join(__dirname, '../components/AdminPage/FormField.tsx'),
       'utf8'
     );
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import store from '@content/store.yml';
-import { Product } from '@/types/data';
+import type { Product } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 
 validateDataArray<Product>(store, {

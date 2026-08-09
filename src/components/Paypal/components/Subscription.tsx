@@ -1,4 +1,4 @@
-import { NativeSelect } from '@mui/material';
+import { NativeSelect, Box } from '@mui/material';
 
 interface SubscriptionOption {
   label: string;
@@ -38,11 +38,12 @@ export function Subscription({ id, options, name, description, value = '' }: Sub
           name="submit"
           alt="PayPal - The safer, easier way to pay online!"
         />
-        <img
+        <Box
+          component="img"
           alt=""
           src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif"
-          width="1"
-          height="1"
+          width={1}
+          height={1}
         />
       </form>
     </>

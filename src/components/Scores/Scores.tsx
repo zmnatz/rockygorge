@@ -1,4 +1,3 @@
-import React from "react";
 import Grid from '@mui/material/Grid';
 import { useScores } from '@/api/scores'
 import { ScoreCard } from "./ScoreCard";
@@ -9,6 +8,7 @@ export function Scores () {
     <Grid container spacing={2}>
       {scores.map((score, index) => (
         <Grid
+          // biome-ignore lint/suspicious/noArrayIndexKey: scores have no stable id exposed by the API
           key={index}
           size={{
             xs: 12,

@@ -1,4 +1,4 @@
-import { GauntletEntry } from '@/types/data'
+import type { GauntletEntry } from '@/types/data'
 
 export interface GauntletDataSource extends GauntletEntry {
     rank: number;

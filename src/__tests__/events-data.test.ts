@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import events from '@content/events.yml';
-import { Event } from '@/types/data';
+import type { Event } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 
 validateDataArray<Event>(events, {
@@ -23,7 +23,7 @@ describe('events.yml', () => {
   it('has the open event', () => {
     const openEvent = events.find((e: Event) => e.slug === 'open');
     expect(openEvent).toBeDefined();
-    expect(openEvent!.title).toContain('Rocky Gorge Open');
-    expect(openEvent!.organizers.length).toBeGreaterThan(0);
+    expect(openEvent?.title).toContain('Rocky Gorge Open');
+    expect(openEvent?.organizers.length).toBeGreaterThan(0);
   });
 });

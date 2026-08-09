@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import path from 'path';
+import path from 'node:path';
 import yaml from '@rollup/plugin-yaml';
 
 export default defineConfig({

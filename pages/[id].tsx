@@ -6,7 +6,7 @@ import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDeta
 import {PaypalProduct} from "@/components/Paypal";
 import items from "@content/store.yml";
 import forms from "@content/forms.yml";
-import { Product, Form } from "@/types/data";
+import type { Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
 import { markdownToReact } from "@/utils/markdown";
 

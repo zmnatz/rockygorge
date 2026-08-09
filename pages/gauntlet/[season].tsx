@@ -1,7 +1,7 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Button } from '@mui/material'
-import { GetStaticProps, GetStaticPaths, NextPage } from 'next'
+import type { GetStaticProps, GetStaticPaths, NextPage } from 'next'
 import Link from 'next/link'
-import { columns, Column, GauntletDataSource, parseTime } from '@/utils/gauntlet'
+import { columns, type Column, type GauntletDataSource, parseTime } from '@/utils/gauntlet'
 import { seasons } from '@content/gauntlet'
 
 export const getStaticPaths: GetStaticPaths = async () => {

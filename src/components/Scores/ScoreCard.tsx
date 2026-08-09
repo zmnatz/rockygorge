@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import { Score, Team } from './types';
+import type { Score, Team } from './types';
 
 interface ScoreCardProps {
   score: Score;
@@ -29,18 +29,10 @@ export function ScoreCard({ score }: ScoreCardProps) {
   );
 }
 
-interface TeamBadge2Props {
-  team: Team;
-}
-
-function TeamBadge2({ team }: TeamBadge2Props) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
-}
-
 interface TeamBadgeProps {
   team: Team;
 }
 
 function TeamBadge({ team }: TeamBadgeProps) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
+  return <Box component="img" height={40} src={team.crest} title={team.name} alt={team.name} />;
 }

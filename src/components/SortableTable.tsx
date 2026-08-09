@@ -2,7 +2,7 @@ import {
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   TableSortLabel
 } from '@mui/material'
-import { useState, useMemo, ReactNode } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import { getSortableName } from '@/utils/stats'
 
 interface SortableTableProps {
@@ -73,9 +73,9 @@ export function SortableTable({
         <TableHead>
           {columnGroups.length > 0 && (
             <TableRow>
-              {columnGroups.map((group, idx) => (
+              {columnGroups.map((group) => (
                 <TableCell 
-                  key={idx} 
+                  key={group.title === '' ? 'base' : group.title} 
                   align="center" 
                   colSpan={group.colSpan}
                   sx={{ borderBottom: group.title ? '1px solid rgba(224, 224, 224, 1)' : 'none', fontWeight: 'bold' }}

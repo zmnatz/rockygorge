@@ -1,5 +1,5 @@
 import React from 'react';
-import NextLink, { LinkProps as NextLinkProps } from 'next/link';
+import NextLink, { type LinkProps as NextLinkProps } from 'next/link';
 import { Link } from '@mui/material';
 
 // A helper component for using Next.js navigation with MUI components.

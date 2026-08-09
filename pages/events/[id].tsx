@@ -5,7 +5,7 @@ import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDeta
 import events from "@content/events.yml";
 import store from "@content/store.yml";
 import forms from "@content/forms.yml";
-import { Event, Product, Form } from "@/types/data";
+import type { Event, Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
 import { markdownToReact } from "@/utils/markdown";
 

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 interface Option {
   name: string;
@@ -21,5 +21,5 @@ export interface PaypalProductProps {
   flexiblePayment?: boolean;
   subscriptions?: SubscriptionItem[];
   donation?: boolean;
-  supporters?: any[];
+  supporters?: string[];
 }
