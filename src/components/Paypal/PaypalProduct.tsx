@@ -25,13 +25,13 @@ export function PaypalProduct({
   const amount = editAmount ?? defaultAmount;
   const router = useRouter();
 
-  const handleSelect = (e: any) => setEditAmount(e?.target?.value);
+  const handleSelect = (_event: React.ChangeEvent<HTMLInputElement>, value: string) => setEditAmount(Number(value));
   const createOrder = async (
     _data: object,
     actions: CreateOrderBraintreeActions,
   ) => actions.order.create(generateOrderInfo(description, amount));
 
-  const handleApprove = async (_data: any, actions: OnApproveBraintreeActions) => {
+  const handleApprove = async (_data: object, actions: OnApproveBraintreeActions) => {
     await actions.order.capture();
     router.push("/purchase/success");
   };

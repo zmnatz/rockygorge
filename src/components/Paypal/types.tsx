@@ -21,5 +21,5 @@ export interface PaypalProductProps {
   flexiblePayment?: boolean;
   subscriptions?: SubscriptionItem[];
   donation?: boolean;
-  supporters?: any[];
+  supporters?: string[];
 }
