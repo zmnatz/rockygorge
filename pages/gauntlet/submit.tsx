@@ -132,7 +132,7 @@ export const getStaticProps: GetStaticProps = async () => {
         const data = yaml.load(fileContents) as any;
         
         const playerNames = new Set<string>();
-        if (data && data.games) {
+        if (data?.games) {
             data.games.forEach((game: any) => {
                 if (game.players) {
                     game.players.forEach((player: any) => {

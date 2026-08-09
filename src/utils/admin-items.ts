@@ -21,9 +21,6 @@ export function createDefaultItem(
       case 'textList':
         item[name] = [];
         break;
-      case 'text':
-      case 'textarea':
-      case 'select':
       default:
         item[name] = '';
         break;

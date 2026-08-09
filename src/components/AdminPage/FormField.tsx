@@ -173,7 +173,6 @@ export function FormField<T>({
         </TextField>
       );
 
-    case 'text':
     default:
       return (
         <TextField 

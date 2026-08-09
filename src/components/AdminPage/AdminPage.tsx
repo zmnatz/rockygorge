@@ -45,6 +45,7 @@ export function AdminPage<T>({
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialData);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read once from initialData; adding them to deps would refetch on every render.
   useEffect(() => {
     if (initialData) {
       setItems(initialDataTransform(initialData));

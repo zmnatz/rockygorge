@@ -15,7 +15,7 @@ export function CalendarEventDetail({ title }: CalendarEventDetailProps) {
   // Look through all filtered calendars for a match
   const allEvents = Object.values(data).flat();
   const match = allEvents.find(event => 
-    event.summary && event.summary.toLowerCase().includes(title.toLowerCase())
+    event.summary?.toLowerCase().includes(title.toLowerCase())
   );
 
   if (!match) return null;

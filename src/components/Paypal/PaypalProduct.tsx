@@ -82,7 +82,7 @@ function generateOrderInfo(description: string, amount: number): import("@paypal
         description,
         amount: {
           currency_code: "USD",
-          value: amount + "",
+          value: `${amount}`,
         },
       },
     ],

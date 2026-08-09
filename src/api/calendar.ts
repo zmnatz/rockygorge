@@ -33,12 +33,11 @@ export function useCalendarEvents() {
         ({ description, ...event }) => event
       );
 
-      return calendarInfo.filters.reduce(
-        (results, filter) => ({
-            ...results,
-            [filter.name]: filterEvents(events, filter)
-        }), {} as Record<string, CalendarEvent[]>
-      )
+      const results: Record<string, CalendarEvent[]> = {};
+      for (const filter of calendarInfo.filters) {
+        results[filter.name] = filterEvents(events, filter);
+      }
+      return results;
     }
   });
 }

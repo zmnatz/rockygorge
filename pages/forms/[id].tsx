@@ -29,6 +29,7 @@ export default function Form({
       </Head>
       <Box sx={{textAlign: 'center'}}>
         <iframe src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`} 
+          title={title}
           height={height} 
           width={width}
           className="embed"
