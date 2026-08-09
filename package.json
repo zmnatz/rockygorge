@@ -8,14 +8,14 @@
     "@emotion/styled": "^11.14.1",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
-    "@mui/icons-material": "^9.0.1",
-    "@mui/material": "^9.0.1",
+    "@mui/icons-material": "^9.3.1",
+    "@mui/material": "^9.3.1",
     "@paypal/react-paypal-js": "^7.3.3",
-    "@tanstack/react-query": "^5.100.10",
+    "@tanstack/react-query": "^5.101.4",
     "js-yaml": "^4.1.1",
     "octokit": "^5.0.5",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "rehype-react": "^8.0.0",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1"
@@ -42,19 +42,19 @@
   ],
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
-    "@next/mdx": "^16.1.6",
+    "@next/mdx": "^16.3.0",
     "@rollup/plugin-yaml": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.8",
+    "lint-staged": "^17.3.0",
     "netlify-cli": "^26.0.2",
     "netlify-plugin-cache": "^1.0.3",
     "next": "^16.3.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
-    "yaml-loader": "^0.8.1"
+    "yaml-loader": "^0.9.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mdx}": "eslint"
