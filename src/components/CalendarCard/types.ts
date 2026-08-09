@@ -9,6 +9,15 @@ export type CalendarEvent = {
   end: string;
 };
 
+export type CalendarSourceItem = {
+  summary: string;
+  description?: string;
+  location: string;
+  htmlLink: string;
+  start: string;
+  end: string;
+};
+
 export interface CalendarFilter {
   name: string;
   matches?: string;
@@ -20,15 +29,16 @@ export interface CalendarFilter {
 export interface CalendarAPIResponse {
   items: {
     summary: string;
+    description?: string;
     location: string;
     htmlLink: string;
     start: {
-      dateTime: string;
-      date: string;
+      dateTime?: string;
+      date?: string;
     };
     end: {
-      dateTime: string;
-      date: string;
+      dateTime?: string;
+      date?: string;
     };
   }[];
 }

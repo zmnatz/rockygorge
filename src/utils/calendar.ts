@@ -1,4 +1,4 @@
-import { CalendarEvent, CalendarFilter } from "@/components/CalendarCard/types";
+import { CalendarEvent, CalendarFilter, CalendarSourceItem, CalendarAPIResponse } from "@/components/CalendarCard/types";
 
 const parseDate = (dateStr: string) => {
   if (!dateStr.includes("T")) {
@@ -104,4 +104,21 @@ export function formatStartDate(start: string) {
     hour: "numeric",
     minute: "2-digit",
   })}`;
+}
+
+type RawCalendarItem = CalendarAPIResponse['items'][number];
+
+export function mapCalendarSourceItem(item: RawCalendarItem): CalendarSourceItem {
+  return {
+    summary: item.summary,
+    description: item.description,
+    location: item.location,
+    htmlLink: item.htmlLink,
+    start: item.start.dateTime ?? item.start.date ?? '',
+    end: item.end.dateTime ?? item.end.date ?? '',
+  };
+}
+
+export function mapCalendarSourceItems(items: RawCalendarItem[]): CalendarSourceItem[] {
+  return items.map(mapCalendarSourceItem);
 }
