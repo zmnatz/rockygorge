@@ -1,0 +1,34 @@
+hero:
+  markdown: |
+    ## 2025 Division III Atlantic Super Regional Champions
+    ### 2023 Mid Atlantic Champions
+    ### 2012 and 2014 Division II National Champions
+
+    We are one of the premier rugby clubs in the Mid Atlantic, based in Central Maryland. Competing in Division I and Division III men's rugby, we welcome players from Howard County, Columbia, Ellicott City, and the surrounding regions. Whether you're looking for a competitive team or want to play rugby in Maryland for the first time, Rocky Gorge provides a world-class environment for athletes of all levels.
+
+    [New Players: FIll out our contact form](./forms/contact) and a club leader will get in touch.
+
+    [Join our alumni list](https://groups.google.com/forum/#!forum/rocky-gorge-alumni)
+    for social announcements, fan information, and old boy happy hours.
+
+sections:
+  - source: store
+    # title: Store
+    card:
+      titleField: description
+      hrefPrefix: "/"
+  - source: events
+    # title: Events
+    card:
+      titleField: title
+      hrefPrefix: "/events/"
+  - source: links
+    # title: Links
+    card:
+      titleField: title
+      hrefField: href
+
+calendars:
+  - Training
+  - Matches
+  - Events

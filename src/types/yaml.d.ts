@@ -33,3 +33,18 @@ declare module '@content/calendar.yml' {
   };
   export default calendarInfo;
 }
+
+declare module '@content/home.yml' {
+  const home: {
+    hero: {
+      markdown: string;
+    };
+    sections: Array<{
+      source: import('./data').SectionSource;
+      title?: string;
+      card: import('./data').SectionCardConfig;
+    }>;
+    calendars: string[];
+  };
+  export default home;
+}
