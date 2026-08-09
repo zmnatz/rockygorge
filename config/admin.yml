@@ -157,3 +157,38 @@ link_mappings:
     - name: "mappings"
       label: "Mappings (Label -> Regex)"
       type: "textKeyValueMap"
+
+home:
+  title: "Home Admin"
+  endpoint: "admin-home"
+  getItemId: "source"
+  transforms: "home"
+  reorderable: true
+  globalFields:
+    - name: "heroMarkdown"
+      label: "Hero Markdown"
+      type: "textarea"
+    - name: "calendars"
+      label: "Calendar Filters"
+      type: "textList"
+  columns:
+    - field: "source"
+    - field: "cardTitleField"
+      header: "Card Title Field"
+  fields:
+    - name: "source"
+      type: "select"
+      options: ["store", "events", "links"]
+    - name: "title"
+      type: "text"
+    - name: "cardTitleField"
+      label: "Card Title Field"
+      type: "select"
+      options: ["title", "description"]
+    - name: "cardHrefPrefix"
+      label: "Card Href Prefix"
+      type: "text"
+    - name: "cardHrefField"
+      label: "Card Href Field"
+      type: "select"
+      options: ["href"]

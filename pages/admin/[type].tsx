@@ -41,6 +41,7 @@ export default function GenericAdmin({ initialData, type }) {
         label: f.label || generateLabel(f.name),
       }))}
       editOnly={yamlConfig.editOnly === true}
+      reorderable={yamlConfig.reorderable === true}
       createDefaults={yamlConfig.createDefaults || {}}
       idFieldName={yamlConfig.getItemId}
     />

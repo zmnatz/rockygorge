@@ -17,11 +17,11 @@ import {
   DialogContent, 
   DialogActions
 } from '@mui/material';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
 import { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { get, post } from '@/utils/api';
-import { applyItemChange, createDefaultItem, removeItemById, validateItemId } from '@/utils/admin-items';
+import { applyItemChange, createDefaultItem, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
 
 export function AdminPage<T>({
   title,
@@ -35,6 +35,7 @@ export function AdminPage<T>({
   saveDataTransform = (items, globals) => items,
   globalFields,
   editOnly = false,
+  reorderable = false,
   createDefaults = {},
   idFieldName = 'id',
 }: AdminPageProps<T>) {
@@ -85,6 +86,10 @@ export function AdminPage<T>({
 
   const handleDeleteItem = (item: T) => {
     setItems(prev => removeItemById(prev, getItemId(item), getItemId));
+  };
+
+  const handleMoveItem = (index: number, direction: -1 | 1) => {
+    setItems(prev => moveItem(prev, index, direction));
   };
 
   const handleSaveAll = async () => {
@@ -149,6 +154,16 @@ export function AdminPage<T>({
                   <TableCell key={colIdx}>{col.render(item)}</TableCell>
                 ))}
                 <TableCell align="right">
+                  {reorderable && (
+                    <>
+                      <IconButton onClick={() => handleMoveItem(idx, -1)} disabled={idx === 0} aria-label={`Move ${getItemId(item)} up`}>
+                        <ArrowUpward fontSize="small" />
+                      </IconButton>
+                      <IconButton onClick={() => handleMoveItem(idx, 1)} disabled={idx === items.length - 1} aria-label={`Move ${getItemId(item)} down`}>
+                        <ArrowDownward fontSize="small" />
+                      </IconButton>
+                    </>
+                  )}
                   <IconButton onClick={() => openEditEditor(item)}>
                     <Edit />
                   </IconButton>

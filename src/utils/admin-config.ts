@@ -1,9 +1,10 @@
-export type TransformKey = 'calendar' | 'linkMappings';
+export type TransformKey = 'calendar' | 'linkMappings' | 'home';
 
 export const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
   slug: (item) => item.slug,
   name: (item) => item.name,
   type: (item) => item.type,
+  source: (item) => item.source,
 };
 
 export const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {
@@ -53,5 +54,32 @@ export const TRANSFORM_MAPPINGS: Record<TransformKey, {
       });
       return result;
     },
+  },
+  home: {
+    initialDataTransform: (data) =>
+      (data.sections || []).map((section: any) => ({
+        source: section.source,
+        title: section.title,
+        cardTitleField: section.card?.titleField,
+        cardHrefPrefix: section.card?.hrefPrefix,
+        cardHrefField: section.card?.hrefField,
+      })),
+    initialGlobalsTransform: (data) => ({
+      heroMarkdown: data.hero?.markdown,
+      calendars: data.calendars,
+    }),
+    saveDataTransform: (items, globals) => ({
+      hero: { markdown: globals?.heroMarkdown },
+      sections: (items || []).map((item: any) => ({
+        source: item.source,
+        ...(item.title ? { title: item.title } : {}),
+        card: {
+          ...(item.cardTitleField ? { titleField: item.cardTitleField } : {}),
+          ...(item.cardHrefPrefix ? { hrefPrefix: item.cardHrefPrefix } : {}),
+          ...(item.cardHrefField ? { hrefField: item.cardHrefField } : {}),
+        },
+      })),
+      calendars: globals?.calendars,
+    }),
   },
 };

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   applyItemChange,
   createDefaultItem,
+  moveItem,
   removeItemById,
   validateItemId,
 } from '@/utils/admin-items';
@@ -143,6 +144,44 @@ describe('applyItemChange', () => {
     const items = [{ slug: 'banquet' }];
     const result = applyItemChange(items, { slug: 'open' }, 'missing', getId);
     expect(result).toEqual([{ slug: 'banquet' }]);
+  });
+});
+
+describe('moveItem', () => {
+  const items = [{ slug: 'store' }, { slug: 'events' }, { slug: 'links' }];
+
+  it('moves an item up by one position', () => {
+    expect(moveItem(items, 1, -1)).toEqual([
+      { slug: 'events' },
+      { slug: 'store' },
+      { slug: 'links' },
+    ]);
+  });
+
+  it('moves an item down by one position', () => {
+    expect(moveItem(items, 0, 1)).toEqual([
+      { slug: 'events' },
+      { slug: 'store' },
+      { slug: 'links' },
+    ]);
+  });
+
+  it('does not move the first item up', () => {
+    expect(moveItem(items, 0, -1)).toEqual(items);
+  });
+
+  it('does not move the last item down', () => {
+    expect(moveItem(items, 2, 1)).toEqual(items);
+  });
+
+  it('does not mutate the original array', () => {
+    moveItem(items, 0, 1);
+    expect(items).toHaveLength(3);
+    expect(items[0].slug).toBe('store');
+  });
+
+  it('returns a stable copy for an out-of-range index', () => {
+    expect(moveItem(items, 5, -1)).toEqual(items);
   });
 });
 

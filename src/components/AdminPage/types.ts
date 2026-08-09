@@ -35,6 +35,7 @@ export interface AdminPageProps<T> {
   saveDataTransform?: (items: T[], globals?: any) => any;
   globalFields?: GlobalFieldConfig[];
   editOnly?: boolean;
+  reorderable?: boolean;
   createDefaults?: Record<string, unknown>;
   idFieldName?: string;
 }
