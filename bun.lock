@@ -17,6 +17,7 @@
         "octokit": "^5.0.5",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
+        "rehype-react": "^8.0.0",
         "remark": "^15.0.1",
         "remark-html": "^16.0.1",
         "sharp": "^0.34.5",
@@ -2284,6 +2285,8 @@
     "registry-auth-token": ["registry-auth-token@5.1.1", "", { "dependencies": { "@pnpm/npm-conf": "^3.0.2" } }, "sha512-P7B4+jq8DeD2nMsAcdfaqHbssgHtZ7Z5+++a5ask90fvmJ8p5je4mOa+wzu+DB4vQ5tdJV/xywY+UnVFeQLV5Q=="],
 
     "registry-url": ["registry-url@6.0.1", "", { "dependencies": { "rc": "1.2.8" } }, "sha512-+crtS5QjFRqFCoQmvGduwYWEBng99ZvmFvF+cUJkGYF1L1BfU8C6Zp9T7f5vPAwyLkUExpvK+ANVZmGU49qi4Q=="],
+
+    "rehype-react": ["rehype-react@8.0.0", "", { "dependencies": { "@types/hast": "^3.0.0", "hast-util-to-jsx-runtime": "^2.0.0", "unified": "^11.0.0" } }, "sha512-vzo0YxYbB2HE+36+9HWXVdxNoNDubx63r5LBzpxBGVWM8s9mdnMdbmuJBAX6TTyuGdZjZix6qU3GcSuKCIWivw=="],
 
     "rehype-recma": ["rehype-recma@1.0.0", "", { "dependencies": { "@types/estree": "^1.0.0", "@types/hast": "^3.0.0", "hast-util-to-estree": "^3.0.0" } }, "sha512-lqA4rGUf1JmacCNWWZx0Wv1dHqMwxzsDWYMTowuplHF3xH0N/MmrZ/G3BDZnzAkRmxDadujCjaKM2hqYdCBOGw=="],
 

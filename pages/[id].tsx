@@ -8,7 +8,7 @@ import items from "@content/store.yml";
 import forms from "@content/forms.yml";
 import { Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
-import { markdownToHtml } from "@/utils/markdown";
+import { markdownToReact } from "@/utils/markdown";
 
 export async function getStaticPaths() {
   return {
@@ -25,15 +25,12 @@ export async function getStaticProps({ params }) {
 
   const form = forms.find((f) => f.slug === item.slug) ?? null;
 
-  const props = {
-    ...item,
-    form,
+  return {
+    props: {
+      ...item,
+      form,
+    },
   };
-
-  if (props.details) {
-    props.details = await markdownToHtml(props.details);
-  }
-  return { props };
 }
 
 export default function StoreItem({
@@ -63,8 +60,7 @@ export default function StoreItem({
         flexiblePayment
       >
         <Typography variant="h3">{title}</Typography>
-        {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
-        
+        {details && markdownToReact(details)}
       </PaypalProduct>
       {form && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>

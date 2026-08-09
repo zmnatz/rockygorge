@@ -7,7 +7,7 @@ import store from "@content/store.yml";
 import forms from "@content/forms.yml";
 import { Event, Product, Form } from "@/types/data";
 import { getLinkText } from "@/utils/links";
-import { markdownToHtml } from "@/utils/markdown";
+import { markdownToReact } from "@/utils/markdown";
 
 export async function getStaticPaths() {
   return {
@@ -25,16 +25,13 @@ export async function getStaticProps({ params }) {
   const storeItem = store.find((item) => item.slug === event.slug) ?? null;
   const form = forms.find((f) => f.slug === event.slug) ?? null;
 
-  const props = {
-    ...event,
-    storeItem,
-    form,
+  return {
+    props: {
+      ...event,
+      storeItem,
+      form,
+    },
   };
-
-  if (props.details) {
-    props.details = await markdownToHtml(props.details);
-  }
-  return { props };
 }
 
 export default function EventPage({
@@ -72,7 +69,7 @@ export default function EventPage({
           )}
         </Box>
 
-        {details && <Box sx={{ my: 3 }} dangerouslySetInnerHTML={{__html: details}}/>}
+        {details && <Box sx={{ my: 3 }}>{markdownToReact(details)}</Box>}
         {organizers && organizers.length > 0 && (
           <Card sx={{ mt: 4 }}>
             <CardHeader title="Contact organizers for more detail" />
