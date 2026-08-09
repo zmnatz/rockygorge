@@ -11,9 +11,9 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@biomejs/biome@^2.5.7",
         "npm:@emotion/react@^11.14.0",
         "npm:@emotion/styled@^11.14.1",
-        "npm:@eslint/eslintrc@^3.3.5",
         "npm:@mdx-js/loader@^3.1.1",
         "npm:@mdx-js/react@^3.1.1",
         "npm:@mui/icons-material@^9.0.1",
@@ -23,8 +23,6 @@
         "npm:@rollup/plugin-yaml@5",
         "npm:@tanstack/react-query@^5.100.10",
         "npm:@types/js-yaml@^4.0.9",
-        "npm:eslint-config-next@^16.3.0",
-        "npm:eslint@^9.39.5",
         "npm:husky@^9.1.7",
         "npm:js-yaml@^4.1.1",
         "npm:lint-staged@^17.0.8",

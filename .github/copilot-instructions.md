@@ -4,7 +4,7 @@
 - `npm install` (once)
 - `npm run dev` to start the local Next.js dev server (default port 3000)
 - `npm run build` to generate a **static export** into `build/` (Netlify deploys from there)
-- `npm run lint` runs `next lint` (eslint + Next.js defaults)
+- `npm run lint` runs `biome check` (Biome linter)
 
 ## Project architecture (big picture)
 - This is a **Next.js (v13)** site using `output: "export"` (static export) and `pageExtensions` includes `.mdx`.
