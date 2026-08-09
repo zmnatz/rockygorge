@@ -1,11 +1,12 @@
 import React from 'react';
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList' | 'textKeyValueMap';
+export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList' | 'textKeyValueMap' | 'select';
 
 export interface FieldConfig<T> {
   name: keyof T;
   label: string;
   type?: FieldType;
+  options?: string[];
   render?: (item: T, onChange: (updated: T) => void) => React.ReactNode;
 }
 
@@ -13,6 +14,7 @@ export interface GlobalFieldConfig {
   name: string;
   label: string;
   type?: FieldType;
+  options?: string[];
   render?: (value: any, onChange: (newValue: any) => void) => React.ReactNode;
 }
 

@@ -1,4 +1,4 @@
-import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem, ListItemText, IconButton, Button } from '@mui/material';
+import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem, ListItemText, IconButton, Button, MenuItem } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
 import { FieldConfig } from './types';
 
@@ -155,6 +155,22 @@ export function FormField<T>({
     case 'textKeyValueMap':
       return (
         <KeyValueMapField label={field.label} value={value || []} onChange={updateValue} valueType="string" />
+      );
+
+    case 'select':
+      return (
+        <TextField 
+          select 
+          label={field.label} 
+          fullWidth 
+          value={value ?? ''} 
+          onChange={e => updateValue(e.target.value)} 
+        >
+          <MenuItem value=""><em>Select...</em></MenuItem>
+          {(field.options || []).map((option) => (
+            <MenuItem key={option} value={option}>{option}</MenuItem>
+          ))}
+        </TextField>
       );
 
     case 'text':

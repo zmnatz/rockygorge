@@ -23,6 +23,7 @@ export function createDefaultItem(
         break;
       case 'text':
       case 'textarea':
+      case 'select':
       default:
         item[name] = '';
         break;

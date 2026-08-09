@@ -4,7 +4,12 @@ import path from 'path';
 import adminYaml from '@config/admin.yml';
 import { ADMIN_FILE_PATHS } from '../utils/admin-file-paths';
 
-const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap'];
+const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap', 'select'];
+
+const ALL_CONFIG_FIELDS = Object.values(adminYaml as any).flatMap((config: any) => [
+  ...(config.fields || []),
+  ...(config.globalFields || []),
+]);
 
 describe('admin.yml', () => {
   it('is an object with at least one admin type', () => {
@@ -17,6 +22,25 @@ describe('admin.yml', () => {
       expect(ADMIN_FILE_PATHS[type]).toBeTypeOf('string');
       const filePath = path.join(process.cwd(), ADMIN_FILE_PATHS[type]);
       expect(fs.existsSync(filePath)).toBe(true);
+    });
+  });
+
+  it('select fields declare a non-empty options list', () => {
+    ALL_CONFIG_FIELDS.forEach((field: any) => {
+      if (field.type === 'select') {
+        expect(Array.isArray(field.options)).toBe(true);
+        expect(field.options.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  it('select options are strings', () => {
+    ALL_CONFIG_FIELDS.forEach((field: any) => {
+      if (field.type === 'select') {
+        field.options.forEach((option: any) => {
+          expect(typeof option).toBe('string');
+        });
+      }
     });
   });
 
