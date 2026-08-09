@@ -7,16 +7,12 @@ function getItemId(item: any, strategy: string = 'slug'): string {
   return fn(item);
 }
 
-function identitySaveTransform(items: any[], globals?: any) {
+function identitySaveTransform(items: any[], _globals?: any) {
   return items;
 }
 
 function calendarSaveTransform(items: any[], globals: any) {
   return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals);
-}
-
-function linkMappingsSaveTransform(items: any[]) {
-  return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
 }
 
 function serializeToYaml(data: any): string {

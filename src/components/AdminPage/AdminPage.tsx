@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -32,7 +32,7 @@ export function AdminPage<T>({
   initialData,
   initialDataTransform = (data) => data,
   initialGlobalsTransform,
-  saveDataTransform = (items, globals) => items,
+  saveDataTransform = (items, _globals) => items,
   globalFields,
   editOnly = false,
   reorderable = false,

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Box, Button, Container, TextField, Typography, Paper, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Autocomplete } from '@mui/material'
-import { useRouter } from 'next/router'
+import { Button, Container, TextField, Typography, Paper, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Autocomplete } from '@mui/material'
 import type { GetStaticProps } from 'next'
 import yaml from 'js-yaml'
 import fs from 'node:fs'

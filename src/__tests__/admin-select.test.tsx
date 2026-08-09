@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import yaml from 'js-yaml';
 import { FormField } from '@/components/AdminPage/FormField';

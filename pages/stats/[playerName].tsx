@@ -65,7 +65,7 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns }) 
   const [visibleCategories, setVisibleCategories] = useState<string[]>(['Offensive', 'Defensive', 'Penalties'])
 
   const handleCategoryChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newCategories: string[],
   ) => {
     if (newCategories.length) {

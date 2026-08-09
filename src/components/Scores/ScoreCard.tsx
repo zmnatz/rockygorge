@@ -29,14 +29,6 @@ export function ScoreCard({ score }: ScoreCardProps) {
   );
 }
 
-interface TeamBadge2Props {
-  team: Team;
-}
-
-function TeamBadge2({ team }: TeamBadge2Props) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
-}
-
 interface TeamBadgeProps {
   team: Team;
 }

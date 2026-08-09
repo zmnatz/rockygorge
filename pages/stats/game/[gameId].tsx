@@ -42,7 +42,7 @@ export default function GameStatsPage({ game, allColumns }) {
   const [visibleCategories, setVisibleCategories] = useState<string[]>(['Offensive', 'Defensive', 'Penalties'])
 
   const handleCategoryChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newCategories: string[],
   ) => {
     if (newCategories.length) {
