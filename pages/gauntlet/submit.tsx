@@ -3,8 +3,8 @@ import { Box, Button, Container, TextField, Typography, Paper, Alert, FormContro
 import { useRouter } from 'next/router'
 import { GetStaticProps } from 'next'
 import yaml from 'js-yaml'
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import { post } from '@/utils/api'
 
 interface GauntletSubmitProps {

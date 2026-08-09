@@ -38,9 +38,9 @@ describe('FormField select', () => {
   });
 
   it('offers a blank placeholder option alongside the configured options', () => {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const source = fs.readFileSync(
-      require('path').join(__dirname, '../components/AdminPage/FormField.tsx'),
+      require('node:path').join(__dirname, '../components/AdminPage/FormField.tsx'),
       'utf8'
     );
 

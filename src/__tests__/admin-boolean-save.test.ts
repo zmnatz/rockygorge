@@ -278,9 +278,9 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
 
 describe('AdminPage useEffect dependency stability', () => {
   it('does not include initialDataTransform or initialGlobalsTransform in useEffect deps', () => {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const source = fs.readFileSync(
-      require('path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
+      require('node:path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
       'utf8'
     );
 

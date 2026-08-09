@@ -3,9 +3,9 @@ import adminYaml from '@config/admin.yml';
 import { generateLabel } from '../../src/utils/labels';
 import { ITEM_ID_MAPPINGS, RENDER_MAPPINGS, TRANSFORM_MAPPINGS } from '../../src/utils/admin-config';
 import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
-import fs from 'fs';
+import fs from 'node:fs';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 
 export default function GenericAdmin({ initialData, type }) {
   const yamlConfig = adminYaml[type];
