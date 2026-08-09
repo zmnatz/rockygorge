@@ -125,17 +125,25 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
     )
 }
 
+interface StatsFileData {
+    games?: Array<{
+        players?: Array<{
+            name?: string;
+        }>;
+    }>;
+}
+
 export const getStaticProps: GetStaticProps = async () => {
     try {
         const filePath = path.join(process.cwd(), 'content/stats/stats.yml');
         const fileContents = fs.readFileSync(filePath, 'utf8');
-        const data = yaml.load(fileContents) as any;
+        const data = yaml.load(fileContents) as StatsFileData;
         
         const playerNames = new Set<string>();
         if (data?.games) {
-            data.games.forEach((game: any) => {
+            data.games.forEach((game) => {
                 if (game.players) {
-                    game.players.forEach((player: any) => {
+                    game.players.forEach((player) => {
                         if (player.name) playerNames.add(player.name);
                     });
                 }

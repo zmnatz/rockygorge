@@ -1,11 +1,27 @@
 import { Octokit } from 'octokit';
+import { RequestError } from '@octokit/request-error';
 import yaml from 'js-yaml';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 export const config = {
     path: '/api/submit-gauntlet',
 };
 
-export const handler = async (event: any) => {
+interface RepoFileContent {
+    content?: string;
+    sha?: string;
+}
+
+interface GauntletEntry {
+    name: string;
+    time: string;
+    position?: string;
+    stroke?: number;
+}
+
+type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
+
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
@@ -47,8 +63,8 @@ export const handler = async (event: any) => {
         });
 
         // 3. Get current file content from base branch
-        let fileData;
-        let entries = [];
+        let fileData: RepoFileContent | undefined;
+        let entries: GauntletEntry[] = [];
         try {
             const response = await octokit.rest.repos.getContent({
                 owner: OWNER,
@@ -56,11 +72,12 @@ export const handler = async (event: any) => {
                 path: FILE_PATH,
                 ref: baseBranch,
             });
-            fileData = response.data as any;
-            const content = Buffer.from(fileData.content, 'base64').toString();
-            entries = (yaml.load(content) as any[]) || [];
-        } catch (error: any) {
-            if (error.status !== 404) throw error;
+            fileData = response.data as RepoFileContent;
+            const content = Buffer.from(fileData.content || '', 'base64').toString();
+            const parsed = yaml.load(content);
+            entries = (Array.isArray(parsed) ? parsed : []) as GauntletEntry[];
+        } catch (error: unknown) {
+            if (!(error instanceof RequestError) || error.status !== 404) throw error;
         }
 
         if (!Array.isArray(entries)) {
@@ -80,7 +97,7 @@ export const handler = async (event: any) => {
 
         // 5. Push to new branch
         console.log(`Pushing update to branch ${branchName} for file ${FILE_PATH}`);
-        const updateParams: any = {
+        const updateParams: UpdateFileParams = {
             owner: OWNER,
             repo: REPO,
             path: FILE_PATH,
@@ -113,11 +130,11 @@ export const handler = async (event: any) => {
             statusCode: 200,
             body: JSON.stringify({ message: 'Successfully submitted' }),
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
+            body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
         };
     }
 };

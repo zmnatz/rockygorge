@@ -1,5 +1,7 @@
 import { Octokit } from 'octokit';
+import { RequestError } from '@octokit/request-error';
 import yaml from 'js-yaml';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -7,11 +9,18 @@ interface AdminHandlerConfig {
   label: string;
 }
 
+interface RepoFileContent {
+  content?: string;
+  sha?: string;
+}
+
+type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
+
 export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
-  return async (event: any) => {
+  return async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod === 'POST') {
       try {
-        const body = JSON.parse(event.body);
+        const body = JSON.parse(event.body || '{}');
         const data = body;
 
         const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
@@ -34,7 +43,7 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           sha: refData.object.sha,
         });
 
-        let fileData;
+        let fileData: RepoFileContent | undefined;
         try {
           const response = await octokit.rest.repos.getContent({
             owner: OWNER,
@@ -42,14 +51,14 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
             path: filePath,
             ref: baseBranch,
           });
-          fileData = response.data as any;
-        } catch (error: any) {
-          if (error.status !== 404) throw error;
+          fileData = response.data as RepoFileContent;
+        } catch (error: unknown) {
+          if (!(error instanceof RequestError) || error.status !== 404) throw error;
         }
 
         const updatedYaml = yaml.dump(data);
 
-        const updateParams: any = {
+        const updateParams: UpdateFileParams = {
           owner: OWNER,
           repo: REPO,
           path: filePath,
@@ -77,11 +86,11 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           statusCode: 200,
           body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(error);
         return {
           statusCode: 500,
-          body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
+          body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
         };
       }
     }

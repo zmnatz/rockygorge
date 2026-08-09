@@ -12,7 +12,7 @@ import { SortableTable } from '@/components/SortableTable'
 export async function getStaticPaths() {
   const games = Array.isArray(stats.games) ? stats.games : []
   const allPlayerNames: string[] = Array.from(new Set(games.flatMap(game => 
-    Array.isArray(game.players) ? (game.players as any[]).map(player => player.name as string) : []
+    Array.isArray(game.players) ? game.players.map(player => player.name as string) : []
   )))
 
   return {
@@ -83,7 +83,7 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns }) 
   }, [allColumns, visibleCategories])
 
   const logsBySeason = useMemo(() => {
-    const grouped: Record<string, any[]> = {}
+    const grouped: Record<string, typeof playerLogs> = {}
     playerLogs.forEach(log => {
       const season = log.season || 'Unknown'
       if (!grouped[season]) grouped[season] = []
