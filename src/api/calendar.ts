@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import calendarInfo from '@content/calendar.yml'
-import { CalendarEvent, CalendarAPIResponse, CalendarSourceItem } from "@/components/CalendarCard/types";
+import type { CalendarEvent, CalendarAPIResponse, CalendarSourceItem } from "@/components/CalendarCard/types";
 import { filterEvents, mapCalendarSourceItems } from "@/utils/calendar";
 
 

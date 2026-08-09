@@ -18,7 +18,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
-import { AdminPageProps } from './types';
+import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { get, post } from '@/utils/api';
 import { applyItemChange, createDefaultItem, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';

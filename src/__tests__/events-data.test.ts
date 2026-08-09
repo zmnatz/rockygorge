@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import events from '@content/events.yml';
-import { Event } from '@/types/data';
+import type { Event } from '@/types/data';
 import { validateDataArray } from './helpers/data-shape';
 
 validateDataArray<Event>(events, {

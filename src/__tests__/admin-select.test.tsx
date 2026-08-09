@@ -3,7 +3,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import yaml from 'js-yaml';
 import { FormField } from '@/components/AdminPage/FormField';
-import { FieldConfig } from '@/components/AdminPage/types';
+import type { FieldConfig } from '@/components/AdminPage/types';
 import { applyItemChange, createDefaultItem } from '@/utils/admin-items';
 
 interface SectionItem {

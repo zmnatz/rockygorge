@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { post } from "@/utils/api"
-import { Score } from '@/components/Scores/types'
+import type { Score } from '@/components/Scores/types'
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 

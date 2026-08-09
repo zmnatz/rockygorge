@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import events from '@content/events.yml';
 import store from '@content/store.yml';
 import forms from '@content/forms.yml';
-import { Event, Product, Form } from '@/types/data';
+import type { Event, Product, Form } from '@/types/data';
 
 describe('event cross-references', () => {
   const visibleEvents = events.filter((e: Event) => !e.hide);

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { remark } from "remark";
 import remarkHtml from "remark-html";

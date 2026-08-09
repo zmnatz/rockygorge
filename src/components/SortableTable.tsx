@@ -2,7 +2,7 @@ import {
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   TableSortLabel
 } from '@mui/material'
-import { useState, useMemo, ReactNode } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import { getSortableName } from '@/utils/stats'
 
 interface SortableTableProps {

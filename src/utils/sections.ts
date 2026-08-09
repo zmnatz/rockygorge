@@ -1,4 +1,4 @@
-import { SectionCard, SectionCardConfig } from "@/types/data";
+import type { SectionCard, SectionCardConfig } from "@/types/data";
 
 interface SectionCardItem {
   slug: string;

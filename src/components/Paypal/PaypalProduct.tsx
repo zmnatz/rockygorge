@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  CreateOrderBraintreeActions,
-  OnApproveBraintreeActions,
+  type CreateOrderBraintreeActions,
+  type OnApproveBraintreeActions,
   PayPalButtons,
 } from "@paypal/react-paypal-js";
 import Box from "@mui/material/Box";
@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
 import { PaypalProvider } from './utils'
-import { PaypalProductProps } from "./types";
+import type { PaypalProductProps } from "./types";
 
 export function PaypalProduct({
   options = [],

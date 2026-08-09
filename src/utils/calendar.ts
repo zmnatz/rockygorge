@@ -1,4 +1,4 @@
-import { CalendarEvent, CalendarFilter, CalendarSourceItem, CalendarAPIResponse } from "@/components/CalendarCard/types";
+import type { CalendarEvent, CalendarFilter, CalendarSourceItem, CalendarAPIResponse } from "@/components/CalendarCard/types";
 
 const parseDate = (dateStr: string) => {
   if (!dateStr.includes("T")) {

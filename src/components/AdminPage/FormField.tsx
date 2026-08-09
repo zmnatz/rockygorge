@@ -1,6 +1,6 @@
 import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem, ListItemText, IconButton, Button, MenuItem } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
-import { FieldConfig } from './types';
+import type { FieldConfig } from './types';
 
 interface FormFieldProps<T> {
   field: FieldConfig<T>;
