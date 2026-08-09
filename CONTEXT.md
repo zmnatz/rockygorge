@@ -19,7 +19,7 @@ A single entry in the team's Google Calendar — `summary`, `location`, `htmlLin
 _Avoid_: Event (when referring to a calendar entry)
 
 **Event**:
-A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied values; it does not reference a calendar item.
+A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied `location`/`start`/`end` snapshot values; it does not reference a calendar item.
 _Avoid_: Calendar entry, schedule appointment
 
 **Generate from calendar**:
@@ -31,7 +31,7 @@ The intermediate record produced when generating. The slug is auto-derived from 
 _Avoid_: Imported event, synced event
 
 **Store Item**:
-A purchasable item stored in `store.yml` — `slug`, `title`, `description`, `summary`, `hide`, `defaultAmount`, `options`, `details`, `subscriptions`, `supporters`. Rendered at `/[slug]`. Because store items are often tied to an occasion (banquet, open, camp), a store item can be generated from a calendar item the same way an event can. Like events, store items render their date and location through the fuzzy calendar title-match, not from the snapshot.
+A purchasable item stored in `store.yml` — `slug`, `title`, `description`, `summary`, `hide`, `defaultAmount`, `options`, `details`, `subscriptions`, `supporters`. Rendered at `/[slug]`. Because store items are often tied to an occasion (banquet, open, camp), a store item can be generated from a calendar item the same way an event can, copying `location`/`start`/`end` snapshot values. Like events, store items render their date and location through the fuzzy calendar title-match, not from the snapshot.
 _Avoid_: Product, purchase option
 
 **Fuzzy title-match**:
