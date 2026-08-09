@@ -8,6 +8,12 @@
  * - summary: Short card body text shown on the homepage
  * - details: Optional markdown rendered as HTML on the detail page
  * - hide: When true, excluded from the public homepage and listing
+ * - location: Snapshot of the source calendar item's location,
+ *   copied at generation time; not used for rendering
+ * - start: Snapshot of the source calendar item's start,
+ *   copied at generation time; not used for rendering
+ * - end: Snapshot of the source calendar item's end,
+ *   copied at generation time; not used for rendering
  */
 export interface BaseContentItem {
   slug: string;
@@ -16,6 +22,9 @@ export interface BaseContentItem {
   summary: string;
   details?: string;
   hide?: boolean;
+  location?: string;
+  start?: string;
+  end?: string;
 }
 
 /**

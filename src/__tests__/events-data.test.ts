@@ -13,6 +13,9 @@ validateDataArray<Event>(events, {
     { name: 'title', type: 'string' },
     { name: 'organizers', type: 'object' },
     { name: 'hide', type: 'boolean', optional: true },
+    { name: 'location', type: 'string', optional: true },
+    { name: 'start', type: 'string', optional: true },
+    { name: 'end', type: 'string', optional: true },
   ],
 });
 
