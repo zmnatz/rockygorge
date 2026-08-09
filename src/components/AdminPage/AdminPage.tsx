@@ -142,8 +142,8 @@ export function AdminPage<T>({
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((col, idx) => (
-                <TableCell key={idx}>{col.header}</TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.header}>{col.header}</TableCell>
               ))}
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -151,8 +151,8 @@ export function AdminPage<T>({
           <TableBody>
             {items.map((item, idx) => (
               <TableRow key={getItemId(item) || idx}>
-                {columns.map((col, colIdx) => (
-                  <TableCell key={colIdx}>{col.render(item)}</TableCell>
+                {columns.map((col) => (
+                  <TableCell key={col.header}>{col.render(item)}</TableCell>
                 ))}
                 <TableCell align="right">
                   {reorderable && (

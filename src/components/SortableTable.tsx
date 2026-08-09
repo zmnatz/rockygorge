@@ -73,9 +73,9 @@ export function SortableTable({
         <TableHead>
           {columnGroups.length > 0 && (
             <TableRow>
-              {columnGroups.map((group, idx) => (
+              {columnGroups.map((group) => (
                 <TableCell 
-                  key={idx} 
+                  key={group.title === '' ? 'base' : group.title} 
                   align="center" 
                   colSpan={group.colSpan}
                   sx={{ borderBottom: group.title ? '1px solid rgba(224, 224, 224, 1)' : 'none', fontWeight: 'bold' }}

@@ -14,6 +14,7 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
       <Typography variant="h6">{label}</Typography>
       <List dense>
         {(value || []).map((pair: any, idx: number) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: key-value pairs have no stable id; index is safe within a controlled edit session
           <ListItem key={idx} secondaryAction={
             <IconButton edge="end" onClick={() => {
               const newList = [...(value || [])];
@@ -118,6 +119,7 @@ export function FormField<T>({
           <Typography variant="h6">{field.label}</Typography>
           <List>
             {(value || []).map((val: string, idx: number) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: text list values have no stable id; index is safe within a controlled edit session
               <ListItem key={idx} secondaryAction={
                 <IconButton edge="end" onClick={() => {
                   const newList = [...(value || [])];

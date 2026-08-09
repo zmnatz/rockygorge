@@ -14,7 +14,7 @@ describe('event cross-references', () => {
       if (storeSlugs.has(event.slug)) {
         const storeItem = store.find((s: Product) => s.slug === event.slug);
         expect(storeItem).toBeDefined();
-        expect(storeItem!.slug).toBe(event.slug);
+        expect(storeItem?.slug).toBe(event.slug);
       }
     });
   });
@@ -24,7 +24,7 @@ describe('event cross-references', () => {
       if (formSlugs.has(event.slug)) {
         const form = forms.find((f: Form) => f.slug === event.slug);
         expect(form).toBeDefined();
-        expect(form!.slug).toBe(event.slug);
+        expect(form?.slug).toBe(event.slug);
       }
     });
   });

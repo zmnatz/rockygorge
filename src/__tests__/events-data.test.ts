@@ -23,7 +23,7 @@ describe('events.yml', () => {
   it('has the open event', () => {
     const openEvent = events.find((e: Event) => e.slug === 'open');
     expect(openEvent).toBeDefined();
-    expect(openEvent!.title).toContain('Rocky Gorge Open');
-    expect(openEvent!.organizers.length).toBeGreaterThan(0);
+    expect(openEvent?.title).toContain('Rocky Gorge Open');
+    expect(openEvent?.organizers.length).toBeGreaterThan(0);
   });
 });
