@@ -34,5 +34,5 @@ interface TeamBadgeProps {
 }
 
 function TeamBadge({ team }: TeamBadgeProps) {
-  return <img height="40" src={team.crest} title={team.name} alt={team.name} />;
+  return <Box component="img" height={40} src={team.crest} title={team.name} alt={team.name} />;
 }
