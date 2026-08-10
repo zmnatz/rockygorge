@@ -39,6 +39,7 @@ interface AdminYamlConfig {
   editOnly?: boolean;
   reorderable?: boolean;
   createDefaults?: Record<string, unknown>;
+  generateFromCalendar?: boolean;
 }
 
 interface GenericAdminProps {
@@ -92,6 +93,7 @@ export default function GenericAdmin({ initialData, type }: GenericAdminProps) {
       reorderable={yamlConfig.reorderable === true}
       createDefaults={yamlConfig.createDefaults || {}}
       idFieldName={yamlConfig.getItemId}
+      generateFromCalendar={yamlConfig.generateFromCalendar === true}
     />
   );
 }

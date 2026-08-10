@@ -20,8 +20,9 @@ import {
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
+import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
 import { get, post } from '@/utils/api';
-import { applyItemChange, createDefaultItem, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
+import { applyItemChange, createDefaultItem, createItemFromCalendar, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
 
 export function AdminPage<T>({
   title,
@@ -38,6 +39,7 @@ export function AdminPage<T>({
   reorderable = false,
   createDefaults = {},
   idFieldName = 'id',
+  generateFromCalendar = false,
 }: AdminPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
@@ -64,9 +66,9 @@ export function AdminPage<T>({
     }
   }, [endpoint, initialData]);
 
-  const openCreateEditor = () => {
+  const openCreateEditor = (preset?: T) => {
     setEditingOriginalId(null);
-    setEditingItem(createDefaultItem(fields, createDefaults) as T);
+    setEditingItem(preset ?? (createDefaultItem(fields, createDefaults) as T));
   };
 
   const openEditEditor = (item: T) => {
@@ -117,11 +119,17 @@ export function AdminPage<T>({
         <Typography variant="h4">{title}</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {!editOnly && (
-            <Button variant="contained" onClick={openCreateEditor} startIcon={<Add />}>Add</Button>
+            <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
           )}
           <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
         </Box>
       </Box>
+
+      {generateFromCalendar && (
+        <GenerateFromCalendarPanel
+          onSelect={(source) => openCreateEditor(createItemFromCalendar(source, fields, createDefaults) as T)}
+        />
+      )}
 
       {globalFields && globalFields.length > 0 && (
         <Paper sx={{ p: 3, mb: 4 }}>

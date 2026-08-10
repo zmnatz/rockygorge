@@ -1,4 +1,7 @@
-interface DefaultField {
+import type { CalendarSourceItem } from '@/components/CalendarCard/types';
+import { slugify } from '@/utils/slugify';
+
+export interface DefaultField {
   name: string | number | symbol;
   type?: string;
 }
@@ -27,6 +30,23 @@ export function createDefaultItem(
     }
   }
   return { ...item, ...pageDefaults };
+}
+
+export function createItemFromCalendar(
+  source: CalendarSourceItem,
+  fields: DefaultField[],
+  pageDefaults: Record<string, unknown> = {}
+): Record<string, unknown> {
+  const item = createDefaultItem(fields, pageDefaults);
+  return {
+    ...item,
+    title: source.summary,
+    description: source.description ?? '',
+    slug: slugify(source.summary),
+    location: source.location,
+    start: source.start,
+    end: source.end,
+  };
 }
 
 export function validateItemId<T>(

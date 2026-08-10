@@ -38,4 +38,5 @@ export interface AdminPageProps<T> {
   reorderable?: boolean;
   createDefaults?: Record<string, unknown>;
   idFieldName?: string;
+  generateFromCalendar?: boolean;
 }
