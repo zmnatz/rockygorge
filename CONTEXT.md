@@ -38,6 +38,17 @@ _Avoid_: Product, purchase option
 The lookup used by `<CalendarEventDetail>` to render a date/time/location block on a page: it lowercases and substring-matches the page title against every upcoming calendar item. Used on event pages and store pages. Generation does not replace this — pages keep rendering through the match, and the snapshot sits alongside it as data.
 _Avoid_: Precise lookup, calendar association
 
+**Option**:
+A selectable amount tier on a store item, a `name`/`value` pair in the item's `options` array. Choosing an option fixes the purchase amount to its value. Not to be confused with a subscription option, which selects a tier on a hosted PayPal plan.
+_Avoid_: Tier, package (when referring to a store item option)
+
+**Selected option**:
+The option whose value equals the current purchase amount. Derived from the amount by value-match rather than tracked as user state; if the amount matches no option value (a custom amount entered in the flexible payment form), there is no selected option.
+
+**Transaction line item**:
+The purchase record carried on a one-time PayPal order when a selected option exists — it names the option and its amount so the purchase tier is identifiable in the transaction report. When there is no selected option, no line item is carried.
+_Avoid_: Cart entry, invoice item
+
 ## Admin
 
 **Admin handler**:
