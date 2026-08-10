@@ -16,7 +16,7 @@ Additionally, Next.js ≤ 16.2.x crashes with TS 7 (`The "id" argument must be o
 
 - Upgrade TypeScript to v7 (pinned as `^7.0.2`).
 - Remove `typescript-yaml-plugin` from `package.json` and drop the `plugins` entry from `tsconfig.json`.
-- Upgrade `next` and `eslint-config-next` to 16.3.0 and enable `experimental.useTypeScriptCli: true` in `next.config.ts`.
+- Upgrade `next` to 16.3.0 and enable `experimental.useTypeScriptCli: true` in `next.config.ts`. (Note: `eslint-config-next` was later removed entirely when the repo migrated linting from ESLint to Biome — see the lint script in `package.json`.)
 
 ## Consequences
 

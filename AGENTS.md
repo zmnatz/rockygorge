@@ -1,9 +1,11 @@
 # Agent Guidance: Rocky Gorge
 
 ## Developer Commands
-- `npm run dev`: Start development server (Turbopack)
-- `npm run build`: Production build (Turbopack)
-- `npm run lint`: Lint codebase
+- `bun install`: Install dependencies
+- `bun run dev`: Start development server (Turbopack)
+- `bun run build`: Production build (Turbopack)
+- `bun run lint`: Lint codebase (Biome)
+- `bun run test`: Run tests (Vitest)
 
 ## Architecture & Tech Stack
 - **Framework**: Next.js (Pages Router)

@@ -19,7 +19,7 @@ A single entry in the team's Google Calendar — `summary`, `location`, `htmlLin
 _Avoid_: Event (when referring to a calendar entry)
 
 **Event**:
-A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied `location`/`start`/`end` snapshot values; it does not reference a calendar item.
+A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `details`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied `location`/`start`/`end` snapshot values; it does not reference a calendar item.
 _Avoid_: Calendar entry, schedule appointment
 
 **Generate from calendar**:

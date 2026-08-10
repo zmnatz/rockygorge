@@ -50,13 +50,13 @@ be split into two flags.
 - **Calendar filters have no `hide` field.** The issue's "hide: true so a new
   item never appears on the public site" cannot be expressed for calendar
   filters, which have no visibility toggle. In practice a brand-new filter does
-  not surface publicly anyway: the homepage `CalendarCard` only renders filter
-  names hardcoded on `pages/index.mdx` (`['Training', 'Matches', 'Events']`),
-  and the id guard prevents a new filter from reusing one of those names. A
-  `hide` field for filters was deliberately not added — it would have no effect
-  on the public site, and `hideSummary` (which defaults to `false`) is about
-  event summaries, not filter visibility. If filters are ever surfaced by name
-  dynamically, revisit this.
+  not surface publicly anyway: the homepage `CalendarCard` renders only the
+  filter names listed in `home.yml` under `calendars` (currently
+  `['Training', 'Matches', 'Events']`), and the id guard prevents a new filter
+  from reusing one of those names. A `hide` field for filters was deliberately
+  not added — it would have no effect on the public site, and `hideSummary`
+  (which defaults to `false`) is about event summaries, not filter visibility.
+  If filters are ever surfaced by name dynamically, revisit this.
 - **No server-side or CI-side validation of new items.** Id uniqueness is
   enforced only in the client dialog (`validateItemId`). A malformed item can
   still be saved via the editor (e.g. an invalid `matches` regex on a calendar

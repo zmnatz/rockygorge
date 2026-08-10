@@ -8,7 +8,7 @@ The official website for [Rocky Gorge Rugby Football Club](https://rockygorgerug
 - **Statistics Dashboard** — Per-game and season-aggregated player and team stats with sortable, filterable views
 - **Gauntlet Challenge** — Fitness leaderboard for the rowing/erg challenge with player submissions
 - **Calendar** — Live Google Calendar integration showing training, matches, and events
-- **Admin Panel** — Data-driven CRUD interface for managing store items, events, links, and forms via GitHub PRs
+- **Admin Panel** — Data-driven CRUD interface for managing store items, events, links, forms, calendar filters, link mappings, and the homepage via GitHub PRs
 - **Content Pages** — Club contacts, Hall of Fame inductees, and embedded Google Forms
 
 ## Tech Stack
@@ -29,14 +29,13 @@ The official website for [Rocky Gorge Rugby Football Club](https://rockygorgerug
 
 ### Prerequisites
 
-- Node.js 24 (see `.nvmrc`)
-- npm
+- [Bun](https://bun.sh) 1.3.14 (pinned via `packageManager` in `package.json`)
 
 ### Install and Run
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 The development server starts at [http://localhost:3000](http://localhost:3000).
@@ -44,7 +43,7 @@ The development server starts at [http://localhost:3000](http://localhost:3000).
 ### Build
 
 ```bash
-npm run build
+bun run build
 ```
 
 Outputs a static site to the `build/` directory.
@@ -52,9 +51,9 @@ Outputs a static site to the `build/` directory.
 ### Other Commands
 
 ```bash
-npm run lint    # Lint the codebase
-npm test        # Run tests
-npm run netlify # Start Netlify dev server (with serverless functions)
+bun run lint    # Lint the codebase (Biome)
+bun run test    # Run tests (Vitest)
+bun run netlify # Start Netlify dev server (with serverless functions)
 ```
 
 ## Environment Variables
