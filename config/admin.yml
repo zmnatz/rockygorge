@@ -40,6 +40,7 @@ events:
   title: "Events Admin"
   endpoint: "admin-events"
   getItemId: "slug"
+  generateFromCalendar: true
   columns:
     - field: "slug"
     - field: "title"
