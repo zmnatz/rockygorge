@@ -3,7 +3,40 @@ import yaml from 'js-yaml';
 import homeInfo from '@content/home.yml';
 import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
-const homeTransform = TRANSFORM_MAPPINGS.home;
+interface HomeSectionInput {
+  source: string;
+  title?: string;
+  cardTitleField?: string;
+  cardHrefPrefix?: string;
+  cardHrefField?: string;
+}
+
+interface HomeSectionOutput {
+  source: string;
+  title?: string;
+  card: {
+    titleField?: string;
+    hrefPrefix?: string;
+    hrefField?: string;
+  };
+}
+
+interface HomeGlobals {
+  heroMarkdown: string;
+  calendars: string[];
+}
+
+interface HomeData {
+  hero: { markdown: string };
+  sections: HomeSectionOutput[];
+  calendars: string[];
+}
+
+const homeTransform = TRANSFORM_MAPPINGS.home as unknown as {
+  initialDataTransform: (data: unknown) => HomeSectionInput[];
+  initialGlobalsTransform: (data: unknown) => HomeGlobals;
+  saveDataTransform: (items: HomeSectionInput[], globals: HomeGlobals) => HomeData;
+};
 
 describe('home transform roundtrip', () => {
   it('preserves data through transform and save', () => {
@@ -19,13 +52,13 @@ describe('home transform roundtrip', () => {
     const globals = homeTransform.initialGlobalsTransform(homeInfo);
     const saved = homeTransform.saveDataTransform(sections, globals);
 
-    const loaded = yaml.load(yaml.dump(saved)) as any;
+    const loaded = yaml.load(yaml.dump(saved)) as HomeData;
 
     expect(typeof loaded.hero.markdown).toBe('string');
     expect(loaded.hero.markdown.length).toBeGreaterThan(0);
 
     expect(Array.isArray(loaded.sections)).toBe(true);
-    loaded.sections.forEach((section: any) => {
+    loaded.sections.forEach((section: HomeSectionOutput) => {
       expect(['store', 'events', 'links']).toContain(section.source);
       if (section.title !== undefined) {
         expect(typeof section.title).toBe('string');
@@ -42,7 +75,7 @@ describe('home transform roundtrip', () => {
     });
 
     expect(Array.isArray(loaded.calendars)).toBe(true);
-    loaded.calendars.forEach((calendar: any) => {
+    loaded.calendars.forEach((calendar: string) => {
       expect(typeof calendar).toBe('string');
     });
   });
@@ -63,7 +96,7 @@ describe('home transform roundtrip', () => {
   });
 
   it('drops blank optional fields on save', () => {
-    const sections = [
+    const sections: HomeSectionInput[] = [
       { source: 'store', title: '', cardTitleField: 'title', cardHrefPrefix: '', cardHrefField: '' },
     ];
     const saved = homeTransform.saveDataTransform(sections, { heroMarkdown: 'x', calendars: ['Training'] });

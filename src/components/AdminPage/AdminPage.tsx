@@ -30,7 +30,7 @@ export function AdminPage<T>({
   fields,
   getItemId,
   initialData,
-  initialDataTransform = (data) => data,
+  initialDataTransform = (data: unknown) => data as T[],
   initialGlobalsTransform,
   saveDataTransform = (items, _globals) => items,
   globalFields,
@@ -40,7 +40,7 @@ export function AdminPage<T>({
   idFieldName = 'id',
 }: AdminPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
-  const [globals, setGlobals] = useState<any>({});
+  const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialData);
@@ -54,7 +54,7 @@ export function AdminPage<T>({
       }
       setLoading(false);
     } else {
-      get<any>(`/.netlify/functions/${endpoint}`).then(data => {
+      get<unknown>(`/.netlify/functions/${endpoint}`).then(data => {
         setItems(initialDataTransform(data));
         if (initialGlobalsTransform) {
           setGlobals(initialGlobalsTransform(data));
@@ -129,7 +129,7 @@ export function AdminPage<T>({
             {globalFields.map(field => (
               <FormField 
                 key={field.name} 
-                field={field as any} 
+                field={field} 
                 item={globals} 
                 onChange={(updated) => setGlobals(updated)} 
               />

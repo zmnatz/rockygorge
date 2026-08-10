@@ -12,7 +12,7 @@ interface DataArrayConfig {
   requiredFields: FieldCheck[];
 }
 
-export function validateDataArray<T extends Record<string, any>>(
+export function validateDataArray<T extends object>(
   items: T[],
   config: DataArrayConfig
 ) {
@@ -23,20 +23,23 @@ export function validateDataArray<T extends Record<string, any>>(
 
     it('each item has required fields', () => {
       items.forEach((item) => {
+        const record = item as Record<string, unknown>;
         config.requiredFields.forEach(({ name, type, optional }) => {
+          const value = record[name];
           if (optional) {
-            if (item[name] !== undefined) {
-              expect(typeof item[name]).toBe(type);
+            if (value !== undefined) {
+              expect(typeof value).toBe(type);
             }
           } else {
-            expect(typeof item[name]).toBe(type);
+            expect(typeof value).toBe(type);
           }
         });
       });
     });
 
     it(`${config.idField}s are unique`, () => {
-      const ids = items.map((item) => item[config.idField]);
+      const record = items as Array<Record<string, unknown>>;
+      const ids = record.map((item) => item[config.idField]);
       expect(new Set(ids).size).toBe(ids.length);
     });
   });

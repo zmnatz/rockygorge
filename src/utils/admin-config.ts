@@ -1,53 +1,56 @@
 export type TransformKey = 'calendar' | 'linkMappings' | 'home';
 
-export const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
-  slug: (item) => item.slug,
-  name: (item) => item.name,
-  type: (item) => item.type,
-  source: (item) => item.source,
+export const ITEM_ID_MAPPINGS: Record<string, (item: Record<string, unknown>) => string> = {
+  slug: (item) => String(item.slug || ''),
+  name: (item) => String(item.name || ''),
+  type: (item) => String(item.type || ''),
+  source: (item) => String(item.source || ''),
 };
 
-export const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {
+export const RENDER_MAPPINGS: Record<string, (item: Record<string, unknown>, field: string) => React.ReactNode> = {
   boolean: (item, field) => item[field] ? 'Yes' : 'No',
-  calendarMatches: (item) => item.matches || item.notMatches || '-',
-  default: (item, field) => item[field],
+  calendarMatches: (item) => String(item.matches || item.notMatches || '-'),
+  default: (item, field) => String(item[field] ?? ''),
 };
 
 export const TRANSFORM_MAPPINGS: Record<TransformKey, {
-  initialDataTransform: (data: any) => any[];
-  initialGlobalsTransform: (data: any) => any;
-  saveDataTransform: (items: any[], globals?: any) => any;
+  initialDataTransform: (data: unknown) => Record<string, unknown>[];
+  initialGlobalsTransform: (data: unknown) => Record<string, unknown>;
+  saveDataTransform: (items: Record<string, unknown>[], globals?: Record<string, unknown>) => unknown;
 }> = {
   calendar: {
-    initialDataTransform: (data) => data.filters,
-    initialGlobalsTransform: (data) => ({ months: data.months }),
+    initialDataTransform: (data: unknown) => (data as { filters?: Record<string, unknown>[] }).filters || [],
+    initialGlobalsTransform: (data: unknown) => ({ months: (data as { months?: unknown }).months }),
     saveDataTransform: (items, globals) => ({
-      months: globals.months,
+      months: globals?.months,
       filters: items,
     }),
   },
   linkMappings: {
-    initialDataTransform: (data) => [
-      {
-        type: 'store',
-        mappings: Object.entries(data.store?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.store?.default
-      },
-      {
-        type: 'forms',
-        mappings: Object.entries(data.forms?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.forms?.default
-      },
-    ],
+    initialDataTransform: (data: unknown) => {
+      const d = data as { store?: { mappings?: Record<string, unknown>; default?: unknown }; forms?: { mappings?: Record<string, unknown>; default?: unknown } };
+      return [
+        {
+          type: 'store',
+          mappings: Object.entries(d.store?.mappings || {}).map(([name, value]) => ({ name, value })),
+          default: d.store?.default
+        },
+        {
+          type: 'forms',
+          mappings: Object.entries(d.forms?.mappings || {}).map(([name, value]) => ({ name, value })),
+          default: d.forms?.default
+        },
+      ];
+    },
     initialGlobalsTransform: () => ({}),
     saveDataTransform: (items) => {
-      const result = {};
-      items.forEach((item: any) => {
-        const mappings = {};
-        (item.mappings || []).forEach((m: any) => {
+      const result: Record<string, unknown> = {};
+      items.forEach((item) => {
+        const mappings: Record<string, unknown> = {};
+        ((item.mappings as Array<{ name: string; value: unknown }>) || []).forEach((m) => {
           mappings[m.name] = m.value;
         });
-        result[item.type] = {
+        result[String(item.type)] = {
           mappings,
           default: item.default,
         };
@@ -56,21 +59,21 @@ export const TRANSFORM_MAPPINGS: Record<TransformKey, {
     },
   },
   home: {
-    initialDataTransform: (data) =>
-      (data.sections || []).map((section: any) => ({
+    initialDataTransform: (data: unknown) =>
+      ((data as { sections?: Array<{ source?: unknown; title?: unknown; card?: { titleField?: unknown; hrefPrefix?: unknown; hrefField?: unknown } }> }).sections || []).map((section) => ({
         source: section.source,
         title: section.title,
         cardTitleField: section.card?.titleField,
         cardHrefPrefix: section.card?.hrefPrefix,
         cardHrefField: section.card?.hrefField,
       })),
-    initialGlobalsTransform: (data) => ({
-      heroMarkdown: data.hero?.markdown,
-      calendars: data.calendars,
+    initialGlobalsTransform: (data: unknown) => ({
+      heroMarkdown: (data as { hero?: { markdown?: unknown } }).hero?.markdown,
+      calendars: (data as { calendars?: unknown }).calendars,
     }),
     saveDataTransform: (items, globals) => ({
       hero: { markdown: globals?.heroMarkdown },
-      sections: (items || []).map((item: any) => ({
+      sections: (items || []).map((item) => ({
         source: item.source,
         ...(item.title ? { title: item.title } : {}),
         card: {

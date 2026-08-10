@@ -15,7 +15,7 @@ export interface GlobalFieldConfig {
   label: string;
   type?: FieldType;
   options?: string[];
-  render?: (value: any, onChange: (newValue: any) => void) => React.ReactNode;
+  render?: (value: Record<string, unknown>, onChange: (newValue: Record<string, unknown>) => void) => React.ReactNode;
 }
 
 export interface Column<T> {
@@ -29,10 +29,10 @@ export interface AdminPageProps<T> {
   columns: Column<T>[];
   fields: FieldConfig<T>[];
   getItemId: (item: T) => string;
-  initialData?: any;
-  initialDataTransform?: (data: any) => T[];
-  initialGlobalsTransform?: (data: any) => any;
-  saveDataTransform?: (items: T[], globals?: any) => any;
+  initialData?: unknown;
+  initialDataTransform?: (data: unknown) => T[];
+  initialGlobalsTransform?: (data: unknown) => Record<string, unknown>;
+  saveDataTransform?: (items: T[], globals?: Record<string, unknown>) => unknown;
   globalFields?: GlobalFieldConfig[];
   editOnly?: boolean;
   reorderable?: boolean;

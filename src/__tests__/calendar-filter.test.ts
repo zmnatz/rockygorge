@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { type CalendarEvent } from '@/components/CalendarCard/types';
+import type { CalendarEvent } from '@/components/CalendarCard/types';
 import { filterEvents } from '@/utils/calendar';
 
 const mockEvents: CalendarEvent[] = [

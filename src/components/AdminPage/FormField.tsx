@@ -8,12 +8,12 @@ interface FormFieldProps<T> {
   onChange: (updated: T) => void;
 }
 
-function KeyValueMapField({ label, value, onChange, valueType }: { label: string; value: any[]; onChange: (v: any[]) => void; valueType: 'number' | 'string' }) {
+function KeyValueMapField({ label, value, onChange, valueType }: { label: string; value: Array<Record<string, unknown>>; onChange: (v: Array<Record<string, unknown>>) => void; valueType: 'number' | 'string' }) {
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6">{label}</Typography>
       <List dense>
-        {(value || []).map((pair: any, idx: number) => (
+        {(value || []).map((pair: Record<string, unknown>, idx: number) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: key-value pairs have no stable id; index is safe within a controlled edit session
           <ListItem key={idx} secondaryAction={
             <IconButton edge="end" onClick={() => {
@@ -25,6 +25,7 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
             </IconButton>
           }>
             <ListItemText 
+              // biome-ignore lint/suspicious/noExplicitAny: MUI ListItemText slotProps component prop requires any for custom element
               slotProps={{ secondary: { component: 'div' as any } }}
               primary={
                 <TextField 
@@ -74,8 +75,8 @@ export function FormField<T>({
     return <>{field.render(item, onChange)}</>;
   }
 
-  const value = (item as any)[field.name];
-  const updateValue = (newValue: any) => {
+  const value = item[field.name];
+  const updateValue = (newValue: unknown) => {
     onChange({ ...item, [field.name]: newValue });
   };
 
@@ -118,11 +119,11 @@ export function FormField<T>({
         <Box sx={{ mt: 2 }}>
           <Typography variant="h6">{field.label}</Typography>
           <List>
-            {(value || []).map((val: string, idx: number) => (
+            {(value as string[] || []).map((val: string, idx: number) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: text list values have no stable id; index is safe within a controlled edit session
               <ListItem key={idx} secondaryAction={
                 <IconButton edge="end" onClick={() => {
-                  const newList = [...(value || [])];
+                  const newList = [...(value as string[] || [])];
                   newList.splice(idx, 1);
                   updateValue(newList);
                 }}>
@@ -135,7 +136,7 @@ export function FormField<T>({
                       size="small" 
                       value={val} 
                       onChange={e => {
-                        const newList = [...(value || [])];
+                        const newList = [...(value as string[] || [])];
                         newList[idx] = e.target.value;
                         updateValue(newList);
                       }}
@@ -145,18 +146,18 @@ export function FormField<T>({
               </ListItem>
             ))}
             <Button startIcon={<Add />} onClick={() => {
-              updateValue([...(value || []), '']);
+              updateValue([...(value as string[] || []), '']);
             }}>Add Item</Button>
           </List>
         </Box>
       );
     case 'keyValueMap':
       return (
-        <KeyValueMapField label={field.label} value={value || []} onChange={updateValue} valueType="number" />
+        <KeyValueMapField label={field.label} value={value as Array<Record<string, unknown>> || []} onChange={updateValue} valueType="number" />
       );
     case 'textKeyValueMap':
       return (
-        <KeyValueMapField label={field.label} value={value || []} onChange={updateValue} valueType="string" />
+        <KeyValueMapField label={field.label} value={value as Array<Record<string, unknown>> || []} onChange={updateValue} valueType="string" />
       );
 
     case 'select':

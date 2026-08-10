@@ -7,7 +7,7 @@ import {
   validateItemId,
 } from '@/utils/admin-items';
 
-const getId = (item: any) => item.slug;
+const getId = (item: Record<string, unknown>) => String(item.slug || '');
 
 describe('createDefaultItem', () => {
   const fields = [

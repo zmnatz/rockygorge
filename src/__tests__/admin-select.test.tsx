@@ -6,7 +6,9 @@ import type { FieldConfig } from '@/components/AdminPage/types';
 import { applyItemChange, createDefaultItem } from '@/utils/admin-items';
 
 interface SectionItem {
+  slug: string;
   source: string;
+  title: string;
 }
 
 const selectField: FieldConfig<SectionItem> = {
@@ -19,7 +21,7 @@ const selectField: FieldConfig<SectionItem> = {
 describe('FormField select', () => {
   it('renders a select control labelled with the field label showing the current value', () => {
     const html = renderToStaticMarkup(
-      <FormField field={selectField} item={{ source: 'events' }} onChange={() => {}} />
+      <FormField field={selectField} item={{ slug: 'section-1', source: 'events', title: 'Events' }} onChange={() => {}} />
     );
 
     expect(html).toContain('combobox');
@@ -30,7 +32,7 @@ describe('FormField select', () => {
 
   it('does not render a free-text input for the selected value', () => {
     const html = renderToStaticMarkup(
-      <FormField field={selectField} item={{ source: 'events' }} onChange={() => {}} />
+      <FormField field={selectField} item={{ slug: 'section-1', source: 'events', title: 'Events' }} onChange={() => {}} />
     );
 
     expect(html).not.toContain('type="text"');
@@ -48,15 +50,15 @@ describe('FormField select', () => {
 });
 
 describe('select value save pipeline', () => {
-  function saveAndLoad(items: any[]): any[] {
+  function saveAndLoad(items: SectionItem[]): SectionItem[] {
     const json = JSON.stringify(items);
     const serverParsed = JSON.parse(json);
     const yamlOutput = yaml.dump(serverParsed);
-    return yaml.load(yamlOutput) as any[];
+    return yaml.load(yamlOutput) as SectionItem[];
   }
 
   it('persists a chosen select value through the save + YAML roundtrip', () => {
-    const items = [
+    const items: SectionItem[] = [
       { slug: 'section-1', source: 'events', title: 'Events' },
       { slug: 'section-2', source: 'links', title: 'Links' },
     ];
@@ -68,26 +70,26 @@ describe('select value save pipeline', () => {
   });
 
   it('merges a value picked from the dropdown into the item before save', () => {
-    const items = [
+    const items: SectionItem[] = [
       { slug: 'section-1', source: 'store', title: 'Store' },
     ];
     const chosen = selectField.options[2];
 
     const editingItem = { ...items[0], source: chosen };
-    const itemsToSave = applyItemChange(items, editingItem, 'section-1', (item: any) => item.slug);
+    const itemsToSave = applyItemChange(items, editingItem, 'section-1', (item) => item.slug);
     const [loaded] = saveAndLoad(itemsToSave);
 
     expect(loaded.source).toBe(chosen);
   });
 
   it('keeps other items unchanged when one select value is edited', () => {
-    const items = [
+    const items: SectionItem[] = [
       { slug: 'section-1', source: 'store', title: 'Store' },
       { slug: 'section-2', source: 'events', title: 'Events' },
     ];
 
     const editingItem = { ...items[0], source: 'links' };
-    const itemsToSave = applyItemChange(items, editingItem, 'section-1', (item: any) => item.slug);
+    const itemsToSave = applyItemChange(items, editingItem, 'section-1', (item) => item.slug);
 
     expect(itemsToSave[0].source).toBe('links');
     expect(itemsToSave[1].source).toBe('events');

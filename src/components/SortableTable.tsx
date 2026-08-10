@@ -5,13 +5,20 @@ import {
 import { useState, useMemo, type ReactNode } from 'react'
 import { getSortableName } from '@/utils/stats'
 
-interface SortableTableProps {
-  columns: any[];
-  data: any[];
+export interface SortableColumn {
+  key: string;
+  title: string;
+  minWidth?: number;
+  dataIndex?: string;
+}
+
+export interface SortableTableProps {
+  columns: SortableColumn[];
+  data: Record<string, unknown>[];
   categories: Record<string, string[]>;
-  baseColumnFilter?: (col: any) => boolean;
-  renderCell?: (col: any, row: any) => ReactNode;
-  rowKey?: (row: any) => string;
+  baseColumnFilter?: (col: SortableColumn) => boolean;
+  renderCell?: (col: SortableColumn, row: Record<string, unknown>) => ReactNode;
+  rowKey?: (row: Record<string, unknown>) => string;
 }
 
 export function SortableTable({ 
@@ -20,7 +27,7 @@ export function SortableTable({
   categories, 
   baseColumnFilter = (c) => c.key === 'game' || c.key === 'name',
   renderCell,
-  rowKey = (row) => row.key
+  rowKey = (row) => String(row.key)
 }: SortableTableProps) {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
     key: columns[0]?.key || '',
@@ -39,8 +46,8 @@ export function SortableTable({
       let bValue = b[sortConfig.key]
 
       if (sortConfig.key === 'name') {
-        aValue = getSortableName(aValue as string)
-        bValue = getSortableName(bValue as string)
+        aValue = getSortableName(String(aValue))
+        bValue = getSortableName(String(bValue))
       }
 
       if (aValue === bValue) return 0
@@ -104,7 +111,7 @@ export function SortableTable({
             <TableRow key={rowKey(row)}>
               {columns.map((col) => (
                 <TableCell key={col.key}>
-                  {renderCell ? renderCell(col, row) : row[col.dataIndex]}
+                  {renderCell ? renderCell(col, row) : row[col.dataIndex ?? col.key] as ReactNode}
                 </TableCell>
               ))}
             </TableRow>

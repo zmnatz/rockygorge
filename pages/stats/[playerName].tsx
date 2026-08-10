@@ -3,7 +3,7 @@ import {
   Box, Typography, Breadcrumbs, Link as MuiLink,
   ToggleButton, ToggleButtonGroup
 } from '@mui/material'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { STAT_CATEGORIES, formatColumnTitle } from '@/utils/stats'
 import { slugify } from '@/utils/slugify'
@@ -138,12 +138,12 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns }) 
             renderCell={(col, row) => {
               if (col.key === 'game') {
                 return (
-                  <Link href={`/stats/game/${slugify(row[col.dataIndex])}`} passHref legacyBehavior>
-                    <MuiLink underline="hover">{row[col.dataIndex]}</MuiLink>
+                  <Link href={`/stats/game/${slugify(String(row[col.dataIndex] ?? ''))}`} passHref legacyBehavior>
+                    <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
                   </Link>
                 )
               }
-              return row[col.dataIndex]
+              return row[col.dataIndex] as ReactNode
             }}
           />
         </Box>
