@@ -6,3 +6,4 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "@paypal/react-paypal-js"
+      - dependency-name: "js-yaml"
