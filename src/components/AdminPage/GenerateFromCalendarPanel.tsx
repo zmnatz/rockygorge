@@ -33,7 +33,7 @@ export function GenerateFromCalendarPanel({ onSelect }: GenerateFromCalendarPane
   const { data, isFetching, error } = useCalendarSourceItems();
 
   return (
-    <Paper sx={{ p: 3, mb: 4 }}>
+    <Paper sx={{ p: 3, mt: 4 }}>
       <Box sx={{ mb: 1 }}>
         <Typography variant="h6" gutterBottom>
           Generate from calendar

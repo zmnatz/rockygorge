@@ -2,6 +2,7 @@ store:
   title: "Store Admin"
   endpoint: "admin-store"
   getItemId: "slug"
+  generateFromCalendar: true
   createDefaults:
     defaultAmount: 0
   columns:
