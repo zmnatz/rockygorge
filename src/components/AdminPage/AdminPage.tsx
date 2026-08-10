@@ -125,12 +125,6 @@ export function AdminPage<T>({
         </Box>
       </Box>
 
-      {generateFromCalendar && (
-        <GenerateFromCalendarPanel
-          onSelect={(source) => openCreateEditor(createItemFromCalendar(source, fields, createDefaults) as T)}
-        />
-      )}
-
       {globalFields && globalFields.length > 0 && (
         <Paper sx={{ p: 3, mb: 4 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -187,6 +181,12 @@ export function AdminPage<T>({
           </TableBody>
         </Table>
       </TableContainer>
+
+      {generateFromCalendar && (
+        <GenerateFromCalendarPanel
+          onSelect={(source) => openCreateEditor(createItemFromCalendar(source, fields, createDefaults) as T)}
+        />
+      )}
 
       <Dialog open={!!editingItem} onClose={closeEditor} maxWidth="md" fullWidth>
         <DialogTitle>{editingOriginalId === null ? 'Add Item' : `Edit: ${getItemId(editingItem || {} as T)}`}</DialogTitle>
