@@ -48,7 +48,7 @@ export default function AdminIndex({ adminPages }) {
 }
 
 export async function getStaticProps() {
-  const adminPages = Object.entries(adminYaml).map(([type, config]: [string, any]) => ({
+  const adminPages = Object.entries(adminYaml).map(([type, config]: [string, Record<string, unknown>]) => ({
     name: config.title,
     href: `/admin/${type}`,
   }));

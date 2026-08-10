@@ -2,20 +2,44 @@ import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
-function getItemId(item: any, strategy: string = 'slug'): string {
-  const fn = ITEM_ID_MAPPINGS[strategy] || ((item: any) => item.id);
+interface AdminItem {
+  slug: string;
+  hide?: boolean;
+  title?: string;
+  [key: string]: unknown;
+}
+
+interface CalendarItem {
+  name: string;
+  hideSummary?: boolean;
+  matches?: string;
+  notMatches?: string;
+  [key: string]: unknown;
+}
+
+type CalendarGlobals = {
+  months: number;
+};
+
+interface CalendarSaveResult {
+  months: number;
+  filters: CalendarItem[];
+}
+
+function getItemId(item: AdminItem, strategy: string = 'slug'): string {
+  const fn = ITEM_ID_MAPPINGS[strategy] || ((item: AdminItem) => String(item.id || ''));
   return fn(item);
 }
 
-function identitySaveTransform(items: any[], _globals?: any) {
+function identitySaveTransform(items: AdminItem[], _globals?: unknown): AdminItem[] {
   return items;
 }
 
-function calendarSaveTransform(items: any[], globals: any) {
-  return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals);
+function calendarSaveTransform(items: CalendarItem[], globals: CalendarGlobals): CalendarSaveResult {
+  return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals) as CalendarSaveResult;
 }
 
-function serializeToYaml(data: any): string {
+function serializeToYaml(data: unknown): string {
   // Simulate the server's admin-handler flow:
   // body is already JSON-parsed by Netlify, then yaml.dump is called
   if (typeof data === 'string') {
@@ -26,7 +50,7 @@ function serializeToYaml(data: any): string {
 
 describe('boolean save pipeline - identity transform (store/events/links/forms)', () => {
   it('preserves boolean true through the full pipeline', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'item1', hide: true, title: 'Item 1' },
       { slug: 'item2', hide: false, title: 'Item 2' },
     ];
@@ -35,14 +59,14 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
     expect(loaded[1].hide).toBe(false);
   });
 
   it('preserves boolean false through the full pipeline', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'item1', hide: false, title: 'Item 1' },
     ];
 
@@ -50,13 +74,13 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(false);
   });
 
   it('preserves hide field when toggled from true to false', () => {
-    const originalItems = [
+    const originalItems: AdminItem[] = [
       { slug: 'banquet', hide: true, title: 'Banquet' },
       { slug: 'open', hide: false, title: 'Open' },
     ];
@@ -70,14 +94,14 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(false);
     expect(loaded[1].hide).toBe(false);
   });
 
   it('preserves hide field when toggled from false to true', () => {
-    const originalItems = [
+    const originalItems: AdminItem[] = [
       { slug: 'item1', hide: false, title: 'Item 1' },
     ];
 
@@ -89,13 +113,13 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
   });
 
   it('adds hide field when item did not previously have one', () => {
-    const originalItems = [
+    const originalItems: AdminItem[] = [
       { slug: 'item1', title: 'Item 1' },  // no hide field
     ];
 
@@ -108,13 +132,13 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
   });
 
   it('removes none of the fields when hide is present', () => {
-    const originalItems = [
+    const originalItems: AdminItem[] = [
       { slug: 'item1', hide: true, title: 'Item 1', description: 'Test' },
     ];
 
@@ -126,7 +150,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any[];
+    const loaded = yaml.load(yamlOutput) as AdminItem[];
 
     expect(loaded[0]).toHaveProperty('slug', 'item1');
     expect(loaded[0]).toHaveProperty('hide', false);
@@ -137,18 +161,18 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
 
 describe('boolean save pipeline - calendar transform', () => {
   it('preserves hideSummary fields through the calendar save transform', () => {
-    const items = [
+    const items: CalendarItem[] = [
       { name: 'Training', hideSummary: true, matches: 'practice|training' },
       { name: 'Events', hideSummary: false, notMatches: 'practice|board' },
       { name: 'Board Meetings', hideSummary: false, matches: 'Board' },
     ];
-    const globals = { months: 3 };
+    const globals: CalendarGlobals = { months: 3 };
 
     const data = calendarSaveTransform(items, globals);
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any;
+    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
 
     expect(loaded.months).toBe(3);
     expect(loaded.filters[0].hideSummary).toBe(true);
@@ -157,10 +181,10 @@ describe('boolean save pipeline - calendar transform', () => {
   });
 
   it('preserves hideSummary field when item did not previously have one', () => {
-    const items = [
+    const items: CalendarItem[] = [
       { name: 'Events', notMatches: 'practice|board' },  // no hideSummary
     ];
-    const globals = { months: 3 };
+    const globals: CalendarGlobals = { months: 3 };
 
     // Simulate user checking the checkbox (sets hideSummary from undefined to true)
     const updatedItems = items.map(item =>
@@ -171,7 +195,7 @@ describe('boolean save pipeline - calendar transform', () => {
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as any;
+    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
 
     expect(loaded.filters[0].hideSummary).toBe(true);
   });
@@ -179,10 +203,10 @@ describe('boolean save pipeline - calendar transform', () => {
 
 describe('AdminPage save flow - dialog edits propagate to save', () => {
   it('merges editingItem into items before save, preserving checkbox toggle', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'banquet', hide: true, title: 'Banquet' },
     ];
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+    const editingItem: AdminItem = { slug: 'banquet', hide: false, title: 'Banquet' };
 
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
@@ -196,10 +220,10 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
   });
 
   it('merges newly added boolean field from dialog into items before save', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'dues', title: 'Dues' },
     ];
-    const editingItem = { slug: 'dues', title: 'Dues', hide: true };
+    const editingItem: AdminItem = { slug: 'dues', title: 'Dues', hide: true };
 
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
@@ -213,10 +237,10 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
   });
 
   it('saves items as-is when editingItem is null', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'banquet', hide: true, title: 'Banquet' },
     ];
-    const editingItem = null;
+    const editingItem: AdminItem | null = null;
 
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
@@ -230,13 +254,13 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
   });
 
   it('preserves boolean toggle through handleSaveItem + handleSaveAll flow', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'banquet', hide: true, title: 'Banquet' },
       { slug: 'open', hide: false, title: 'Open' },
     ];
 
     // Simulate: user opens dialog for 'banquet', toggles hide to false, clicks 'Save to List'
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+    const editingItem: AdminItem = { slug: 'banquet', hide: false, title: 'Banquet' };
     const updated = items.map(item =>
       getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item
     );
@@ -255,12 +279,12 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
   });
 
   it('does not corrupt other items when merging editingItem', () => {
-    const items = [
+    const items: AdminItem[] = [
       { slug: 'banquet', hide: true, title: 'Banquet' },
       { slug: 'open', hide: false, title: 'Open' },
       { slug: 'donations', hide: true, title: 'Donations' },
     ];
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+    const editingItem: AdminItem = { slug: 'banquet', hide: false, title: 'Banquet' };
 
     const itemsToSave = editingItem
       ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)

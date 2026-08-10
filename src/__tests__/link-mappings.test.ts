@@ -2,6 +2,17 @@ import { describe, it, expect } from 'vitest';
 import linkMappings from '@config/link_mappings.yml';
 import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
+interface LinkMappingsConfig {
+  store: { mappings: Record<string, string>; default: string };
+  forms: { mappings: Record<string, string>; default: string };
+}
+
+interface TransformItem {
+  type: 'store' | 'forms';
+  mappings: Array<{ name: string; value: string }>;
+  default: string;
+}
+
 describe('link_mappings.yml', () => {
   it('has store mappings', () => {
     expect(linkMappings.store).toBeDefined();
@@ -34,17 +45,14 @@ describe('link_mappings.yml', () => {
 });
 
 describe('linkMappings transform roundtrip', () => {
-  function initialDataTransform(data: any) {
-    return TRANSFORM_MAPPINGS.linkMappings.initialDataTransform(data);
-  }
-
-  function saveDataTransform(items: any[]) {
-    return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
-  }
+  const linkMappingsTransform = TRANSFORM_MAPPINGS.linkMappings as unknown as {
+    initialDataTransform: (data: LinkMappingsConfig) => TransformItem[];
+    saveDataTransform: (items: TransformItem[]) => LinkMappingsConfig;
+  };
 
   it('roundtrips through transform and save', () => {
-    const transformed = initialDataTransform(linkMappings);
-    const saved = saveDataTransform(transformed);
+    const transformed = linkMappingsTransform.initialDataTransform(linkMappings as LinkMappingsConfig);
+    const saved = linkMappingsTransform.saveDataTransform(transformed);
 
     expect(saved.store.mappings).toEqual(linkMappings.store.mappings);
     expect(saved.store.default).toEqual(linkMappings.store.default);

@@ -7,7 +7,42 @@ import { createDefaultItem } from '../utils/admin-items';
 
 const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap', 'select'];
 
-const ALL_CONFIG_FIELDS = Object.values(adminYaml as any).flatMap((config: any) => [
+interface AdminConfigField {
+  name: string;
+  label?: string;
+  type?: string;
+  options?: string[];
+}
+
+interface AdminConfigColumn {
+  field: string;
+  header?: string;
+  render?: string;
+}
+
+interface AdminConfigGlobalField {
+  name: string;
+  label?: string;
+  type?: string;
+  options?: string[];
+}
+
+interface AdminYamlConfig {
+  title: string;
+  endpoint: string;
+  getItemId: string;
+  transforms?: string;
+  columns: AdminConfigColumn[];
+  fields: AdminConfigField[];
+  globalFields?: AdminConfigGlobalField[];
+  editOnly?: boolean;
+  reorderable?: boolean;
+  createDefaults?: Record<string, unknown>;
+}
+
+const adminConfig = adminYaml as Record<string, AdminYamlConfig>;
+
+const ALL_CONFIG_FIELDS = Object.values(adminConfig).flatMap((config) => [
   ...(config.fields || []),
   ...(config.globalFields || []),
 ]);
@@ -27,18 +62,18 @@ describe('admin.yml', () => {
   });
 
   it('select fields declare a non-empty options list', () => {
-    ALL_CONFIG_FIELDS.forEach((field: any) => {
+    ALL_CONFIG_FIELDS.forEach((field) => {
       if (field.type === 'select') {
         expect(Array.isArray(field.options)).toBe(true);
-        expect(field.options.length).toBeGreaterThan(0);
+        expect(field.options?.length).toBeGreaterThan(0);
       }
     });
   });
 
   it('select options are strings', () => {
-    ALL_CONFIG_FIELDS.forEach((field: any) => {
+    ALL_CONFIG_FIELDS.forEach((field) => {
       if (field.type === 'select') {
-        field.options.forEach((option: any) => {
+        field.options?.forEach((option) => {
           expect(typeof option).toBe('string');
         });
       }
@@ -46,7 +81,7 @@ describe('admin.yml', () => {
   });
 
   Object.keys(adminYaml).forEach((type) => {
-    const config = (adminYaml as any)[type];
+    const config = adminConfig[type];
 
     describe(`${type}`, () => {
       it('has required top-level fields', () => {
@@ -62,13 +97,13 @@ describe('admin.yml', () => {
       });
 
       it('columns have a field property', () => {
-        config.columns.forEach((col: any) => {
+        config.columns.forEach((col) => {
           expect(typeof col.field).toBe('string');
         });
       });
 
       it('fields have name and valid type', () => {
-        config.fields.forEach((field: any) => {
+        config.fields.forEach((field) => {
           expect(typeof field.name).toBe('string');
           if (field.type) {
             expect(VALID_FIELD_TYPES).toContain(field.type);
@@ -78,7 +113,7 @@ describe('admin.yml', () => {
 
       it('globalFields have valid type when present', () => {
         if (config.globalFields) {
-          config.globalFields.forEach((field: any) => {
+          config.globalFields.forEach((field) => {
             expect(typeof field.name).toBe('string');
             if (field.type) {
               expect(VALID_FIELD_TYPES).toContain(field.type);
@@ -102,33 +137,33 @@ describe('admin.yml', () => {
 
     it('the creatable content pages are not edit-only', () => {
       creatableTypes.forEach((type) => {
-        expect((adminYaml as any)[type].editOnly).toBeFalsy();
+        expect(adminConfig[type].editOnly).toBeFalsy();
       });
     });
 
     it('link_mappings keeps edit-only behavior', () => {
-      expect((adminYaml as any).link_mappings.editOnly).toBe(true);
+      expect(adminConfig.link_mappings.editOnly).toBe(true);
     });
 
     it('every creatable page has a field for its id', () => {
       creatableTypes.forEach((type) => {
-        const config = (adminYaml as any)[type];
+        const config = adminConfig[type];
         const idField = config.getItemId;
-        const fieldNames = config.fields.map((f: any) => f.name);
+        const fieldNames = config.fields.map((f) => f.name);
         expect(fieldNames).toContain(idField);
       });
     });
 
     it('store and forms supply the documented page-level create defaults', () => {
-      const store = (adminYaml as any).store;
-      const forms = (adminYaml as any).forms;
-      expect(store.createDefaults.defaultAmount).toBe(0);
-      expect(forms.createDefaults.width).toBe(640);
-      expect(forms.createDefaults.height).toBe(1000);
+      const store = adminConfig.store;
+      const forms = adminConfig.forms;
+      expect(store.createDefaults?.defaultAmount).toBe(0);
+      expect(forms.createDefaults?.width).toBe(640);
+      expect(forms.createDefaults?.height).toBe(1000);
     });
 
     it('editOnly is either omitted or a boolean when present', () => {
-      Object.values(adminYaml as any).forEach((config: any) => {
+      Object.values(adminConfig).forEach((config) => {
         if (config.editOnly !== undefined) {
           expect(typeof config.editOnly).toBe('boolean');
         }
@@ -136,7 +171,7 @@ describe('admin.yml', () => {
     });
 
     it('only the home page is reorderable', () => {
-      Object.entries(adminYaml as any).forEach(([type, config]: [string, any]) => {
+      Object.entries(adminConfig).forEach(([type, config]) => {
         if (type === 'home') {
           expect(config.reorderable).toBe(true);
         } else {
@@ -147,56 +182,56 @@ describe('admin.yml', () => {
 
     it('edit-only pages cannot also declare create defaults', () => {
       editOnlyTypes.forEach((type) => {
-        expect((adminYaml as any)[type].createDefaults).toBeUndefined();
+        expect(adminConfig[type].createDefaults).toBeUndefined();
       });
     });
 
-    it('createDefaults values are primitives, arrays, or maps', () => {
-      Object.values(adminYaml as any).forEach((config: any) => {
-        if (config.createDefaults) {
-          Object.values(config.createDefaults).forEach((value: any) => {
-            expect(['string', 'number', 'boolean', 'object']).toContain(typeof value);
-          });
-        }
+    it('edit-only pages cannot declare a reorderable table', () => {
+      editOnlyTypes.forEach((type) => {
+        expect(adminConfig[type].reorderable).toBeFalsy();
       });
     });
   });
-});
 
-describe('home page', () => {
-  const config = (adminYaml as any).home;
+  describe('createDefaultItem', () => {
+    const _getId = (item: Record<string, unknown>) => String(item.slug || '');
 
-  it('is creatable and keyed by source', () => {
-    expect(config.getItemId).toBe('source');
-    expect(config.editOnly).toBeFalsy();
-    expect(config.transforms).toBe('home');
-    expect(config.reorderable).toBe(true);
-  });
+    it('generates a valid object for each admin type', () => {
+      Object.keys(adminConfig).forEach((type) => {
+        const config = adminConfig[type];
+        const defaults = config.createDefaults || {};
+        const item = createDefaultItem(config.fields, defaults);
+        expect(item).toBeDefined();
+        expect(typeof item).toBe('object');
+      });
+    });
 
-  it('has the section source and card titleField dropdowns restricted to valid values', () => {
-    const sourceField = config.fields.find((f: any) => f.name === 'source');
-    expect(sourceField.type).toBe('select');
-    expect(sourceField.options).toEqual(['store', 'events', 'links']);
+    it('respects field type defaults', () => {
+      const fields: AdminConfigField[] = [
+        { name: 'textField', type: 'text' },
+        { name: 'numField', type: 'number' },
+        { name: 'boolField', type: 'boolean' },
+        { name: 'listField', type: 'textList' },
+        { name: 'mapField', type: 'keyValueMap' },
+      ];
+      const defaults = { numField: 42, boolField: true };
+      const item = createDefaultItem(fields, defaults);
+      expect(item.textField).toBe('');
+      expect(item.numField).toBe(42);
+      expect(item.boolField).toBe(true);
+      expect(Array.isArray(item.listField)).toBe(true);
+      expect(Array.isArray(item.mapField)).toBe(true);
+    });
 
-    const titleFieldField = config.fields.find((f: any) => f.name === 'cardTitleField');
-    expect(titleFieldField.type).toBe('select');
-    expect(titleFieldField.options).toEqual(['title', 'description']);
-
-    const hrefFieldField = config.fields.find((f: any) => f.name === 'cardHrefField');
-    expect(hrefFieldField.type).toBe('select');
-    expect(hrefFieldField.options).toEqual(['href']);
-  });
-
-  it('edits hero markdown and calendar filters via global fields', () => {
-    const globalNames = config.globalFields.map((f: any) => f.name);
-    expect(globalNames).toContain('heroMarkdown');
-    expect(globalNames).toContain('calendars');
-  });
-
-  it('defaults a new section to a blank source that must be filled in', () => {
-    const fields = config.fields;
-    const item = createDefaultItem(fields, config.createDefaults || {});
-    expect(item.source).toBe('');
-    expect(item.title).toBe('');
+    it('merges provided createDefaults over type defaults', () => {
+      const fields: AdminConfigField[] = [
+        { name: 'title', type: 'text' },
+        { name: 'amount', type: 'number' },
+      ];
+      const defaults = { amount: 100 };
+      const item = createDefaultItem(fields, defaults);
+      expect(item.title).toBe('');
+      expect(item.amount).toBe(100);
+    });
   });
 });

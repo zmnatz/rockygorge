@@ -6,9 +6,48 @@ import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
 import fs from 'node:fs';
 import yaml from 'js-yaml';
 import path from 'node:path';
+import type { Column, FieldConfig, FieldType, GlobalFieldConfig } from '../../src/components/AdminPage/types';
 
-export default function GenericAdmin({ initialData, type }) {
-  const yamlConfig = adminYaml[type];
+interface AdminYamlColumn {
+  field: string;
+  header?: string;
+  render?: string;
+}
+
+interface AdminYamlField {
+  name: string;
+  label?: string;
+  type?: FieldType;
+  options?: string[];
+}
+
+interface AdminYamlGlobalField {
+  name: string;
+  label?: string;
+  type?: FieldType;
+  options?: string[];
+}
+
+interface AdminYamlConfig {
+  title: string;
+  endpoint: string;
+  getItemId: string;
+  transforms?: string;
+  columns?: AdminYamlColumn[];
+  fields?: AdminYamlField[];
+  globalFields?: AdminYamlGlobalField[];
+  editOnly?: boolean;
+  reorderable?: boolean;
+  createDefaults?: Record<string, unknown>;
+}
+
+interface GenericAdminProps {
+  initialData: unknown;
+  type: string;
+}
+
+export default function GenericAdmin({ initialData, type }: GenericAdminProps) {
+  const yamlConfig = adminYaml[type] as AdminYamlConfig | undefined;
 
   if (!yamlConfig) {
     return <div>Admin page not found.</div>;
@@ -16,30 +55,39 @@ export default function GenericAdmin({ initialData, type }) {
 
   const transform = yamlConfig.transforms ? TRANSFORM_MAPPINGS[yamlConfig.transforms as keyof typeof TRANSFORM_MAPPINGS] : null;
 
+  const getItemId = ITEM_ID_MAPPINGS[yamlConfig.getItemId] ?? ((item: Record<string, unknown>) => String(item.id || ''));
+
+  const columns: Column<Record<string, unknown>>[] = (yamlConfig.columns || []).map((col) => ({
+    header: col.header || generateLabel(col.field),
+    render: (item: Record<string, unknown>) => {
+      const renderer = RENDER_MAPPINGS[col.render || 'default'] || RENDER_MAPPINGS.default;
+      return renderer(item, col.field);
+    },
+  }));
+
+  const fields: FieldConfig<Record<string, unknown>>[] = (yamlConfig.fields || []).map((f) => ({
+    ...f,
+    label: f.label || generateLabel(f.name),
+    name: f.name as keyof Record<string, unknown>,
+  }));
+
+  const globalFields: GlobalFieldConfig[] = (yamlConfig.globalFields || []).map((f) => ({
+    ...f,
+    label: f.label || generateLabel(f.name),
+  }));
+
   return (
-    <AdminPage
+    <AdminPage<Record<string, unknown>>
       title={yamlConfig.title}
       endpoint={yamlConfig.endpoint}
       initialData={initialData}
-      getItemId={ITEM_ID_MAPPINGS[yamlConfig.getItemId] ?? ((item: any) => item.id)}
+      getItemId={getItemId}
       initialDataTransform={transform?.initialDataTransform}
       initialGlobalsTransform={transform?.initialGlobalsTransform}
       saveDataTransform={transform?.saveDataTransform}
-      globalFields={(yamlConfig.globalFields || []).map((f: any) => ({
-        ...f,
-        label: f.label || generateLabel(f.name),
-      }))}
-      columns={(yamlConfig.columns || []).map((col: any) => ({
-        header: col.header || generateLabel(col.field),
-        render: (item: any) => {
-          const renderer = RENDER_MAPPINGS[col.render] || RENDER_MAPPINGS.default;
-          return renderer(item, col.field);
-        },
-      }))}
-      fields={(yamlConfig.fields || []).map((f: any) => ({
-        ...f,
-        label: f.label || generateLabel(f.name),
-      }))}
+      globalFields={globalFields}
+      columns={columns}
+      fields={fields}
       editOnly={yamlConfig.editOnly === true}
       reorderable={yamlConfig.reorderable === true}
       createDefaults={yamlConfig.createDefaults || {}}
@@ -57,7 +105,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params }: { params?: { type: string } }) {
   const type = params?.type;
   const config = adminYaml[type];
 

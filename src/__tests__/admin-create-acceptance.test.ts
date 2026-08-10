@@ -78,27 +78,42 @@ const PAGE_SHAPES: Record<string, PageShape> = {
 
 const CREATABLE_TYPES = Object.keys(PAGE_SHAPES);
 
-function serialize(data: any): any {
+interface AdminYamlConfig {
+  title: string;
+  endpoint: string;
+  getItemId: string;
+  transforms?: string;
+  columns: Array<{ field: string; header?: string; render?: string }>;
+  fields: Array<{ name: string; type?: string }>;
+  globalFields?: Array<{ name: string; type?: string }>;
+  editOnly?: boolean;
+  reorderable?: boolean;
+  createDefaults?: Record<string, unknown>;
+}
+
+const adminConfig = adminYaml as Record<string, AdminYamlConfig>;
+
+function serialize(data: unknown): unknown {
   const yamlOutput = yaml.dump(data);
   return yaml.load(yamlOutput);
 }
 
-function buildDefaultItem(type: string): any {
-  const config = (adminYaml as any)[type];
-  const fields = config.fields.map((f: any) => ({ name: f.name, type: f.type }));
+function buildDefaultItem(type: string): Record<string, unknown> {
+  const config = adminConfig[type];
+  const fields = config.fields.map((f) => ({ name: f.name, type: f.type }));
   return createDefaultItem(fields, config.createDefaults || {});
 }
 
-function saveForPage(type: string, items: any[]): any {
+function saveForPage(type: string, items: unknown[]): unknown {
   const shape = PAGE_SHAPES[type];
   if (shape.transform === 'calendar') {
-    return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, { months: 3 });
+    return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items as Record<string, unknown>[], { months: 3 });
   }
   return items;
 }
 
-function extractItems(type: string, saved: any): any[] {
-  return PAGE_SHAPES[type].transform === 'calendar' ? saved.filters : saved;
+function extractItems(type: string, saved: unknown): unknown[] {
+  return PAGE_SHAPES[type].transform === 'calendar' ? (saved as { filters: unknown[] }).filters : (saved as unknown[]);
 }
 
 describe('new item with only an id passes CI data-shape checks on every creatable page', () => {
@@ -131,7 +146,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
 
         const saved = saveForPage(type, [item]);
         const loaded = serialize(saved);
-        const [savedItem] = extractItems(type, loaded);
+        const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
 
         shape.requiredFields.forEach(({ name, type: expectedType, optional }) => {
           if (optional && savedItem[name] === undefined) return;
@@ -144,7 +159,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
           const item = buildDefaultItem(type);
           item.slug = 'test-forms';
           const loaded = serialize(saveForPage(type, [item]));
-          const [savedItem] = extractItems(type, loaded);
+          const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           expect(savedItem.width).toBeGreaterThan(0);
           expect(savedItem.height).toBeGreaterThan(0);
         });
@@ -155,7 +170,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
           const item = buildDefaultItem(type);
           item.slug = 'test-store';
           const loaded = serialize(saveForPage(type, [item]));
-          const [savedItem] = extractItems(type, loaded);
+          const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           expect(typeof savedItem.defaultAmount).toBe('number');
         });
       }
@@ -165,7 +180,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
           const item = buildDefaultItem(type);
           item.name = 'test-calendar';
           const loaded = serialize(saveForPage(type, [item]));
-          const [savedItem] = extractItems(type, loaded);
+          const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           if (savedItem.limit !== undefined) {
             expect(savedItem.limit).toBeGreaterThan(0);
           }

@@ -1,15 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import calendarInfo from '@content/calendar.yml';
 
-function initialDataTransform(data: any) {
+interface CalendarFilter {
+  name: string;
+  matches?: string;
+  notMatches?: string;
+  limit?: number;
+  hideSummary?: boolean;
+}
+
+interface CalendarData {
+  months: number;
+  filters: CalendarFilter[];
+}
+
+function initialDataTransform(data: CalendarData): CalendarFilter[] {
   return data.filters;
 }
 
-function initialGlobalsTransform(data: any) {
+function initialGlobalsTransform(data: CalendarData): { months: number } {
   return { months: data.months };
 }
 
-function saveDataTransform(items: any[], globals: any) {
+function saveDataTransform(items: CalendarFilter[], globals: { months: number }): CalendarData {
   return {
     months: globals.months,
     filters: items,
@@ -18,30 +31,30 @@ function saveDataTransform(items: any[], globals: any) {
 
 describe('calendar transform roundtrip', () => {
   it('preserves data through transform and save', () => {
-    const transformed = initialDataTransform(calendarInfo);
-    const globals = initialGlobalsTransform(calendarInfo);
+    const transformed = initialDataTransform(calendarInfo as CalendarData);
+    const globals = initialGlobalsTransform(calendarInfo as CalendarData);
     const saved = saveDataTransform(transformed, globals);
 
     expect(saved).toEqual(calendarInfo);
   });
 
   it('globals contain months', () => {
-    const globals = initialGlobalsTransform(calendarInfo);
+    const globals = initialGlobalsTransform(calendarInfo as CalendarData);
     expect(globals.months).toBe(calendarInfo.months);
   });
 
   it('transformed data is the filters array', () => {
-    const transformed = initialDataTransform(calendarInfo);
+    const transformed = initialDataTransform(calendarInfo as CalendarData);
     expect(transformed).toEqual(calendarInfo.filters);
     expect(Array.isArray(transformed)).toBe(true);
   });
 
   it('roundtrip preserves filter structure', () => {
-    const transformed = initialDataTransform(calendarInfo);
-    const globals = initialGlobalsTransform(calendarInfo);
+    const transformed = initialDataTransform(calendarInfo as CalendarData);
+    const globals = initialGlobalsTransform(calendarInfo as CalendarData);
     const saved = saveDataTransform(transformed, globals);
 
-    saved.filters.forEach((filter: any, i: number) => {
+    saved.filters.forEach((filter, i: number) => {
       expect(filter.name).toBe(calendarInfo.filters[i].name);
       if (calendarInfo.filters[i].matches) {
         expect(filter.matches).toBe(calendarInfo.filters[i].matches);
