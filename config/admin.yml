@@ -62,6 +62,8 @@ events:
       type: "text"
     - name: "end"
       type: "text"
+    - name: "details"
+      type: "textarea"
     - name: "hide"
       label: "Hide Event"
       type: "boolean"
