@@ -75,7 +75,7 @@
   summary: 'Fall Season: $220'
   title: Pay your dues. Play rugby.
   options:
-    - name: Player Dues - $200
+    - name: Player Dues - $220
       value: 220
     - name: Old Boy Dues - $100
       value: 100
