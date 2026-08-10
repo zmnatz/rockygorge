@@ -88,6 +88,7 @@ describe('createItemFromCalendar', () => {
     expect(item.defaultAmount).toBe(0);
     expect(item.options).toEqual([]);
     expect(item.supporters).toEqual([]);
+    expect(item.subscriptions).toBeUndefined();
   });
 
   it('produces an independent draft each time', () => {
@@ -117,5 +118,9 @@ describe('CalendarItemList', () => {
 describe('generate-from-calendar admin config', () => {
   it('enables the calendar generation panel on the events admin', () => {
     expect(adminConfig.events.generateFromCalendar).toBe(true);
+  });
+
+  it('enables the calendar generation panel on the store admin', () => {
+    expect(adminConfig.store.generateFromCalendar).toBe(true);
   });
 });
