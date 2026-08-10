@@ -13,5 +13,8 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    env: {
+      TZ: 'America/New_York',
+    },
   },
 });
