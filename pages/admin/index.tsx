@@ -53,6 +53,11 @@ export async function getStaticProps() {
     href: `/admin/${type}`,
   }));
 
+  adminPages.push({
+    name: 'Dues',
+    href: '/admin/dues',
+  });
+
   return {
     props: {
       adminPages,

@@ -1,4 +1,5 @@
 declare module '*.yml';
+declare module '*.yaml';
 
 declare module '@content/forms.yml' {
   const forms: import('./data').Form[];
@@ -32,6 +33,16 @@ declare module '@content/calendar.yml' {
     }[]
   };
   export default calendarInfo;
+}
+
+declare module '@content/admin/dues.yml' {
+  const dues: import('./data').Dues[];
+  export default dues;
+}
+
+declare module '@content/admin/dues.yaml' {
+  const dues: import('./data').Dues[];
+  export default dues;
 }
 
 declare module '@content/home.yml' {
