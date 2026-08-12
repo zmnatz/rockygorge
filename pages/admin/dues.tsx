@@ -50,9 +50,11 @@ export default function DuesAdmin({ dues }: { dues: Dues[] }) {
 }
 
 export async function getStaticProps() {
+  const dues = [...duesYaml].sort((a, b) => b.date.localeCompare(a.date));
+
   return {
     props: {
-      dues: duesYaml,
+      dues,
     },
   };
 }
