@@ -36,6 +36,9 @@ store:
       type: "keyValueMap"
     - name: "supporters"
       type: "textList"
+    - name: "subscriptions"
+      label: "Subscriptions"
+      type: "subscriptionList"
 
 events:
   title: "Events Admin"

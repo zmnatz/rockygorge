@@ -24,6 +24,8 @@ export function createDefaultItem(
       case 'textList':
         item[name] = [];
         break;
+      case 'subscriptionList':
+        break;
       default:
         item[name] = '';
         break;

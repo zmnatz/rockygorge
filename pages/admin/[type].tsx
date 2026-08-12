@@ -4,7 +4,7 @@ import { generateLabel } from '../../src/utils/labels';
 import { ITEM_ID_MAPPINGS, RENDER_MAPPINGS, TRANSFORM_MAPPINGS } from '../../src/utils/admin-config';
 import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
 import fs from 'node:fs';
-import yaml from 'js-yaml';
+import { load } from 'js-yaml';
 import path from 'node:path';
 import type { Column, FieldConfig, FieldType, GlobalFieldConfig } from '../../src/components/AdminPage/types';
 
@@ -117,7 +117,7 @@ export async function getStaticProps({ params }: { params?: { type: string } }) 
 
   const filePath = path.join(process.cwd(), ADMIN_FILE_PATHS[type]);
   const fileContents = fs.readFileSync(filePath, 'utf8');
-  const data = yaml.load(fileContents);
+  const data = load(fileContents);
 
   return {
     props: {

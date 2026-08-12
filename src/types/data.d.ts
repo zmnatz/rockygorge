@@ -66,18 +66,28 @@ export interface Product extends BaseContentItem {
   supporters?: string[];
   flexiblePayment?: boolean;
   children?: React.ReactNode;
-  subscriptions?: Array<{
-    name: string;
-    id: string;
-    description: string;
-    options: Array<{ label: string; value: string }>;
-    value?: string;
-  }>;
+  subscriptions?: SubscriptionItem[];
+}
+
+/** A recurring-payment tier on a store item, rendered as a PayPal subscription button. */
+export interface SubscriptionItem {
+  name: string;
+  id: string;
+  description: string;
+  options: Array<{ label: string; value: string }>;
+  value?: string;
 }
 
 /** A toolbar/header navigation link. */
 export interface Link extends BaseNavigableItem {
   header: boolean;
+}
+
+/** A record of a member who has paid club dues. */
+export interface Dues {
+  name: string;
+  monthly?: boolean;
+  date: string;
 }
 
 /** A row in the Gauntlet leaderboard. */

@@ -5,7 +5,7 @@ import adminYaml from '@config/admin.yml';
 import { ADMIN_FILE_PATHS } from '../utils/admin-file-paths';
 import { createDefaultItem } from '../utils/admin-items';
 
-const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap', 'select'];
+const VALID_FIELD_TYPES = ['text', 'number', 'boolean', 'textarea', 'keyValueMap', 'textList', 'textKeyValueMap', 'select', 'subscriptionList'];
 
 interface AdminConfigField {
   name: string;
@@ -160,6 +160,13 @@ describe('admin.yml', () => {
       expect(store.createDefaults?.defaultAmount).toBe(0);
       expect(forms.createDefaults?.width).toBe(640);
       expect(forms.createDefaults?.height).toBe(1000);
+    });
+
+    it('store admin registers a subscriptions field of type subscriptionList', () => {
+      const field = adminConfig.store.fields.find((f) => f.name === 'subscriptions');
+
+      expect(field).toBeDefined();
+      expect(field?.type).toBe('subscriptionList');
     });
 
     it('editOnly is either omitted or a boolean when present', () => {

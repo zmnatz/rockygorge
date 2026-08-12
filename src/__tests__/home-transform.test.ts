@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
+import { roundtripYaml } from './helpers/yaml-roundtrip';
 import homeInfo from '@content/home.yml';
 import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
@@ -52,7 +52,7 @@ describe('home transform roundtrip', () => {
     const globals = homeTransform.initialGlobalsTransform(homeInfo);
     const saved = homeTransform.saveDataTransform(sections, globals);
 
-    const loaded = yaml.load(yaml.dump(saved)) as HomeData;
+    const loaded = roundtripYaml<HomeData>(saved);
 
     expect(typeof loaded.hero.markdown).toBe('string');
     expect(loaded.hero.markdown.length).toBeGreaterThan(0);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
+import { simulateServerSave } from './helpers/yaml-roundtrip';
 import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
 interface AdminItem {
@@ -39,15 +39,6 @@ function calendarSaveTransform(items: CalendarItem[], globals: CalendarGlobals):
   return TRANSFORM_MAPPINGS.calendar.saveDataTransform(items, globals) as CalendarSaveResult;
 }
 
-function serializeToYaml(data: unknown): string {
-  // Simulate the server's admin-handler flow:
-  // body is already JSON-parsed by Netlify, then yaml.dump is called
-  if (typeof data === 'string') {
-    return yaml.dump(JSON.parse(data));
-  }
-  return yaml.dump(data);
-}
-
 describe('boolean save pipeline - identity transform (store/events/links/forms)', () => {
   it('preserves boolean true through the full pipeline', () => {
     const items: AdminItem[] = [
@@ -56,10 +47,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     ];
 
     const data = identitySaveTransform(items);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0].hide).toBe(true);
     expect(loaded[1].hide).toBe(false);
@@ -71,10 +59,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     ];
 
     const data = identitySaveTransform(items);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0].hide).toBe(false);
   });
@@ -91,10 +76,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     );
 
     const data = identitySaveTransform(updatedItems);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0].hide).toBe(false);
     expect(loaded[1].hide).toBe(false);
@@ -110,10 +92,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     );
 
     const data = identitySaveTransform(updatedItems);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0].hide).toBe(true);
   });
@@ -129,10 +108,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     );
 
     const data = identitySaveTransform(updatedItems);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0].hide).toBe(true);
   });
@@ -147,10 +123,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     );
 
     const data = identitySaveTransform(updatedItems);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = simulateServerSave<AdminItem[]>(data);
 
     expect(loaded[0]).toHaveProperty('slug', 'item1');
     expect(loaded[0]).toHaveProperty('hide', false);
@@ -169,10 +142,7 @@ describe('boolean save pipeline - calendar transform', () => {
     const globals: CalendarGlobals = { months: 3 };
 
     const data = calendarSaveTransform(items, globals);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
+    const loaded = simulateServerSave<CalendarSaveResult>(data);
 
     expect(loaded.months).toBe(3);
     expect(loaded.filters[0].hideSummary).toBe(true);
@@ -192,10 +162,7 @@ describe('boolean save pipeline - calendar transform', () => {
     );
 
     const data = calendarSaveTransform(updatedItems, globals);
-    const json = JSON.stringify(data);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
+    const loaded = simulateServerSave<CalendarSaveResult>(data);
 
     expect(loaded.filters[0].hideSummary).toBe(true);
   });

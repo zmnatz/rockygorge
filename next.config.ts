@@ -13,6 +13,10 @@ const nextConfig = {
         loaders: ['yaml-loader'],
         as: '*.js',
       },
+      '*.yaml': {
+        loaders: ['yaml-loader'],
+        as: '*.js',
+      },
     },
   },
 }
