@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from '@/utils/admin-config';
 
 interface AdminItem {
@@ -41,11 +41,11 @@ function calendarSaveTransform(items: CalendarItem[], globals: CalendarGlobals):
 
 function serializeToYaml(data: unknown): string {
   // Simulate the server's admin-handler flow:
-  // body is already JSON-parsed by Netlify, then yaml.dump is called
+  // body is already JSON-parsed by Netlify, then dump is called
   if (typeof data === 'string') {
-    return yaml.dump(JSON.parse(data));
+    return dump(JSON.parse(data));
   }
-  return yaml.dump(data);
+  return dump(data);
 }
 
 describe('boolean save pipeline - identity transform (store/events/links/forms)', () => {
@@ -59,7 +59,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
     expect(loaded[1].hide).toBe(false);
@@ -74,7 +74,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(false);
   });
@@ -94,7 +94,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(false);
     expect(loaded[1].hide).toBe(false);
@@ -113,7 +113,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
   });
@@ -132,7 +132,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0].hide).toBe(true);
   });
@@ -150,7 +150,7 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as AdminItem[];
+    const loaded = load(yamlOutput) as AdminItem[];
 
     expect(loaded[0]).toHaveProperty('slug', 'item1');
     expect(loaded[0]).toHaveProperty('hide', false);
@@ -172,7 +172,7 @@ describe('boolean save pipeline - calendar transform', () => {
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
+    const loaded = load(yamlOutput) as CalendarSaveResult;
 
     expect(loaded.months).toBe(3);
     expect(loaded.filters[0].hideSummary).toBe(true);
@@ -195,7 +195,7 @@ describe('boolean save pipeline - calendar transform', () => {
     const json = JSON.stringify(data);
     const serverParsed = JSON.parse(json);
     const yamlOutput = serializeToYaml(serverParsed);
-    const loaded = yaml.load(yamlOutput) as CalendarSaveResult;
+    const loaded = load(yamlOutput) as CalendarSaveResult;
 
     expect(loaded.filters[0].hideSummary).toBe(true);
   });
