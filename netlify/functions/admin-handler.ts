@@ -14,11 +14,35 @@ interface RepoFileContent {
   sha?: string;
 }
 
+/** The Netlify Identity user Netlify injects into `clientContext` when the
+ *  request carries a valid Identity JWT in the `Authorization` header. */
+interface NetlifyClientContextUser {
+  sub?: string;
+  email?: string;
+  exp?: number;
+  [key: string]: unknown;
+}
+
+interface NetlifyClientContext {
+  user?: NetlifyClientContextUser | null;
+}
+
+type NetlifyFunctionContext = {
+  clientContext?: NetlifyClientContext;
+};
+
 type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
 
 export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
-  return async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return async (event: APIGatewayProxyEvent, context: NetlifyFunctionContext): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod === 'POST') {
+      if (!context.clientContext?.user) {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({ error: 'Authentication required. Sign in to the Admin Console and try again.' }),
+        };
+      }
+
       try {
         const body = JSON.parse(event.body || '{}');
         const data = body;
