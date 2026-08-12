@@ -80,6 +80,13 @@ export interface Link extends BaseNavigableItem {
   header: boolean;
 }
 
+/** A record of a member who has paid club dues. */
+export interface Dues {
+  name: string;
+  monthly?: boolean;
+  date: string;
+}
+
 /** A row in the Gauntlet leaderboard. */
 export interface GauntletEntry {
   name: string;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import adminYaml from '@config/admin.yml';
 import { createDefaultItem } from '@/utils/admin-items';
 
@@ -33,7 +33,7 @@ function buildDefaultItem(type: string): Record<string, unknown> {
 }
 
 function serialize(data: unknown): unknown {
-  return yaml.load(yaml.dump(data));
+  return load(dump(data));
 }
 
 describe('snapshot fields on generatable content types', () => {
