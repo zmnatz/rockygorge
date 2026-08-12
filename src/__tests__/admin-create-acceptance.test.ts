@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import adminYaml from '@config/admin.yml';
 import { TRANSFORM_MAPPINGS, ITEM_ID_MAPPINGS } from '@/utils/admin-config';
 import { createDefaultItem } from '@/utils/admin-items';
@@ -94,8 +94,8 @@ interface AdminYamlConfig {
 const adminConfig = adminYaml as Record<string, AdminYamlConfig>;
 
 function serialize(data: unknown): unknown {
-  const yamlOutput = yaml.dump(data);
-  return yaml.load(yamlOutput);
+  const yamlOutput = dump(data);
+  return load(yamlOutput);
 }
 
 function buildDefaultItem(type: string): Record<string, unknown> {

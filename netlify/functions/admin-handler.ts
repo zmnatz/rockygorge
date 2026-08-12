@@ -1,6 +1,6 @@
 import { Octokit } from 'octokit';
 import { RequestError } from '@octokit/request-error';
-import yaml from 'js-yaml';
+import { dump } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 interface AdminHandlerConfig {
@@ -56,7 +56,7 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           if (!(error instanceof RequestError) || error.status !== 404) throw error;
         }
 
-        const updatedYaml = yaml.dump(data);
+        const updatedYaml = dump(data);
 
         const updateParams: UpdateFileParams = {
           owner: OWNER,

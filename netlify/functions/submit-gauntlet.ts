@@ -1,6 +1,6 @@
 import { Octokit } from 'octokit';
 import { RequestError } from '@octokit/request-error';
-import yaml from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 export const config = {
@@ -74,7 +74,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             });
             fileData = response.data as RepoFileContent;
             const content = Buffer.from(fileData.content || '', 'base64').toString();
-            const parsed = yaml.load(content);
+            const parsed = load(content);
             entries = (Array.isArray(parsed) ? parsed : []) as GauntletEntry[];
         } catch (error: unknown) {
             if (!(error instanceof RequestError) || error.status !== 404) throw error;
@@ -93,7 +93,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         };
         entries.push(newEntry);
 
-        const updatedYaml = yaml.dump(entries);
+        const updatedYaml = dump(entries);
 
         // 5. Push to new branch
         console.log(`Pushing update to branch ${branchName} for file ${FILE_PATH}`);
