@@ -1,6 +1,8 @@
 import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem, ListItemText, IconButton, Button, MenuItem } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
 import type { FieldConfig } from './types';
+import type { SubscriptionItem } from '@/types/data';
+import { addOption, addSubscription, removeOption, removeSubscription, updateOption, updateSubscriptionField } from '@/utils/admin-subscriptions';
 
 interface FormFieldProps<T> {
   field: FieldConfig<T>;
@@ -61,6 +63,55 @@ function KeyValueMapField({ label, value, onChange, valueType }: { label: string
         <Button startIcon={<Add />} onClick={() => {
           onChange([...(value || []), { name: '', value: valueType === 'number' ? 0 : '' }]);
         }}>Add Pair</Button>
+      </List>
+    </Box>
+  );
+}
+
+function SubscriptionListField({ label, value, onChange }: { label: string; value: unknown; onChange: (v: SubscriptionItem[]) => void }) {
+  const list = (value ?? []) as SubscriptionItem[];
+  const setList = (next: SubscriptionItem[]) => onChange(next);
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6">{label}</Typography>
+      <List dense>
+        {list.map((subscription, idx) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: subscriptions have no stable id; index is safe within a controlled edit session
+          <ListItem key={idx} secondaryAction={
+            <IconButton edge="end" aria-label={`Remove subscription ${idx + 1}`} onClick={() => setList(removeSubscription(list, idx))}>
+              <Delete />
+            </IconButton>
+          }>
+            <ListItemText
+              // biome-ignore lint/suspicious/noExplicitAny: MUI ListItemText slotProps component prop requires any for custom element
+              slotProps={{ secondary: { component: 'div' as any } }}
+              primary={
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <TextField size="small" fullWidth label="Name" value={subscription.name ?? ''} onChange={e => setList(updateSubscriptionField(list, idx, 'name', e.target.value))} />
+                  <TextField size="small" fullWidth label="ID" value={subscription.id ?? ''} onChange={e => setList(updateSubscriptionField(list, idx, 'id', e.target.value))} />
+                  <TextField size="small" fullWidth label="Description" multiline rows={2} value={subscription.description ?? ''} onChange={e => setList(updateSubscriptionField(list, idx, 'description', e.target.value))} />
+                  <TextField size="small" fullWidth label="Value" value={subscription.value ?? ''} onChange={e => setList(updateSubscriptionField(list, idx, 'value', e.target.value))} />
+                  <Box sx={{ pl: 2 }}>
+                    <Typography variant="subtitle2">Options</Typography>
+                    {(subscription.options || []).map((option, oIdx) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: options have no stable id; index is safe within a controlled edit session
+                      <Box key={oIdx} sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
+                        <TextField size="small" fullWidth label="Label" value={option.label ?? ''} onChange={e => setList(updateOption(list, idx, oIdx, 'label', e.target.value))} />
+                        <TextField size="small" fullWidth label="Value" value={option.value ?? ''} onChange={e => setList(updateOption(list, idx, oIdx, 'value', e.target.value))} />
+                        <IconButton aria-label="Remove option" onClick={() => setList(removeOption(list, idx, oIdx))}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => setList(addOption(list, idx))}>Add Option</Button>
+                  </Box>
+                </Box>
+              }
+            />
+          </ListItem>
+        ))}
+        <Button startIcon={<Add />} onClick={() => setList(addSubscription(list))}>Add Subscription</Button>
       </List>
     </Box>
   );
@@ -158,6 +209,10 @@ export function FormField<T>({
     case 'textKeyValueMap':
       return (
         <KeyValueMapField label={field.label} value={value as Array<Record<string, unknown>> || []} onChange={updateValue} valueType="string" />
+      );
+    case 'subscriptionList':
+      return (
+        <SubscriptionListField label={field.label} value={value} onChange={updateValue} />
       );
 
     case 'select':
