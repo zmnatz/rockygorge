@@ -1,27 +1,39 @@
 import { useEffect, type ReactNode } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
-import { useAuth0 } from '@auth0/auth0-react';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { useIdentity } from '@/components/IdentityProvider';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { isLoading, isAuthenticated, loginWithRedirect } = useAuth0();
+  const { user, isLoading, login } = useIdentity();
+  const isAuthenticated = user !== null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: {
-          returnTo: window.location.pathname + window.location.search,
-        },
-      });
+      login();
     }
-  }, [isLoading, isAuthenticated, loginWithRedirect]);
+  }, [isLoading, isAuthenticated, login]);
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 4 }}>
         <CircularProgress size={24} />
-        <Typography>
-          {isLoading ? 'Checking session...' : 'Redirecting to sign in...'}
+        <Typography>Checking session...</Typography>
+      </Box>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Sign in required
         </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Sign in to manage the site content. If the login window did not open,
+          use the button below.
+        </Typography>
+        <Button variant="contained" onClick={login}>
+          Sign in
+        </Button>
       </Box>
     );
   }

@@ -9,24 +9,12 @@ import { theme } from "@/utils/theme";
 import { Toolbar } from "@/components/Toolbar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/utils/queryClient";
-import { Auth0Provider } from "@auth0/auth0-react";
+import { IdentityProvider } from "@/components/IdentityProvider";
 import GoogleAnalytics from "@/utils/analytics.mdx";
-
-const auth0Domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN!;
-const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!;
-const auth0RedirectUri = process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI!;
 
 export default function App({ Component, pageProps }) {
   return (
-    <Auth0Provider
-      domain={auth0Domain}
-      clientId={auth0ClientId}
-      authorizationParams={{ redirect_uri: auth0RedirectUri }}
-      cacheLocation="localstorage"
-      onRedirectCallback={(appState) => {
-        window.location.replace(appState?.returnTo || '/admin');
-      }}
-    >
+    <IdentityProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
@@ -46,6 +34,6 @@ export default function App({ Component, pageProps }) {
         </Container>
       </ThemeProvider>
     </QueryClientProvider>
-    </Auth0Provider>
+    </IdentityProvider>
   );
 }

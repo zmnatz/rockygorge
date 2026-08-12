@@ -18,7 +18,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useIdentity } from '@/components/IdentityProvider';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
@@ -42,7 +42,7 @@ export function AdminPage<T>({
   idFieldName = 'id',
   generateFromCalendar = false,
 }: AdminPageProps<T>) {
-  const { logout } = useAuth0();
+  const { logout, getAccessToken } = useIdentity();
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -102,7 +102,12 @@ export function AdminPage<T>({
       ? applyItemChange(items, editingItem, editingOriginalId, getItemId)
       : items;
     try {
-      await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
+      const accessToken = await getAccessToken();
+      await post(
+        `/.netlify/functions/${endpoint}`,
+        saveDataTransform(itemsToSave, globals),
+        accessToken,
+      );
       alert(`${title} updated and committed successfully!`);
     } catch {
       alert(`Failed to update ${title}.`);
@@ -121,7 +126,7 @@ export function AdminPage<T>({
           <Typography variant="h4">{title}</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
-              onClick={() => logout({ logoutParams: { returnTo: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI! } })}
+              onClick={() => logout()}
             >
               Log out
             </Button>

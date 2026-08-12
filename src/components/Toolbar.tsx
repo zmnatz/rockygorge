@@ -2,13 +2,14 @@ import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
 import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useIdentity } from "@/components/IdentityProvider";
 import { useState } from "react";
 
 const headerLinks = links.filter(({ header }) => header);
 
 export function Toolbar () {
-  const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { user, isLoading, login, logout } = useIdentity();
+  const isAuthenticated = user !== null;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -52,8 +53,8 @@ export function Toolbar () {
             sx={{ textTransform: "none", ml: 1 }}
             onClick={() =>
               isAuthenticated
-                ? logout({ logoutParams: { returnTo: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI! } })
-                : loginWithRedirect()
+                ? logout()
+                : login()
             }
           >
             {isAuthenticated ? "Log out" : "Log in"}

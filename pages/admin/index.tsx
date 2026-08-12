@@ -10,12 +10,12 @@ import {
   Button
 } from '@mui/material';
 import Link from 'next/link';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useIdentity } from '@/components/IdentityProvider';
 import { RequireAuth } from '@/components/RequireAuth';
 import adminYaml from '@config/admin.yml';
 
 export default function AdminIndex({ adminPages }) {
-  const { logout } = useAuth0();
+  const { logout } = useIdentity();
 
   return (
     <RequireAuth>
@@ -25,7 +25,7 @@ export default function AdminIndex({ adminPages }) {
             Admin Dashboard
           </Typography>
           <Button
-            onClick={() => logout({ logoutParams: { returnTo: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI! } })}
+            onClick={() => logout()}
           >
             Log out
           </Button>

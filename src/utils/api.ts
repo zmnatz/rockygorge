@@ -24,9 +24,14 @@ export function get<T>(url: string): Promise<T> {
   return request<T>(url);
 }
 
-export function post<T>(url: string, body: unknown): Promise<T> {
+export function post<T>(url: string, body: unknown, accessToken?: string | null): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
   return request<T>(url, {
     method: 'POST',
     body: JSON.stringify(body),
+    headers,
   });
 }

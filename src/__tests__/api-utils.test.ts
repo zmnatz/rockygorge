@@ -64,6 +64,22 @@ describe('post', () => {
     });
   });
 
+  it('sends the access token as a Bearer Authorization header', async () => {
+    const fetchMock = mockFetch(200, { ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await post('/api/test', { name: 'test' }, 'jwt-token');
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/test', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'test' }),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer jwt-token',
+      },
+    });
+  });
+
   it('returns parsed JSON on success', async () => {
     vi.stubGlobal('fetch', mockFetch(200, { id: 1 }));
 
