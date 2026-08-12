@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dump, load } from 'js-yaml';
+import { roundtripYaml } from './helpers/yaml-roundtrip';
 import adminYaml from '@config/admin.yml';
 import { createDefaultItem } from '@/utils/admin-items';
 
@@ -32,10 +32,6 @@ function buildDefaultItem(type: string): Record<string, unknown> {
   return createDefaultItem(fields, config.createDefaults || {});
 }
 
-function serialize(data: unknown): unknown {
-  return load(dump(data));
-}
-
 describe('snapshot fields on generatable content types', () => {
   SNAPSHOT_TYPES.forEach((type) => {
     describe(type, () => {
@@ -63,7 +59,7 @@ describe('snapshot fields on generatable content types', () => {
         item.start = SNAPSHOT_VALUES.start;
         item.end = SNAPSHOT_VALUES.end;
 
-        const saved = serialize([item]);
+        const saved = roundtripYaml([item]);
         const [savedItem] = saved as Record<string, unknown>[];
 
         expect(savedItem.slug).toBe(`test-snapshot-${type}`);
