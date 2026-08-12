@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dump, load } from 'js-yaml';
+import { roundtripYaml } from './helpers/yaml-roundtrip';
 import adminYaml from '@config/admin.yml';
 import { TRANSFORM_MAPPINGS, ITEM_ID_MAPPINGS } from '@/utils/admin-config';
 import { createDefaultItem } from '@/utils/admin-items';
@@ -93,11 +93,6 @@ interface AdminYamlConfig {
 
 const adminConfig = adminYaml as Record<string, AdminYamlConfig>;
 
-function serialize(data: unknown): unknown {
-  const yamlOutput = dump(data);
-  return load(yamlOutput);
-}
-
 function buildDefaultItem(type: string): Record<string, unknown> {
   const config = adminConfig[type];
   const fields = config.fields.map((f) => ({ name: f.name, type: f.type }));
@@ -135,7 +130,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
         item[shape.idField] = `test-${type}`;
 
         const saved = saveForPage(type, [item]);
-        const loaded = serialize(saved);
+        const loaded = roundtripYaml(saved);
         const items = extractItems(type, loaded);
         expect(items).toHaveLength(1);
       });
@@ -145,7 +140,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
         item[shape.idField] = `test-${type}`;
 
         const saved = saveForPage(type, [item]);
-        const loaded = serialize(saved);
+        const loaded = roundtripYaml(saved);
         const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
 
         shape.requiredFields.forEach(({ name, type: expectedType, optional }) => {
@@ -158,7 +153,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
         it('defaults dimensions to positive values', () => {
           const item = buildDefaultItem(type);
           item.slug = 'test-forms';
-          const loaded = serialize(saveForPage(type, [item]));
+          const loaded = roundtripYaml(saveForPage(type, [item]));
           const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           expect(savedItem.width).toBeGreaterThan(0);
           expect(savedItem.height).toBeGreaterThan(0);
@@ -169,7 +164,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
         it('defaults defaultAmount to a number', () => {
           const item = buildDefaultItem(type);
           item.slug = 'test-store';
-          const loaded = serialize(saveForPage(type, [item]));
+          const loaded = roundtripYaml(saveForPage(type, [item]));
           const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           expect(typeof savedItem.defaultAmount).toBe('number');
         });
@@ -179,7 +174,7 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
         it('does not force a zero limit that would fail the positive-limit check', () => {
           const item = buildDefaultItem(type);
           item.name = 'test-calendar';
-          const loaded = serialize(saveForPage(type, [item]));
+          const loaded = roundtripYaml(saveForPage(type, [item]));
           const [savedItem] = extractItems(type, loaded) as Record<string, unknown>[];
           if (savedItem.limit !== undefined) {
             expect(savedItem.limit).toBeGreaterThan(0);
