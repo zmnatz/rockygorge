@@ -24,6 +24,11 @@
   title: 'Calendar'
   summary: 'Gorge calendar'
   header: true
+- slug: '/whereIsPractice'
+  href: '/whereIsPractice'
+  title: 'Where is Practice'
+  summary: 'When and where the next practice is'
+  header: true
 - slug: '/admin'
   href: '/admin'
   title: 'Admin'

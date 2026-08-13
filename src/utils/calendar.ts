@@ -33,6 +33,21 @@ export function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) 
   return results;
 }
 
+export function findNextPractice(
+  items: CalendarSourceItem[],
+  filters: CalendarFilter[],
+  now: Date = new Date()
+): CalendarSourceItem | undefined {
+  const trainingFilter = filters.find((filter) => filter.name === "Training");
+  if (!trainingFilter?.matches) return undefined;
+
+  const regex = new RegExp(trainingFilter.matches, "i");
+  return items
+    .filter((item) => item.summary.match(regex))
+    .filter((item) => new Date(item.start).getTime() >= now.getTime())
+    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())[0];
+}
+
 export function formatEventTime(start: string, end: string) {
   const startDate = parseDate(start);
   const endDate = parseDate(end);
