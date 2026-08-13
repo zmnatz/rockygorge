@@ -11,10 +11,6 @@ import {
 } from '../../src/utils/paypal-transactions';
 import { internalServerError, methodNotAllowed, requireAuth } from '../../src/utils/admin-auth';
 
-export const config = {
-  path: '/api/admin-transactions',
-};
-
 const PAYPAL_TOKEN_URL = 'https://api-m.paypal.com/v1/oauth2/token';
 const TRANSACTIONS_URL = 'https://api-m.paypal.com/v1/reporting/transactions';
 
