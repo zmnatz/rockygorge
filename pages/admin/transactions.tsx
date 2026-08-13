@@ -20,6 +20,7 @@ import { RequireAuth, useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
+import { compareValues } from '@/utils/sort';
 import type { DateRange } from '@/types/date-range';
 import type { PaypalTransaction } from '@/types/paypal';
 
@@ -122,13 +123,7 @@ function TransactionsReport() {
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;
-    return [...visible].sort((a, b) => {
-      const aValue = a[key];
-      const bValue = b[key];
-      if (aValue === bValue) return 0;
-      const comparison = aValue < bValue ? -1 : 1;
-      return direction === 'asc' ? comparison : -comparison;
-    });
+    return [...visible].sort((a, b) => compareValues(a[key], b[key], direction));
   }, [visible, sort]);
 
   const totalNet = useMemo(
