@@ -79,5 +79,5 @@ A Transaction is attributed to a Store Item when the transaction's item title co
 _Avoid_: Association, linking (payments context)
 
 **Item Transactions**:
-The read-only admin view at `/admin/transactions/[slug]` listing the Item Matches for one Store Item within a chosen date range. Payments made through the subscription billing flow carry no item text and are not attributed, so recurring dues and supporter payments appear on no item page; one-time purchases are attributed by the Item Match rule.
+The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. The item's `description` pre-fills the report's filter so the active filter is visible and adjustable. Payments made through the subscription billing flow carry no item text and are not attributed, so recurring dues and supporter payments appear on no item page; one-time purchases are attributed by the Item Match rule.
 _Avoid_: Purchase report, item sales

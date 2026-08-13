@@ -12,7 +12,7 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
     <RequireAuth>
       <TransactionsReport
         title={`${item.title} — Transactions`}
-        subtitle={`Item Matches for ${item.slug} in the selected date range.`}
+        subtitle={`Transactions filtered by "${item.description}" in the selected date range.`}
         item={item}
       />
     </RequireAuth>

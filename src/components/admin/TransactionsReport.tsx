@@ -21,7 +21,7 @@ import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
 import { compareValues } from '@/utils/sort';
-import { isItemMatch, type StoreItem } from '@/utils/item-match';
+import type { StoreItem } from '@/utils/item-match';
 import type { DateRange } from '@/types/date-range';
 import type { PaypalTransaction } from '@/types/paypal';
 
@@ -83,7 +83,7 @@ export function TransactionsReport({ title, subtitle, item }: TransactionsReport
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [range, setRange] = useState<DateRange | null>(null);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState(item?.description ?? '');
   const [sort, setSort] = useState<SortState>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
@@ -112,16 +112,15 @@ export function TransactionsReport({ title, subtitle, item }: TransactionsReport
   };
 
   const visible = useMemo(() => {
-    const inItem = item ? data.filter((txn) => isItemMatch(txn, item)) : data;
     const query = filter.trim().toLowerCase();
-    if (!query) return inItem;
-    return inItem.filter(
+    if (!query) return data;
+    return data.filter(
       (txn) =>
         txn.name.toLowerCase().includes(query) ||
         txn.email.toLowerCase().includes(query) ||
         txn.itemTitle.toLowerCase().includes(query),
     );
-  }, [data, filter, item]);
+  }, [data, filter]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;
