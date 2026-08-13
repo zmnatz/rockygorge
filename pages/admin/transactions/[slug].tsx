@@ -1,10 +1,10 @@
 import { RequireAuth } from '@/components/RequireAuth';
 import { TransactionsReport } from '@/components/admin/TransactionsReport';
 import store from '@content/store.yml';
-import type { Product } from '@/types/data';
+import type { StoreItem } from '@/utils/item-match';
 
 interface AdminItemTransactionsProps {
-  item: Product;
+  item: StoreItem;
 }
 
 export default function AdminItemTransactionsPage({ item }: AdminItemTransactionsProps) {
@@ -21,18 +21,22 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
 
 export async function getStaticPaths() {
   return {
-    paths: store.map((item) => ({
-      params: { slug: item.slug },
-    })),
+    paths: store
+      .filter((entry) => entry.slug)
+      .map((entry) => ({
+        params: { slug: entry.slug },
+      })),
     fallback: false,
   };
 }
 
 export async function getStaticProps({ params }: { params?: { slug: string } }) {
-  const item = store.find((entry) => entry.slug === params?.slug);
-  if (!item) return { notFound: true };
+  const entry = store.find((item) => item.slug === params?.slug);
+  if (!entry) return { notFound: true };
 
   return {
-    props: { item },
+    props: {
+      item: { slug: entry.slug, title: entry.title, description: entry.description },
+    },
   };
 }

@@ -1,3 +1,6 @@
+import { createElement } from 'react';
+import Link from 'next/link';
+
 export type TransformKey = 'calendar' | 'linkMappings' | 'home';
 
 export const ITEM_ID_MAPPINGS: Record<string, (item: Record<string, unknown>) => string> = {
@@ -10,6 +13,10 @@ export const ITEM_ID_MAPPINGS: Record<string, (item: Record<string, unknown>) =>
 export const RENDER_MAPPINGS: Record<string, (item: Record<string, unknown>, field: string) => React.ReactNode> = {
   boolean: (item, field) => item[field] ? 'Yes' : 'No',
   calendarMatches: (item) => String(item.matches || item.notMatches || '-'),
+  transactions: (item) =>
+    item.slug
+      ? createElement(Link, { href: `/admin/transactions/${item.slug}` }, 'View')
+      : '',
   default: (item, field) => String(item[field] ?? ''),
 };
 

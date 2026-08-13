@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { AdminPage } from '../../src/components/AdminPage';
 import { RequireAuth } from '../../src/components/RequireAuth';
 import adminYaml from '@config/admin.yml';
@@ -67,18 +66,6 @@ export default function GenericAdmin({ initialData, type }: GenericAdminProps) {
       return renderer(item, col.field);
     },
   }));
-
-  if (type === 'store') {
-    columns.push({
-      header: 'Transactions',
-      render: (item: Record<string, unknown>) =>
-        item.slug ? (
-          <Link href={`/admin/transactions/${item.slug}`}>View</Link>
-        ) : (
-          ''
-        ),
-    });
-  }
 
   const fields: FieldConfig<Record<string, unknown>>[] = (yamlConfig.fields || []).map((f) => ({
     ...f,

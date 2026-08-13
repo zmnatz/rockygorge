@@ -75,9 +75,9 @@ The amount the club actually received from a Transaction — gross amount plus t
 _Avoid_: Total, balance
 
 **Item Match**:
-A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. Ties resolve to the longer match; a transaction matching no item is unmatched and appears on no item page.
+A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
 _Avoid_: Association, linking (payments context)
 
 **Item Transactions**:
-The read-only admin view at `/admin/transactions/[slug]` listing the Item Matches for one Store Item within a chosen date range. One-time purchase items are supported; subscription items (dues, supporters) currently show no rows.
+The read-only admin view at `/admin/transactions/[slug]` listing the Item Matches for one Store Item within a chosen date range. Payments made through the subscription billing flow carry no item text and are not attributed, so recurring dues and supporter payments appear on no item page; one-time purchases are attributed by the Item Match rule.
 _Avoid_: Purchase report, item sales

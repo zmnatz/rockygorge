@@ -21,7 +21,7 @@ import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
 import { compareValues } from '@/utils/sort';
-import { isItemMatch, type MatchableItem } from '@/utils/item-match';
+import { isItemMatch, type StoreItem } from '@/utils/item-match';
 import type { DateRange } from '@/types/date-range';
 import type { PaypalTransaction } from '@/types/paypal';
 
@@ -75,7 +75,7 @@ export interface TransactionsReportProps {
   title: string;
   subtitle: string;
   /** When present, only Transactions attributed to this Store Item are shown. */
-  item?: MatchableItem & { slug?: string };
+  item?: StoreItem;
 }
 
 export function TransactionsReport({ title, subtitle, item }: TransactionsReportProps) {
@@ -90,7 +90,8 @@ export function TransactionsReport({ title, subtitle, item }: TransactionsReport
     const defaults = defaultDateRange();
     setStart(defaults.start);
     setEnd(defaults.end);
-  }, []);
+    if (item) setRange(defaults);
+  }, [item]);
 
   const { data = [], isPending, isFetching, error } = useTransactions(
     range ?? { start: '', end: '' },

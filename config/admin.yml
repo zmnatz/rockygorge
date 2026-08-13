@@ -10,6 +10,9 @@ store:
     - field: "title"
     - field: "hide"
       render: "boolean"
+    - field: "slug"
+      header: "Transactions"
+      render: "transactions"
   fields:
     - name: "slug"
       type: "text"
