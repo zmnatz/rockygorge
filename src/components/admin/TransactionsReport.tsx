@@ -21,7 +21,7 @@ import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
 import { compareValues } from '@/utils/sort';
-import type { StoreItem } from '@/utils/item-match';
+
 import type { DateRange } from '@/types/date-range';
 import type { PaypalTransaction } from '@/types/paypal';
 
@@ -74,24 +74,30 @@ function formatCell(txn: PaypalTransaction, col: TransactionColumn): string {
 export interface TransactionsReportProps {
   title: string;
   subtitle: string;
-  /** When present, only Transactions attributed to this Store Item are shown. */
-  item?: StoreItem;
+  /** Value the filter input starts with, e.g. a store item's description. */
+  initialFilter?: string;
+  /** Prefix used for the exported CSV filename. */
+  fileStem?: string;
 }
 
-export function TransactionsReport({ title, subtitle, item }: TransactionsReportProps) {
+export function TransactionsReport({
+  title,
+  subtitle,
+  initialFilter,
+  fileStem,
+}: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [range, setRange] = useState<DateRange | null>(null);
-  const [filter, setFilter] = useState(item?.description ?? '');
+  const [filter, setFilter] = useState(initialFilter ?? '');
   const [sort, setSort] = useState<SortState>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
     const defaults = defaultDateRange();
     setStart(defaults.start);
     setEnd(defaults.end);
-    if (item) setRange(defaults);
-  }, [item]);
+  }, []);
 
   const { data = [], isPending, isFetching, error } = useTransactions(
     range ?? { start: '', end: '' },
@@ -151,7 +157,7 @@ export function TransactionsReport({ title, subtitle, item }: TransactionsReport
       COLUMNS.map((col) => ({ key: col.key, title: col.label })),
       rows,
     );
-    const stem = item?.slug ? `paypal-transactions_${item.slug}` : 'paypal-transactions';
+    const stem = fileStem ?? 'paypal-transactions';
     downloadCsv(`${stem}_${range?.start ?? ''}_${range?.end ?? ''}.csv`, csv);
   };
 
@@ -249,9 +255,7 @@ export function TransactionsReport({ title, subtitle, item }: TransactionsReport
               {sorted.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={COLUMNS.length} align="center">
-                    {item
-                      ? 'No transactions for this item in the selected range.'
-                      : 'No transactions found for the selected range.'}
+                    No transactions found for the selected range.
                   </TableCell>
                 </TableRow>
               )}
