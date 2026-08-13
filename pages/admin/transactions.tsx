@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { RequireAuth, useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
+import { downloadCsv, toCsv } from '@/utils/csv';
 import type { PaypalTransaction } from '@/types/paypal';
 
 interface TransactionColumn {
@@ -133,6 +134,14 @@ function TransactionsReport() {
     );
   };
 
+  const handleExport = () => {
+    const csv = toCsv(
+      COLUMNS.map((col) => ({ key: col.key, title: col.label })),
+      sorted,
+    );
+    downloadCsv(`paypal-transactions_${range?.start ?? ''}_${range?.end ?? ''}.csv`, csv);
+  };
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>
@@ -163,6 +172,9 @@ function TransactionsReport() {
           />
           <Button type="submit" variant="contained" disabled={isFetching}>
             Run Report
+          </Button>
+          <Button type="button" variant="outlined" onClick={handleExport} disabled={sorted.length === 0}>
+            Export CSV
           </Button>
           {isFetching && <CircularProgress size={20} />}
         </Box>
