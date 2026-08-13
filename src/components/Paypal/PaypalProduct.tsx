@@ -20,16 +20,18 @@ export function PaypalProduct({
   subscriptions = [],
   donation = false,
   supporters,
+  slug,
 }: PaypalProductProps) {
   const [editAmount, setEditAmount] = useState<number>();
   const amount = editAmount ?? defaultAmount;
   const router = useRouter();
 
   const handleSelect = (_event: React.ChangeEvent<HTMLInputElement>, value: string) => setEditAmount(Number(value));
+  const selectedOption = options.find((option) => option.value === amount);
   const createOrder = async (
     _data: object,
     actions: CreateOrderBraintreeActions,
-  ) => actions.order.create(generateOrderInfo(description, amount));
+  ) => actions.order.create(generateOrderInfo(description, amount, selectedOption, slug));
 
   const handleApprove = async (_data: object, actions: OnApproveBraintreeActions) => {
     await actions.order.capture();
@@ -75,17 +77,42 @@ export function PaypalProduct({
 
 
 
-function generateOrderInfo(description: string, amount: number): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
-  return {
-    purchase_units: [
+function generateOrderInfo(
+  description: string,
+  amount: number,
+  option?: { name: string; value: number },
+  slug?: string,
+): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
+  const value = `${amount}`;
+  const keySuffix = slug ? ` [${slug}]` : '';
+  const purchaseUnit: import("@paypal/paypal-js/types/apis/orders").PurchaseUnit = {
+    description: `${description}${keySuffix}`,
+    amount: {
+      currency_code: "USD",
+      value,
+    },
+  };
+  if (option) {
+    purchaseUnit.items = [
       {
-        description,
-        amount: {
+        name: `${option.name}${keySuffix}`,
+        quantity: "1",
+        unit_amount: {
           currency_code: "USD",
-          value: `${amount}`,
+          value,
         },
+        category: "DIGITAL_GOODS",
       },
-    ],
+    ];
+    purchaseUnit.amount.breakdown = {
+      item_total: {
+        currency_code: "USD",
+        value,
+      },
+    };
+  }
+  return {
+    purchase_units: [purchaseUnit],
   };
 }
 

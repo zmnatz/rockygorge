@@ -14,6 +14,7 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
         title={`${item.title} — Transactions`}
         subtitle={`Transactions matching "${item.description}" in the selected date range.`}
         initialFilter={item.description}
+        itemSlug={item.slug}
         fileStem={`paypal-transactions_${item.slug}`}
       />
     </RequireAuth>

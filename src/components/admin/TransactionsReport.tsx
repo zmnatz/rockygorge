@@ -78,6 +78,9 @@ export interface TransactionsReportProps {
   initialFilter?: string;
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
+  /** Authoritative store item key: transactions carrying this slug are
+   *  always shown, with the visible filter as the legacy text fallback. */
+  itemSlug?: string;
 }
 
 export function TransactionsReport({
@@ -85,6 +88,7 @@ export function TransactionsReport({
   subtitle,
   initialFilter,
   fileStem,
+  itemSlug,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
   const [start, setStart] = useState('');
@@ -119,14 +123,16 @@ export function TransactionsReport({
 
   const visible = useMemo(() => {
     const query = filter.trim().toLowerCase();
-    if (!query) return data;
-    return data.filter(
-      (txn) =>
+    return data.filter((txn) => {
+      if (itemSlug && txn.itemSlug === itemSlug) return true;
+      if (!query) return true;
+      return (
         txn.name.toLowerCase().includes(query) ||
         txn.email.toLowerCase().includes(query) ||
-        txn.itemTitle.toLowerCase().includes(query),
-    );
-  }, [data, filter]);
+        txn.itemTitle.toLowerCase().includes(query)
+      );
+    });
+  }, [data, filter, itemSlug]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;
