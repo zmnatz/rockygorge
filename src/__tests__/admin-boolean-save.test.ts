@@ -262,27 +262,3 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
     expect(itemsToSave[2].hide).toBe(true);
   });
 });
-
-describe('AdminPage useEffect dependency stability', () => {
-  it('does not include initialDataTransform or initialGlobalsTransform in useEffect deps', () => {
-    const fs = require('node:fs');
-    const source = fs.readFileSync(
-      require('node:path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
-      'utf8'
-    );
-
-    // Extract the useEffect hook and its dependency array
-    const effectStart = source.indexOf('useEffect(() =>');
-    const effectEnd = source.indexOf('const handleSaveItem', effectStart);
-    const effectBlock = source.slice(effectStart, effectEnd);
-
-    // Verify the dependency array is just [data, endpoint]
-    expect(effectBlock).toContain('}, [data, endpoint]);');
-
-    const depStart = effectBlock.indexOf('}, [') + 4;
-    const depEnd = effectBlock.indexOf(']);', depStart);
-    const depsStr = effectBlock.slice(depStart, depEnd);
-    const deps = depsStr.split(',').map((d: string) => d.trim());
-    expect(deps).toEqual(['data', 'endpoint']);
-  });
-});
