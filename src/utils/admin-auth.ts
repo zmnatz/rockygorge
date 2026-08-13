@@ -13,3 +13,22 @@ export function requireAuth(context: NetlifyFunctionContext): APIGatewayProxyRes
     body: JSON.stringify({ error: AUTH_REQUIRED_MESSAGE }),
   };
 }
+
+export function methodNotAllowed(): APIGatewayProxyResult {
+  return {
+    statusCode: 405,
+    body: JSON.stringify({ error: 'Method Not Allowed' }),
+  };
+}
+
+export function internalServerError(error: unknown, prefix = ''): APIGatewayProxyResult {
+  if (prefix) {
+    console.error(`${prefix}:`, error);
+  } else {
+    console.error(error);
+  }
+  return {
+    statusCode: 500,
+    body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
+  };
+}

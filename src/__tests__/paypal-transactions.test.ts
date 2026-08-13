@@ -5,7 +5,7 @@ import {
   flattenTransaction,
   parseMoney,
   validateRange,
-} from '../../netlify/functions/paypal-transactions';
+} from '@/utils/paypal-transactions';
 import type { PaypalRawTransaction } from '@/types/paypal';
 
 function rawTransaction(overrides: Partial<PaypalRawTransaction> = {}): PaypalRawTransaction {
@@ -216,6 +216,12 @@ describe('validateRange', () => {
   it('rejects malformed dates', () => {
     expect(validateRange({ start: '05/01/2026', end: '2026-05-31' }).ok).toBe(false);
     expect(validateRange({ start: '2026-5-1', end: '2026-05-31' }).ok).toBe(false);
+  });
+
+  it('rejects calendar-invalid dates', () => {
+    expect(validateRange({ start: '2026-02-30', end: '2026-05-31' }).ok).toBe(false);
+    expect(validateRange({ start: '2026-05-01', end: '2026-13-01' }).ok).toBe(false);
+    expect(validateRange({ start: '2025-02-29', end: '2026-05-31' }).ok).toBe(false);
   });
 
   it('rejects a start after the end', () => {

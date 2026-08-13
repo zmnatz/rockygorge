@@ -8,8 +8,8 @@ import {
   buildDateWindows,
   flattenTransaction,
   validateRange,
-} from './paypal-transactions';
-import { requireAuth } from './admin-auth';
+} from '../../src/utils/paypal-transactions';
+import { internalServerError, methodNotAllowed, requireAuth } from '../../src/utils/admin-auth';
 
 export const config = {
   path: '/api/admin-transactions',
@@ -81,21 +81,34 @@ async function fetchTransactionsPage(
   return (await response.json()) as PaypalListTransactionsResponse;
 }
 
-async function fetchTransactions(token: string, range: DateRange): Promise<PaypalTransaction[]> {
-  const raw: PaypalRawTransaction[] = [];
+/** Fetch every window of a range, paging through each until all pages are
+ *  returned. Windows end at the next window's start (and one day past the
+ *  requested end), so the same transaction can appear in two windows
+ *  depending on how PayPal treats `end_date`; dedupe by txn id and clamp to
+ *  the requested range so the report never double-counts a boundary day. */
+export async function fetchPaypalTransactions(
+  token: string,
+  range: DateRange,
+): Promise<PaypalTransaction[]> {
+  const seen = new Set<string>();
+  const transactions: PaypalTransaction[] = [];
 
   for (const window of buildDateWindows(range)) {
     let page = 1;
     let totalPages = 1;
     do {
       const data = await fetchTransactionsPage(token, window, page);
-      raw.push(...(data.transaction_details ?? []));
+      for (const txn of (data.transaction_details ?? []).map(flattenTransaction)) {
+        if (txn.txnId && seen.has(txn.txnId)) continue;
+        seen.add(txn.txnId);
+        transactions.push(txn);
+      }
       totalPages = data.total_pages ?? 1;
       page += 1;
     } while (page <= totalPages);
   }
 
-  return raw.map(flattenTransaction);
+  return transactions.filter((txn) => !txn.date || txn.date <= range.end);
 }
 
 export const handler = async (
@@ -103,10 +116,7 @@ export const handler = async (
   context: NetlifyFunctionContext,
 ): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'GET') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-    };
+    return methodNotAllowed();
   }
 
   const authError = requireAuth(context);
@@ -133,11 +143,14 @@ export const handler = async (
 
   try {
     const token = await getAccessToken(clientId, clientSecret);
-    if (!token.scope?.split(/\s+/).includes(REPORTING_SCOPE)) {
+    if (!token.scope) {
+      throw new Error('PayPal token response did not include a scope.');
+    }
+    if (!token.scope.split(/\s+/).includes(REPORTING_SCOPE)) {
       throw new PaypalScopeError();
     }
 
-    const transactions = await fetchTransactions(token.access_token, validation);
+    const transactions = await fetchPaypalTransactions(token.access_token, validation);
     return {
       statusCode: 200,
       body: JSON.stringify({ transactions }),
@@ -149,10 +162,6 @@ export const handler = async (
         body: JSON.stringify({ error: error.message }),
       };
     }
-    console.error('admin-transactions:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
-    };
+    return internalServerError(error, 'admin-transactions');
   }
 }

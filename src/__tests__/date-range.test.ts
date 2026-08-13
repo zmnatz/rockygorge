@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAX_RANGE_DAYS, countDays, parseDate } from '@/utils/date-range';
+import { MAX_RANGE_DAYS, countDays, isValidDate, parseDate } from '@/utils/date-range';
 
 describe('parseDate', () => {
   it('parses a YYYY-MM-DD string as UTC midnight', () => {
@@ -8,6 +8,22 @@ describe('parseDate', () => {
 
   it('parses a single-digit month and day', () => {
     expect(parseDate('2024-03-05').toISOString()).toBe('2024-03-05T00:00:00.000Z');
+  });
+});
+
+describe('isValidDate', () => {
+  it('accepts real calendar dates', () => {
+    expect(isValidDate('2024-02-29')).toBe(true);
+    expect(isValidDate('2026-05-31')).toBe(true);
+    expect(isValidDate('2026-12-01')).toBe(true);
+  });
+
+  it('rejects calendar-invalid dates', () => {
+    expect(isValidDate('2026-02-30')).toBe(false);
+    expect(isValidDate('2026-13-01')).toBe(false);
+    expect(isValidDate('2026-00-10')).toBe(false);
+    expect(isValidDate('2026-01-32')).toBe(false);
+    expect(isValidDate('2025-02-29')).toBe(false);
   });
 });
 

@@ -4,13 +4,13 @@
  * logic can be unit-tested without hitting PayPal.
  */
 
-import type { DateRange } from '../../src/types/date-range';
+import type { DateRange } from '../types/date-range';
 import type {
   PaypalRawTransaction,
   PaypalTransaction,
   PaypalTransactionType,
-} from '../../src/types/paypal';
-import { DAY_MS, MAX_RANGE_DAYS, countDays, parseDate } from '../../src/utils/date-range';
+} from '../types/paypal';
+import { DAY_MS, MAX_RANGE_DAYS, countDays, isValidDate, parseDate } from './date-range';
 
 export const MAX_WINDOW_DAYS = 31;
 export const PAGE_SIZE = 500;
@@ -102,6 +102,9 @@ export function validateRange(range: RangeQuery): RangeValidation {
   }
   if (!datePattern.test(range.start) || !datePattern.test(range.end)) {
     return { ok: false, error: 'start and end must be YYYY-MM-DD dates.' };
+  }
+  if (!isValidDate(range.start) || !isValidDate(range.end)) {
+    return { ok: false, error: 'start and end must be valid calendar dates.' };
   }
   if (range.start > range.end) {
     return { ok: false, error: 'start must not be after end.' };

@@ -3,7 +3,7 @@ import { RequestError } from '@octokit/request-error';
 import { dump } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type { NetlifyFunctionContext } from '../../src/types/netlify-context';
-import { requireAuth } from './admin-auth';
+import { internalServerError, methodNotAllowed, requireAuth } from '../../src/utils/admin-auth';
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -92,17 +92,10 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
         };
       } catch (error: unknown) {
-        console.error(error);
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
-        };
+        return internalServerError(error);
       }
     }
 
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-    };
+    return methodNotAllowed();
   };
 }
