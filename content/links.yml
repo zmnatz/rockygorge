@@ -24,3 +24,9 @@
   title: 'Calendar'
   summary: 'Gorge calendar'
   header: true
+- slug: '/admin'
+  href: '/admin'
+  title: 'Admin'
+  summary: 'Admin dashboard'
+  header: true
+  authRequired: true

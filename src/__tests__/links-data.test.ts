@@ -13,6 +13,7 @@ validateDataArray<Link>(links, {
     { name: 'summary', type: 'string' },
     { name: 'header', type: 'boolean' },
     { name: 'hide', type: 'boolean', optional: true },
+    { name: 'authRequired', type: 'boolean', optional: true },
   ],
 });
 

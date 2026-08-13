@@ -81,6 +81,8 @@ export interface SubscriptionItem {
 /** A toolbar/header navigation link. */
 export interface Link extends BaseNavigableItem {
   header: boolean;
+  /** When true, the link is only shown to signed-in visitors. */
+  authRequired?: boolean;
 }
 
 /** A record of a member who has paid club dues. */

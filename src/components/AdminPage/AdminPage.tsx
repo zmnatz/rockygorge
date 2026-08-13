@@ -18,6 +18,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
+import { useRequireAuth } from '@/components/RequireAuth';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
@@ -41,6 +42,7 @@ export function AdminPage<T>({
   idFieldName = 'id',
   generateFromCalendar = false,
 }: AdminPageProps<T>) {
+  const { getAccessToken } = useRequireAuth();
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -100,7 +102,12 @@ export function AdminPage<T>({
       ? applyItemChange(items, editingItem, editingOriginalId, getItemId)
       : items;
     try {
-      await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
+      const accessToken = await getAccessToken();
+      await post(
+        `/.netlify/functions/${endpoint}`,
+        saveDataTransform(itemsToSave, globals),
+        accessToken,
+      );
       alert(`${title} updated and committed successfully!`);
     } catch {
       alert(`Failed to update ${title}.`);
@@ -115,15 +122,15 @@ export function AdminPage<T>({
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4">{title}</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {!editOnly && (
-            <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
-          )}
-          <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4">{title}</Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {!editOnly && (
+              <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
+            )}
+            <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+          </Box>
         </Box>
-      </Box>
 
       {globalFields && globalFields.length > 0 && (
         <Paper sx={{ p: 3, mb: 4 }}>
