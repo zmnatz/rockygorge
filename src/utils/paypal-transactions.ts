@@ -30,6 +30,20 @@ export function parseMoney(value: string | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+/** A trailing `[slug]` key appended to an order line item or description at
+ *  checkout (see ADR 005); stripping it yields the displayed item title and
+ *  the machine-readable item key. */
+const ITEM_SLUG_PATTERN = /\s*\[([a-z0-9][a-z0-9-]*)\]$/;
+
+function extractItemSlug(title: string): { itemSlug: string; itemTitle: string } {
+  const match = title.match(ITEM_SLUG_PATTERN);
+  if (!match || match.index === undefined) return { itemSlug: '', itemTitle: title };
+  return {
+    itemSlug: match[1],
+    itemTitle: title.slice(0, match.index),
+  };
+}
+
 export function deriveType(amount: number, hasReference: boolean): PaypalTransactionType {
   if (amount < 0 && hasReference) return 'Refund';
   if (amount < 0) return 'Withdrawal';
@@ -45,7 +59,7 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
   const fee = parseMoney(info.fee_amount?.value);
   const net = gross + fee;
 
-  const itemTitle =
+  const itemTitleRaw =
     (cart.item_details ?? [])
       .map((item) => item.item_name ?? '')
       .filter(Boolean)
@@ -53,6 +67,7 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
     info.transaction_subject ||
     info.transaction_note ||
     '';
+  const { itemSlug, itemTitle } = extractItemSlug(itemTitleRaw);
 
   return {
     date: (info.transaction_initiation_date ?? '').split('T')[0],
@@ -61,6 +76,7 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
     type: deriveType(gross, Boolean(info.paypal_reference_id)),
     status: info.transaction_status ?? '',
     itemTitle,
+    itemSlug,
     gross,
     fee,
     net,

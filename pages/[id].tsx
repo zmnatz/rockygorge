@@ -42,6 +42,7 @@ export default function StoreItem({
   donation,
   subscriptions,
   supporters,
+  slug,
   form
 }: Product & { form?: Form }) {
   return (
@@ -57,6 +58,7 @@ export default function StoreItem({
         subscriptions={subscriptions}
         donation={donation}
         supporters={supporters}
+        slug={slug}
         flexiblePayment
       >
         <Typography variant="h3">{title}</Typography>

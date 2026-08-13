@@ -70,6 +70,7 @@ describe('flattenTransaction', () => {
       type: 'Payment',
       status: 'S',
       itemTitle: 'Banquet Ticket',
+      itemSlug: '',
       gross: 25,
       fee: -1.25,
       net: 23.75,
@@ -134,6 +135,33 @@ describe('flattenTransaction', () => {
     );
 
     expect(flat.itemTitle).toBe('Tickets; Donation');
+    expect(flat.itemSlug).toBe('');
+  });
+
+  it('strips a trailing bracketed slug from a cart item name', () => {
+    const flat = flattenTransaction(
+      rawTransaction({
+        cart_info: { item_details: [{ item_name: 'Banquet Ticket [banquet]' }] },
+      }),
+    );
+
+    expect(flat.itemTitle).toBe('Banquet Ticket');
+    expect(flat.itemSlug).toBe('banquet');
+  });
+
+  it('extracts the slug from the subject fallback when there are no cart items', () => {
+    const flat = flattenTransaction(
+      rawTransaction({
+        cart_info: { item_details: [] },
+        transaction_info: {
+          transaction_id: 'TXN-7',
+          transaction_subject: 'Open Entry [open]',
+        },
+      }),
+    );
+
+    expect(flat.itemTitle).toBe('Open Entry');
+    expect(flat.itemSlug).toBe('open');
   });
 
   it('falls back to the subject and note when there are no cart items', () => {
@@ -167,6 +195,7 @@ describe('flattenTransaction', () => {
     expect(flat.email).toBe('');
     expect(flat.status).toBe('');
     expect(flat.itemTitle).toBe('');
+    expect(flat.itemSlug).toBe('');
     expect(flat.txnId).toBe('');
     expect(flat.gross).toBe(0);
     expect(flat.net).toBe(0);
