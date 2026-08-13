@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - uses: anomalyco/opencode/github@latest
@@ -25,8 +26,12 @@ jobs:
           model: opencode/big-pickle
           use_github_token: true
           prompt: |
-            Review this pull request:
-            - Check for code quality issues
-            - Look for potential bugs
-            - Verify consistency with the project's TypeScript, MUI, and YAML content conventions
-            - Suggest improvements
+            Load the "code-review" skill and use its process to review this pull request.
+
+            Fixed point for the diff: ${{ github.event.pull_request.base.sha }}
+            Run the review against `git diff <fixed-point>...HEAD`.
+
+            There is no interactive user here, so follow the skill's process with these adjustments:
+            - The spec source is the PR description and any linked issues.
+            - If no spec can be found, skip the Spec axis and report "no spec available".
+            - Do not ask the user anything; post your aggregated report as the review comment.
