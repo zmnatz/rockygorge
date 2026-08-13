@@ -46,10 +46,10 @@ function toDateInput(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function last90Days(): { start: string; end: string } {
+function defaultDateRange(): { start: string; end: string } {
   const end = new Date();
   const start = new Date(end);
-  start.setDate(start.getDate() - 90);
+  start.setDate(start.getDate() - 30);
   return { start: toDateInput(start), end: toDateInput(end) };
 }
 
@@ -81,7 +81,7 @@ function TransactionsReport() {
   const [sort, setSort] = useState<SortState>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
-    const defaults = last90Days();
+    const defaults = defaultDateRange();
     setStart(defaults.start);
     setEnd(defaults.end);
   }, []);
