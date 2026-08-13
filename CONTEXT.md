@@ -18,6 +18,10 @@ Files: `admin.yml`, `link_mappings.yml`
 A single entry in the team's Google Calendar — `summary`, `location`, `htmlLink`, `start`, `end`. Displayed on the calendar surface and filtered into categories (Training, Events, Board Meetings) by regex in `calendar.yml`. A calendar item is the *source* for generating an event, never linked to one after generation.
 _Avoid_: Event (when referring to a calendar entry)
 
+**Practice**:
+A Calendar Item classified under the Training category — i.e. its summary matches the Training filter regex (`practice|training|wrestling`) in `calendar.yml`. The "Where is Practice" surface shows the next Practice by start time. Not to be confused with an Event, which is generated content in `events.yml`.
+_Avoid_: Training, training event, practice session
+
 **Event**:
 A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `details`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied `location`/`start`/`end` snapshot values; it does not reference a calendar item.
 _Avoid_: Calendar entry, schedule appointment

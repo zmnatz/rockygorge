@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Grid, Link as MuiLink, Typography } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { CalendarCard } from "@/components/CalendarCard";
+import { WhereIsPractice } from "@/components/WhereIsPractice/WhereIsPractice";
 
 export const mdxComponents = {
   h1: (props) => <Typography component="h1" variant="h4" gutterBottom {...props} />,
@@ -36,5 +37,6 @@ export const mdxComponents = {
   },
   ProductCard,
   CalendarCard,
+  WhereIsPractice,
   Grid
 };
