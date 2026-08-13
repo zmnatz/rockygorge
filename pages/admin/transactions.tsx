@@ -161,7 +161,7 @@ function TransactionsReport() {
             onChange={(event) => setEnd(event.target.value)}
             slotProps={{ inputLabel: { shrink: true } }}
           />
-          <Button type="submit" variant="contained" disabled={isPending}>
+          <Button type="submit" variant="contained" disabled={isFetching}>
             Run Report
           </Button>
           {isFetching && <CircularProgress size={20} />}
@@ -181,15 +181,15 @@ function TransactionsReport() {
           </Alert>
         )}
 
-        {isPending ? (
+        {range === null ? (
+          <Typography color="text.secondary" sx={{ mt: 4 }}>
+            Pick a date range and run the report to see transactions.
+          </Typography>
+        ) : isPending ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 4 }}>
             <CircularProgress size={24} />
             <Typography>Loading transactions...</Typography>
           </Box>
-        ) : range === null ? (
-          <Typography color="text.secondary" sx={{ mt: 4 }}>
-            Pick a date range and run the report to see transactions.
-          </Typography>
         ) : (
           <TableContainer component={Paper}>
             <Table size="small">
