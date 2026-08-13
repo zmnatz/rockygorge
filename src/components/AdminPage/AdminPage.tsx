@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -49,13 +49,9 @@ export function AdminPage<T>({
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
-  const seededEndpointRef = useRef<string | null>(null);
+  const [seededEndpoint, setSeededEndpoint] = useState<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read only when seeding the working copy; their default values are recreated each render, so including them would re-seed state on every render.
-  useEffect(() => {
-    if (data === undefined) return;
-    if (seededEndpointRef.current === endpoint) return;
-    seededEndpointRef.current = endpoint;
+  if (data !== undefined && seededEndpoint !== endpoint) {
     const { items: seededItems, globals: seededGlobals } = seedAdminState(
       data,
       initialDataTransform,
@@ -63,7 +59,8 @@ export function AdminPage<T>({
     );
     setItems(seededItems);
     setGlobals(seededGlobals);
-  }, [data, endpoint]);
+    setSeededEndpoint(endpoint);
+  }
 
   const openCreateEditor = (preset?: T) => {
     setEditingOriginalId(null);
