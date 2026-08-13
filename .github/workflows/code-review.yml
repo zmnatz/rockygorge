@@ -6,6 +6,7 @@ on:
 
 jobs:
   review:
+    if: ${{ !github.event.pull_request.locked }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
