@@ -59,3 +59,17 @@ _Avoid_: auth guard, login gate
 **Administrator**:
 A person signed in to the Admin Console.
 _Avoid_: admin, user
+
+## Payments
+
+**Transaction**:
+A single PayPal record representing money that moved through the club's PayPal account — a payment received, a refund issued, or a withdrawal. Each transaction carries a gross amount and a PayPal fee; its net amount is gross plus fee. Transactions are queried by date range and shown read-only in the admin.
+_Avoid_: Payment (when it means any money movement), order, charge
+
+**Transaction Type**:
+The classification of a Transaction into Payment, Refund, or Withdrawal. A negative-amount transaction that references an earlier one is a Refund; a negative-amount transaction with no reference is a Withdrawal; anything else is a Payment.
+_Avoid_: Category, kind, status
+
+**Net amount**:
+The amount the club actually received from a Transaction — gross amount plus the PayPal fee (fees are negative). Refunds and withdrawals are net-negative.
+_Avoid_: Total, balance
