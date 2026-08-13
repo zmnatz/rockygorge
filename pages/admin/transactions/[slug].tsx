@@ -1,7 +1,7 @@
 import { RequireAuth } from '@/components/RequireAuth';
 import { TransactionsReport } from '@/components/admin/TransactionsReport';
 import store from '@content/store.yml';
-import type { StoreItem } from '@/utils/item-match';
+import type { StoreItem } from '@/types/data';
 
 interface AdminItemTransactionsProps {
   item: StoreItem;

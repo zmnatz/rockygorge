@@ -1,8 +1,5 @@
-import type { Product } from '../types/data';
+import type { StoreItem } from '../types/data';
 import type { PaypalTransaction } from '../types/paypal';
-
-/** The Store Item fields the Item Match rule and the per-item report read. */
-export type StoreItem = Pick<Product, 'slug' | 'title' | 'description'>;
 
 /** Whether a Transaction is attributed to a Store Item: the transaction's item
  *  title must contain the item's `description` (case-insensitive), falling

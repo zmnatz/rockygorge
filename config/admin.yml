@@ -12,7 +12,7 @@ store:
       render: "boolean"
     - field: "slug"
       header: "Transactions"
-      render: "transactions"
+      render: "transactionsView"
   fields:
     - name: "slug"
       type: "text"

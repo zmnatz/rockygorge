@@ -13,7 +13,7 @@ export const ITEM_ID_MAPPINGS: Record<string, (item: Record<string, unknown>) =>
 export const RENDER_MAPPINGS: Record<string, (item: Record<string, unknown>, field: string) => React.ReactNode> = {
   boolean: (item, field) => item[field] ? 'Yes' : 'No',
   calendarMatches: (item) => String(item.matches || item.notMatches || '-'),
-  transactions: (item) =>
+  transactionsView: (item) =>
     item.slug
       ? createElement(Link, { href: `/admin/transactions/${item.slug}` }, 'View')
       : '',
