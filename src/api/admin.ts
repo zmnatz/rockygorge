@@ -10,6 +10,5 @@ export function useAdminData(endpoint: string, initialData?: unknown) {
     queryKey: ['admin', endpoint],
     queryFn: () => fetchAdminData(endpoint),
     initialData,
-    initialDataUpdatedAt: () => Date.now(),
   });
 }

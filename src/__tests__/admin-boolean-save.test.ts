@@ -276,13 +276,13 @@ describe('AdminPage useEffect dependency stability', () => {
     const effectEnd = source.indexOf('const handleSaveItem', effectStart);
     const effectBlock = source.slice(effectStart, effectEnd);
 
-    // Verify the dependency array is just [data]
-    expect(effectBlock).toContain('}, [data]);');
+    // Verify the dependency array is just [data, endpoint]
+    expect(effectBlock).toContain('}, [data, endpoint]);');
 
     const depStart = effectBlock.indexOf('}, [') + 4;
     const depEnd = effectBlock.indexOf(']);', depStart);
     const depsStr = effectBlock.slice(depStart, depEnd);
     const deps = depsStr.split(',').map((d: string) => d.trim());
-    expect(deps).toEqual(['data']);
+    expect(deps).toEqual(['data', 'endpoint']);
   });
 });
