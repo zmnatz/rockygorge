@@ -69,6 +69,9 @@ export interface Product extends BaseContentItem {
   subscriptions?: SubscriptionItem[];
 }
 
+/** The Store Item fields the Item Match rule and the per-item transactions report read. */
+export type StoreItem = Pick<Product, 'slug' | 'title' | 'description'>;
+
 /** A recurring-payment tier on a store item, rendered as a PayPal subscription button. */
 export interface SubscriptionItem {
   name: string;
