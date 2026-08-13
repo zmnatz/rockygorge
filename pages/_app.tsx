@@ -7,6 +7,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { mdxComponents } from '@/utils/mdx'
 import { theme } from "@/utils/theme";
 import { Toolbar } from "@/components/Toolbar";
+import { Footer } from "@/components/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/utils/queryClient";
 import { IdentityProvider } from "@/components/IdentityProvider";
@@ -32,6 +33,7 @@ export default function App({ Component, pageProps }) {
             <Component {...pageProps} />
           </MDXProvider>
         </Container>
+        <Footer />
       </ThemeProvider>
     </QueryClientProvider>
     </IdentityProvider>

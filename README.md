@@ -2,6 +2,11 @@
 
 The official website for [Rocky Gorge Rugby Football Club](https://rockygorgerugby.com) — a premier men's rugby club based in Columbia, Maryland. The club competes in Division I and Division III men's rugby and is a 2012 & 2014 Division II National Champion and 2025 Division III Atlantic Super Regional Champion.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)
+
+This project is [MIT licensed](LICENSE) and governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Features
 
 - **Online Store** — Purchase banquet tickets, golf outing packages, donations, player dues, gear, and sponsorships via PayPal
