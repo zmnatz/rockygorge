@@ -32,18 +32,21 @@ function matchKeys(item: Pick<StoreItem, 'title' | 'description' | 'subscription
   return { description, title, subscription: [...subscription] };
 }
 
-/** Build a predicate that attributes Transactions to a Store Item: a
- *  transaction matches when its item title contains the item's `description`
- *  (case-insensitive), falling back to its `title` when no description
- *  matches; when the item carries Subscription Plans, a transaction also
- *  matches when its item title contains a plan identifier (name, hosted-button
- *  id, chosen option value, or explicit keyword). The item's keys are prepared
- *  once, so the predicate is safe to reuse across many transactions. */
+/** Build a predicate that attributes Transactions to a Store Item. A
+ *  transaction carrying an `itemSlug` (embedded at checkout, see ADR 005) is
+ *  attributed by that slug alone. Otherwise the transaction's item title must
+ *  contain the item's `description` (case-insensitive), falling back to its
+ *  `title` when no description matches; when the item carries Subscription
+ *  Plans, it also matches when its item title contains a plan identifier
+ *  (name, hosted-button id, chosen option value, or explicit keyword). The
+ *  item's keys are prepared once, so the predicate is safe to reuse across
+ *  many transactions. */
 export function itemMatcher(
-  item: Pick<StoreItem, 'title' | 'description' | 'subscriptions'>,
+  item: Pick<StoreItem, 'slug' | 'title' | 'description' | 'subscriptions'>,
 ): (txn: PaypalTransaction) => boolean {
   const keys = matchKeys(item);
   return (txn) => {
+    if (txn.itemSlug) return txn.itemSlug === item.slug;
     const title = txn.itemTitle.toLowerCase();
     if (keys.description && title.includes(keys.description)) return true;
     if (keys.title && title.includes(keys.title)) return true;

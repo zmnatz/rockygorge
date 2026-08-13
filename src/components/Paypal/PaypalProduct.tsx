@@ -20,6 +20,7 @@ export function PaypalProduct({
   subscriptions = [],
   donation = false,
   supporters,
+  slug,
 }: PaypalProductProps) {
   const [editAmount, setEditAmount] = useState<number>();
   const amount = editAmount ?? defaultAmount;
@@ -30,7 +31,7 @@ export function PaypalProduct({
   const createOrder = async (
     _data: object,
     actions: CreateOrderBraintreeActions,
-  ) => actions.order.create(generateOrderInfo(description, amount, selectedOption));
+  ) => actions.order.create(generateOrderInfo(description, amount, selectedOption, slug));
 
   const handleApprove = async (_data: object, actions: OnApproveBraintreeActions) => {
     await actions.order.capture();
@@ -80,10 +81,12 @@ function generateOrderInfo(
   description: string,
   amount: number,
   option?: { name: string; value: number },
+  slug?: string,
 ): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
   const value = `${amount}`;
+  const keySuffix = slug ? ` [${slug}]` : '';
   const purchaseUnit: import("@paypal/paypal-js/types/apis/orders").PurchaseUnit = {
-    description,
+    description: `${description}${keySuffix}`,
     amount: {
       currency_code: "USD",
       value,
@@ -92,7 +95,7 @@ function generateOrderInfo(
   if (option) {
     purchaseUnit.items = [
       {
-        name: option.name,
+        name: `${option.name}${keySuffix}`,
         quantity: "1",
         unit_amount: {
           currency_code: "USD",

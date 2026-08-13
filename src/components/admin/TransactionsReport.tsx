@@ -85,6 +85,9 @@ export interface TransactionsReportProps {
    *  transactions (by description/title text or subscription plan) are shown,
    *  and the free-text filter is hidden. */
   item?: StoreItem;
+  /** Store item key: transactions carrying this slug are always shown, even
+   *  when the free-text filter would exclude them. */
+  itemSlug?: string;
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
 }
@@ -94,6 +97,7 @@ export function TransactionsReport({
   subtitle,
   initialFilter,
   item,
+  itemSlug,
   fileStem,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
@@ -132,14 +136,16 @@ export function TransactionsReport({
   const visible = useMemo(() => {
     if (item) return data.filter(itemMatcher(item));
     const query = filter.trim().toLowerCase();
-    if (!query) return data;
-    return data.filter(
-      (txn) =>
+    return data.filter((txn) => {
+      if (itemSlug && txn.itemSlug === itemSlug) return true;
+      if (!query) return true;
+      return (
         txn.name.toLowerCase().includes(query) ||
         txn.email.toLowerCase().includes(query) ||
-        txn.itemTitle.toLowerCase().includes(query),
-    );
-  }, [data, filter, item]);
+        txn.itemTitle.toLowerCase().includes(query)
+      );
+    });
+  }, [data, filter, item, itemSlug]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;

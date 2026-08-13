@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { itemMatcher } from '@/utils/item-match';
 import type { PaypalTransaction } from '@/types/paypal';
 
-const banquet = { title: '2026 Banquet', description: 'Banquet Tickets' };
+const banquet = { slug: 'banquet', title: '2026 Banquet', description: 'Banquet Tickets' };
 
 const godTier = {
   name: 'GODs Tier',
@@ -44,7 +44,7 @@ const supporters = {
   ],
 };
 
-function transaction(itemTitle: string): PaypalTransaction {
+function transaction(itemTitle: string, overrides: Partial<PaypalTransaction> = {}): PaypalTransaction {
   return {
     date: '2026-05-01',
     name: 'Jane Doe',
@@ -52,6 +52,7 @@ function transaction(itemTitle: string): PaypalTransaction {
     type: 'Payment',
     status: 'S',
     itemTitle,
+    itemSlug: '',
     gross: 100,
     fee: -3,
     net: 97,
@@ -60,6 +61,15 @@ function transaction(itemTitle: string): PaypalTransaction {
 }
 
 describe('itemMatcher', () => {
+  it('matches authoritatively by item slug, ignoring the item title text', () => {
+    expect(itemMatcher(banquet)(transaction('Open Enrollment', { itemSlug: 'banquet' }))).toBe(true);
+  });
+
+  it('rejects a slug-carrying transaction for a different item even when its title text matches', () => {
+    const open = { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Banquet Tickets' };
+    expect(itemMatcher(open)(transaction('Banquet Tickets', { itemSlug: 'banquet' }))).toBe(false);
+  });
+
   it('matches when the item title contains the description', () => {
     expect(itemMatcher(banquet)(transaction('Banquet Tickets'))).toBe(true);
   });

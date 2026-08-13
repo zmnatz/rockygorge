@@ -20,6 +20,7 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
         }
         item={hasSubscriptions ? item : undefined}
         initialFilter={hasSubscriptions ? undefined : item.description}
+        itemSlug={item.slug}
         fileStem={`paypal-transactions_${item.slug}`}
       />
     </RequireAuth>
