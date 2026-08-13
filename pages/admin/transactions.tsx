@@ -19,6 +19,8 @@ import {
 import { RequireAuth, useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
+import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
+import type { DateRange } from '@/types/date-range';
 import type { PaypalTransaction } from '@/types/paypal';
 
 interface TransactionColumn {
@@ -40,6 +42,9 @@ const COLUMNS: TransactionColumn[] = [
   { key: 'txnId', label: 'Txn ID' },
 ];
 
+/** Columns that default to newest/largest-first when first sorted. */
+const DEFAULT_DESC_KEYS = new Set<keyof PaypalTransaction>(['date', 'net']);
+
 function toDateInput(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -47,7 +52,7 @@ function toDateInput(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function defaultDateRange(): { start: string; end: string } {
+function defaultDateRange(): DateRange {
   const end = new Date();
   const start = new Date(end);
   start.setDate(start.getDate() - 30);
@@ -59,10 +64,9 @@ interface SortState {
   direction: 'asc' | 'desc';
 }
 
-function getSortValue(txn: PaypalTransaction, key: keyof PaypalTransaction): string | number {
-  const value = txn[key];
-  if (key === 'gross' || key === 'fee' || key === 'net') return Number(value);
-  return value;
+/** Render a cell's value; money columns are fixed to two decimal places. */
+function formatCell(txn: PaypalTransaction, col: TransactionColumn): string {
+  return col.numeric ? (txn[col.key] as number).toFixed(2) : String(txn[col.key]);
 }
 
 export default function AdminTransactionsPage() {
@@ -77,7 +81,7 @@ function TransactionsReport() {
   const { getAccessToken } = useRequireAuth();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
-  const [range, setRange] = useState<{ start: string; end: string } | null>(null);
+  const [range, setRange] = useState<DateRange | null>(null);
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortState>({ key: 'date', direction: 'desc' });
 
@@ -88,14 +92,20 @@ function TransactionsReport() {
   }, []);
 
   const { data = [], isPending, isFetching, error } = useTransactions(
-    range?.start ?? '',
-    range?.end ?? '',
+    range ?? { start: '', end: '' },
     getAccessToken,
   );
 
+  const rangeError = useMemo(() => {
+    if (!start || !end) return '';
+    return countDays({ start, end }) > MAX_RANGE_DAYS
+      ? `Date range may not exceed ${MAX_RANGE_DAYS} days.`
+      : '';
+  }, [start, end]);
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    if (!start || !end) return;
+    if (!start || !end || rangeError) return;
     setRange({ start, end });
   };
 
@@ -113,8 +123,8 @@ function TransactionsReport() {
   const sorted = useMemo(() => {
     const { key, direction } = sort;
     return [...visible].sort((a, b) => {
-      const aValue = getSortValue(a, key);
-      const bValue = getSortValue(b, key);
+      const aValue = a[key];
+      const bValue = b[key];
       if (aValue === bValue) return 0;
       const comparison = aValue < bValue ? -1 : 1;
       return direction === 'asc' ? comparison : -comparison;
@@ -122,7 +132,7 @@ function TransactionsReport() {
   }, [visible, sort]);
 
   const totalNet = useMemo(
-    () => visible.reduce((sum, txn) => sum + Number(txn.net), 0),
+    () => visible.reduce((sum, txn) => sum + txn.net, 0),
     [visible],
   );
 
@@ -130,14 +140,20 @@ function TransactionsReport() {
     setSort((prev) =>
       prev.key === key
         ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-        : { key, direction: key === 'date' || key === 'net' ? 'desc' : 'asc' },
+        : { key, direction: DEFAULT_DESC_KEYS.has(key) ? 'desc' : 'asc' },
     );
   };
 
   const handleExport = () => {
+    const rows = sorted.map((txn) =>
+      COLUMNS.reduce<Record<string, string>>((row, col) => {
+        row[col.key] = formatCell(txn, col);
+        return row;
+      }, {}),
+    );
     const csv = toCsv(
       COLUMNS.map((col) => ({ key: col.key, title: col.label })),
-      sorted,
+      rows,
     );
     downloadCsv(`paypal-transactions_${range?.start ?? ''}_${range?.end ?? ''}.csv`, csv);
   };
@@ -161,6 +177,7 @@ function TransactionsReport() {
             type="date"
             value={start}
             onChange={(event) => setStart(event.target.value)}
+            error={Boolean(rangeError)}
             slotProps={{ inputLabel: { shrink: true } }}
           />
           <TextField
@@ -168,6 +185,8 @@ function TransactionsReport() {
             type="date"
             value={end}
             onChange={(event) => setEnd(event.target.value)}
+            error={Boolean(rangeError)}
+            helperText={rangeError}
             slotProps={{ inputLabel: { shrink: true } }}
           />
           <Button type="submit" variant="contained" disabled={isFetching}>
@@ -225,7 +244,7 @@ function TransactionsReport() {
                   <TableRow key={txn.txnId}>
                     {COLUMNS.map((col) => (
                       <TableCell key={col.key} align={col.numeric ? 'right' : 'left'}>
-                        {txn[col.key]}
+                        {formatCell(txn, col)}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -242,7 +261,7 @@ function TransactionsReport() {
                 <TableBody component="tfoot">
                   <TableRow>
                     <TableCell colSpan={8} align="right" sx={{ fontWeight: 'bold' }}>
-                      NET Total
+                      Net Amount
                     </TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold' }}>
                       {totalNet.toFixed(2)}

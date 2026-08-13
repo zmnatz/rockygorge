@@ -2,6 +2,8 @@ import { Octokit } from 'octokit';
 import { RequestError } from '@octokit/request-error';
 import { dump } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { NetlifyFunctionContext } from '../../src/types/netlify-context';
+import { requireAuth } from './admin-auth';
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -14,34 +16,13 @@ interface RepoFileContent {
   sha?: string;
 }
 
-/** The Netlify Identity user Netlify injects into `clientContext` when the
- *  request carries a valid Identity JWT in the `Authorization` header. */
-interface NetlifyClientContextUser {
-  sub?: string;
-  email?: string;
-  exp?: number;
-  [key: string]: unknown;
-}
-
-interface NetlifyClientContext {
-  user?: NetlifyClientContextUser | null;
-}
-
-type NetlifyFunctionContext = {
-  clientContext?: NetlifyClientContext;
-};
-
 type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
 
 export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
   return async (event: APIGatewayProxyEvent, context: NetlifyFunctionContext): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod === 'POST') {
-      if (!context.clientContext?.user) {
-        return {
-          statusCode: 401,
-          body: JSON.stringify({ error: 'Authentication required. Sign in to the Admin Console and try again.' }),
-        };
-      }
+      const authError = requireAuth(context);
+      if (authError) return authError;
 
       try {
         const body = JSON.parse(event.body || '{}');

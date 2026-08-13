@@ -24,7 +24,7 @@ describe('fetchTransactions', () => {
     const fetchMock = mockFetch(200, { transactions: [] });
     vi.stubGlobal('fetch', fetchMock);
 
-    await fetchTransactions('2026-05-01', '2026-05-31');
+    await fetchTransactions({ start: '2026-05-01', end: '2026-05-31' });
 
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
@@ -37,7 +37,7 @@ describe('fetchTransactions', () => {
     const fetchMock = mockFetch(200, { transactions: [] });
     vi.stubGlobal('fetch', fetchMock);
 
-    await fetchTransactions('2026-05-01', '2026-05-31', 'identity-jwt');
+    await fetchTransactions({ start: '2026-05-01', end: '2026-05-31' }, 'identity-jwt');
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/.netlify/functions/admin-transactions?start=2026-05-01&end=2026-05-31',
@@ -51,10 +51,10 @@ describe('fetchTransactions', () => {
   });
 
   it('returns the parsed transactions on success', async () => {
-    const transactions = [{ txnId: 'TXN-1', net: '23.75' }];
+    const transactions = [{ txnId: 'TXN-1', net: 23.75 }];
     vi.stubGlobal('fetch', mockFetch(200, { transactions }));
 
-    const result = await fetchTransactions('2026-05-01', '2026-05-31');
+    const result = await fetchTransactions({ start: '2026-05-01', end: '2026-05-31' });
 
     expect(result).toEqual(transactions);
   });
@@ -62,7 +62,9 @@ describe('fetchTransactions', () => {
   it('throws with the function error message on a failed response', async () => {
     vi.stubGlobal('fetch', mockFetch(403, { error: 'PayPal Transaction Search is not enabled' }));
 
-    await expect(fetchTransactions('2026-05-01', '2026-05-31')).rejects.toThrow(
+    await expect(
+      fetchTransactions({ start: '2026-05-01', end: '2026-05-31' }),
+    ).rejects.toThrow(
       'PayPal Transaction Search is not enabled',
     );
   });

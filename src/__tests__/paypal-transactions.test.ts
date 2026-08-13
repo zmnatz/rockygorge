@@ -70,9 +70,9 @@ describe('flattenTransaction', () => {
       type: 'Payment',
       status: 'S',
       itemTitle: 'Banquet Ticket',
-      gross: '25.00',
-      fee: '-1.25',
-      net: '23.75',
+      gross: 25,
+      fee: -1.25,
+      net: 23.75,
       txnId: 'TXN-1',
     });
   });
@@ -88,9 +88,9 @@ describe('flattenTransaction', () => {
       }),
     );
 
-    expect(flat.gross).toBe('50.00');
-    expect(flat.fee).toBe('-1.50');
-    expect(flat.net).toBe('48.50');
+    expect(flat.gross).toBe(50);
+    expect(flat.fee).toBe(-1.5);
+    expect(flat.net).toBe(48.5);
   });
 
   it('derives Refund for a negative amount with a reference id', () => {
@@ -106,7 +106,7 @@ describe('flattenTransaction', () => {
     );
 
     expect(flat.type).toBe('Refund');
-    expect(flat.net).toBe('-25.00');
+    expect(flat.net).toBe(-25);
   });
 
   it('derives Withdrawal for a negative amount without a reference id', () => {
@@ -121,7 +121,7 @@ describe('flattenTransaction', () => {
     );
 
     expect(flat.type).toBe('Withdrawal');
-    expect(flat.net).toBe('-102.00');
+    expect(flat.net).toBe(-102);
   });
 
   it('joins multiple cart item names into the item title', () => {
@@ -168,14 +168,14 @@ describe('flattenTransaction', () => {
     expect(flat.status).toBe('');
     expect(flat.itemTitle).toBe('');
     expect(flat.txnId).toBe('');
-    expect(flat.gross).toBe('0.00');
-    expect(flat.net).toBe('0.00');
+    expect(flat.gross).toBe(0);
+    expect(flat.net).toBe(0);
   });
 });
 
 describe('buildDateWindows', () => {
   it('returns a single window for a short range', () => {
-    const windows = buildDateWindows('2026-05-01', '2026-05-05');
+    const windows = buildDateWindows({ start: '2026-05-01', end: '2026-05-05' });
 
     expect(windows).toEqual([
       { start: '2026-05-01T00:00:00Z', end: '2026-05-06T00:00:00Z' },
@@ -183,7 +183,7 @@ describe('buildDateWindows', () => {
   });
 
   it('splits a range longer than 31 days into 31-day windows', () => {
-    const windows = buildDateWindows('2026-01-01', '2026-03-15');
+    const windows = buildDateWindows({ start: '2026-01-01', end: '2026-03-15' });
 
     expect(windows.length).toBe(3);
     expect(windows[0]).toEqual({ start: '2026-01-01T00:00:00Z', end: '2026-02-01T00:00:00Z' });
@@ -192,7 +192,7 @@ describe('buildDateWindows', () => {
   });
 
   it('emits one window covering a single day', () => {
-    const windows = buildDateWindows('2026-06-01', '2026-06-01');
+    const windows = buildDateWindows({ start: '2026-06-01', end: '2026-06-01' });
 
     expect(windows).toEqual([{ start: '2026-06-01T00:00:00Z', end: '2026-06-02T00:00:00Z' }]);
   });
@@ -200,7 +200,7 @@ describe('buildDateWindows', () => {
 
 describe('validateRange', () => {
   it('accepts a valid range', () => {
-    expect(validateRange('2026-05-01', '2026-05-31')).toEqual({
+    expect(validateRange({ start: '2026-05-01', end: '2026-05-31' })).toEqual({
       ok: true,
       start: '2026-05-01',
       end: '2026-05-31',
@@ -208,27 +208,27 @@ describe('validateRange', () => {
   });
 
   it('rejects missing start or end', () => {
-    expect(validateRange(null, '2026-05-31').ok).toBe(false);
-    expect(validateRange('2026-05-01', null).ok).toBe(false);
-    expect(validateRange(undefined, undefined).ok).toBe(false);
+    expect(validateRange({ start: null, end: '2026-05-31' }).ok).toBe(false);
+    expect(validateRange({ start: '2026-05-01', end: null }).ok).toBe(false);
+    expect(validateRange({}).ok).toBe(false);
   });
 
   it('rejects malformed dates', () => {
-    expect(validateRange('05/01/2026', '2026-05-31').ok).toBe(false);
-    expect(validateRange('2026-5-1', '2026-05-31').ok).toBe(false);
+    expect(validateRange({ start: '05/01/2026', end: '2026-05-31' }).ok).toBe(false);
+    expect(validateRange({ start: '2026-5-1', end: '2026-05-31' }).ok).toBe(false);
   });
 
   it('rejects a start after the end', () => {
-    const result = validateRange('2026-05-31', '2026-05-01');
+    const result = validateRange({ start: '2026-05-31', end: '2026-05-01' });
     expect(result.ok).toBe(false);
   });
 
   it('rejects a range over 366 days', () => {
-    expect(validateRange('2024-01-01', '2025-01-01').ok).toBe(false);
+    expect(validateRange({ start: '2024-01-01', end: '2025-01-01' }).ok).toBe(false);
   });
 
   it('accepts a range of exactly 366 days', () => {
-    const result = validateRange('2024-01-01', '2024-12-31');
+    const result = validateRange({ start: '2024-01-01', end: '2024-12-31' });
     expect(result.ok).toBe(true);
   });
 });

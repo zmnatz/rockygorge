@@ -6,7 +6,9 @@
 /** The derived Transaction Type per the domain model. */
 export type PaypalTransactionType = 'Payment' | 'Refund' | 'Withdrawal';
 
-/** A flat Transaction row returned by the admin-transactions proxy function. */
+/** A flat Transaction row returned by the admin-transactions proxy function.
+ *  Money fields are numbers (USD) so consumers can sum and sort without
+ *  parsing strings; format with `toFixed(2)` at the display edge. */
 export interface PaypalTransaction {
   date: string;
   name: string;
@@ -14,9 +16,9 @@ export interface PaypalTransaction {
   type: PaypalTransactionType;
   status: string;
   itemTitle: string;
-  gross: string;
-  fee: string;
-  net: string;
+  gross: number;
+  fee: number;
+  net: number;
   txnId: string;
 }
 

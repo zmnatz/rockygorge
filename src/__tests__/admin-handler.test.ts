@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { createAdminHandler } from '../../netlify/functions/admin-handler';
+import { emptyContext, unauthenticatedContext } from './helpers/netlify-context';
 
 const handler = createAdminHandler({
   filePath: 'content/test.yml',
@@ -17,14 +18,14 @@ function postEvent(): APIGatewayProxyEvent {
 
 describe('createAdminHandler', () => {
   it('returns 401 when the request has no authenticated user', async () => {
-    const response = await handler(postEvent(), { clientContext: { user: null } });
+    const response = await handler(postEvent(), unauthenticatedContext());
 
     expect(response.statusCode).toBe(401);
     expect(response.body).toContain('Authentication required');
   });
 
   it('returns 401 when clientContext is absent', async () => {
-    const response = await handler(postEvent(), {});
+    const response = await handler(postEvent(), emptyContext());
 
     expect(response.statusCode).toBe(401);
   });

@@ -1,4 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { DateRange } from '../../src/types/date-range';
+import type { NetlifyFunctionContext } from '../../src/types/netlify-context';
 import type { PaypalRawTransaction, PaypalTransaction } from '../../src/types/paypal';
 import {
   PAGE_SIZE,
@@ -7,6 +9,7 @@ import {
   flattenTransaction,
   validateRange,
 } from './paypal-transactions';
+import { requireAuth } from './admin-auth';
 
 export const config = {
   path: '/api/admin-transactions',
@@ -14,23 +17,6 @@ export const config = {
 
 const PAYPAL_TOKEN_URL = 'https://api-m.paypal.com/v1/oauth2/token';
 const TRANSACTIONS_URL = 'https://api-m.paypal.com/v1/reporting/transactions';
-
-/** The Netlify Identity user Netlify injects into `clientContext` when the
- *  request carries a valid Identity JWT in the `Authorization` header. */
-interface NetlifyClientContextUser {
-  sub?: string;
-  email?: string;
-  exp?: number;
-  [key: string]: unknown;
-}
-
-interface NetlifyClientContext {
-  user?: NetlifyClientContextUser | null;
-}
-
-type NetlifyFunctionContext = {
-  clientContext?: NetlifyClientContext;
-};
 
 const MISSING_SCOPE_MESSAGE =
   "PayPal Transaction Search is not enabled for this app. Enable 'Transaction Search' under " +
@@ -53,11 +39,6 @@ interface PaypalListTransactionsResponse {
   total_pages?: number;
 }
 
-interface PaypalListParams {
-  start: string;
-  end: string;
-}
-
 async function getAccessToken(clientId: string, clientSecret: string): Promise<PaypalTokenResponse> {
   const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
   const response = await fetch(PAYPAL_TOKEN_URL, {
@@ -77,12 +58,12 @@ async function getAccessToken(clientId: string, clientSecret: string): Promise<P
 
 async function fetchTransactionsPage(
   token: string,
-  params: PaypalListParams,
+  range: DateRange,
   page: number,
 ): Promise<PaypalListTransactionsResponse> {
   const query = new URLSearchParams({
-    start_date: params.start,
-    end_date: params.end,
+    start_date: range.start,
+    end_date: range.end,
     fields: 'all',
     page_size: String(PAGE_SIZE),
     page: String(page),
@@ -100,14 +81,14 @@ async function fetchTransactionsPage(
   return (await response.json()) as PaypalListTransactionsResponse;
 }
 
-async function fetchTransactions(token: string, start: string, end: string): Promise<PaypalTransaction[]> {
+async function fetchTransactions(token: string, range: DateRange): Promise<PaypalTransaction[]> {
   const raw: PaypalRawTransaction[] = [];
 
-  for (const window of buildDateWindows(start, end)) {
+  for (const window of buildDateWindows(range)) {
     let page = 1;
     let totalPages = 1;
     do {
-      const data = await fetchTransactionsPage(token, { start: window.start, end: window.end }, page);
+      const data = await fetchTransactionsPage(token, window, page);
       raw.push(...(data.transaction_details ?? []));
       totalPages = data.total_pages ?? 1;
       page += 1;
@@ -128,15 +109,10 @@ export const handler = async (
     };
   }
 
-  if (!context.clientContext?.user) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: 'Authentication required. Sign in to the Admin Console and try again.' }),
-    };
-  }
+  const authError = requireAuth(context);
+  if (authError) return authError;
 
-  const query = event.queryStringParameters ?? {};
-  const validation = validateRange(query.start, query.end);
+  const validation = validateRange(event.queryStringParameters ?? {});
   if (validation.ok === false) {
     return {
       statusCode: 400,
@@ -161,7 +137,7 @@ export const handler = async (
       throw new PaypalScopeError();
     }
 
-    const transactions = await fetchTransactions(token.access_token, validation.start, validation.end);
+    const transactions = await fetchTransactions(token.access_token, validation);
     return {
       statusCode: 200,
       body: JSON.stringify({ transactions }),
