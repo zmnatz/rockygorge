@@ -13,7 +13,7 @@ This project is [MIT licensed](LICENSE) and governed by our [Code of Conduct](CO
 - **Statistics Dashboard** — Per-game and season-aggregated player and team stats with sortable, filterable views
 - **Gauntlet Challenge** — Fitness leaderboard for the rowing/erg challenge with player submissions
 - **Calendar** — Live Google Calendar integration showing training, matches, and events
-- **Admin Panel** — Data-driven CRUD interface for managing store items, events, links, forms, calendar filters, link mappings, and the homepage via GitHub PRs
+- **Admin Panel** — Data-driven CRUD interface for managing store items, events, links, forms, calendar filters, link mappings, and the homepage via GitHub PRs, plus a PayPal transactions report
 - **Content Pages** — Club contacts, Hall of Fame inductees, and embedded Google Forms
 
 ## Tech Stack
@@ -63,12 +63,9 @@ bun run netlify # Start Netlify dev server (with serverless functions)
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
-
-```
-PAYPAL_CLIENT_ID=<your_paypal_client_id>
-PAYPAL_CLIENT_SECRET=<your_paypal_client_secret>
-```
+`PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` are the PayPal REST app credentials used by the
+`admin-transactions` Netlify function (the PayPal Transaction Search API). They are configured as
+**Netlify environment variables** and never leave the server — there is no local `.env` requirement.
 
 ## Project Structure
 
@@ -81,8 +78,7 @@ src/
   types/                # TypeScript type definitions
   utils/                # Helpers (theme, stats, markdown, analytics, etc.)
   __tests__/            # Test files
-netlify/functions/       # Serverless functions for admin CRUD and gauntlet submissions
-scripts/                # Python utility scripts for PayPal reporting
+netlify/functions/       # Serverless functions for admin CRUD, gauntlet submissions, and the PayPal transactions report
 docs/                   # Agent documentation
 ```
 
