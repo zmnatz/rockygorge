@@ -19,6 +19,10 @@ limits of that protection, so a future editor knows the intent behind it.
   verifies the JWT's signature and expiry, then injects the user into
   `context.clientContext.user`; `createAdminHandler` returns 401 when that is
   missing. This protects the GitHub-PR write path.
+- The **transactions proxy** (`/.netlify/functions/admin-transactions`, a GET
+  read-path) also rejects unauthenticated requests via the shared `requireAuth`
+  guard — a strengthening of the client-side-only posture recorded in #136, so
+  the names/emails the report returns are never served to anonymous callers.
 
 ## What is NOT protected
 

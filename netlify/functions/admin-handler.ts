@@ -2,6 +2,8 @@ import { Octokit } from 'octokit';
 import { RequestError } from '@octokit/request-error';
 import { dump } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { NetlifyFunctionContext } from '../../src/types/netlify-context';
+import { internalServerError, methodNotAllowed, requireAuth } from '../../src/utils/admin-auth';
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -14,34 +16,13 @@ interface RepoFileContent {
   sha?: string;
 }
 
-/** The Netlify Identity user Netlify injects into `clientContext` when the
- *  request carries a valid Identity JWT in the `Authorization` header. */
-interface NetlifyClientContextUser {
-  sub?: string;
-  email?: string;
-  exp?: number;
-  [key: string]: unknown;
-}
-
-interface NetlifyClientContext {
-  user?: NetlifyClientContextUser | null;
-}
-
-type NetlifyFunctionContext = {
-  clientContext?: NetlifyClientContext;
-};
-
 type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
 
 export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
   return async (event: APIGatewayProxyEvent, context: NetlifyFunctionContext): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod === 'POST') {
-      if (!context.clientContext?.user) {
-        return {
-          statusCode: 401,
-          body: JSON.stringify({ error: 'Authentication required. Sign in to the Admin Console and try again.' }),
-        };
-      }
+      const authError = requireAuth(context);
+      if (authError) return authError;
 
       try {
         const body = JSON.parse(event.body || '{}');
@@ -111,17 +92,10 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
         };
       } catch (error: unknown) {
-        console.error(error);
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
-        };
+        return internalServerError(error);
       }
     }
 
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-    };
+    return methodNotAllowed();
   };
 }

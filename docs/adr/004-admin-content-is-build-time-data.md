@@ -23,3 +23,7 @@ Admin pages treat the query as a hydration vehicle for build-time props, never a
 - A full page load after a rebuild always shows current content via fresh SSG props.
 - `fetchAdminData` is vestigial today (a GET would return 405). Future read work — for example the PayPal transactions admin — must add a GET-capable path if it wants live data; `fetchAdminData` is the seam for it.
 - Any future refetch or invalidation of the admin query is ignored by the working copy by design. Do not add `refetchInterval` or `invalidateQueries` for admin content without first making the read path real.
+
+## Notes
+
+- The PayPal transactions admin (#136–#142) deliberately did not reuse `fetchAdminData`. It adds a dedicated GET proxy (`/.netlify/functions/admin-transactions` + `useTransactions` in `src/api/transactions.ts`): the endpoint is bearer-authenticated and parameterized by a date range, which does not fit the seed-once, build-time shape of `fetchAdminData`. The live-vs-build-time distinction is preserved — `useTransactions` uses `staleTime: 0` (a live read) whereas `useAdminData` keeps `staleTime: Infinity`. `fetchAdminData` remains the seam for future unauthenticated build-time admin reads.
