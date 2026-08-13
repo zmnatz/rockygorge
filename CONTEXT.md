@@ -41,12 +41,20 @@ _Avoid_: Precise lookup, calendar association
 ## Admin
 
 **Admin handler**:
-The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow.
+The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow. It rejects requests that carry no valid Netlify Identity JWT.
 _Avoid_: Save endpoint
 
 **Admin Console**:
 The `/admin` route group where Content and Config are managed. Signing in is required to use it.
 _Avoid_: admin pages, admin section, CMS
+
+**Netlify Identity**:
+The sign-in service that backs the Admin Console. `RequireAuth` opens its login modal for unauthenticated `/admin` visitors, and `IdentityProvider` (`useIdentity`) exposes the signed-in state to the rest of the app.
+_Avoid_: login page, auth system
+
+**RequireAuth**:
+The component that gates `/admin` routes behind a Netlify Identity session — it opens the login modal for unauthenticated visitors and provides the signed-in access token to its subtree via `useRequireAuth`. It is the single owner of sign-in handling for the Admin Console; page components do not touch the auth layer directly.
+_Avoid_: auth guard, login gate
 
 **Administrator**:
 A person signed in to the Admin Console.

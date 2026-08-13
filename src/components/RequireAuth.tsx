@@ -1,9 +1,15 @@
-import { useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useIdentity } from '@/components/IdentityProvider';
 
+interface RequireAuthContextValue {
+  getAccessToken: () => Promise<string | null>;
+}
+
+const RequireAuthContext = createContext<RequireAuthContextValue | null>(null);
+
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, isLoading, login } = useIdentity();
+  const { user, isLoading, login, getAccessToken } = useIdentity();
   const isAuthenticated = user !== null;
 
   useEffect(() => {
@@ -38,5 +44,17 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <RequireAuthContext.Provider value={{ getAccessToken }}>
+      {children}
+    </RequireAuthContext.Provider>
+  );
+}
+
+export function useRequireAuth(): RequireAuthContextValue {
+  const ctx = useContext(RequireAuthContext);
+  if (!ctx) {
+    throw new Error('useRequireAuth must be used within a RequireAuth');
+  }
+  return ctx;
 }

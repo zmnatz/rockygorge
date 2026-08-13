@@ -18,7 +18,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
-import { useIdentity } from '@/components/IdentityProvider';
+import { useRequireAuth } from '@/components/RequireAuth';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
@@ -42,7 +42,7 @@ export function AdminPage<T>({
   idFieldName = 'id',
   generateFromCalendar = false,
 }: AdminPageProps<T>) {
-  const { logout, getAccessToken } = useIdentity();
+  const { getAccessToken } = useRequireAuth();
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -125,11 +125,6 @@ export function AdminPage<T>({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h4">{title}</Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              onClick={() => logout()}
-            >
-              Log out
-            </Button>
             {!editOnly && (
               <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
             )}

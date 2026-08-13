@@ -1,35 +1,23 @@
 import { 
-  Box, 
   Container, 
   Typography, 
   List, 
   ListItem, 
   ListItemButton, 
   ListItemText, 
-  Paper,
-  Button
+  Paper
 } from '@mui/material';
 import Link from 'next/link';
-import { useIdentity } from '@/components/IdentityProvider';
 import { RequireAuth } from '@/components/RequireAuth';
 import adminYaml from '@config/admin.yml';
 
 export default function AdminIndex({ adminPages }) {
-  const { logout } = useIdentity();
-
   return (
     <RequireAuth>
       <Container sx={{ mt: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="h4">
-            Admin Dashboard
-          </Typography>
-          <Button
-            onClick={() => logout()}
-          >
-            Log out
-          </Button>
-        </Box>
+        <Typography variant="h4" sx={{ mb: 1 }}>
+          Admin Dashboard
+        </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           Manage the site content through the following administration pages.
         </Typography>
