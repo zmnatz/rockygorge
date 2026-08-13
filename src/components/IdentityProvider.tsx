@@ -29,9 +29,12 @@ let widgetPromise: Promise<Identity> | null = null;
 
 function loadWidget(): Promise<Identity> {
   widgetPromise ??= import('netlify-identity-widget').then((mod) => {
+    const globalWidget = (globalThis as { netlifyIdentity?: Identity }).netlifyIdentity;
     const widget =
-      (mod as { default?: Identity }).default ?? (mod as unknown as Identity);
-    widget.init();
+      (mod as { default?: Identity }).default ?? globalWidget ?? (mod as unknown as Identity);
+    if (typeof window !== 'undefined') {
+      widget.init();
+    }
     return widget;
   });
   return widgetPromise;
