@@ -19,11 +19,12 @@ import {
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
 import { useRequireAuth } from '@/components/RequireAuth';
+import { useAdminData } from '@/api/admin';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
-import { get, post } from '@/utils/api';
-import { applyItemChange, createDefaultItem, createItemFromCalendar, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
+import { post } from '@/utils/api';
+import { applyItemChange, createDefaultItem, createItemFromCalendar, moveItem, removeItemById, seedAdminState, validateItemId } from '@/utils/admin-items';
 
 export function AdminPage<T>({
   title,
@@ -43,30 +44,23 @@ export function AdminPage<T>({
   generateFromCalendar = false,
 }: AdminPageProps<T>) {
   const { getAccessToken } = useRequireAuth();
+  const { data, isPending } = useAdminData(endpoint, initialData);
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!initialData);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read once from initialData; adding them to deps would refetch on every render.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read only when the query data changes; their default values are recreated each render, so including them would re-seed state on every render.
   useEffect(() => {
-    if (initialData) {
-      setItems(initialDataTransform(initialData));
-      if (initialGlobalsTransform) {
-        setGlobals(initialGlobalsTransform(initialData));
-      }
-      setLoading(false);
-    } else {
-      get<unknown>(`/.netlify/functions/${endpoint}`).then(data => {
-        setItems(initialDataTransform(data));
-        if (initialGlobalsTransform) {
-          setGlobals(initialGlobalsTransform(data));
-        }
-        setLoading(false);
-      });
-    }
-  }, [endpoint, initialData]);
+    if (data === undefined) return;
+    const { items: seededItems, globals: seededGlobals } = seedAdminState(
+      data,
+      initialDataTransform,
+      initialGlobalsTransform,
+    );
+    setItems(seededItems);
+    setGlobals(seededGlobals);
+  }, [data]);
 
   const openCreateEditor = (preset?: T) => {
     setEditingOriginalId(null);
@@ -118,7 +112,7 @@ export function AdminPage<T>({
     ? validateItemId(items, editingItem, editingOriginalId, getItemId, idFieldName)
     : null;
 
-  if (loading) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
+  if (isPending) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
 
   return (
     <Container sx={{ mt: 4 }}>

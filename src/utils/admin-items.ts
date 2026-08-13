@@ -97,6 +97,17 @@ export function applyItemChange<T>(
   return items.map((item) => (getId(item) === originalId ? editingItem : item));
 }
 
+export function seedAdminState<T>(
+  data: unknown,
+  transform: (data: unknown) => T[],
+  globalsTransform?: (data: unknown) => Record<string, unknown>,
+): { items: T[]; globals: Record<string, unknown> } {
+  return {
+    items: transform(data),
+    globals: globalsTransform ? globalsTransform(data) : {},
+  };
+}
+
 export function removeItemById<T>(
   items: T[],
   id: string,
