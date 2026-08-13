@@ -33,6 +33,23 @@ describe('fetchTransactions', () => {
     );
   });
 
+  it('sends the Netlify Identity JWT as a bearer token when provided', async () => {
+    const fetchMock = mockFetch(200, { transactions: [] });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchTransactions('2026-05-01', '2026-05-31', 'identity-jwt');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/.netlify/functions/admin-transactions?start=2026-05-01&end=2026-05-31',
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer identity-jwt',
+        },
+      },
+    );
+  });
+
   it('returns the parsed transactions on success', async () => {
     const transactions = [{ txnId: 'TXN-1', net: '23.75' }];
     vi.stubGlobal('fetch', mockFetch(200, { transactions }));

@@ -20,8 +20,12 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   return text ? JSON.parse(text) : (undefined as T);
 }
 
-export function get<T>(url: string): Promise<T> {
-  return request<T>(url);
+export function get<T>(url: string, accessToken?: string | null): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return request<T>(url, { headers });
 }
 
 export function post<T>(url: string, body: unknown, accessToken?: string | null): Promise<T> {

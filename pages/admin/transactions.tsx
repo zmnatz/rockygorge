@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { RequireAuth } from '@/components/RequireAuth';
+import { RequireAuth, useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
 import type { PaypalTransaction } from '@/types/paypal';
 
@@ -65,6 +65,15 @@ function getSortValue(txn: PaypalTransaction, key: keyof PaypalTransaction): str
 }
 
 export default function AdminTransactionsPage() {
+  return (
+    <RequireAuth>
+      <TransactionsReport />
+    </RequireAuth>
+  );
+}
+
+function TransactionsReport() {
+  const { getAccessToken } = useRequireAuth();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [range, setRange] = useState<{ start: string; end: string } | null>(null);
@@ -80,6 +89,7 @@ export default function AdminTransactionsPage() {
   const { data = [], isPending, isFetching, error } = useTransactions(
     range?.start ?? '',
     range?.end ?? '',
+    getAccessToken,
   );
 
   const handleSubmit = (event: FormEvent) => {
@@ -124,11 +134,10 @@ export default function AdminTransactionsPage() {
   };
 
   return (
-    <RequireAuth>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Transactions
-        </Typography>
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" sx={{ mb: 1 }}>
+        Transactions
+      </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           PayPal transactions report for the selected date range.
         </Typography>
@@ -234,6 +243,5 @@ export default function AdminTransactionsPage() {
           </TableContainer>
         )}
       </Container>
-    </RequireAuth>
   );
 }

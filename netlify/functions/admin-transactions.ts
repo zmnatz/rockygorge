@@ -15,6 +15,23 @@ export const config = {
 const PAYPAL_TOKEN_URL = 'https://api-m.paypal.com/v1/oauth2/token';
 const TRANSACTIONS_URL = 'https://api-m.paypal.com/v1/reporting/transactions';
 
+/** The Netlify Identity user Netlify injects into `clientContext` when the
+ *  request carries a valid Identity JWT in the `Authorization` header. */
+interface NetlifyClientContextUser {
+  sub?: string;
+  email?: string;
+  exp?: number;
+  [key: string]: unknown;
+}
+
+interface NetlifyClientContext {
+  user?: NetlifyClientContextUser | null;
+}
+
+type NetlifyFunctionContext = {
+  clientContext?: NetlifyClientContext;
+};
+
 const MISSING_SCOPE_MESSAGE =
   "PayPal Transaction Search is not enabled for this app. Enable 'Transaction Search' under " +
   'Features in the PayPal Developer Dashboard, then retry - the toggle can take a while to ' +
@@ -100,11 +117,21 @@ async function fetchTransactions(token: string, start: string, end: string): Pro
   return raw.map(flattenTransaction);
 }
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: NetlifyFunctionContext,
+): Promise<APIGatewayProxyResult> => {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
       body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
+  }
+
+  if (!context.clientContext?.user) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: 'Authentication required. Sign in to the Admin Console and try again.' }),
     };
   }
 
