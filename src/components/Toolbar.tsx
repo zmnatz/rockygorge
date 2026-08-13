@@ -2,13 +2,18 @@ import { NextLinkComposed } from "@/utils/nextLink";
 import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
 import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
+import { useIdentity } from "@/components/IdentityProvider";
 import { useState } from "react";
 
 const headerLinks = links.filter(({ header }) => header);
 
 export function Toolbar () {
+  const { user, isLoading, login, logout } = useIdentity();
+  const isAuthenticated = user !== null;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const visibleLinks = headerLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,7 +35,7 @@ export function Toolbar () {
           Rocky Gorge Rugby
         </Button>
         <Box sx={{ flexGrow: 1 }} />
-        {headerLinks.map(({ slug, href, title, summary }) => (
+        {visibleLinks.map(({ slug, href, title, summary }) => (
           <Button
             key={slug}
             component={NextLinkComposed}
@@ -42,6 +47,19 @@ export function Toolbar () {
             {title}
           </Button>
         ))}
+        {!isLoading && (
+          <Button
+            color="inherit"
+            sx={{ textTransform: "none", ml: 1 }}
+            onClick={() =>
+              isAuthenticated
+                ? logout()
+                : login()
+            }
+          >
+            {isAuthenticated ? "Log out" : "Log in"}
+          </Button>
+        )}
         <IconButton
           color="inherit"
           aria-label="app menu"
@@ -57,7 +75,7 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {headerLinks.map(({ slug, href, title, summary }) => (
+          {visibleLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
               key={slug}
               component="a"

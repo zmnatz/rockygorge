@@ -4,6 +4,7 @@ import {
 } from '@mui/material'
 import { useState, useMemo, type ReactNode } from 'react'
 import { getSortableName } from '@/utils/stats'
+import { compareValues } from '@/utils/sort'
 
 export interface SortableColumn {
   key: string;
@@ -50,9 +51,7 @@ export function SortableTable({
         bValue = getSortableName(String(bValue))
       }
 
-      if (aValue === bValue) return 0
-      const comparison = aValue < bValue ? -1 : 1
-      return sortConfig.direction === 'asc' ? comparison : -comparison
+      return compareValues(aValue, bValue, sortConfig.direction)
     })
   }, [data, sortConfig])
 

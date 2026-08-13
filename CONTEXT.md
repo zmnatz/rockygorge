@@ -52,5 +52,43 @@ _Avoid_: Cart entry, invoice item
 ## Admin
 
 **Admin handler**:
-The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow.
+The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow. It rejects requests that carry no valid Netlify Identity JWT.
 _Avoid_: Save endpoint
+
+**Admin Console**:
+The `/admin` route group where Content and Config are managed. Signing in is required to use it.
+_Avoid_: admin pages, admin section, CMS
+
+**Netlify Identity**:
+The sign-in service that backs the Admin Console. `RequireAuth` opens its login modal for unauthenticated `/admin` visitors, and `IdentityProvider` (`useIdentity`) exposes the signed-in state to the rest of the app.
+_Avoid_: login page, auth system
+
+**RequireAuth**:
+The component that gates `/admin` routes behind a Netlify Identity session — it opens the login modal for unauthenticated visitors and provides the signed-in access token to its subtree via `useRequireAuth`. It is the single owner of sign-in handling for the Admin Console; page components do not touch the auth layer directly.
+_Avoid_: auth guard, login gate
+
+**Administrator**:
+A person signed in to the Admin Console.
+_Avoid_: admin, user
+
+## Payments
+
+**Transaction**:
+A single PayPal record representing money that moved through the club's PayPal account — a payment received, a refund issued, or a withdrawal. Each transaction carries a gross amount and a PayPal fee; its net amount is gross plus fee. Transactions are queried by date range and shown read-only in the admin.
+_Avoid_: Payment (when it means any money movement), order, charge
+
+**Transaction Type**:
+The classification of a Transaction into Payment, Refund, or Withdrawal. A negative-amount transaction that references an earlier one is a Refund; a negative-amount transaction with no reference is a Withdrawal; anything else is a Payment.
+_Avoid_: Category, kind, status
+
+**Net amount**:
+The amount the club actually received from a Transaction — gross amount plus the PayPal fee (fees are negative). Refunds and withdrawals are net-negative.
+_Avoid_: Total, balance
+
+**Item Match**:
+A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
+_Avoid_: Association, linking (payments context)
+
+**Item Transactions**:
+The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. The item's `description` pre-fills the report's filter so the active filter is visible and adjustable. Payments made through the subscription billing flow carry no item text and are not attributed, so recurring dues and supporter payments appear on no item page; one-time purchases are attributed by the Item Match rule.
+_Avoid_: Purchase report, item sales

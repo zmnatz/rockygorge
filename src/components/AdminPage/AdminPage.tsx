@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -18,11 +18,13 @@ import {
   DialogActions
 } from '@mui/material';
 import { Add, ArrowDownward, ArrowUpward, Delete, Edit } from '@mui/icons-material';
+import { useRequireAuth } from '@/components/RequireAuth';
+import { useAdminData } from '@/api/admin';
 import type { AdminPageProps } from './types';
 import { FormField } from './FormField';
 import { GenerateFromCalendarPanel } from './GenerateFromCalendarPanel';
-import { get, post } from '@/utils/api';
-import { applyItemChange, createDefaultItem, createItemFromCalendar, moveItem, removeItemById, validateItemId } from '@/utils/admin-items';
+import { post } from '@/utils/api';
+import { applyItemChange, createDefaultItem, createItemFromCalendar, moveItem, removeItemById, seedAdminState, validateItemId } from '@/utils/admin-items';
 
 export function AdminPage<T>({
   title,
@@ -41,30 +43,24 @@ export function AdminPage<T>({
   idFieldName = 'id',
   generateFromCalendar = false,
 }: AdminPageProps<T>) {
+  const { getAccessToken } = useRequireAuth();
+  const { data, isPending } = useAdminData(endpoint, initialData);
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<Record<string, unknown>>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!initialData);
+  const [seededEndpoint, setSeededEndpoint] = useState<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initialDataTransform and initialGlobalsTransform are intentionally read once from initialData; adding them to deps would refetch on every render.
-  useEffect(() => {
-    if (initialData) {
-      setItems(initialDataTransform(initialData));
-      if (initialGlobalsTransform) {
-        setGlobals(initialGlobalsTransform(initialData));
-      }
-      setLoading(false);
-    } else {
-      get<unknown>(`/.netlify/functions/${endpoint}`).then(data => {
-        setItems(initialDataTransform(data));
-        if (initialGlobalsTransform) {
-          setGlobals(initialGlobalsTransform(data));
-        }
-        setLoading(false);
-      });
-    }
-  }, [endpoint, initialData]);
+  if (data !== undefined && seededEndpoint !== endpoint) {
+    const { items: seededItems, globals: seededGlobals } = seedAdminState(
+      data,
+      initialDataTransform,
+      initialGlobalsTransform,
+    );
+    setItems(seededItems);
+    setGlobals(seededGlobals);
+    setSeededEndpoint(endpoint);
+  }
 
   const openCreateEditor = (preset?: T) => {
     setEditingOriginalId(null);
@@ -100,7 +96,12 @@ export function AdminPage<T>({
       ? applyItemChange(items, editingItem, editingOriginalId, getItemId)
       : items;
     try {
-      await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
+      const accessToken = await getAccessToken();
+      await post(
+        `/.netlify/functions/${endpoint}`,
+        saveDataTransform(itemsToSave, globals),
+        accessToken,
+      );
       alert(`${title} updated and committed successfully!`);
     } catch {
       alert(`Failed to update ${title}.`);
@@ -111,19 +112,19 @@ export function AdminPage<T>({
     ? validateItemId(items, editingItem, editingOriginalId, getItemId, idFieldName)
     : null;
 
-  if (loading) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
+  if (isPending) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4">{title}</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {!editOnly && (
-            <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
-          )}
-          <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4">{title}</Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {!editOnly && (
+              <Button variant="contained" onClick={() => openCreateEditor()} startIcon={<Add />}>Add</Button>
+            )}
+            <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+          </Box>
         </Box>
-      </Box>
 
       {globalFields && globalFields.length > 0 && (
         <Paper sx={{ p: 3, mb: 4 }}>

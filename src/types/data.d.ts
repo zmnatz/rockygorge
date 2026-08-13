@@ -69,6 +69,9 @@ export interface Product extends BaseContentItem {
   subscriptions?: SubscriptionItem[];
 }
 
+/** The Store Item fields the Item Match rule and the per-item transactions report read. */
+export type StoreItem = Pick<Product, 'slug' | 'title' | 'description'>;
+
 /** A recurring-payment tier on a store item, rendered as a PayPal subscription button. */
 export interface SubscriptionItem {
   name: string;
@@ -81,6 +84,8 @@ export interface SubscriptionItem {
 /** A toolbar/header navigation link. */
 export interface Link extends BaseNavigableItem {
   header: boolean;
+  /** When true, the link is only shown to signed-in visitors. */
+  authRequired?: boolean;
 }
 
 /** A record of a member who has paid club dues. */
