@@ -29,8 +29,9 @@ export function usePracticeWeather(
       const params = new URLSearchParams({
         latitude: String((field as PracticeField).lat),
         longitude: String((field as PracticeField).lon),
-        hourly: "precipitation_probability,precipitation,weather_code",
+        hourly: "temperature_2m,precipitation_probability,precipitation,weather_code",
         timezone: PRACTICE_TIMEZONE,
+        temperature_unit: "fahrenheit",
         start_date: practiceDay,
         end_date: practiceDay,
       });

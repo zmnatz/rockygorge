@@ -7,19 +7,21 @@ import {
 } from '@/utils/weather';
 
 const fromEntries = (
-  entries: Record<string, { prob?: number; precip?: number; code?: number }>,
+  entries: Record<string, { temp?: number; prob?: number; precip?: number; code?: number }>,
 ): OpenMeteoHourly => {
   const time: string[] = [];
+  const temperature_2m: number[] = [];
   const precipitation_probability: number[] = [];
   const precipitation: number[] = [];
   const weather_code: number[] = [];
   for (const [t, v] of Object.entries(entries)) {
     time.push(t);
+    temperature_2m.push(v.temp ?? 0);
     precipitation_probability.push(v.prob ?? 0);
     precipitation.push(v.precip ?? 0);
     weather_code.push(v.code ?? 0);
   }
-  return { time, precipitation_probability, precipitation, weather_code };
+  return { time, temperature_2m, precipitation_probability, precipitation, weather_code };
 };
 
 const PRACTICE_DAY = '2026-08-18';
@@ -161,5 +163,27 @@ describe('summarizeInclementWeather', () => {
     expect(summary.inclement).toBe(true);
     expect(summary.atPractice).toBe(true);
     expect(summary.earlierToday).toBe(false);
+  });
+
+  it('reports the temperature of the first hour of the practice window', () => {
+    const summary = summarizeInclementWeather(
+      fromEntries({
+        '2026-08-18T10:00': { temp: 70, code: 0 },
+        '2026-08-18T20:00': { temp: 82, prob: 10, code: 1 },
+        '2026-08-18T21:00': { temp: 81, prob: 5, code: 1 },
+      }),
+      PRACTICE_START,
+      PRACTICE_END,
+    );
+    expect(summary.temperatureAtPractice).toBe(82);
+  });
+
+  it('leaves temperature null when no hour falls in the practice window', () => {
+    const summary = summarizeInclementWeather(
+      fromEntries({ '2026-08-18T10:00': { temp: 70, prob: 90, code: 61 } }),
+      '2026-08-19T19:45:00-04:00',
+      '2026-08-19T21:45:00-04:00',
+    );
+    expect(summary.temperatureAtPractice).toBeNull();
   });
 });

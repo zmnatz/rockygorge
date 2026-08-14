@@ -50,30 +50,40 @@ function FieldStatusPanel({ field, start, end }: { field: PracticeField; start: 
         sx={{ width: "100%", height, border: 0, my: 1, borderRadius: 1 }}
         loading="lazy"
       />
-      {weather?.inclement ? <WeatherWarning summary={weather} /> : null}
+      {weather ? <WeatherForecast summary={weather} /> : null}
     </Box>
   );
 }
 
-function WeatherWarning({ summary }: { summary: PracticeWeatherSummary }) {
-  const { atPractice, earlierToday, atPracticeChance, earlierChance, weatherType, maxPrecipitation } = summary;
+function WeatherForecast({ summary }: { summary: PracticeWeatherSummary }) {
+  const { atPractice, earlierToday, atPracticeChance, weatherType, maxPrecipitation, temperatureAtPractice } = summary;
   const type = weatherType ?? "precipitation";
-  const chance = atPractice ? atPracticeChance : earlierChance;
   const amount = maxPrecipitation > 0 ? `, ~${(maxPrecipitation / 25.4).toFixed(2)}" expected` : "";
+  const precip = atPracticeChance > 0
+    ? `${atPracticeChance}% chance of ${type}${amount}`
+    : "no precipitation expected";
+  const temp = temperatureAtPractice === null ? "" : `${Math.round(temperatureAtPractice)}°F at practice time · `;
   const timing = atPractice && earlierToday
     ? "before and during practice"
     : atPractice
       ? "around practice time"
-      : "earlier today";
+      : "earlier in the day";
 
   return (
     <Box sx={{ mt: 1 }}>
       <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-        {`${type.charAt(0).toUpperCase()}${type.slice(1)} expected ${timing} (${chance}% chance${amount}).`}
+        {`${temp}${precip}`}
       </Typography>
-      <Typography variant="body2">
-        The field may be closed — practice may move to a turf field. Check the WhatsApp group for the latest.
-      </Typography>
+      {summary.inclement ? (
+        <>
+          <Typography variant="body2">
+            {`${type.charAt(0).toUpperCase()}${type.slice(1)} expected ${timing} — the field may be closed.`}
+          </Typography>
+          <Typography variant="body2">
+            Practice may move to a turf field; check the WhatsApp group for the latest.
+          </Typography>
+        </>
+      ) : null}
     </Box>
   );
 }

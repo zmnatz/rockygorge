@@ -3,6 +3,7 @@ export const INCLEMENT_PRECIP_PROBABILITY = 40;
 
 export interface OpenMeteoHourly {
   time: string[];
+  temperature_2m: number[];
   precipitation_probability: number[];
   precipitation: number[];
   weather_code: number[];
@@ -20,6 +21,7 @@ export interface PracticeWeatherSummary {
   earlierChance: number;
   weatherType: string | null;
   maxPrecipitation: number;
+  temperatureAtPractice: number | null;
 }
 
 type ZonedParts = {
@@ -144,6 +146,7 @@ export function summarizeInclementWeather(
   let earlierChance = 0;
   let dominant: RelevantHour | null = null;
   let maxPrecipitation = 0;
+  let temperatureAtPractice: number | null = null;
 
   for (let i = 0; i < hourly.time.length; i += 1) {
     const hourDate = zonedNaiveToUtc(hourly.time[i], timeZone);
@@ -158,8 +161,13 @@ export function summarizeInclementWeather(
           : null;
     if (!window) continue;
 
-    if (window === "atPractice" && probability > atPracticeChance) {
-      atPracticeChance = probability;
+    if (window === "atPractice") {
+      if (probability > atPracticeChance) {
+        atPracticeChance = probability;
+      }
+      if (temperatureAtPractice === null) {
+        temperatureAtPractice = hourly.temperature_2m[i] ?? null;
+      }
     }
     if (window === "earlierToday" && probability > earlierChance) {
       earlierChance = probability;
@@ -183,5 +191,6 @@ export function summarizeInclementWeather(
     earlierChance,
     weatherType: dominant ? weatherCodeToType(dominant.code) : null,
     maxPrecipitation,
+    temperatureAtPractice,
   };
 }
