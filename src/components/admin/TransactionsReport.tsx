@@ -20,7 +20,7 @@ import { useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
-import { isItemMatch } from '@/utils/item-match';
+import { itemMatcher } from '@/utils/item-match';
 import { compareValues } from '@/utils/sort';
 
 import type { DateRange } from '@/types/date-range';
@@ -126,7 +126,7 @@ export function TransactionsReport({
   };
 
   const visible = useMemo(() => {
-    if (item) return data.filter((txn) => isItemMatch(txn, item));
+    if (item) return data.filter(itemMatcher(item));
     const query = filter.trim().toLowerCase();
     if (!query) return data;
     return data.filter(

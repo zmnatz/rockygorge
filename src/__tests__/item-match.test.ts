@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isItemMatch } from '@/utils/item-match';
+import { itemMatcher } from '@/utils/item-match';
 import type { PaypalTransaction } from '@/types/paypal';
 
 const banquet = { title: '2026 Banquet', description: 'Banquet Tickets' };
@@ -58,73 +58,73 @@ function transaction(itemTitle: string): PaypalTransaction {
   };
 }
 
-describe('isItemMatch', () => {
+describe('itemMatcher', () => {
   it('matches when the item title contains the description', () => {
-    expect(isItemMatch(transaction('Banquet Tickets'), banquet)).toBe(true);
+    expect(itemMatcher(banquet)(transaction('Banquet Tickets'))).toBe(true);
   });
 
   it('is case-insensitive', () => {
-    expect(isItemMatch(transaction('banquet TICKETS'), banquet)).toBe(true);
+    expect(itemMatcher(banquet)(transaction('banquet TICKETS'))).toBe(true);
   });
 
   it('falls back to matching the title when no description matches', () => {
-    expect(isItemMatch(transaction('2026 Banquet'), banquet)).toBe(true);
+    expect(itemMatcher(banquet)(transaction('2026 Banquet'))).toBe(true);
   });
 
   it('rejects a transaction matching neither description nor title', () => {
-    expect(isItemMatch(transaction('Rocky Gorge Open'), banquet)).toBe(false);
+    expect(itemMatcher(banquet)(transaction('Rocky Gorge Open'))).toBe(false);
   });
 
   it('rejects an empty item title', () => {
-    expect(isItemMatch(transaction(''), banquet)).toBe(false);
+    expect(itemMatcher(banquet)(transaction(''))).toBe(false);
   });
 
   it('requires the full description, not a bare substring of it', () => {
-    expect(isItemMatch(transaction('Banquet'), banquet)).toBe(false);
+    expect(itemMatcher(banquet)(transaction('Banquet'))).toBe(false);
   });
 
   it('does not match when the item text appears as a substring of an unrelated title', () => {
     const open = { title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' };
-    expect(isItemMatch(transaction('Open Enrollment'), open)).toBe(false);
+    expect(itemMatcher(open)(transaction('Open Enrollment'))).toBe(false);
   });
 });
 
-describe('isItemMatch — subscription billing', () => {
+describe('itemMatcher — subscription billing', () => {
   it('attributes a subscription payment whose item title contains the plan name', () => {
-    expect(isItemMatch(transaction("Player's Tier"), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction("Player's Tier"))).toBe(true);
   });
 
   it('attributes a subscription payment by the hosted button id', () => {
-    expect(isItemMatch(transaction('SQ4FBM547W67C'), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction('SQ4FBM547W67C'))).toBe(true);
   });
 
   it('attributes a subscription payment by the chosen option value', () => {
-    expect(isItemMatch(transaction('GODs: $20.00 USD - monthly'), dues)).toBe(true);
-    expect(isItemMatch(transaction('Supporter'), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction('GODs: $20.00 USD - monthly'))).toBe(true);
+    expect(itemMatcher(dues)(transaction('Supporter'))).toBe(true);
   });
 
   it('is case-insensitive', () => {
-    expect(isItemMatch(transaction("player's TIER"), dues)).toBe(true);
-    expect(isItemMatch(transaction('gods'), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction("player's TIER"))).toBe(true);
+    expect(itemMatcher(dues)(transaction('gods'))).toBe(true);
   });
 
   it('attributes a recurring payment that carries no store-item description', () => {
-    expect(isItemMatch(transaction('GODs'), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction('GODs'))).toBe(true);
   });
 
   it('does not treat the generic plan value field as a match key', () => {
-    expect(isItemMatch(transaction('DUES'), dues)).toBe(false);
+    expect(itemMatcher(dues)(transaction('DUES'))).toBe(false);
   });
 
   it('does not pull a one-time "Fall Dues" purchase onto the supporters item', () => {
-    expect(isItemMatch(transaction('Fall Dues'), supporters)).toBe(false);
+    expect(itemMatcher(supporters)(transaction('Fall Dues'))).toBe(false);
   });
 
   it('still matches the one-time purchase on the dues item', () => {
-    expect(isItemMatch(transaction('Fall Dues'), dues)).toBe(true);
+    expect(itemMatcher(dues)(transaction('Fall Dues'))).toBe(true);
   });
 
   it('applies subscription keys only to items that carry subscriptions', () => {
-    expect(isItemMatch(transaction("Player's Tier"), banquet)).toBe(false);
+    expect(itemMatcher(banquet)(transaction("Player's Tier"))).toBe(false);
   });
 });
