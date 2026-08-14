@@ -79,6 +79,10 @@ export interface SubscriptionItem {
   description: string;
   options: Array<{ label: string; value: string }>;
   value?: string;
+  /** Additional strings the PayPal subscription payment's item title is
+   *  recognized by, when they don't match the plan's name, id, or option
+   *  values (e.g. the button's title PayPal reports on each payment). */
+  keywords?: string[];
 }
 
 /** A toolbar/header navigation link. */

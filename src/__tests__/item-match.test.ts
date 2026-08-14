@@ -23,6 +23,7 @@ const dues = {
       name: "Player's Tier",
       id: 'SFWCNPKX3WKF2',
       description: 'Covers team gear, player dues, film analysis.',
+      keywords: ['Dues Subscription'],
       options: [
         { label: 'Option 1 : $35.00 USD - monthly', value: 'Option 1' },
         { label: 'Option 2 : $400.00 USD - yearly', value: 'Option 2' },
@@ -126,5 +127,14 @@ describe('itemMatcher — subscription billing', () => {
 
   it('applies subscription keys only to items that carry subscriptions', () => {
     expect(itemMatcher(banquet)(transaction("Player's Tier"))).toBe(false);
+  });
+
+  it('attributes a subscription payment by an explicit plan keyword', () => {
+    expect(itemMatcher(dues)(transaction('Rocky Gorge Yearly Dues Subscription'))).toBe(true);
+    expect(itemMatcher(dues)(transaction('Rocky Gorge Monthly Dues Subscription'))).toBe(true);
+  });
+
+  it('does not let a plan keyword pull the payment onto another item', () => {
+    expect(itemMatcher(supporters)(transaction('Rocky Gorge Yearly Dues Subscription'))).toBe(false);
   });
 });

@@ -79,7 +79,7 @@ The amount the club actually received from a Transaction — gross amount plus t
 _Avoid_: Total, balance
 
 **Item Match**:
-A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, or a chosen option `value`. A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
+A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
 _Avoid_: Association, linking (payments context)
 
 **Item Transactions**:
