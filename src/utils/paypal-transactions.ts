@@ -45,9 +45,12 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
   const fee = parseMoney(info.fee_amount?.value);
   const net = gross + fee;
 
+  // Subscription billing payments carry their tier as `item_options` (e.g.
+  // "DUES: GODs") rather than a description, so options join the item title
+  // alongside any item name to keep the chosen plan attributable.
   const itemTitle =
     (cart.item_details ?? [])
-      .map((item) => item.item_name ?? '')
+      .flatMap((item) => [item.item_name ?? '', item.item_options ?? ''])
       .filter(Boolean)
       .join('; ') ||
     info.transaction_subject ||
