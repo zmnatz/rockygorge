@@ -20,9 +20,11 @@ import { useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
+import { isItemMatch } from '@/utils/item-match';
 import { compareValues } from '@/utils/sort';
 
 import type { DateRange } from '@/types/date-range';
+import type { StoreItem } from '@/types/data';
 import type { PaypalTransaction } from '@/types/paypal';
 
 interface TransactionColumn {
@@ -74,8 +76,13 @@ function formatCell(txn: PaypalTransaction, col: TransactionColumn): string {
 export interface TransactionsReportProps {
   title: string;
   subtitle: string;
-  /** Value the filter input starts with, e.g. a store item's description. */
+  /** Value the free-text filter input starts with (used when the report is not
+   *  scoped to a Store Item), e.g. a store item's description. */
   initialFilter?: string;
+  /** When present, the report is scoped to this Store Item: only attributed
+   *  transactions (by description/title text or subscription plan) are shown,
+   *  and the free-text filter is hidden. */
+  item?: StoreItem;
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
 }
@@ -84,6 +91,7 @@ export function TransactionsReport({
   title,
   subtitle,
   initialFilter,
+  item,
   fileStem,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
@@ -118,6 +126,7 @@ export function TransactionsReport({
   };
 
   const visible = useMemo(() => {
+    if (item) return data.filter((txn) => isItemMatch(txn, item));
     const query = filter.trim().toLowerCase();
     if (!query) return data;
     return data.filter(
@@ -126,7 +135,7 @@ export function TransactionsReport({
         txn.email.toLowerCase().includes(query) ||
         txn.itemTitle.toLowerCase().includes(query),
     );
-  }, [data, filter]);
+  }, [data, filter, item]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;
@@ -201,13 +210,15 @@ export function TransactionsReport({
         {isFetching && <CircularProgress size={20} />}
       </Box>
 
-      <TextField
-        label="Filter by Name, Email, or Item"
-        value={filter}
-        onChange={(event) => setFilter(event.target.value)}
-        sx={{ mb: 2, maxWidth: 400 }}
-        fullWidth
-      />
+      {!item && (
+        <TextField
+          label="Filter by Name, Email, or Item"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          sx={{ mb: 2, maxWidth: 400 }}
+          fullWidth
+        />
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

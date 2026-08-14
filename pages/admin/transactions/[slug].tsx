@@ -8,12 +8,18 @@ interface AdminItemTransactionsProps {
 }
 
 export default function AdminItemTransactionsPage({ item }: AdminItemTransactionsProps) {
+  const hasSubscriptions = (item.subscriptions ?? []).length > 0;
   return (
     <RequireAuth>
       <TransactionsReport
         title={`${item.title} — Transactions`}
-        subtitle={`Transactions matching "${item.description}" in the selected date range.`}
-        initialFilter={item.description}
+        subtitle={
+          hasSubscriptions
+            ? `Transactions attributed to "${item.title}" in the selected date range.`
+            : `Transactions matching "${item.description}" in the selected date range.`
+        }
+        item={hasSubscriptions ? item : undefined}
+        initialFilter={hasSubscriptions ? undefined : item.description}
         fileStem={`paypal-transactions_${item.slug}`}
       />
     </RequireAuth>
@@ -37,7 +43,12 @@ export async function getStaticProps({ params }: { params?: { slug: string } }) 
 
   return {
     props: {
-      item: { slug: entry.slug, title: entry.title, description: entry.description },
+      item: {
+        slug: entry.slug,
+        title: entry.title,
+        description: entry.description,
+        subscriptions: entry.subscriptions,
+      },
     },
   };
 }

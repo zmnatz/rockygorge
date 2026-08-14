@@ -12,12 +12,15 @@ The checkout (`PaypalProduct`'s `generateOrderInfo`) sends only `purchase_units[
 
 ## Decision
 
-A transaction is attributed to a store item (an **Item Match**) by text: the transaction's item title must contain the item's `description` (case-insensitive), falling back to the `title` if no description matches. A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page. The match runs client-side as a pure function over the already-fetched date-range transactions, and the per-item view (`/admin/transactions/[slug]`) is read-only. Payments made through the subscription billing flow carry no `description` and are not attributed — recurring dues and supporter payments are out of scope (future work); one-time purchases on any store item, including dues and supporters, are attributed normally.
+A transaction is attributed to a store item (an **Item Match**) by text: the transaction's item title must contain the item's `description` (case-insensitive), falling back to the `title` if no description matches. A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page. The match runs client-side as a pure function over the already-fetched date-range transactions, and the per-item view (`/admin/transactions/[slug]`) is read-only. One-time purchases on any store item, including dues and supporters, are attributed normally.
+
+When a store item carries Subscription Plans (dues and supporters), a transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, or a chosen option `value` — case-insensitively. The subscription billing flow sends no store item `description`; the recurring payments instead surface their tier through PayPal's `item_options` (and the plan/subject text), which `flattenTransaction` joins into the item title so the rule can match it. The generic plan `value` field and the display-only option `label`s are deliberately excluded as keys because they collide with one-time purchase titles (a one-time "Fall Dues" payment must not match the supporters page).
 
 Embedding the store item's slug in the PayPal order at checkout was considered and rejected for now: it is the more robust key but only helps transactions created after the change, leaving existing history unmatched. It remains planned future work; when it lands it becomes the authoritative key and the text match demotes to a fallback for legacy transactions.
 
 ## Consequences
 
 - Renaming or editing a store item's `description` (or `title`) silently breaks attribution for historical transactions that used the old text.
-- Refunds and subscriptions that do not carry the `description` in their item title do not appear on item pages.
+- Refunds do not appear on item pages unless they carry the matching text.
+- A subscription payment is attributed only when its item title carries a plan identifier; a recurring charge whose title is empty or unrecognized still appears on no item page.
 - The match rule must stay a pure function (`src/utils/item-match.ts`) so it is unit-testable and shared by any future consumer.
