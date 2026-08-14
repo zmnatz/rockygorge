@@ -1,0 +1,13 @@
+fields:
+  - id: laurel
+    matches: [Laurel, Supplee]
+    extensionId: 15
+    label: All Other Rectangular Fields NORTH of Central Avenue
+    lat: 39.1168
+    lon: -76.8876
+  - id: beltsville
+    matches: [Beltsville, Sellman]
+    extensionId: 23
+    label: Beltsville CC Rectangle
+    lat: 39.0383
+    lon: -76.9323

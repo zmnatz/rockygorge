@@ -45,6 +45,13 @@ declare module '@content/admin/dues.yaml' {
   export default dues;
 }
 
+declare module '@config/practice-fields.yml' {
+  const practiceFields: {
+    fields: import('./practice-field').PracticeField[];
+  };
+  export default practiceFields;
+}
+
 declare module '@content/home.yml' {
   const home: {
     hero: {

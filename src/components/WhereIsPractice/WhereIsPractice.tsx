@@ -1,13 +1,82 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import { Box, CircularProgress, Link as MuiLink, Typography } from "@mui/material";
 import Link from "next/link";
 import { useCalendarSourceItems } from "@/api/calendar";
+import { usePracticeWeather } from "@/api/weather";
 import calendarInfo from "@content/calendar.yml";
+import practiceFieldsConfig from "@config/practice-fields.yml";
+import type { PracticeField } from "@/types/practice-field";
 import { findNextPractice, formatEventTime } from "@/utils/calendar";
+import { findPracticeField } from "@/utils/practice-fields";
+import type { PracticeWeatherSummary } from "@/utils/weather";
 
 const mapsEmbedUrl = (location: string) =>
   `https://maps.google.com/maps?q=${encodeURIComponent(location)}&output=embed`;
+
+const statusfyEmbedUrl = (extensionId: number, embedId: string) =>
+  `https://statusfy.com/2402631223/list?detail=0&extensions=${extensionId}&id=${embedId}`;
+
+function FieldStatusPanel({ field, start, end }: { field: PracticeField; start: string; end: string }) {
+  const { data: weather } = usePracticeWeather(field, start, end);
+  const embedId = `stsfy-${field.id}`;
+  const [height, setHeight] = useState(100);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { i?: string; h?: number };
+      if (
+        event.origin === "https://statusfy.com" &&
+        data &&
+        typeof data === "object" &&
+        data.i === embedId &&
+        typeof data.h === "number"
+      ) {
+        setHeight(data.h);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [embedId]);
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="subtitle2" color="text.secondary">Field Status</Typography>
+      <Box
+        component="iframe"
+        title={`Field status for ${field.label}`}
+        src={statusfyEmbedUrl(field.extensionId, embedId)}
+        sx={{ width: "100%", height, border: 0, my: 1, borderRadius: 1 }}
+        loading="lazy"
+      />
+      {weather?.inclement ? <WeatherWarning summary={weather} /> : null}
+    </Box>
+  );
+}
+
+function WeatherWarning({ summary }: { summary: PracticeWeatherSummary }) {
+  const { atPractice, earlierToday, atPracticeChance, earlierChance, weatherType, maxPrecipitation } = summary;
+  const type = weatherType ?? "precipitation";
+  const chance = atPractice ? atPracticeChance : earlierChance;
+  const amount = maxPrecipitation > 0 ? `, ~${(maxPrecipitation / 25.4).toFixed(2)}" expected` : "";
+  const timing = atPractice && earlierToday
+    ? "before and during practice"
+    : atPractice
+      ? "around practice time"
+      : "earlier today";
+
+  return (
+    <Box sx={{ mt: 1 }}>
+      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+        {`${type.charAt(0).toUpperCase()}${type.slice(1)} expected ${timing} (${chance}% chance${amount}).`}
+      </Typography>
+      <Typography variant="body2">
+        The field may be closed — practice may move to a turf field. Check the WhatsApp group for the latest.
+      </Typography>
+    </Box>
+  );
+}
 
 export function WhereIsPractice() {
   const { data, isFetching, error } = useCalendarSourceItems();
@@ -36,6 +105,8 @@ export function WhereIsPractice() {
     );
   }
 
+  const field = next.location ? findPracticeField(next.location, practiceFieldsConfig.fields) : undefined;
+
   return (
     <Box sx={{ my: 2, p: 2, bgcolor: "action.hover", borderRadius: 2 }}>
       <Typography variant="subtitle2" color="text.secondary">Next Practice</Typography>
@@ -47,6 +118,7 @@ export function WhereIsPractice() {
         <>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>Location</Typography>
           <Typography variant="body1">{next.location}</Typography>
+          {field ? <FieldStatusPanel field={field} start={next.start} end={next.end} /> : null}
           <Box
             component="iframe"
             title={`Map of ${next.location}`}
