@@ -136,6 +136,30 @@ describe('flattenTransaction', () => {
     expect(flat.itemTitle).toBe('Tickets; Donation');
   });
 
+  it('surfaces item options alongside the item name for subscription payments', () => {
+    const flat = flattenTransaction(
+      rawTransaction({
+        cart_info: {
+          item_details: [{ item_name: 'GODs Tier', item_options: 'DUES: GODs' }],
+        },
+      }),
+    );
+
+    expect(flat.itemTitle).toBe('GODs Tier; DUES: GODs');
+  });
+
+  it('uses item options as the item title when there is no item name', () => {
+    const flat = flattenTransaction(
+      rawTransaction({
+        cart_info: {
+          item_details: [{ item_options: 'DUES: Supporter' }],
+        },
+      }),
+    );
+
+    expect(flat.itemTitle).toBe('DUES: Supporter');
+  });
+
   it('falls back to the subject and note when there are no cart items', () => {
     const flat = flattenTransaction(
       rawTransaction({

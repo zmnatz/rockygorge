@@ -70,7 +70,7 @@ export interface Product extends BaseContentItem {
 }
 
 /** The Store Item fields the Item Match rule and the per-item transactions report read. */
-export type StoreItem = Pick<Product, 'slug' | 'title' | 'description'>;
+export type StoreItem = Pick<Product, 'slug' | 'title' | 'description' | 'subscriptions'>;
 
 /** A recurring-payment tier on a store item, rendered as a PayPal subscription button. */
 export interface SubscriptionItem {
@@ -79,6 +79,10 @@ export interface SubscriptionItem {
   description: string;
   options: Array<{ label: string; value: string }>;
   value?: string;
+  /** Additional strings the PayPal subscription payment's item title is
+   *  recognized by, when they don't match the plan's name, id, or option
+   *  values (e.g. the button's title PayPal reports on each payment). */
+  keywords?: string[];
 }
 
 /** A toolbar/header navigation link. */

@@ -39,6 +39,6 @@ export interface PaypalRawTransaction {
     payer_name?: { alternate_full_name?: string };
   };
   cart_info?: {
-    item_details?: Array<{ item_name?: string }>;
+    item_details?: Array<{ item_name?: string; item_options?: string }>;
   };
 }
