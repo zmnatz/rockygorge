@@ -47,7 +47,7 @@ export async function getStaticProps({ params }: { params?: { slug: string } }) 
         slug: entry.slug,
         title: entry.title,
         description: entry.description,
-        subscriptions: entry.subscriptions,
+        subscriptions: entry.subscriptions ?? [],
       },
     },
   };
