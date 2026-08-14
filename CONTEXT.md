@@ -42,6 +42,28 @@ _Avoid_: Product, purchase option
 The lookup used by `<CalendarEventDetail>` to render a date/time/location block on a page: it lowercases and substring-matches the page title against every upcoming calendar item. Used on event pages and store pages. Generation does not replace this — pages keep rendering through the match, and the snapshot sits alongside it as data.
 _Avoid_: Precise lookup, calendar association
 
+## Weather & Fields
+
+**Practice Field**:
+The county-maintained grass field the club holds outdoor Practice on. The club currently uses two: the Supplee Lane field in Laurel and the Beltsville Community Center Rectangle. A Practice's calendar location is matched to a Practice Field. Practice moves to a Turf Field when a Practice Field is closed.
+_Avoid_: Field, home field
+
+**Field Status**:
+The county's live announcement of whether a Practice Field is open for play, published on the county's Statusfy feed (e.g. "It's a go! Fields are open for play."). It is the authority the Where is Practice page shows for whether the club's Practice Field is usable, and it changes with weather and maintenance.
+_Avoid_: Field condition, rainout line
+
+**Field Closure**:
+The state of a Practice Field being unavailable as announced by Field Status, typically because of rain. A Field Closure moves Practice to a Turf Field; the club communicates the move through the team WhatsApp group.
+_Avoid_: Rainout
+
+**Inclement Weather**:
+The club's trigger for showing a weather warning on the Where is Practice page: a forecast of at least 40% precipitation probability at practice time, or at any hour earlier on the same calendar day at the Practice Field. Signals that the Practice Field may be closed and Practice may move to a Turf Field.
+_Avoid_: Bad weather, rain
+
+**Turf Field**:
+A synthetic-turf practice location that does not close for rain, used as the fallback when a Practice Field is closed.
+_Avoid_: Backup field, turf
+
 ## Admin
 
 **Admin handler**:
