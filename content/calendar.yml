@@ -5,13 +5,13 @@ filters:
     matches: practice|training|wrestling
     hideSummary: true
   - name: Events
-    notMatches: practice|board|OG|training|wrestling|RG \@|D1|D3|Rocky Gorge vs| Rocky Gorge \@|RG vs|volunteer
+    notMatches: practice|board|OG|training|wrestling|RG\ \@|D1|D3|Rocky\ Gorge\vs|Rocky\ Gorge\ \@|RG\ vs|volunteer
   - name: Board Meetings
     hideSummary: true
     matches: Board
     limit: 1
   - name: Matches
-    matches: RG \@|D1|D3|Rocky Gorge vs| Rocky Gorge \@|RG vs
+    matches: RG\ \@|D1|D3|Rocky\ Gorge\ vs|Rocky\ Gorge\ \@|RG\ vs
     notMatches: ''
     hideSummary: false
     limit: 4
