@@ -11,7 +11,7 @@ filters:
     matches: Board
     limit: 1
   - name: Matches
-    matches: RG @|D1|D3|Rocky Gorge vs| Rocky Gorge @|RG vs
+    matches: RG \@|D1|D3|Rocky Gorge vs| Rocky Gorge \@|RG vs
     notMatches: ''
     hideSummary: false
     limit: 4
