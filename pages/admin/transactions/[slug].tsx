@@ -1,14 +1,23 @@
 import { RequireAuth } from '@/components/RequireAuth';
 import { TransactionsReport } from '@/components/admin/TransactionsReport';
+import { DuesDiffPanel } from '@/components/admin/DuesDiffPanel';
 import store from '@content/store.yml';
-import type { StoreItem } from '@/types/data';
+import duesYaml from '@content/admin/dues.yaml';
+import type { StoreItem, Dues } from '@/types/data';
 
 interface AdminItemTransactionsProps {
   item: StoreItem;
+  dues: Dues[];
+  supporters: string[];
 }
 
-export default function AdminItemTransactionsPage({ item }: AdminItemTransactionsProps) {
+export default function AdminItemTransactionsPage({
+  item,
+  dues,
+  supporters,
+}: AdminItemTransactionsProps) {
   const hasSubscriptions = (item.subscriptions ?? []).length > 0;
+  const isDues = item.slug === 'dues';
   return (
     <RequireAuth>
       <TransactionsReport
@@ -21,6 +30,17 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
         item={hasSubscriptions ? item : undefined}
         initialFilter={hasSubscriptions ? undefined : item.description}
         fileStem={`paypal-transactions_${item.slug}`}
+        renderPanel={
+          isDues
+            ? (visible) => (
+                <DuesDiffPanel
+                  transactions={visible}
+                  existingDues={dues}
+                  existingSupporters={supporters}
+                />
+              )
+            : undefined
+        }
       />
     </RequireAuth>
   );
@@ -40,6 +60,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }: { params?: { slug: string } }) {
   const entry = store.find((item) => item.slug === params?.slug);
   if (!entry) return { notFound: true };
+  const supporters = store.find((item) => item.slug === 'supporters')?.supporters ?? [];
 
   return {
     props: {
@@ -49,6 +70,8 @@ export async function getStaticProps({ params }: { params?: { slug: string } }) 
         description: entry.description,
         subscriptions: entry.subscriptions ?? [],
       },
+      dues: duesYaml,
+      supporters,
     },
   };
 }

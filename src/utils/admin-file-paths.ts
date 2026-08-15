@@ -6,4 +6,5 @@ export const ADMIN_FILE_PATHS: Record<string, string> = {
   calendar: 'content/calendar.yml',
   link_mappings: 'config/link_mappings.yml',
   home: 'content/home.yml',
+  dues: 'content/admin/dues.yaml',
 };
