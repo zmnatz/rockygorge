@@ -4,6 +4,7 @@ import {
   createDefaultItem,
   moveItem,
   removeItemById,
+  seedAdminState,
   validateItemId,
 } from '@/utils/admin-items';
 
@@ -182,6 +183,27 @@ describe('moveItem', () => {
 
   it('returns a stable copy for an out-of-range index', () => {
     expect(moveItem(items, 5, -1)).toEqual(items);
+  });
+});
+
+describe('seedAdminState', () => {
+  const transform = (data: unknown) => (data as { filters: unknown[] }).filters;
+  const globalsTransform = (data: unknown) => ({ months: (data as { months: unknown }).months });
+  const raw = { filters: [{ name: 'Training' }], months: 3 };
+
+  it('seeds items from the raw data via the page transform', () => {
+    const { items } = seedAdminState(raw, transform, globalsTransform);
+    expect(items).toEqual([{ name: 'Training' }]);
+  });
+
+  it('seeds globals from the raw data via the globals transform', () => {
+    const { globals } = seedAdminState(raw, transform, globalsTransform);
+    expect(globals).toEqual({ months: 3 });
+  });
+
+  it('defaults globals to an empty object when no globals transform is provided', () => {
+    const { globals } = seedAdminState(raw, transform);
+    expect(globals).toEqual({});
   });
 });
 

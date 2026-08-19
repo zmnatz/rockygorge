@@ -18,6 +18,10 @@ Files: `admin.yml`, `link_mappings.yml`
 A single entry in the team's Google Calendar — `summary`, `location`, `htmlLink`, `start`, `end`. Displayed on the calendar surface and filtered into categories (Training, Events, Board Meetings) by regex in `calendar.yml`. A calendar item is the *source* for generating an event, never linked to one after generation.
 _Avoid_: Event (when referring to a calendar entry)
 
+**Practice**:
+A Calendar Item classified under the Training category — i.e. its summary matches the Training filter regex (`practice|training|wrestling`) in `calendar.yml`. The "Where is Practice" surface shows the next Practice by start time. Not to be confused with an Event, which is generated content in `events.yml`.
+_Avoid_: Training, training event, practice session
+
 **Event**:
 A site landing page stored in `events.yml` — `slug`, `title`, `description`, `summary`, `details`, `hide`, `organizers`. Rendered at `/events/[slug]`. An event carries its own date, location, and time as copied `location`/`start`/`end` snapshot values; it does not reference a calendar item.
 _Avoid_: Calendar entry, schedule appointment
@@ -38,8 +42,68 @@ _Avoid_: Product, purchase option
 The lookup used by `<CalendarEventDetail>` to render a date/time/location block on a page: it lowercases and substring-matches the page title against every upcoming calendar item. Used on event pages and store pages. Generation does not replace this — pages keep rendering through the match, and the snapshot sits alongside it as data.
 _Avoid_: Precise lookup, calendar association
 
+## Weather & Fields
+
+**Practice Field**:
+The county-maintained grass field the club holds outdoor Practice on. The club currently uses two: the Supplee Lane field in Laurel and the Beltsville Community Center Rectangle. A Practice's calendar location is matched to a Practice Field. Practice moves to a Turf Field when a Practice Field is closed.
+_Avoid_: Field, home field
+
+**Field Status**:
+The county's live announcement of whether a Practice Field is open for play, published on the county's Statusfy feed (e.g. "It's a go! Fields are open for play."). It is the authority the Where is Practice page shows for whether the club's Practice Field is usable, and it changes with weather and maintenance.
+_Avoid_: Field condition, rainout line
+
+**Field Closure**:
+The state of a Practice Field being unavailable as announced by Field Status, typically because of rain. A Field Closure moves Practice to a Turf Field; the club communicates the move through the team WhatsApp group.
+_Avoid_: Rainout
+
+**Inclement Weather**:
+The club's trigger for showing a weather warning on the Where is Practice page: a forecast of at least 40% precipitation probability at practice time, or at any hour earlier on the same calendar day at the Practice Field. Signals that the Practice Field may be closed and Practice may move to a Turf Field.
+_Avoid_: Bad weather, rain
+
+**Turf Field**:
+A synthetic-turf practice location that does not close for rain, used as the fallback when a Practice Field is closed.
+_Avoid_: Backup field, turf
+
 ## Admin
 
 **Admin handler**:
-The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow.
+The Netlify function that persists admin edits by writing the updated YAML to a new GitHub branch and opening a pull request. Saving an event from the admin does not publish directly; it goes through the PR flow. It rejects requests that carry no valid Netlify Identity JWT.
 _Avoid_: Save endpoint
+
+**Admin Console**:
+The `/admin` route group where Content and Config are managed. Signing in is required to use it.
+_Avoid_: admin pages, admin section, CMS
+
+**Netlify Identity**:
+The sign-in service that backs the Admin Console. `RequireAuth` opens its login modal for unauthenticated `/admin` visitors, and `IdentityProvider` (`useIdentity`) exposes the signed-in state to the rest of the app.
+_Avoid_: login page, auth system
+
+**RequireAuth**:
+The component that gates `/admin` routes behind a Netlify Identity session — it opens the login modal for unauthenticated visitors and provides the signed-in access token to its subtree via `useRequireAuth`. It is the single owner of sign-in handling for the Admin Console; page components do not touch the auth layer directly.
+_Avoid_: auth guard, login gate
+
+**Administrator**:
+A person signed in to the Admin Console.
+_Avoid_: admin, user
+
+## Payments
+
+**Transaction**:
+A single PayPal record representing money that moved through the club's PayPal account — a payment received, a refund issued, or a withdrawal. Each transaction carries a gross amount and a PayPal fee; its net amount is gross plus fee. Transactions are queried by date range and shown read-only in the admin.
+_Avoid_: Payment (when it means any money movement), order, charge
+
+**Transaction Type**:
+The classification of a Transaction into Payment, Refund, or Withdrawal. A negative-amount transaction that references an earlier one is a Refund; a negative-amount transaction with no reference is a Withdrawal; anything else is a Payment.
+_Avoid_: Category, kind, status
+
+**Net amount**:
+The amount the club actually received from a Transaction — gross amount plus the PayPal fee (fees are negative). Refunds and withdrawals are net-negative.
+_Avoid_: Total, balance
+
+**Item Match**:
+A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
+_Avoid_: Association, linking (payments context)
+
+**Item Transactions**:
+The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
+_Avoid_: Purchase report, item sales

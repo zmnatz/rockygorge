@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import yaml from 'js-yaml';
+import { simulateServerSave } from './helpers/yaml-roundtrip';
 import { FormField } from '@/components/AdminPage/FormField';
 import type { FieldConfig } from '@/components/AdminPage/types';
 import { applyItemChange, createDefaultItem } from '@/utils/admin-items';
@@ -51,10 +51,7 @@ describe('FormField select', () => {
 
 describe('select value save pipeline', () => {
   function saveAndLoad(items: SectionItem[]): SectionItem[] {
-    const json = JSON.stringify(items);
-    const serverParsed = JSON.parse(json);
-    const yamlOutput = yaml.dump(serverParsed);
-    return yaml.load(yamlOutput) as SectionItem[];
+    return simulateServerSave<SectionItem[]>(items);
   }
 
   it('persists a chosen select value through the save + YAML roundtrip', () => {

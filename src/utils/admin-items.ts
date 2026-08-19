@@ -24,6 +24,8 @@ export function createDefaultItem(
       case 'textList':
         item[name] = [];
         break;
+      case 'subscriptionList':
+        break;
       default:
         item[name] = '';
         break;
@@ -93,6 +95,17 @@ export function applyItemChange<T>(
     return [...items, editingItem];
   }
   return items.map((item) => (getId(item) === originalId ? editingItem : item));
+}
+
+export function seedAdminState<T>(
+  data: unknown,
+  transform: (data: unknown) => T[],
+  globalsTransform?: (data: unknown) => Record<string, unknown>,
+): { items: T[]; globals: Record<string, unknown> } {
+  return {
+    items: transform(data),
+    globals: globalsTransform ? globalsTransform(data) : {},
+  };
 }
 
 export function removeItemById<T>(

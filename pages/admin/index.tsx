@@ -1,49 +1,49 @@
 import { 
-  Box, 
   Container, 
   Typography, 
   List, 
   ListItem, 
   ListItemButton, 
   ListItemText, 
-  Paper 
+  Paper
 } from '@mui/material';
 import Link from 'next/link';
+import { RequireAuth } from '@/components/RequireAuth';
 import adminYaml from '@config/admin.yml';
 
 export default function AdminIndex({ adminPages }) {
   return (
-    <Container sx={{ mt: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
+    <RequireAuth>
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h4" sx={{ mb: 1 }}>
           Admin Dashboard
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           Manage the site content through the following administration pages.
         </Typography>
-      </Box>
 
-      <Paper elevation={2}>
-        <List>
-          {adminPages.map((page) => (
-            <ListItem key={page.href} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={page.href}
-                sx={{ 
-                  transition: 'background-color 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <ListItemText primary={page.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-    </Container>
+        <Paper elevation={2}>
+          <List>
+            {adminPages.map((page) => (
+              <ListItem key={page.href} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={page.href}
+                  sx={{ 
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                >
+                  <ListItemText primary={page.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    </RequireAuth>
   );
 }
 
@@ -52,6 +52,16 @@ export async function getStaticProps() {
     name: config.title,
     href: `/admin/${type}`,
   }));
+
+  adminPages.push({
+    name: 'Dues',
+    href: '/admin/dues',
+  });
+
+  adminPages.push({
+    name: 'Transactions',
+    href: '/admin/transactions',
+  });
 
   return {
     props: {

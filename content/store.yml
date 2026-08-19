@@ -83,6 +83,8 @@
     - name: Player's Tier
       id: SFWCNPKX3WKF2
       description: Covers team gear, player dues, film analysis.
+      keywords:
+        - Dues Subscription
       options:
         - label: 'Option 1 : $35.00 USD - monthly'
           value: Option 1

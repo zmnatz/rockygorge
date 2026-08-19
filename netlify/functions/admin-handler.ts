@@ -1,7 +1,9 @@
 import { Octokit } from 'octokit';
 import { RequestError } from '@octokit/request-error';
-import yaml from 'js-yaml';
+import { dump } from 'js-yaml';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { NetlifyFunctionContext } from '../../src/types/netlify-context';
+import { internalServerError, methodNotAllowed, requireAuth } from '../../src/utils/admin-auth';
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -17,8 +19,11 @@ interface RepoFileContent {
 type UpdateFileParams = import('@octokit/plugin-rest-endpoint-methods').RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['parameters'];
 
 export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
-  return async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return async (event: APIGatewayProxyEvent, context: NetlifyFunctionContext): Promise<APIGatewayProxyResult> => {
     if (event.httpMethod === 'POST') {
+      const authError = requireAuth(context);
+      if (authError) return authError;
+
       try {
         const body = JSON.parse(event.body || '{}');
         const data = body;
@@ -56,7 +61,7 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           if (!(error instanceof RequestError) || error.status !== 404) throw error;
         }
 
-        const updatedYaml = yaml.dump(data);
+        const updatedYaml = dump(data);
 
         const updateParams: UpdateFileParams = {
           owner: OWNER,
@@ -87,17 +92,10 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
         };
       } catch (error: unknown) {
-        console.error(error);
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: error instanceof Error ? error.message : 'Internal Server Error' }),
-        };
+        return internalServerError(error);
       }
     }
 
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-    };
+    return methodNotAllowed();
   };
 }

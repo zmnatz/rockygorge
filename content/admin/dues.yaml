@@ -1,23 +1,56 @@
-- name: Elmer Avila
-  date: 2026-08-03
+- name: Jamison Hulbert
+  date: 2026-08-14
+- name: George Ding
+  date: 2026-08-12
+- name: Mason McIlwee
+  monthly: true
+  date: 2026-08-11
+- name: Javier Diaz-Pender
+  monthly: true
+  date: 2026-08-10
+- name: James Nutland
+  monthly: true
+  date: 2026-08-08
+- name: Paula Henry
+  monthly: true
+  date: 2026-08-06
 - name: Adam Wiley
+  monthly: true
+  date: 2026-08-05
+- name: Austin Bradley
   monthly: true
   date: 2026-08-05
 - name: Josh Floyd
   monthly: true
   date: 2026-08-04
-- name: Austin Bradley
+- name: Elmer Avila
+  date: 2026-08-03
+- name: Donte Speight
   monthly: true
-  date: 2026-08-05
-- name: Paula Henry
+  date: 2026-08-02
+- name: Dwayne Jenkins
   monthly: true
-  date: 2026-08-06
-- name: James Nutland
+  date: 2026-07-26
+- name: Matthew Carroll
   monthly: true
-  date: 2026-08-08
-- name: Javier Diaz-Pender
+  date: 2026-07-23
+- name: William Bush
   monthly: true
-  date: 2026-08-10
+  date: 2026-07-20
+- name: Tristan Cole
+  monthly: true
+  date: 2026-07-16
+- name: Alexander Wolke
+  monthly: true
+  date: 2026-07-16
+- name: John Bratt
+  monthly: true
+  date: 2026-07-16
+- name: Zaven Mnatzakanian
+  monthly: true
+  date: 2026-07-15
+- name: Gregory Teliczan
+  date: 2026-07-14
 - name: Aidan Leaird
   email: aidanleaird137@gmail.com
   type: Payment
