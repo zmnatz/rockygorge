@@ -107,3 +107,27 @@ _Avoid_: Association, linking (payments context)
 **Item Transactions**:
 The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
 _Avoid_: Purchase report, item sales
+
+## Dues
+
+**Dues Record**:
+The club's paid membership roll stored in `content/admin/dues.yaml` — one entry per member who has paid club dues, keyed by name, holding the payment date and whether the member pays Monthly Dues. A member appears at most once, regardless of how many payments they made; the entry's date is the most recent payment in scope.
+_Avoid_: Dues list, dues data, paid members
+
+**Supporter**:
+A person who pays the club's GODs Tier subscription to support the team — a distinct roll from the Dues Record's members. A supporter is recognized in a Transaction's item title by the `GODs` marker.
+_Avoid_: Sponsor, donor, backer
+
+**Monthly Dues**:
+A member's recurring subscription payment for player dues, as opposed to a one-time season payment. Recognized when a Transaction's item title names the dues subscription; tracked as the `monthly` flag on a Dues Record entry.
+_Avoid_: Subscription, recurring dues
+
+**Supporters List**:
+The list of Supporters stored as the `supporters` name array on the supporters Store Item in `store.yml`, rendered publicly as the "Thanks to all our supporters!" card on the supporters page.
+_Avoid_: Supporters record, thanks card
+
+## Admin commit flow
+
+**Dues Record Update**:
+The admin maintenance flow for the Dues Record and Supporters List on the dues Item Transactions page: it diffs the visible Transactions against one of the two rolls, chosen by the administrator, and proposes the payers not yet recorded. Only Success (`S`) Transactions are proposed; each payer appears at most once, at their most recent payment. Commits go through the Admin handler's pull-request flow.
+_Avoid_: Dues export, sync dues

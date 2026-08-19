@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Alert,
   Box,
@@ -85,6 +85,9 @@ export interface TransactionsReportProps {
   item?: StoreItem;
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
+  /** Optional slot rendered below the report with access to the currently
+   *  visible transactions (e.g. the dues diff & commit panel). */
+  renderPanel?: (visible: PaypalTransaction[]) => ReactNode;
 }
 
 export function TransactionsReport({
@@ -93,6 +96,7 @@ export function TransactionsReport({
   initialFilter,
   item,
   fileStem,
+  renderPanel,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
   const [start, setStart] = useState('');
@@ -287,6 +291,8 @@ export function TransactionsReport({
           </Table>
         </TableContainer>
       )}
+
+      {renderPanel?.(visible)}
     </Container>
   );
 }
