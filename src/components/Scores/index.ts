@@ -1,1 +1,1 @@
-export {Scores} from './Scores'
+export { Scores } from "./Scores";

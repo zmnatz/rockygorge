@@ -1,11 +1,15 @@
-import { AdminPage } from '../../src/components/AdminPage';
-import adminYaml from '@config/admin.yml';
-import { generateLabel } from '../../src/utils/labels';
-import { ITEM_ID_MAPPINGS, RENDER_MAPPINGS, TRANSFORM_MAPPINGS } from '../../src/utils/admin-config';
-import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
-import fs from 'fs';
-import yaml from 'js-yaml';
-import path from 'path';
+import adminYaml from "@config/admin.yml";
+import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
+import { AdminPage } from "../../src/components/AdminPage";
+import {
+  ITEM_ID_MAPPINGS,
+  RENDER_MAPPINGS,
+  TRANSFORM_MAPPINGS,
+} from "../../src/utils/admin-config";
+import { ADMIN_FILE_PATHS } from "../../src/utils/admin-file-paths";
+import { generateLabel } from "../../src/utils/labels";
 
 export default function GenericAdmin({ initialData, type }) {
   const yamlConfig = adminYaml[type];
@@ -14,14 +18,20 @@ export default function GenericAdmin({ initialData, type }) {
     return <div>Admin page not found.</div>;
   }
 
-  const transform = yamlConfig.transforms ? TRANSFORM_MAPPINGS[yamlConfig.transforms as keyof typeof TRANSFORM_MAPPINGS] : null;
+  const transform = yamlConfig.transforms
+    ? TRANSFORM_MAPPINGS[
+        yamlConfig.transforms as keyof typeof TRANSFORM_MAPPINGS
+      ]
+    : null;
 
   return (
     <AdminPage
       title={yamlConfig.title}
       endpoint={yamlConfig.endpoint}
       initialData={initialData}
-      getItemId={ITEM_ID_MAPPINGS[yamlConfig.getItemId] ?? ((item: any) => item.id)}
+      getItemId={
+        ITEM_ID_MAPPINGS[yamlConfig.getItemId] ?? ((item: any) => item.id)
+      }
       initialDataTransform={transform?.initialDataTransform}
       initialGlobalsTransform={transform?.initialGlobalsTransform}
       saveDataTransform={transform?.saveDataTransform}
@@ -32,7 +42,8 @@ export default function GenericAdmin({ initialData, type }) {
       columns={(yamlConfig.columns || []).map((col: any) => ({
         header: col.header || generateLabel(col.field),
         render: (item: any) => {
-          const renderer = RENDER_MAPPINGS[col.render] || RENDER_MAPPINGS.default;
+          const renderer =
+            RENDER_MAPPINGS[col.render] || RENDER_MAPPINGS.default;
           return renderer(item, col.field);
         },
       }))}
@@ -65,7 +76,7 @@ export async function getStaticProps({ params }) {
   }
 
   const filePath = path.join(process.cwd(), ADMIN_FILE_PATHS[type]);
-  const fileContents = fs.readFileSync(filePath, 'utf8');
+  const fileContents = fs.readFileSync(filePath, "utf8");
   const data = yaml.load(fileContents);
 
   return {

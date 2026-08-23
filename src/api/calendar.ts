@@ -1,9 +1,10 @@
+import calendarInfo from "@content/calendar.yml";
 import { useQuery } from "@tanstack/react-query";
-
-import calendarInfo from '@content/calendar.yml'
-import { CalendarEvent, CalendarAPIResponse } from "@/components/CalendarCard/types";
+import type {
+  CalendarAPIResponse,
+  CalendarEvent,
+} from "@/components/CalendarCard/types";
 import { filterEvents } from "@/utils/calendar";
-
 
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
@@ -22,23 +23,26 @@ export function useCalendarEvents() {
     ],
     staleTime: 1000 * 60 * 5,
     placeholderData: {
-      items: []
+      items: [],
     },
     select: (data: CalendarAPIResponse) => {
-      const events = data.items.map(({summary, location, htmlLink, start, end}) => ({
-        summary,
-        location,
-        htmlLink,
-        start: start.dateTime ?? start.date,
-        end: end.dateTime ?? end.date,
-      }));
+      const events = data.items.map(
+        ({ summary, location, htmlLink, start, end }) => ({
+          summary,
+          location,
+          htmlLink,
+          start: start.dateTime ?? start.date,
+          end: end.dateTime ?? end.date,
+        }),
+      );
 
       return calendarInfo.filters.reduce(
         (results, filter) => ({
-            ...results,
-            [filter.name]: filterEvents(events, filter)
-        }), {} as Record<string, CalendarEvent[]>
-      )
-    }
+          ...results,
+          [filter.name]: filterEvents(events, filter),
+        }),
+        {} as Record<string, CalendarEvent[]>,
+      );
+    },
   });
 }

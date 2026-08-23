@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from "vitest";
 
 interface FieldCheck {
   name: string;
@@ -14,14 +14,14 @@ interface DataArrayConfig {
 
 export function validateDataArray<T extends Record<string, any>>(
   items: T[],
-  config: DataArrayConfig
+  config: DataArrayConfig,
 ) {
   describe(`${config.label}`, () => {
-    it('is an array', () => {
+    it("is an array", () => {
       expect(Array.isArray(items)).toBe(true);
     });
 
-    it('each item has required fields', () => {
+    it("each item has required fields", () => {
       items.forEach((item) => {
         config.requiredFields.forEach(({ name, type, optional }) => {
           if (optional) {

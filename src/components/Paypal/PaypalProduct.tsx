@@ -1,15 +1,20 @@
-import { useState } from "react";
+import Box from "@mui/material/Box";
 import {
-  CreateOrderBraintreeActions,
-  OnApproveBraintreeActions,
+  type CreateOrderBraintreeActions,
+  type OnApproveBraintreeActions,
   PayPalButtons,
 } from "@paypal/react-paypal-js";
-import Box from "@mui/material/Box";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
-import { PaypalProvider } from './utils'
-import { PaypalProductProps } from "./types";
+import {
+  FlexiblePaymentForm,
+  PaymentOptions,
+  Subscription,
+  SupporterCard,
+} from "./components";
+import type { PaypalProductProps } from "./types";
+import { PaypalProvider } from "./utils";
 
 export function PaypalProduct({
   options = [],
@@ -31,7 +36,10 @@ export function PaypalProduct({
     actions: CreateOrderBraintreeActions,
   ) => actions.order.create(generateOrderInfo(description, amount));
 
-  const handleApprove = async (_data: any, actions: OnApproveBraintreeActions) => {
+  const handleApprove = async (
+    _data: any,
+    actions: OnApproveBraintreeActions,
+  ) => {
     await actions.order.capture();
     router.push("/purchase/success");
   };
@@ -42,9 +50,18 @@ export function PaypalProduct({
       {children}
       {options.length > 0 && (
         <>
-          <PaymentOptions description={description} value={amount} onChange={handleSelect} options={options} />
+          <PaymentOptions
+            description={description}
+            value={amount}
+            onChange={handleSelect}
+            options={options}
+          />
           {flexiblePayment && (
-            <FlexiblePaymentForm donation={donation} value={amount} onChange={setEditAmount} />
+            <FlexiblePaymentForm
+              donation={donation}
+              value={amount}
+              onChange={setEditAmount}
+            />
           )}
           <PaypalProvider>
             <PayPalButtons
@@ -63,19 +80,17 @@ export function PaypalProduct({
           </PaypalProvider>
         </>
       )}
-      {subscriptions.length > 0 && (
-        subscriptions.map((s) => (
-          <Subscription key={s.id} {...s} />
-        ))
-      )}
-      {supporters && <SupporterCard supporters={supporters}/>}
+      {subscriptions.length > 0 &&
+        subscriptions.map((s) => <Subscription key={s.id} {...s} />)}
+      {supporters && <SupporterCard supporters={supporters} />}
     </Box>
   );
 }
 
-
-
-function generateOrderInfo(description: string, amount: number): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
+function generateOrderInfo(
+  description: string,
+  amount: number,
+): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
   return {
     purchase_units: [
       {
@@ -88,4 +103,3 @@ function generateOrderInfo(description: string, amount: number): import("@paypal
     ],
   };
 }
-

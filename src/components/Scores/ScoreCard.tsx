@@ -1,9 +1,9 @@
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import Typography from '@mui/material/Typography';
-import { Score, Team } from './types';
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Typography from "@mui/material/Typography";
+import type { Score, Team } from "./types";
 
 interface ScoreCardProps {
   score: Score;
@@ -13,9 +13,15 @@ export function ScoreCard({ score }: ScoreCardProps) {
   return (
     <Card className="score-card">
       <CardHeader title={score.compName} />
-      <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <CardContent
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <TeamBadge team={score.homeTeam} />
-        <Box sx={{ textAlign: 'center' }}>
+        <Box sx={{ textAlign: "center" }}>
           <Typography variant="h6">
             {score.homeTeam.score} - {score.awayTeam.score}
           </Typography>

@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import yaml from 'js-yaml';
-import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from '@/utils/admin-config';
+import yaml from "js-yaml";
+import { describe, expect, it } from "vitest";
+import { ITEM_ID_MAPPINGS, TRANSFORM_MAPPINGS } from "@/utils/admin-config";
 
-function getItemId(item: any, strategy: string = 'slug'): string {
+function getItemId(item: any, strategy: string = "slug"): string {
   const fn = ITEM_ID_MAPPINGS[strategy] || ((item: any) => item.id);
   return fn(item);
 }
@@ -22,17 +22,17 @@ function linkMappingsSaveTransform(items: any[]) {
 function serializeToYaml(data: any): string {
   // Simulate the server's admin-handler flow:
   // body is already JSON-parsed by Netlify, then yaml.dump is called
-  if (typeof data === 'string') {
+  if (typeof data === "string") {
     return yaml.dump(JSON.parse(data));
   }
   return yaml.dump(data);
 }
 
-describe('boolean save pipeline - identity transform (store/events/links/forms)', () => {
-  it('preserves boolean true through the full pipeline', () => {
+describe("boolean save pipeline - identity transform (store/events/links/forms)", () => {
+  it("preserves boolean true through the full pipeline", () => {
     const items = [
-      { slug: 'item1', hide: true, title: 'Item 1' },
-      { slug: 'item2', hide: false, title: 'Item 2' },
+      { slug: "item1", hide: true, title: "Item 1" },
+      { slug: "item2", hide: false, title: "Item 2" },
     ];
 
     const data = identitySaveTransform(items);
@@ -45,10 +45,8 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     expect(loaded[1].hide).toBe(false);
   });
 
-  it('preserves boolean false through the full pipeline', () => {
-    const items = [
-      { slug: 'item1', hide: false, title: 'Item 1' },
-    ];
+  it("preserves boolean false through the full pipeline", () => {
+    const items = [{ slug: "item1", hide: false, title: "Item 1" }];
 
     const data = identitySaveTransform(items);
     const json = JSON.stringify(data);
@@ -59,15 +57,15 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     expect(loaded[0].hide).toBe(false);
   });
 
-  it('preserves hide field when toggled from true to false', () => {
+  it("preserves hide field when toggled from true to false", () => {
     const originalItems = [
-      { slug: 'banquet', hide: true, title: 'Banquet' },
-      { slug: 'open', hide: false, title: 'Open' },
+      { slug: "banquet", hide: true, title: "Banquet" },
+      { slug: "open", hide: false, title: "Open" },
     ];
 
     // User toggles banquet's hide from true to false
-    const updatedItems = originalItems.map(item =>
-      item.slug === 'banquet' ? { ...item, hide: false } : item
+    const updatedItems = originalItems.map((item) =>
+      item.slug === "banquet" ? { ...item, hide: false } : item,
     );
 
     const data = identitySaveTransform(updatedItems);
@@ -80,14 +78,10 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     expect(loaded[1].hide).toBe(false);
   });
 
-  it('preserves hide field when toggled from false to true', () => {
-    const originalItems = [
-      { slug: 'item1', hide: false, title: 'Item 1' },
-    ];
+  it("preserves hide field when toggled from false to true", () => {
+    const originalItems = [{ slug: "item1", hide: false, title: "Item 1" }];
 
-    const updatedItems = originalItems.map(item =>
-      ({ ...item, hide: true })
-    );
+    const updatedItems = originalItems.map((item) => ({ ...item, hide: true }));
 
     const data = identitySaveTransform(updatedItems);
     const json = JSON.stringify(data);
@@ -98,15 +92,13 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     expect(loaded[0].hide).toBe(true);
   });
 
-  it('adds hide field when item did not previously have one', () => {
+  it("adds hide field when item did not previously have one", () => {
     const originalItems = [
-      { slug: 'item1', title: 'Item 1' },  // no hide field
+      { slug: "item1", title: "Item 1" }, // no hide field
     ];
 
     // User toggles checkbox to checked (true)
-    const updatedItems = originalItems.map(item =>
-      ({ ...item, hide: true })
-    );
+    const updatedItems = originalItems.map((item) => ({ ...item, hide: true }));
 
     const data = identitySaveTransform(updatedItems);
     const json = JSON.stringify(data);
@@ -117,14 +109,15 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     expect(loaded[0].hide).toBe(true);
   });
 
-  it('removes none of the fields when hide is present', () => {
+  it("removes none of the fields when hide is present", () => {
     const originalItems = [
-      { slug: 'item1', hide: true, title: 'Item 1', description: 'Test' },
+      { slug: "item1", hide: true, title: "Item 1", description: "Test" },
     ];
 
-    const updatedItems = originalItems.map(item =>
-      ({ ...item, hide: false })
-    );
+    const updatedItems = originalItems.map((item) => ({
+      ...item,
+      hide: false,
+    }));
 
     const data = identitySaveTransform(updatedItems);
     const json = JSON.stringify(data);
@@ -132,19 +125,19 @@ describe('boolean save pipeline - identity transform (store/events/links/forms)'
     const yamlOutput = serializeToYaml(serverParsed);
     const loaded = yaml.load(yamlOutput) as any[];
 
-    expect(loaded[0]).toHaveProperty('slug', 'item1');
-    expect(loaded[0]).toHaveProperty('hide', false);
-    expect(loaded[0]).toHaveProperty('title', 'Item 1');
-    expect(loaded[0]).toHaveProperty('description', 'Test');
+    expect(loaded[0]).toHaveProperty("slug", "item1");
+    expect(loaded[0]).toHaveProperty("hide", false);
+    expect(loaded[0]).toHaveProperty("title", "Item 1");
+    expect(loaded[0]).toHaveProperty("description", "Test");
   });
 });
 
-describe('boolean save pipeline - calendar transform', () => {
-  it('preserves hideSummary fields through the calendar save transform', () => {
+describe("boolean save pipeline - calendar transform", () => {
+  it("preserves hideSummary fields through the calendar save transform", () => {
     const items = [
-      { name: 'Training', hideSummary: true, matches: 'practice|training' },
-      { name: 'Events', hideSummary: false, notMatches: 'practice|board' },
-      { name: 'Board Meetings', hideSummary: false, matches: 'Board' },
+      { name: "Training", hideSummary: true, matches: "practice|training" },
+      { name: "Events", hideSummary: false, notMatches: "practice|board" },
+      { name: "Board Meetings", hideSummary: false, matches: "Board" },
     ];
     const globals = { months: 3 };
 
@@ -160,16 +153,14 @@ describe('boolean save pipeline - calendar transform', () => {
     expect(loaded.filters[2].hideSummary).toBe(false);
   });
 
-  it('preserves hideSummary field when item did not previously have one', () => {
+  it("preserves hideSummary field when item did not previously have one", () => {
     const items = [
-      { name: 'Events', notMatches: 'practice|board' },  // no hideSummary
+      { name: "Events", notMatches: "practice|board" }, // no hideSummary
     ];
     const globals = { months: 3 };
 
     // Simulate user checking the checkbox (sets hideSummary from undefined to true)
-    const updatedItems = items.map(item =>
-      ({ ...item, hideSummary: true })
-    );
+    const updatedItems = items.map((item) => ({ ...item, hideSummary: true }));
 
     const data = calendarSaveTransform(updatedItems, globals);
     const json = JSON.stringify(data);
@@ -181,15 +172,17 @@ describe('boolean save pipeline - calendar transform', () => {
   });
 });
 
-describe('AdminPage save flow - dialog edits propagate to save', () => {
-  it('merges editingItem into items before save, preserving checkbox toggle', () => {
-    const items = [
-      { slug: 'banquet', hide: true, title: 'Banquet' },
-    ];
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+describe("AdminPage save flow - dialog edits propagate to save", () => {
+  it("merges editingItem into items before save, preserving checkbox toggle", () => {
+    const items = [{ slug: "banquet", hide: true, title: "Banquet" }];
+    const editingItem = { slug: "banquet", hide: false, title: "Banquet" };
 
     const itemsToSave = editingItem
-      ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
+      ? items.map((item) =>
+          getItemId(item, "slug") === getItemId(editingItem, "slug")
+            ? editingItem
+            : item,
+        )
       : items;
 
     const data = identitySaveTransform(itemsToSave);
@@ -199,14 +192,16 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
     expect(parsed[0].hide).toBe(false);
   });
 
-  it('merges newly added boolean field from dialog into items before save', () => {
-    const items = [
-      { slug: 'dues', title: 'Dues' },
-    ];
-    const editingItem = { slug: 'dues', title: 'Dues', hide: true };
+  it("merges newly added boolean field from dialog into items before save", () => {
+    const items = [{ slug: "dues", title: "Dues" }];
+    const editingItem = { slug: "dues", title: "Dues", hide: true };
 
     const itemsToSave = editingItem
-      ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
+      ? items.map((item) =>
+          getItemId(item, "slug") === getItemId(editingItem, "slug")
+            ? editingItem
+            : item,
+        )
       : items;
 
     const data = identitySaveTransform(itemsToSave);
@@ -216,14 +211,16 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
     expect(parsed[0].hide).toBe(true);
   });
 
-  it('saves items as-is when editingItem is null', () => {
-    const items = [
-      { slug: 'banquet', hide: true, title: 'Banquet' },
-    ];
+  it("saves items as-is when editingItem is null", () => {
+    const items = [{ slug: "banquet", hide: true, title: "Banquet" }];
     const editingItem = null;
 
     const itemsToSave = editingItem
-      ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
+      ? items.map((item) =>
+          getItemId(item, "slug") === getItemId(editingItem, "slug")
+            ? editingItem
+            : item,
+        )
       : items;
 
     const data = identitySaveTransform(itemsToSave);
@@ -233,16 +230,18 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
     expect(parsed[0].hide).toBe(true);
   });
 
-  it('preserves boolean toggle through handleSaveItem + handleSaveAll flow', () => {
+  it("preserves boolean toggle through handleSaveItem + handleSaveAll flow", () => {
     const items = [
-      { slug: 'banquet', hide: true, title: 'Banquet' },
-      { slug: 'open', hide: false, title: 'Open' },
+      { slug: "banquet", hide: true, title: "Banquet" },
+      { slug: "open", hide: false, title: "Open" },
     ];
 
     // Simulate: user opens dialog for 'banquet', toggles hide to false, clicks 'Save to List'
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
-    const updated = items.map(item =>
-      getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item
+    const editingItem = { slug: "banquet", hide: false, title: "Banquet" };
+    const updated = items.map((item) =>
+      getItemId(item, "slug") === getItemId(editingItem, "slug")
+        ? editingItem
+        : item,
     );
 
     // Verify handleSaveItem correctly replaced the item
@@ -258,16 +257,20 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
     expect(parsed[1].hide).toBe(false);
   });
 
-  it('does not corrupt other items when merging editingItem', () => {
+  it("does not corrupt other items when merging editingItem", () => {
     const items = [
-      { slug: 'banquet', hide: true, title: 'Banquet' },
-      { slug: 'open', hide: false, title: 'Open' },
-      { slug: 'donations', hide: true, title: 'Donations' },
+      { slug: "banquet", hide: true, title: "Banquet" },
+      { slug: "open", hide: false, title: "Open" },
+      { slug: "donations", hide: true, title: "Donations" },
     ];
-    const editingItem = { slug: 'banquet', hide: false, title: 'Banquet' };
+    const editingItem = { slug: "banquet", hide: false, title: "Banquet" };
 
     const itemsToSave = editingItem
-      ? items.map(item => getItemId(item, 'slug') === getItemId(editingItem, 'slug') ? editingItem : item)
+      ? items.map((item) =>
+          getItemId(item, "slug") === getItemId(editingItem, "slug")
+            ? editingItem
+            : item,
+        )
       : items;
 
     expect(itemsToSave[0].hide).toBe(false);
@@ -276,26 +279,26 @@ describe('AdminPage save flow - dialog edits propagate to save', () => {
   });
 });
 
-describe('AdminPage useEffect dependency stability', () => {
-  it('does not include initialDataTransform or initialGlobalsTransform in useEffect deps', () => {
-    const fs = require('fs');
+describe("AdminPage useEffect dependency stability", () => {
+  it("does not include initialDataTransform or initialGlobalsTransform in useEffect deps", () => {
+    const fs = require("fs");
     const source = fs.readFileSync(
-      require('path').join(__dirname, '../components/AdminPage/AdminPage.tsx'),
-      'utf8'
+      require("path").join(__dirname, "../components/AdminPage/AdminPage.tsx"),
+      "utf8",
     );
 
     // Extract the useEffect hook and its dependency array
-    const effectStart = source.indexOf('useEffect(() =>');
-    const effectEnd = source.indexOf('const handleSaveItem', effectStart);
+    const effectStart = source.indexOf("useEffect(() =>");
+    const effectEnd = source.indexOf("const handleSaveItem", effectStart);
     const effectBlock = source.slice(effectStart, effectEnd);
 
     // Verify the dependency array is just [endpoint, initialData]
-    expect(effectBlock).toContain('}, [endpoint, initialData]);');
+    expect(effectBlock).toContain("}, [endpoint, initialData]);");
 
-    const depStart = effectBlock.indexOf('}, [') + 4;
-    const depEnd = effectBlock.indexOf(']);', depStart);
+    const depStart = effectBlock.indexOf("}, [") + 4;
+    const depEnd = effectBlock.indexOf("]);", depStart);
     const depsStr = effectBlock.slice(depStart, depEnd);
-    const deps = depsStr.split(',').map((d: string) => d.trim());
-    expect(deps).toEqual(['endpoint', 'initialData']);
+    const deps = depsStr.split(",").map((d: string) => d.trim());
+    expect(deps).toEqual(["endpoint", "initialData"]);
   });
 });

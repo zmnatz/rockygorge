@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
-import { post } from "@/utils/api"
-import { Score } from '@/components/Scores/types'
+import { useQuery } from "@tanstack/react-query";
+import type { Score } from "@/components/Scores/types";
+import { post } from "@/utils/api";
 
-const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
+const SCORES_URL = "https://rugby-au-cms.graphcdn.app";
 
 const SCORES_QUERY = `query MatchCardsEntityPollQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
   getEntityFixturesAndResults(
@@ -85,31 +85,35 @@ fragment Fixtures_broadcastPartners on BroadcastPartner {
 
 async function fetchScores() {
   try {
-    const data = await post<{ data: { getEntityFixturesAndResults: Score[] } }>(SCORES_URL, {
-      operationName: "MatchCardsEntityPollQuery",
-      variables: {
-        entityId: 91273,
-        entityType: "club",
-        type: "all",
-        skip: 0,
-        limit: 8,
+    const data = await post<{ data: { getEntityFixturesAndResults: Score[] } }>(
+      SCORES_URL,
+      {
+        operationName: "MatchCardsEntityPollQuery",
+        variables: {
+          entityId: 91273,
+          entityType: "club",
+          type: "all",
+          skip: 0,
+          limit: 8,
+        },
+        query: SCORES_QUERY,
       },
-      query: SCORES_QUERY,
-    });
+    );
     return data.data.getEntityFixturesAndResults.filter(
-      (score) => score.homeTeam.score.length > 0 && score.awayTeam.score.length > 0
+      (score) =>
+        score.homeTeam.score.length > 0 && score.awayTeam.score.length > 0,
     );
   } catch (error) {
-    console.info('Unable to load scores', error);
+    console.info("Unable to load scores", error);
     return [];
   }
 }
 
 export function useScores() {
   const query = useQuery({
-    queryKey: ['scores'],
+    queryKey: ["scores"],
     queryFn: fetchScores,
-    placeholderData: []
-  })
+    placeholderData: [],
+  });
   return query.data;
 }

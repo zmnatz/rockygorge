@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function GauntletIndex() {
-    const router = useRouter();
+  const router = useRouter();
 
-    useEffect(() => {
-        router.replace('/gauntlet/current');
-    }, [router]);
+  useEffect(() => {
+    router.replace("/gauntlet/current");
+  }, [router]);
 
-    return null;
+  return null;
 }

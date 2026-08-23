@@ -1,12 +1,12 @@
-import { createAdminHandler } from './admin-handler';
-import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
+import { ADMIN_FILE_PATHS } from "../../src/utils/admin-file-paths";
+import { createAdminHandler } from "./admin-handler";
 
 export const config = {
-    path: '/api/admin-calendar',
+  path: "/api/admin-calendar",
 };
 
 export const handler = createAdminHandler({
-    filePath: ADMIN_FILE_PATHS.calendar,
-    branchPrefix: 'admin-calendar',
-    label: 'calendar',
+  filePath: ADMIN_FILE_PATHS.calendar,
+  branchPrefix: "admin-calendar",
+  label: "calendar",
 });

@@ -1,2 +1,2 @@
-export * from './AdminPage';
-export * from './types';
+export * from "./AdminPage";
+export * from "./types";

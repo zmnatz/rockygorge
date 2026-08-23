@@ -5,26 +5,26 @@ interface DefaultField {
 
 export function createDefaultItem(
   fields: DefaultField[],
-  pageDefaults: Record<string, unknown> = {}
+  pageDefaults: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const item: Record<string, unknown> = {};
   for (const field of fields) {
     const name = String(field.name);
     switch (field.type) {
-      case 'number':
+      case "number":
         break;
-      case 'boolean':
-        item[name] = name === 'hide';
+      case "boolean":
+        item[name] = name === "hide";
         break;
-      case 'keyValueMap':
-      case 'textKeyValueMap':
-      case 'textList':
+      case "keyValueMap":
+      case "textKeyValueMap":
+      case "textList":
         item[name] = [];
         break;
-      case 'text':
-      case 'textarea':
+      case "text":
+      case "textarea":
       default:
-        item[name] = '';
+        item[name] = "";
         break;
     }
   }
@@ -36,17 +36,19 @@ export function validateItemId<T>(
   candidate: T,
   originalId: string | null,
   getId: (item: T) => string,
-  idLabel = 'id'
+  idLabel = "id",
 ): string | null {
   const id = getId(candidate);
-  const normalizedId = typeof id === 'string' ? id.trim() : '';
+  const normalizedId = typeof id === "string" ? id.trim() : "";
   if (!normalizedId) {
     return `The ${idLabel} must not be blank.`;
   }
-  const normalizedOriginalId = originalId === null ? null : String(originalId).trim();
+  const normalizedOriginalId =
+    originalId === null ? null : String(originalId).trim();
   const isDuplicate = items.some((item) => {
     const otherId = String(getId(item)).trim();
-    if (normalizedOriginalId !== null && otherId === normalizedOriginalId) return false;
+    if (normalizedOriginalId !== null && otherId === normalizedOriginalId)
+      return false;
     return otherId === normalizedId;
   });
   if (isDuplicate) {
@@ -59,7 +61,7 @@ export function applyItemChange<T>(
   items: T[],
   editingItem: T,
   originalId: string | null,
-  getId: (item: T) => string
+  getId: (item: T) => string,
 ): T[] {
   if (originalId === null) {
     return [...items, editingItem];
@@ -70,7 +72,7 @@ export function applyItemChange<T>(
 export function removeItemById<T>(
   items: T[],
   id: string,
-  getId: (item: T) => string
+  getId: (item: T) => string,
 ): T[] {
   return items.filter((item) => getId(item) !== id);
 }

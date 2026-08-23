@@ -1,12 +1,11 @@
-import { Typography, Box } from "@mui/material";
+import forms from "@content/forms.yml";
+import items from "@content/store.yml";
+import { Box, Typography } from "@mui/material";
 import Head from "next/head";
 import Link from "next/link";
 import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
-
-import {PaypalProduct} from "@/components/Paypal";
-import items from "@content/store.yml";
-import forms from "@content/forms.yml";
-import { Product, Form } from "@/types/data";
+import { PaypalProduct } from "@/components/Paypal";
+import type { Form, Product } from "@/types/data";
 import { getLinkText } from "@/utils/links";
 import { markdownToHtml } from "@/utils/markdown";
 
@@ -45,13 +44,18 @@ export default function StoreItem({
   donation,
   subscriptions,
   supporters,
-  form
+  form,
 }: Product & { form?: Form }) {
   return (
     <>
       <Head>
         <title>{title} | Rocky Gorge Rugby</title>
-        <meta name="description" content={description || `Get ${title} from the Rocky Gorge Rugby store.`} />
+        <meta
+          name="description"
+          content={
+            description || `Get ${title} from the Rocky Gorge Rugby store.`
+          }
+        />
       </Head>
       <PaypalProduct
         defaultAmount={defaultAmount}
@@ -63,13 +67,20 @@ export default function StoreItem({
         flexiblePayment
       >
         <Typography variant="h3">{title}</Typography>
-        {details && <div dangerouslySetInnerHTML={{__html: details}}/>}
-        
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: details is trusted site content from YAML */}
+        {details && <div dangerouslySetInnerHTML={{ __html: details }} />}
       </PaypalProduct>
       {form && (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Link href={`/forms/${form.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
-            {getLinkText('forms', form)}
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <Link
+            href={`/forms/${form.slug}`}
+            style={{
+              color: "#002366",
+              fontWeight: "bold",
+              textDecoration: "underline",
+            }}
+          >
+            {getLinkText("forms", form)}
           </Link>
         </Box>
       )}

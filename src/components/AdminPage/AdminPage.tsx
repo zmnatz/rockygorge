@@ -1,27 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Container, 
-  Typography, 
-  Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  IconButton, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions
-} from '@mui/material';
-import { Add, Delete, Edit } from '@mui/icons-material';
-import { AdminPageProps } from './types';
-import { FormField } from './FormField';
-import { get, post } from '@/utils/api';
-import { applyItemChange, createDefaultItem, removeItemById, validateItemId } from '@/utils/admin-items';
+import { Add, Delete, Edit } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  applyItemChange,
+  createDefaultItem,
+  removeItemById,
+  validateItemId,
+} from "@/utils/admin-items";
+import { get, post } from "@/utils/api";
+import { FormField } from "./FormField";
+import type { AdminPageProps } from "./types";
 
 export function AdminPage<T>({
   title,
@@ -36,14 +41,17 @@ export function AdminPage<T>({
   globalFields,
   editOnly = false,
   createDefaults = {},
-  idFieldName = 'id',
+  idFieldName = "id",
 }: AdminPageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [globals, setGlobals] = useState<any>({});
   const [editingItem, setEditingItem] = useState<T | null>(null);
-  const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
+  const [editingOriginalId, setEditingOriginalId] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(!initialData);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: transform props are stable; effect intentionally keyed on endpoint/initialData
   useEffect(() => {
     if (initialData) {
       setItems(initialDataTransform(initialData));
@@ -52,7 +60,7 @@ export function AdminPage<T>({
       }
       setLoading(false);
     } else {
-      get<any>(`/.netlify/functions/${endpoint}`).then(data => {
+      get<any>(`/.netlify/functions/${endpoint}`).then((data) => {
         setItems(initialDataTransform(data));
         if (initialGlobalsTransform) {
           setGlobals(initialGlobalsTransform(data));
@@ -79,12 +87,14 @@ export function AdminPage<T>({
 
   const handleSaveItem = () => {
     if (!editingItem) return;
-    setItems(prev => applyItemChange(prev, editingItem, editingOriginalId, getItemId));
+    setItems((prev) =>
+      applyItemChange(prev, editingItem, editingOriginalId, getItemId),
+    );
     closeEditor();
   };
 
   const handleDeleteItem = (item: T) => {
-    setItems(prev => removeItemById(prev, getItemId(item), getItemId));
+    setItems((prev) => removeItemById(prev, getItemId(item), getItemId));
   };
 
   const handleSaveAll = async () => {
@@ -92,7 +102,10 @@ export function AdminPage<T>({
       ? applyItemChange(items, editingItem, editingOriginalId, getItemId)
       : items;
     try {
-      await post(`/.netlify/functions/${endpoint}`, saveDataTransform(itemsToSave, globals));
+      await post(
+        `/.netlify/functions/${endpoint}`,
+        saveDataTransform(itemsToSave, globals),
+      );
       alert(`${title} updated and committed successfully!`);
     } catch {
       alert(`Failed to update ${title}.`);
@@ -100,32 +113,58 @@ export function AdminPage<T>({
   };
 
   const validationError = editingItem
-    ? validateItemId(items, editingItem, editingOriginalId, getItemId, idFieldName)
+    ? validateItemId(
+        items,
+        editingItem,
+        editingOriginalId,
+        getItemId,
+        idFieldName,
+      )
     : null;
 
-  if (loading) return <Container sx={{ mt: 4 }}><Typography>Loading...</Typography></Container>;
+  if (loading)
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Typography>Loading...</Typography>
+      </Container>
+    );
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
         <Typography variant="h4">{title}</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           {!editOnly && (
-            <Button variant="contained" onClick={openCreateEditor} startIcon={<Add />}>Add</Button>
+            <Button
+              variant="contained"
+              onClick={openCreateEditor}
+              startIcon={<Add />}
+            >
+              Add
+            </Button>
           )}
-          <Button variant="contained" color="primary" onClick={handleSaveAll}>Save All Changes</Button>
+          <Button variant="contained" color="primary" onClick={handleSaveAll}>
+            Save All Changes
+          </Button>
         </Box>
       </Box>
 
       {globalFields && globalFields.length > 0 && (
         <Paper sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {globalFields.map(field => (
-              <FormField 
-                key={field.name} 
-                field={field as any} 
-                item={globals} 
-                onChange={(updated) => setGlobals(updated)} 
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {globalFields.map((field) => (
+              <FormField
+                key={field.name}
+                field={field as any}
+                item={globals}
+                onChange={(updated) => setGlobals(updated)}
               />
             ))}
           </Box>
@@ -136,18 +175,20 @@ export function AdminPage<T>({
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((col, idx) => (
-                <TableCell key={idx}>{col.header}</TableCell>
-              ))}
+              {columns.map((col, idx) => {
+                // biome-ignore lint/suspicious/noArrayIndexKey: static column definitions never reorder
+                return <TableCell key={idx}>{col.header}</TableCell>;
+              })}
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {items.map((item, idx) => (
               <TableRow key={getItemId(item) || idx}>
-                {columns.map((col, colIdx) => (
-                  <TableCell key={colIdx}>{col.render(item)}</TableCell>
-                ))}
+                {columns.map((col, colIdx) => {
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static column definitions never reorder
+                  return <TableCell key={colIdx}>{col.render(item)}</TableCell>;
+                })}
                 <TableCell align="right">
                   <IconButton onClick={() => openEditEditor(item)}>
                     <Edit />
@@ -164,26 +205,44 @@ export function AdminPage<T>({
         </Table>
       </TableContainer>
 
-      <Dialog open={!!editingItem} onClose={closeEditor} maxWidth="md" fullWidth>
-        <DialogTitle>{editingOriginalId === null ? 'Add Item' : `Edit: ${getItemId(editingItem || {} as T)}`}</DialogTitle>
+      <Dialog
+        open={!!editingItem}
+        onClose={closeEditor}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {editingOriginalId === null
+            ? "Add Item"
+            : `Edit: ${getItemId(editingItem || ({} as T))}`}
+        </DialogTitle>
         <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            {editingItem && fields.map(field => (
-              <FormField 
-                key={String(field.name)} 
-                field={field} 
-                item={editingItem} 
-                onChange={(updated) => setEditingItem(updated)} 
-              />
-            ))}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            {editingItem &&
+              fields.map((field) => (
+                <FormField
+                  key={String(field.name)}
+                  field={field}
+                  item={editingItem}
+                  onChange={(updated) => setEditingItem(updated)}
+                />
+              ))}
           </Box>
           {validationError && (
-            <Typography color="error" sx={{ mt: 2 }}>{validationError}</Typography>
+            <Typography color="error" sx={{ mt: 2 }}>
+              {validationError}
+            </Typography>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor}>Cancel</Button>
-          <Button onClick={handleSaveItem} variant="contained" disabled={!!validationError}>Save to List</Button>
+          <Button
+            onClick={handleSaveItem}
+            variant="contained"
+            disabled={!!validationError}
+          >
+            Save to List
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

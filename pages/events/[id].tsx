@@ -1,11 +1,20 @@
-import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListItem } from "@mui/material";
+import events from "@content/events.yml";
+import forms from "@content/forms.yml";
+import store from "@content/store.yml";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Container,
+  List,
+  ListItem,
+  Typography,
+} from "@mui/material";
 import Head from "next/head";
 import Link from "next/link";
 import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
-import events from "@content/events.yml";
-import store from "@content/store.yml";
-import forms from "@content/forms.yml";
-import { Event, Product, Form } from "@/types/data";
+import type { Event, Form, Product } from "@/types/data";
 import { getLinkText } from "@/utils/links";
 import { markdownToHtml } from "@/utils/markdown";
 
@@ -44,7 +53,7 @@ export default function EventPage({
   organizers,
   summary,
   storeItem,
-  form
+  form,
 }: Event & { storeItem?: Product; form?: Form }) {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -53,26 +62,49 @@ export default function EventPage({
         <meta name="description" content={description} />
       </Head>
       <Box>
-        <Typography variant="h3" gutterBottom>{title}</Typography>
-        <Typography variant="h6" color="text.secondary" gutterBottom>{description}</Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>
-        
+        <Typography variant="h3" gutterBottom>
+          {title}
+        </Typography>
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          {description}
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          {summary}
+        </Typography>
+
         <CalendarEventDetail title={title} />
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
           {storeItem && (
-            <Link href={`/${storeItem.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
-              {getLinkText('store', storeItem)}
+            <Link
+              href={`/${storeItem.slug}`}
+              style={{
+                color: "#002366",
+                fontWeight: "bold",
+                textDecoration: "underline",
+              }}
+            >
+              {getLinkText("store", storeItem)}
             </Link>
           )}
           {form && (
-            <Link href={`/forms/${form.slug}`} style={{ color: '#002366', fontWeight: 'bold', textDecoration: 'underline' }}>
-              {getLinkText('forms', form)}
+            <Link
+              href={`/forms/${form.slug}`}
+              style={{
+                color: "#002366",
+                fontWeight: "bold",
+                textDecoration: "underline",
+              }}
+            >
+              {getLinkText("forms", form)}
             </Link>
           )}
         </Box>
 
-        {details && <Box sx={{ my: 3 }} dangerouslySetInnerHTML={{__html: details}}/>}
+        {details && (
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: details is trusted site content from YAML
+          <Box sx={{ my: 3 }} dangerouslySetInnerHTML={{ __html: details }} />
+        )}
         {organizers && organizers.length > 0 && (
           <Card sx={{ mt: 4 }}>
             <CardHeader title="Contact organizers for more detail" />

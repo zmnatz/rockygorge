@@ -1,10 +1,10 @@
-import React from "react";
+import { Grid } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Link from "next/link";
-import { Grid } from "@mui/material";
+import type React from "react";
 
 interface ProductProps {
   title: string;
@@ -12,13 +12,9 @@ interface ProductProps {
   href: string;
 }
 
-export function ProductCard({
-  title,
-  children,
-  href,
-}: ProductProps) {
+export function ProductCard({ title, children, href }: ProductProps) {
   return (
-    <Grid size={{xs: 12, sm: 6, md: 6}}>
+    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
       <Link href={href}>
         <Card>
           <CardActionArea>

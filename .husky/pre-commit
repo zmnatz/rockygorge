@@ -1,1 +1,1 @@
-npx lint-staged && npx tsc --noEmit
+bunx biome check --staged --no-errors-on-unmatched && bunx tsc --noEmit

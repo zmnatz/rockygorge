@@ -3,7 +3,8 @@
 ## Developer Commands
 - `npm run dev`: Start development server (Turbopack)
 - `npm run build`: Production build (Turbopack)
-- `npm run lint`: Lint codebase
+- `npm run lint`: Lint and format-check codebase (Biome)
+- `npm run lint:fix`: Autofix lint/format/import-order issues
 
 ## Architecture & Tech Stack
 - **Framework**: Next.js (Pages Router)

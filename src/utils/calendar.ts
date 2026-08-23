@@ -1,33 +1,44 @@
-import { CalendarEvent, CalendarFilter } from "@/components/CalendarCard/types";
+import type {
+  CalendarEvent,
+  CalendarFilter,
+} from "@/components/CalendarCard/types";
 
 const parseDate = (dateStr: string) => {
   if (!dateStr.includes("T")) {
-    const [year, month, day] = dateStr.split('-').map(Number);
+    const [year, month, day] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
   }
   return new Date(dateStr);
 };
 
-const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleString("en-US", options);
+const formatDate = (date: Date, options: Intl.DateTimeFormatOptions) =>
+  date.toLocaleString("en-US", options);
 const isDateOnly = (value: string) => !value.includes("T");
 
-export function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) {
+export function filterEvents(
+  events: CalendarEvent[],
+  criteria: CalendarFilter,
+) {
   const { matches, notMatches, limit, hideSummary } = criteria;
 
   let results = events;
   if (matches) {
-    results = results.filter(event => event.summary.match(new RegExp(matches, 'ig')));
+    results = results.filter((event) =>
+      event.summary.match(new RegExp(matches, "ig")),
+    );
   }
   if (notMatches) {
-    results = results.filter(event => !event.summary.match(new RegExp(notMatches, 'ig')));
+    results = results.filter(
+      (event) => !event.summary.match(new RegExp(notMatches, "ig")),
+    );
   }
   if (limit) {
     results = results.slice(0, limit);
   }
   if (hideSummary) {
-    results = results.map(event => ({
+    results = results.map((event) => ({
       ...event,
-      summary: ''
+      summary: "",
     }));
   }
   return results;
@@ -35,7 +46,7 @@ export function filterEvents(events: CalendarEvent[], criteria: CalendarFilter) 
 
 export function formatEventTime(start: string, end: string) {
   const startDate = parseDate(start);
-  let endDate = parseDate(end);
+  const endDate = parseDate(end);
 
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
     return start;
@@ -47,7 +58,8 @@ export function formatEventTime(start: string, end: string) {
     endDate.setDate(endDate.getDate() - 1);
   }
 
-  const sameDay = startDate.getFullYear() === endDate.getFullYear() &&
+  const sameDay =
+    startDate.getFullYear() === endDate.getFullYear() &&
     startDate.getMonth() === endDate.getMonth() &&
     startDate.getDate() === endDate.getDate();
 
@@ -63,7 +75,9 @@ export function formatEventTime(start: string, end: string) {
   });
 
   if (isDateOnly(start) || isDateOnly(end)) {
-    return sameDay ? formattedStartDate : `${formattedStartDate} - ${formattedEndDate}`;
+    return sameDay
+      ? formattedStartDate
+      : `${formattedStartDate} - ${formattedEndDate}`;
   }
 
   if (sameDay) {

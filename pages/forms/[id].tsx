@@ -15,21 +15,18 @@ export async function getStaticProps({ params }) {
   return { props: forms.find((item) => item?.slug === params?.id) };
 }
 
-export default function Form({
-  title,
-  formId,
-  width,
-  height
-}) {
+export default function Form({ title, formId, width, height }) {
   return (
     <>
       <Head>
         <title>{title} | Rocky Gorge Rugby</title>
         <meta name="description" content={title} />
       </Head>
-      <Box sx={{textAlign: 'center'}}>
-        <iframe src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`} 
-          height={height} 
+      <Box sx={{ textAlign: "center" }}>
+        <iframe
+          title="Embedded Google Form"
+          src={`https://docs.google.com/forms/d/e/${formId}/viewform?embedded=true`}
+          height={height}
           width={width}
           className="embed"
         >

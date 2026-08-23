@@ -2,22 +2,22 @@
 const nextConfig = {
   images: { unoptimized: true },
   output: "export",
-  distDir: 'build',
-  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  distDir: "build",
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   experimental: {
     useTypeScriptCli: true,
   },
   turbopack: {
     rules: {
-      '*.yml': {
-        loaders: ['yaml-loader'],
-        as: '*.js',
+      "*.yml": {
+        loaders: ["yaml-loader"],
+        as: "*.js",
       },
     },
   },
-}
+};
 
-const withMDX = require('@next/mdx')({
+const withMDX = require("@next/mdx")({
   extension: /\.mdx?$/,
   options: {
     // If you use remark-gfm, you'll need to use next.config.mjs

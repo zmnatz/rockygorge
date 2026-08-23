@@ -1,4 +1,4 @@
-export type TransformKey = 'calendar' | 'linkMappings';
+export type TransformKey = "calendar" | "linkMappings";
 
 export const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
   slug: (item) => item.slug,
@@ -6,17 +6,23 @@ export const ITEM_ID_MAPPINGS: Record<string, (item: any) => string> = {
   type: (item) => item.type,
 };
 
-export const RENDER_MAPPINGS: Record<string, (item: any, field: string) => any> = {
-  boolean: (item, field) => item[field] ? 'Yes' : 'No',
-  calendarMatches: (item) => item.matches || item.notMatches || '-',
+export const RENDER_MAPPINGS: Record<
+  string,
+  (item: any, field: string) => any
+> = {
+  boolean: (item, field) => (item[field] ? "Yes" : "No"),
+  calendarMatches: (item) => item.matches || item.notMatches || "-",
   default: (item, field) => item[field],
 };
 
-export const TRANSFORM_MAPPINGS: Record<TransformKey, {
-  initialDataTransform: (data: any) => any[];
-  initialGlobalsTransform: (data: any) => any;
-  saveDataTransform: (items: any[], globals?: any) => any;
-}> = {
+export const TRANSFORM_MAPPINGS: Record<
+  TransformKey,
+  {
+    initialDataTransform: (data: any) => any[];
+    initialGlobalsTransform: (data: any) => any;
+    saveDataTransform: (items: any[], globals?: any) => any;
+  }
+> = {
   calendar: {
     initialDataTransform: (data) => data.filters,
     initialGlobalsTransform: (data) => ({ months: data.months }),
@@ -28,14 +34,18 @@ export const TRANSFORM_MAPPINGS: Record<TransformKey, {
   linkMappings: {
     initialDataTransform: (data) => [
       {
-        type: 'store',
-        mappings: Object.entries(data.store?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.store?.default
+        type: "store",
+        mappings: Object.entries(data.store?.mappings || {}).map(
+          ([name, value]) => ({ name, value }),
+        ),
+        default: data.store?.default,
       },
       {
-        type: 'forms',
-        mappings: Object.entries(data.forms?.mappings || {}).map(([name, value]) => ({ name, value })),
-        default: data.forms?.default
+        type: "forms",
+        mappings: Object.entries(data.forms?.mappings || {}).map(
+          ([name, value]) => ({ name, value }),
+        ),
+        default: data.forms?.default,
       },
     ],
     initialGlobalsTransform: () => ({}),

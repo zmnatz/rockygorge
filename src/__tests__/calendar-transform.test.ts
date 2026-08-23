@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import calendarInfo from '@content/calendar.yml';
+import calendarInfo from "@content/calendar.yml";
+import { describe, expect, it } from "vitest";
 
 function initialDataTransform(data: any) {
   return data.filters;
@@ -16,8 +16,8 @@ function saveDataTransform(items: any[], globals: any) {
   };
 }
 
-describe('calendar transform roundtrip', () => {
-  it('preserves data through transform and save', () => {
+describe("calendar transform roundtrip", () => {
+  it("preserves data through transform and save", () => {
     const transformed = initialDataTransform(calendarInfo);
     const globals = initialGlobalsTransform(calendarInfo);
     const saved = saveDataTransform(transformed, globals);
@@ -25,18 +25,18 @@ describe('calendar transform roundtrip', () => {
     expect(saved).toEqual(calendarInfo);
   });
 
-  it('globals contain months', () => {
+  it("globals contain months", () => {
     const globals = initialGlobalsTransform(calendarInfo);
     expect(globals.months).toBe(calendarInfo.months);
   });
 
-  it('transformed data is the filters array', () => {
+  it("transformed data is the filters array", () => {
     const transformed = initialDataTransform(calendarInfo);
     expect(transformed).toEqual(calendarInfo.filters);
     expect(Array.isArray(transformed)).toBe(true);
   });
 
-  it('roundtrip preserves filter structure', () => {
+  it("roundtrip preserves filter structure", () => {
     const transformed = initialDataTransform(calendarInfo);
     const globals = initialGlobalsTransform(calendarInfo);
     const saved = saveDataTransform(transformed, globals);

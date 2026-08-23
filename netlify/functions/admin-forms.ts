@@ -1,12 +1,12 @@
-import { createAdminHandler } from './admin-handler';
-import { ADMIN_FILE_PATHS } from '../../src/utils/admin-file-paths';
+import { ADMIN_FILE_PATHS } from "../../src/utils/admin-file-paths";
+import { createAdminHandler } from "./admin-handler";
 
 export const config = {
-    path: '/api/admin-forms',
+  path: "/api/admin-forms",
 };
 
 export const handler = createAdminHandler({
-    filePath: ADMIN_FILE_PATHS.forms,
-    branchPrefix: 'admin-forms',
-    label: 'forms',
+  filePath: ADMIN_FILE_PATHS.forms,
+  branchPrefix: "admin-forms",
+  label: "forms",
 });

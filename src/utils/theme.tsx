@@ -30,9 +30,9 @@ export const theme = createTheme({
       "Inter",
       "-apple-system",
       "BlinkMacSystemFont",
-      "\"Segoe UI\"",
+      '"Segoe UI"',
       "Roboto",
-      "\"Helvetica Neue\"",
+      '"Helvetica Neue"',
       "Arial",
       "sans-serif",
     ].join(","),
@@ -85,14 +85,14 @@ theme.components = {
   MuiCardContent: {
     styleOverrides: {
       root: {
-        whiteSpace: 'wrap'
+        whiteSpace: "wrap",
       },
     },
   },
   MuiCardHeader: {
     styleOverrides: {
       root: {
-        textDecoration: 'none',
+        textDecoration: "none",
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.primary.contrastText,
       },
@@ -131,37 +131,37 @@ theme.components = {
   MuiListSubheader: {
     styleOverrides: {
       root: {
-        fontSize: '1.2rem',
-        lineHeight: 1.2
-      }
-    }
+        fontSize: "1.2rem",
+        lineHeight: 1.2,
+      },
+    },
   },
   MuiListItem: {
     styleOverrides: {
       root: {
-        paddingTop: theme.spacing(.25),
-        paddingBottom: theme.spacing(.25),
-      }
-    }
+        paddingTop: theme.spacing(0.25),
+        paddingBottom: theme.spacing(0.25),
+      },
+    },
   },
   MuiListItemText: {
     defaultProps: {
       sx: { whiteSpace: "normal" },
       slotProps: {
         primary: { noWrap: false },
-        secondary: {noWrap: false }
-      }
+        secondary: { noWrap: false },
+      },
     },
     styleOverrides: {
       dense: {
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: theme.spacing(2),
-        '& .MuiListItemText-primary': {
+        "& .MuiListItemText-primary": {
           flexGrow: 1,
           minWidth: 0,
         },
-        '& .MuiListItemText-secondary': {
+        "& .MuiListItemText-secondary": {
           width: theme.spacing(20),
         },
       },
@@ -198,7 +198,7 @@ theme.components = {
       },
       body: {
         margin: 0,
-        fontFeatureSettings: "\"rlig\" 1",
+        fontFeatureSettings: '"rlig" 1',
       },
       "a, a:visited": {
         textDecoration: "none",

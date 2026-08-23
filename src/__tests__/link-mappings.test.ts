@@ -1,39 +1,39 @@
-import { describe, it, expect } from 'vitest';
-import linkMappings from '@config/link_mappings.yml';
-import { TRANSFORM_MAPPINGS } from '@/utils/admin-config';
+import linkMappings from "@config/link_mappings.yml";
+import { describe, expect, it } from "vitest";
+import { TRANSFORM_MAPPINGS } from "@/utils/admin-config";
 
-describe('link_mappings.yml', () => {
-  it('has store mappings', () => {
+describe("link_mappings.yml", () => {
+  it("has store mappings", () => {
     expect(linkMappings.store).toBeDefined();
     expect(linkMappings.store.mappings).toBeDefined();
-    expect(linkMappings.store.default).toBe('View Item');
+    expect(linkMappings.store.default).toBe("View Item");
   });
 
-  it('has forms mappings', () => {
+  it("has forms mappings", () => {
     expect(linkMappings.forms).toBeDefined();
     expect(linkMappings.forms.mappings).toBeDefined();
-    expect(linkMappings.forms.default).toBe('Fill out Form');
+    expect(linkMappings.forms.default).toBe("Fill out Form");
   });
 
-  it('store has expected mapping keys', () => {
+  it("store has expected mapping keys", () => {
     const keys = Object.keys(linkMappings.store.mappings);
-    expect(keys).toContain('Buy Tickets');
-    expect(keys).toContain('Sponsor the Event');
-    expect(keys).toContain('Make a Donation');
-    expect(keys).toContain('Pay Dues');
-    expect(keys).toContain('Buy Gear');
+    expect(keys).toContain("Buy Tickets");
+    expect(keys).toContain("Sponsor the Event");
+    expect(keys).toContain("Make a Donation");
+    expect(keys).toContain("Pay Dues");
+    expect(keys).toContain("Buy Gear");
   });
 
-  it('forms has expected mapping keys', () => {
+  it("forms has expected mapping keys", () => {
     const keys = Object.keys(linkMappings.forms.mappings);
-    expect(keys).toContain('Nominate Member');
-    expect(keys).toContain('Submit Travel Info');
-    expect(keys).toContain('Interest Form');
-    expect(keys).toContain('RSVP');
+    expect(keys).toContain("Nominate Member");
+    expect(keys).toContain("Submit Travel Info");
+    expect(keys).toContain("Interest Form");
+    expect(keys).toContain("RSVP");
   });
 });
 
-describe('linkMappings transform roundtrip', () => {
+describe("linkMappings transform roundtrip", () => {
   function initialDataTransform(data: any) {
     return TRANSFORM_MAPPINGS.linkMappings.initialDataTransform(data);
   }
@@ -42,7 +42,7 @@ describe('linkMappings transform roundtrip', () => {
     return TRANSFORM_MAPPINGS.linkMappings.saveDataTransform(items);
   }
 
-  it('roundtrips through transform and save', () => {
+  it("roundtrips through transform and save", () => {
     const transformed = initialDataTransform(linkMappings);
     const saved = saveDataTransform(transformed);
 

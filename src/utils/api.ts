@@ -1,5 +1,5 @@
 const DEFAULT_HEADERS = {
-  'Content-Type': 'application/json',
+  "Content-Type": "application/json",
 };
 
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -26,7 +26,7 @@ export function get<T>(url: string): Promise<T> {
 
 export function post<T>(url: string, body: unknown): Promise<T> {
   return request<T>(url, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(body),
   });
 }

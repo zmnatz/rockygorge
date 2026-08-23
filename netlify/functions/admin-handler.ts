@@ -1,5 +1,5 @@
-import { Octokit } from 'octokit';
-import yaml from 'js-yaml';
+import yaml from "js-yaml";
+import { Octokit } from "octokit";
 
 interface AdminHandlerConfig {
   filePath: string;
@@ -7,18 +7,22 @@ interface AdminHandlerConfig {
   label: string;
 }
 
-export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandlerConfig) {
+export function createAdminHandler({
+  filePath,
+  branchPrefix,
+  label,
+}: AdminHandlerConfig) {
   return async (event: any) => {
-    if (event.httpMethod === 'POST') {
+    if (event.httpMethod === "POST") {
       try {
         const body = JSON.parse(event.body);
         const data = body;
 
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'dummy-token';
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "dummy-token";
         const octokit = new Octokit({ auth: GITHUB_TOKEN });
-        const OWNER = 'zmnatz';
-        const REPO = 'rockygorge';
-        const baseBranch = 'master';
+        const OWNER = "zmnatz";
+        const REPO = "rockygorge";
+        const baseBranch = "master";
 
         const { data: refData } = await octokit.rest.git.getRef({
           owner: OWNER,
@@ -34,7 +38,7 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           sha: refData.object.sha,
         });
 
-        let fileData;
+        let fileData: any;
         try {
           const response = await octokit.rest.repos.getContent({
             owner: OWNER,
@@ -53,8 +57,8 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
           owner: OWNER,
           repo: REPO,
           path: filePath,
-          message: `Update ${filePath.split('/').pop()}`,
-          content: Buffer.from(updatedYaml).toString('base64'),
+          message: `Update ${filePath.split("/").pop()}`,
+          content: Buffer.from(updatedYaml).toString("base64"),
           branch: branchName,
         };
 
@@ -67,7 +71,7 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
         await octokit.rest.pulls.create({
           owner: OWNER,
           repo: REPO,
-          title: `Update ${filePath.split('/').pop()}`,
+          title: `Update ${filePath.split("/").pop()}`,
           head: branchName,
           base: baseBranch,
           body: `Updated ${label} data via admin page`,
@@ -75,20 +79,24 @@ export function createAdminHandler({ filePath, branchPrefix, label }: AdminHandl
 
         return {
           statusCode: 200,
-          body: JSON.stringify({ message: `Successfully updated ${label} data and created a PR` }),
+          body: JSON.stringify({
+            message: `Successfully updated ${label} data and created a PR`,
+          }),
         };
       } catch (error: any) {
         console.error(error);
         return {
           statusCode: 500,
-          body: JSON.stringify({ error: error.message || 'Internal Server Error' }),
+          body: JSON.stringify({
+            error: error.message || "Internal Server Error",
+          }),
         };
       }
     }
 
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
+      body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   };
 }

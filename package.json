@@ -30,7 +30,8 @@
     "start": "next dev",
     "dev": "next dev",
     "build": "next build",
-    "lint": "eslint . --ignore-pattern '.netlify/'",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "test": "vitest run",
     "prepare": "husky"
   },
@@ -41,23 +42,17 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.5",
+    "@biomejs/biome": "2.5.10",
     "@next/mdx": "^16.1.6",
     "@rollup/plugin-yaml": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
-    "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.8",
     "netlify-cli": "^26.0.2",
     "netlify-plugin-cache": "^1.0.3",
     "next": "^16.3.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
     "yaml-loader": "^0.8.1"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,mdx}": "eslint"
   },
   "allowScripts": {
     "@parcel/watcher@2.5.6": true,

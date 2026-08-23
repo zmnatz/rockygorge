@@ -1,1 +1,1 @@
-export * from './PaypalProduct'
+export * from "./PaypalProduct";

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 interface Option {
   name: string;
@@ -9,7 +9,7 @@ interface SubscriptionItem {
   name: string;
   id: string;
   description: string;
-  options: Array<{ label: string; value: string; }>;
+  options: Array<{ label: string; value: string }>;
   value?: string;
 }
 

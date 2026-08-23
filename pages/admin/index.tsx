@@ -1,15 +1,15 @@
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemText, 
-  Paper 
-} from '@mui/material';
-import Link from 'next/link';
-import adminYaml from '@config/admin.yml';
+import adminYaml from "@config/admin.yml";
+import {
+  Box,
+  Container,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Paper,
+  Typography,
+} from "@mui/material";
+import Link from "next/link";
 
 export default function AdminIndex({ adminPages }) {
   return (
@@ -27,13 +27,13 @@ export default function AdminIndex({ adminPages }) {
         <List>
           {adminPages.map((page) => (
             <ListItem key={page.href} disablePadding>
-              <ListItemButton 
-                component={Link} 
+              <ListItemButton
+                component={Link}
                 href={page.href}
-                sx={{ 
-                  transition: 'background-color 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
+                sx={{
+                  transition: "background-color 0.2s",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
                   },
                 }}
               >
@@ -48,10 +48,12 @@ export default function AdminIndex({ adminPages }) {
 }
 
 export async function getStaticProps() {
-  const adminPages = Object.entries(adminYaml).map(([type, config]: [string, any]) => ({
-    name: config.title,
-    href: `/admin/${type}`,
-  }));
+  const adminPages = Object.entries(adminYaml).map(
+    ([type, config]: [string, any]) => ({
+      name: config.title,
+      href: `/admin/${type}`,
+    }),
+  );
 
   return {
     props: {

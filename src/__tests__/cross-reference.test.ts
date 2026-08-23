@@ -1,15 +1,15 @@
-import { describe, it, expect } from 'vitest';
-import events from '@content/events.yml';
-import store from '@content/store.yml';
-import forms from '@content/forms.yml';
-import { Event, Product, Form } from '@/types/data';
+import events from "@content/events.yml";
+import forms from "@content/forms.yml";
+import store from "@content/store.yml";
+import { describe, expect, it } from "vitest";
+import type { Event, Form, Product } from "@/types/data";
 
-describe('event cross-references', () => {
+describe("event cross-references", () => {
   const visibleEvents = events.filter((e: Event) => !e.hide);
   const storeSlugs = new Set(store.map((s: Product) => s.slug));
   const formSlugs = new Set(forms.map((f: Form) => f.slug));
 
-  it('every visible event with a matching store item has a valid store entry', () => {
+  it("every visible event with a matching store item has a valid store entry", () => {
     visibleEvents.forEach((event: Event) => {
       if (storeSlugs.has(event.slug)) {
         const storeItem = store.find((s: Product) => s.slug === event.slug);
@@ -19,7 +19,7 @@ describe('event cross-references', () => {
     });
   });
 
-  it('every visible event with a matching form has a valid form entry', () => {
+  it("every visible event with a matching form has a valid form entry", () => {
     visibleEvents.forEach((event: Event) => {
       if (formSlugs.has(event.slug)) {
         const form = forms.find((f: Form) => f.slug === event.slug);
@@ -29,7 +29,7 @@ describe('event cross-references', () => {
     });
   });
 
-  it('no event references a store item that doesnt exist', () => {
+  it("no event references a store item that doesnt exist", () => {
     const eventSlugs = events.map((e: Event) => e.slug);
     eventSlugs.forEach((slug) => {
       if (storeSlugs.has(slug)) {
@@ -39,7 +39,7 @@ describe('event cross-references', () => {
     });
   });
 
-  it('no event references a form that doesnt exist', () => {
+  it("no event references a form that doesnt exist", () => {
     const eventSlugs = events.map((e: Event) => e.slug);
     eventSlugs.forEach((slug) => {
       if (formSlugs.has(slug)) {
@@ -49,7 +49,7 @@ describe('event cross-references', () => {
     });
   });
 
-  it('every visible event has at least one organizer', () => {
+  it("every visible event has at least one organizer", () => {
     visibleEvents.forEach((event: Event) => {
       expect(Array.isArray(event.organizers)).toBe(true);
       expect(event.organizers.length).toBeGreaterThan(0);
