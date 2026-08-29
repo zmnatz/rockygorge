@@ -107,3 +107,39 @@ _Avoid_: Association, linking (payments context)
 **Item Transactions**:
 The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
 _Avoid_: Purchase report, item sales
+
+## Rugby & Eligibility
+
+Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5).
+
+**Match Participation Report**:
+The Rugby Xplorer CSV export the eligibility tool consumes — one row per player per team and competition, carrying `Appearances` / `Played` / `Reserve` / `Substitute` totals alongside per-round attendance codes.
+_Avoid_: Roster dump, match report
+
+**Match Participation**:
+The number of NCS Qualifying Matches a player entered as a starter or substitute, taken from the `Played` and `Substitute` columns of the Match Participation Report. It is the value every eligibility threshold checks.
+_Avoid_: Appearances, games played
+
+**NCS Qualifying Match**:
+A league or local-playoff match that counts toward a player's Match Participation. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
+_Avoid_: Game, friendly
+
+**Registration**:
+A player's USA Rugby membership state, read from the report's `Player Rego Active` and `Player Last Registered` fields. Active registration is required for eligibility; the last-registered date is carried into the breakdown for reference but not enforced.
+_Avoid_: Signup, CIPP
+
+**National Championship Series (NCS)**:
+USA Rugby's postseason competition for Men's Divisions I, II, and III whose eligibility rules this glossary encodes.
+_Avoid_: Playoffs (when meaning NCS)
+
+**Upper Division**:
+The MD1 side — the club's more experienced side. Under Reg 3.5 it is the source of the restrictions on playing down.
+_Avoid_: A-side, first team, D1 team
+
+**Lower Division**:
+The MD3 side — the club's developmental side. A player appears in the D3 breakdown based on their MD3 roster row.
+_Avoid_: B-side, second team, D3 team
+
+**Play Down**:
+Participation by an Upper Division player on the Lower Division side, governed by the NCS limits — at most four Upper Division Qualifying Matches a season, a two-match Lower Division minimum, and Lower Division Match Participation at least equal to the Upper Division count.
+_Avoid_: Drop down, play lower, eligibility exception

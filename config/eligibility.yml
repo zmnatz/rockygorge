@@ -1,0 +1,19 @@
+# Player eligibility thresholds and team roles.
+# Source: USA Senior Club Regulations, current edition (§3.4.2, §3.5).
+# See docs/adr/008-eligibility-rules.md for the interpretations encoded here.
+
+upperDivision:
+  teamName: "Rocky Gorge MD1"
+  label: "D1"
+  # Reg 3.4.2(d) / 3.5.2(c): at least two NCS Qualifying Matches at any level with the club.
+  minimumTotalMatches: 2
+
+lowerDivision:
+  teamName: "Rocky Gorge MD3"
+  label: "D3"
+  # Reg 3.5.2(a): at least two NCS Qualifying Matches at the lower division itself.
+  minimumMatches: 2
+  # Reg 3.5(d)(i): on playing a fourth upper-division match the player is no longer eligible for the lower side.
+  upperMatchLimit: 4
+  # Reg 3.5(d)(ii)(a) + Figure 1: lower-division participation must be at least the upper-division count.
+  lowerAtLeastUpper: true
