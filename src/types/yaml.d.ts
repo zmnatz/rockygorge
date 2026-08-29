@@ -52,6 +52,11 @@ declare module '@config/practice-fields.yml' {
   export default practiceFields;
 }
 
+declare module '@config/eligibility.yml' {
+  const eligibility: import('./eligibility').EligibilityConfig;
+  export default eligibility;
+}
+
 declare module '@content/home.yml' {
   const home: {
     hero: {

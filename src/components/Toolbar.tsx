@@ -1,19 +1,40 @@
 import { NextLinkComposed } from "@/utils/nextLink";
-import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem } from "@mui/material";
+import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem, Divider, useMediaQuery } from "@mui/material";
 import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useIdentity } from "@/components/IdentityProvider";
+import type { Link } from "@/types/data";
 import { useState } from "react";
 
-const headerLinks = links.filter(({ header }) => header);
+const headerLinks = links.filter(({ header, menuOnly }) => header && !menuOnly);
+const menuOnlyLinks = links.filter(({ menuOnly }) => menuOnly);
+
+/** Links that are always shown in the dropdown menu, per content/links.yml. */
+const alwaysInMenuLinks = links.filter(({ alwaysInMenu }) => alwaysInMenu);
 
 export function Toolbar () {
   const { user, isLoading, login, logout } = useIdentity();
   const isAuthenticated = user !== null;
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'), { noSsr: true });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
   const visibleLinks = headerLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
+
+  const menuLinks = ((): Link[] => {
+    const pinned = alwaysInMenuLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
+    const inMenu = [
+      ...(isMobile ? visibleLinks : []),
+      ...pinned,
+      ...menuOnlyLinks.filter(({ authRequired }) => !authRequired || isAuthenticated),
+    ];
+    const seen = new Set<string>();
+    return inMenu.filter((link) => {
+      if (seen.has(link.slug)) return false;
+      seen.add(link.slug);
+      return true;
+    });
+  })();
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -47,24 +68,10 @@ export function Toolbar () {
             {title}
           </Button>
         ))}
-        {!isLoading && (
-          <Button
-            color="inherit"
-            sx={{ textTransform: "none", ml: 1 }}
-            onClick={() =>
-              isAuthenticated
-                ? logout()
-                : login()
-            }
-          >
-            {isAuthenticated ? "Log out" : "Log in"}
-          </Button>
-        )}
         <IconButton
           color="inherit"
           aria-label="app menu"
           title="Application Menu"
-          sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
           onClick={handleOpenMenu}
         >
           <MenuIcon />
@@ -75,7 +82,7 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {visibleLinks.map(({ slug, href, title, summary }) => (
+          {menuLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
               key={slug}
               component="a"
@@ -86,6 +93,19 @@ export function Toolbar () {
               {title}
             </MenuItem>
           ))}
+          {!isLoading && menuLinks.length > 0 && <Divider />}
+          {!isLoading && (
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu();
+                isAuthenticated
+                  ? logout()
+                  : login();
+              }}
+            >
+              {isAuthenticated ? "Log out" : "Log in"}
+            </MenuItem>
+          )}
         </Menu>
       </MuiToolbar>
     </Container>
