@@ -292,7 +292,7 @@ export default function EligibilityPage() {
   const [breakdown, setBreakdown] = useState<EligibilityBreakdown | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered']);
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered', 'played', 'sub']);
 
   const matchesFilters = (player: PlayerEligibility) => {
     if (statusFilter === 'eligible' && !player.eligible) return false;
@@ -334,7 +334,7 @@ export default function EligibilityPage() {
     setError(null);
     setBreakdown(null);
     setStatusFilter('all');
-    setHiddenColumns(['lastRegistered']);
+    setHiddenColumns(['lastRegistered', 'played', 'sub']);
   };
 
   return (
