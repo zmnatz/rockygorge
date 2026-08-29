@@ -156,7 +156,9 @@
   title: Buy team gear
   options:
     - name: Miscellaneous Items - $15
-      value: 15
+      value: 5
+    - name: Skipping out on Beers with Old Team
+      value: 5
 - slug: camp
   defaultAmount: 80
   description: Training Camp
