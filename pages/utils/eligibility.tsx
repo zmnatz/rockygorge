@@ -86,8 +86,6 @@ interface DivisionTableProps {
   filtered: boolean;
   hiddenColumns: string[];
   onHiddenColumnsChange: (cols: string[]) => void;
-  playerSearch: string;
-  onPlayerSearchChange: (value: string) => void;
   statusFilter: StatusFilter;
   onStatusFilterChange: (value: StatusFilter) => void;
   players: PlayerEligibility[];
@@ -136,8 +134,6 @@ function DivisionTable({
   filtered,
   hiddenColumns,
   onHiddenColumnsChange,
-  playerSearch,
-  onPlayerSearchChange,
   statusFilter,
   onStatusFilterChange,
   players,
@@ -172,7 +168,7 @@ function DivisionTable({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 1,
+          mb: 2,
           flexWrap: 'wrap',
           gap: 1,
         }}
@@ -187,33 +183,7 @@ function DivisionTable({
             </Typography>
           )}
         </Box>
-        <Chip
-          size="small"
-          color={summary.eligible === summary.total ? 'success' : summary.total === 0 ? 'default' : 'warning'}
-          label={`${summary.eligible} of ${summary.total} eligible`}
-        />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 2,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'nowrap',
-          mb: 2,
-          pb: 2,
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <TextField
-          label="Search player or USA ID"
-          size="small"
-          value={playerSearch}
-          onChange={(event) => onPlayerSearchChange(event.target.value)}
-          sx={{ flex: '1 1 0px' }}
-        />
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'nowrap' }}>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
           <ToggleButtonGroup
             exclusive
             size="small"
@@ -227,6 +197,11 @@ function DivisionTable({
             <ToggleButton value="eligible">Eligible</ToggleButton>
             <ToggleButton value="ineligible">Ineligible</ToggleButton>
           </ToggleButtonGroup>
+          <Chip
+            size="small"
+            color={summary.eligible === summary.total ? 'success' : summary.total === 0 ? 'default' : 'warning'}
+            label={`${summary.eligible} of ${summary.total} eligible`}
+          />
           <FormControl size="small" sx={{ minWidth: 170 }}>
             <InputLabel>Columns</InputLabel>
             <Select
@@ -308,22 +283,17 @@ export default function EligibilityPage() {
   const [breakdown, setBreakdown] = useState<EligibilityBreakdown | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [playerSearch, setPlayerSearch] = useState('');
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered']);
 
   const matchesFilters = (player: PlayerEligibility) => {
     if (statusFilter === 'eligible' && !player.eligible) return false;
     if (statusFilter === 'ineligible' && player.eligible) return false;
-    const query = playerSearch.trim().toLowerCase();
-    if (query && !player.name.toLowerCase().includes(query) && !player.usaId.includes(query)) {
-      return false;
-    }
     return true;
   };
 
   const upperPlayers = breakdown ? breakdown.upper.filter(matchesFilters) : [];
   const lowerPlayers = breakdown ? breakdown.lower.filter(matchesFilters) : [];
-  const filtersActive = statusFilter !== 'all' || playerSearch.trim() !== '';
+  const filtersActive = statusFilter !== 'all';
 
   const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -355,7 +325,6 @@ export default function EligibilityPage() {
     setError(null);
     setBreakdown(null);
     setStatusFilter('all');
-    setPlayerSearch('');
     setHiddenColumns(['lastRegistered']);
   };
 
@@ -449,8 +418,6 @@ export default function EligibilityPage() {
               filtered={filtersActive}
               hiddenColumns={hiddenColumns}
               onHiddenColumnsChange={setHiddenColumns}
-              playerSearch={playerSearch}
-              onPlayerSearchChange={setPlayerSearch}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
               players={upperPlayers}
@@ -468,8 +435,6 @@ export default function EligibilityPage() {
               filtered={filtersActive}
               hiddenColumns={hiddenColumns}
               onHiddenColumnsChange={setHiddenColumns}
-              playerSearch={playerSearch}
-              onPlayerSearchChange={setPlayerSearch}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
               players={lowerPlayers}
