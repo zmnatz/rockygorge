@@ -520,7 +520,7 @@ export default function EligibilityPage() {
           <Box
             sx={{
               display: 'flex',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               justifyContent: 'space-between',
               gap: 2,
               mb: 2,
@@ -534,12 +534,14 @@ export default function EligibilityPage() {
               <Tab label={`${UPPER_LABEL} side`} />
               <Tab label={`${LOWER_LABEL} side`} />
             </Tabs>
-            <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
-              Edit Report Data
-            </Button>
-            <Button variant="outlined" size="small" onClick={handleExport}>
-              Export Report
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
+                Edit Report Data
+              </Button>
+              <Button variant="outlined" size="small" onClick={handleExport}>
+                Export Report
+              </Button>
+            </Box>
           </Box>
           {activeTab === 0 && (
             <DivisionTable
