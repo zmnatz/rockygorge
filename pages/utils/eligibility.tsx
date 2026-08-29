@@ -22,6 +22,8 @@ import {
   Tab,
   Tabs,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { computeBreakdown, parsePlayerRows } from '@/utils/eligibility';
@@ -83,6 +85,11 @@ interface DivisionTableProps {
   visibleCount: number;
   filtered: boolean;
   hiddenColumns: string[];
+  onHiddenColumnsChange: (cols: string[]) => void;
+  playerSearch: string;
+  onPlayerSearchChange: (value: string) => void;
+  statusFilter: StatusFilter;
+  onStatusFilterChange: (value: StatusFilter) => void;
   players: PlayerEligibility[];
 }
 
@@ -128,6 +135,11 @@ function DivisionTable({
   visibleCount,
   filtered,
   hiddenColumns,
+  onHiddenColumnsChange,
+  playerSearch,
+  onPlayerSearchChange,
+  statusFilter,
+  onStatusFilterChange,
   players,
 }: DivisionTableProps) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection }>({
@@ -180,6 +192,67 @@ function DivisionTable({
           color={summary.eligible === summary.total ? 'success' : summary.total === 0 ? 'default' : 'warning'}
           label={`${summary.eligible} of ${summary.total} eligible`}
         />
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          mb: 2,
+          pb: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <TextField
+          label="Search player or USA ID"
+          size="small"
+          value={playerSearch}
+          onChange={(event) => onPlayerSearchChange(event.target.value)}
+          sx={{ minWidth: 260, flexGrow: 1 }}
+        />
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={statusFilter}
+            onChange={(_, next) => {
+              if (next) onStatusFilterChange(next as StatusFilter);
+            }}
+            aria-label="Eligibility status"
+          >
+            <ToggleButton value="all">All</ToggleButton>
+            <ToggleButton value="eligible">Eligible</ToggleButton>
+            <ToggleButton value="ineligible">Ineligible</ToggleButton>
+          </ToggleButtonGroup>
+          <FormControl size="small" sx={{ minWidth: 170 }}>
+            <InputLabel>Columns</InputLabel>
+            <Select
+              multiple
+              value={COLUMNS.filter((col) => !hiddenColumns.includes(col.key)).map((col) => col.key)}
+              label="Columns"
+              onChange={(event) => {
+                const selected = event.target.value as string[];
+                onHiddenColumnsChange(
+                  COLUMNS.map((col) => col.key).filter((key) => !selected.includes(key)),
+                );
+              }}
+              renderValue={(selected) => `Columns (${selected.length})`}
+            >
+              {COLUMNS.map((col) => {
+                const locked = col.key === 'name';
+                return (
+                  <MenuItem key={col.key} value={col.key} disabled={locked}>
+                    <Checkbox checked={!hiddenColumns.includes(col.key)} disabled={locked} size="small" />
+                    <ListItemText primary={col.title} />
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
       <TableContainer>
         <Table size="small">
@@ -364,52 +437,6 @@ export default function EligibilityPage() {
             <Tab label={`${UPPER_LABEL} side`} />
             <Tab label={`${LOWER_LABEL} side`} />
           </Tabs>
-          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-            <TextField
-              label="Search player or USA ID"
-              size="small"
-              value={playerSearch}
-              onChange={(event) => setPlayerSearch(event.target.value)}
-              sx={{ minWidth: 260 }}
-            />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="eligible">Eligible</MenuItem>
-                <MenuItem value="ineligible">Ineligible</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 170 }}>
-              <InputLabel>Columns</InputLabel>
-              <Select
-                multiple
-                value={COLUMNS.filter((col) => !hiddenColumns.includes(col.key)).map((col) => col.key)}
-                label="Columns"
-                onChange={(event) => {
-                  const selected = event.target.value as string[];
-                  setHiddenColumns(
-                    COLUMNS.map((col) => col.key).filter((key) => !selected.includes(key)),
-                  );
-                }}
-                renderValue={(selected) => `Columns (${selected.length})`}
-              >
-                {COLUMNS.map((col) => {
-                  const locked = col.key === 'name';
-                  return (
-                    <MenuItem key={col.key} value={col.key} disabled={locked}>
-                      <Checkbox checked={!hiddenColumns.includes(col.key)} disabled={locked} size="small" />
-                      <ListItemText primary={col.title} />
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Box>
           {activeTab === 0 && (
             <DivisionTable
               title={
@@ -421,6 +448,11 @@ export default function EligibilityPage() {
               visibleCount={upperPlayers.length}
               filtered={filtersActive}
               hiddenColumns={hiddenColumns}
+              onHiddenColumnsChange={setHiddenColumns}
+              playerSearch={playerSearch}
+              onPlayerSearchChange={setPlayerSearch}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
               players={upperPlayers}
             />
           )}
@@ -435,6 +467,11 @@ export default function EligibilityPage() {
               visibleCount={lowerPlayers.length}
               filtered={filtersActive}
               hiddenColumns={hiddenColumns}
+              onHiddenColumnsChange={setHiddenColumns}
+              playerSearch={playerSearch}
+              onPlayerSearchChange={setPlayerSearch}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
               players={lowerPlayers}
             />
           )}
