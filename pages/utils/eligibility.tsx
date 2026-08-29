@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   Container,
-  Grid,
   Paper,
   Table,
   TableBody,
@@ -13,6 +12,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material';
@@ -112,6 +113,7 @@ export default function EligibilityPage() {
   const [csvText, setCsvText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [breakdown, setBreakdown] = useState<EligibilityBreakdown | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -153,8 +155,9 @@ export default function EligibilityPage() {
         Paste or upload the Rugby Xplorer matches-played report to see which
         players are NCS-eligible for the {UPPER_LABEL} and {LOWER_LABEL} sides.
         Participation counts as Played + Substitute; Reserve and per-round
-        attendance do not. Registration status is checked against &ldquo;Player
-        Rego Active&rdquo;; the registration date is shown for reference.
+        attendance do not. Players are assumed registered — the report only
+        lists registered players — and the registration date is shown for
+        reference.
       </Typography>
 
       <Paper sx={{ p: 3, mb: 4 }}>
@@ -211,8 +214,17 @@ export default function EligibilityPage() {
       )}
 
       {breakdown && (
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
+        <>
+          <Tabs
+            value={activeTab}
+            onChange={(_, newValue) => setActiveTab(newValue)}
+            sx={{ mb: 2 }}
+            aria-label="Eligibility by division"
+          >
+            <Tab label={`${UPPER_LABEL} side`} />
+            <Tab label={`${LOWER_LABEL} side`} />
+          </Tabs>
+          {activeTab === 0 && (
             <DivisionTable
               title={
                 breakdown.upper[0]
@@ -222,8 +234,8 @@ export default function EligibilityPage() {
               summary={breakdown.upperSummary}
               players={breakdown.upper}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          )}
+          {activeTab === 1 && (
             <DivisionTable
               title={
                 breakdown.lower[0]
@@ -233,8 +245,8 @@ export default function EligibilityPage() {
               summary={breakdown.lowerSummary}
               players={breakdown.lower}
             />
-          </Grid>
-        </Grid>
+          )}
+        </>
       )}
     </Container>
   );
