@@ -15,7 +15,7 @@ const alwaysInMenuSlugs = ['/gauntlet'];
 export function Toolbar () {
   const { user, isLoading, login, logout } = useIdentity();
   const isAuthenticated = user !== null;
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'), { noSsr: true });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
