@@ -15,6 +15,7 @@ validateDataArray<Link>(links, {
     { name: 'hide', type: 'boolean', optional: true },
     { name: 'authRequired', type: 'boolean', optional: true },
     { name: 'menuOnly', type: 'boolean', optional: true },
+    { name: 'alwaysInMenu', type: 'boolean', optional: true },
   ],
 });
 

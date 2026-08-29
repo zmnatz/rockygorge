@@ -33,10 +33,22 @@ import { computeBreakdown, parsePlayerRows } from '@/utils/eligibility';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
 
-import type { EligibilityBreakdown, PlayerEligibility } from '@/types/eligibility';
+import type { DivisionSummary, EligibilityBreakdown, PlayerEligibility } from '@/types/eligibility';
 
 const UPPER_LABEL = eligibility.upperDivision.label;
 const LOWER_LABEL = eligibility.lowerDivision.label;
+
+/** Title a division tab: the competition when the side is a single competition,
+ *  otherwise the configured team name (a side can span multiple competitions). */
+function sideTitle(
+  label: string,
+  teamName: string,
+  summary: DivisionSummary,
+): string {
+  return summary.competitions.length === 1
+    ? `${label} side — ${summary.competitions[0]}`
+    : `${label} side — ${teamName}`;
+}
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
@@ -60,7 +72,7 @@ const getColumns = (otherLabel: string): { key: SortKey; title: string; numeric?
   { key: 'played', title: 'Played', numeric: true },
   { key: 'sub', title: 'Sub', numeric: true },
   { key: 'participation', title: 'Participation', numeric: true },
-  { key: 'otherDivision', title: `${otherLabel} Appearances`, numeric: true },
+  { key: 'otherDivision', title: `${otherLabel} Participation`, numeric: true },
   { key: 'status', title: 'Status' },
   { key: 'reasons', title: 'Reason' },
 ];
@@ -292,7 +304,7 @@ function reportPlayerLine(player: PlayerEligibility, otherLabel: string): string
   return (
     `${player.name} (#${player.usaId}): ` +
     `played ${player.played} / sub ${player.substitute} ` +
-    `(participation ${player.participation}), ${otherLabel} appearances ${player.otherDivisionParticipation}`
+    `(participation ${player.participation}), ${otherLabel} participation ${player.otherDivisionParticipation}`
   );
 }
 
@@ -545,11 +557,7 @@ export default function EligibilityPage() {
           </Box>
           {activeTab === 0 && (
             <DivisionTable
-              title={
-                breakdown.upper[0]
-                  ? `${UPPER_LABEL} side — ${breakdown.upper[0].competition}`
-                  : `${UPPER_LABEL} side`
-              }
+              title={sideTitle(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary)}
               otherLabel={LOWER_LABEL}
               summary={breakdown.upperSummary}
               visibleCount={upperPlayers.length}
@@ -563,11 +571,7 @@ export default function EligibilityPage() {
           )}
           {activeTab === 1 && (
             <DivisionTable
-              title={
-                breakdown.lower[0]
-                  ? `${LOWER_LABEL} side — ${breakdown.lower[0].competition}`
-                  : `${LOWER_LABEL} side`
-              }
+              title={sideTitle(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary)}
               otherLabel={UPPER_LABEL}
               summary={breakdown.lowerSummary}
               visibleCount={lowerPlayers.length}

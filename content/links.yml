@@ -20,6 +20,7 @@
   summary: 'Gorge gauntlet leaderboard'
   header: false
   menuOnly: true
+  alwaysInMenu: true
 - slug: '/calendar'
   href: '/calendar'
   title: 'Calendar'

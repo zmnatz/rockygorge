@@ -67,6 +67,8 @@ export interface EligibilityBreakdown {
 export interface DivisionSummary {
   total: number;
   eligible: number;
+  /** Distinct competitions this division's roster spans, sorted. */
+  competitions: string[];
 }
 
 /** Config-driven team roles. */

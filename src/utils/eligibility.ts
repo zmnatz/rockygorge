@@ -1,6 +1,7 @@
 import { parseCsv } from '@/utils/csv';
 import type {
   DivisionRole,
+  DivisionSummary,
   EligibilityBreakdown,
   EligibilityConfig,
   PlayerEligibility,
@@ -137,7 +138,22 @@ function evaluate(
 const byName = (a: PlayerEligibility, b: PlayerEligibility) =>
   a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
 
-/** Compute per-division eligibility by joining each player's team rows on USA ID. */
+/** Combine two rows for the same player on the same team, summing the match
+ *  totals so participation reflects every competition the report lists. */
+function combineRows(previous: PlayerRow, next: PlayerRow): PlayerRow {
+  return {
+    ...previous,
+    appearances: previous.appearances + next.appearances,
+    played: previous.played + next.played,
+    reserve: previous.reserve + next.reserve,
+    substitute: previous.substitute + next.substitute,
+  };
+}
+
+/** Compute per-division eligibility by joining each player's team rows on USA ID.
+ *  Rows for the same player on the same team (one per competition) are combined
+ *  into a single participation total; rows with no USA ID cannot be joined and
+ *  are excluded. */
 export function computeBreakdown(
   rows: PlayerRow[],
   config: EligibilityConfig,
@@ -147,7 +163,9 @@ export function computeBreakdown(
     for (const row of rows) {
       if (row.teamName !== teamName) continue;
       const key = row.usaId.trim();
-      if (key && !map.has(key)) map.set(key, row);
+      if (!key) continue;
+      const previous = map.get(key);
+      map.set(key, previous ? combineRows(previous, row) : row);
     }
     return map;
   };
@@ -155,25 +173,24 @@ export function computeBreakdown(
   const upperRows = byId(config.upperDivision.teamName);
   const lowerRows = byId(config.lowerDivision.teamName);
 
-  const build = (
-    row: PlayerRow,
-    own: number,
-    other: number,
-  ) => evaluate(row, own, other, config);
-
   const upper = [...upperRows.values()].map((row) =>
-    build(row, participation(row), participation(lowerRows.get(row.usaId.trim()))),
+    evaluate(row, participation(row), participation(lowerRows.get(row.usaId.trim())), config),
   );
   const lower = [...lowerRows.values()].map((row) =>
-    build(row, participation(row), participation(upperRows.get(row.usaId.trim()))),
+    evaluate(row, participation(row), participation(upperRows.get(row.usaId.trim())), config),
   );
 
   upper.sort(byName);
   lower.sort(byName);
 
-  const summarize = (players: PlayerEligibility[]) => ({
+  const summarize = (players: PlayerEligibility[], teamName: string): DivisionSummary => ({
     total: players.length,
     eligible: players.filter((player) => player.eligible).length,
+    competitions: [...new Set(
+      rows
+        .filter((row) => row.teamName === teamName && row.competition.trim() !== '')
+        .map((row) => row.competition),
+    )].sort(),
   });
 
   const ignoredTeamNames = [
@@ -183,8 +200,8 @@ export function computeBreakdown(
   return {
     upper,
     lower,
-    upperSummary: summarize(upper),
-    lowerSummary: summarize(lower),
+    upperSummary: summarize(upper, config.upperDivision.teamName),
+    lowerSummary: summarize(lower, config.lowerDivision.teamName),
     ignoredTeamNames,
   };
 }

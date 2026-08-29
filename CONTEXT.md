@@ -141,5 +141,5 @@ The MD3 side — the club's developmental side. A player appears in the D3 break
 _Avoid_: B-side, second team, D3 team
 
 **Play Down**:
-Participation by an Upper Division player on the Lower Division side, governed by the NCS limits — at most four Upper Division Qualifying Matches a season, a two-match Lower Division minimum, and Lower Division Match Participation at least equal to the Upper Division count.
+Participation by an Upper Division player on the Lower Division side, governed by the NCS limits — at most three Upper Division Qualifying Matches a season (a fourth reaches the four-game cap and forfeits), a two-match Lower Division minimum, and Lower Division Match Participation at least equal to the Upper Division count.
 _Avoid_: Drop down, play lower, eligibility exception
