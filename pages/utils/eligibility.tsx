@@ -44,18 +44,20 @@ function statusChip(eligible: boolean) {
 type SortKey =
   | 'name'
   | 'lastRegistered'
-  | 'playedSub'
+  | 'played'
+  | 'sub'
   | 'participation'
   | 'otherDivision'
   | 'status'
   | 'reasons';
 
-const COLUMNS: { key: SortKey; title: string; numeric?: boolean }[] = [
+const getColumns = (otherLabel: string): { key: SortKey; title: string; numeric?: boolean }[] => [
   { key: 'name', title: 'Player' },
   { key: 'lastRegistered', title: 'Last Registered' },
-  { key: 'playedSub', title: 'Played / Sub' },
+  { key: 'played', title: 'Played', numeric: true },
+  { key: 'sub', title: 'Sub', numeric: true },
   { key: 'participation', title: 'Participation', numeric: true },
-  { key: 'otherDivision', title: 'Other Div', numeric: true },
+  { key: 'otherDivision', title: `${otherLabel} Appearances`, numeric: true },
   { key: 'status', title: 'Status' },
   { key: 'reasons', title: 'Reason' },
 ];
@@ -66,8 +68,10 @@ function sortValue(player: PlayerEligibility, key: SortKey): string | number {
       return player.name;
     case 'lastRegistered':
       return player.lastRegistered;
-    case 'playedSub':
+    case 'played':
       return player.played;
+    case 'sub':
+      return player.substitute;
     case 'participation':
       return player.participation;
     case 'otherDivision':
@@ -81,6 +85,7 @@ function sortValue(player: PlayerEligibility, key: SortKey): string | number {
 
 interface DivisionTableProps {
   title: string;
+  otherLabel: string;
   summary: { total: number; eligible: number };
   visibleCount: number;
   filtered: boolean;
@@ -106,8 +111,10 @@ function renderCell(player: PlayerEligibility, key: SortKey) {
       );
     case 'lastRegistered':
       return player.lastRegistered;
-    case 'playedSub':
-      return `${player.played} / ${player.substitute}`;
+    case 'played':
+      return player.played;
+    case 'sub':
+      return player.substitute;
     case 'participation':
       return player.participation;
     case 'otherDivision':
@@ -129,6 +136,7 @@ function renderCell(player: PlayerEligibility, key: SortKey) {
 
 function DivisionTable({
   title,
+  otherLabel,
   summary,
   visibleCount,
   filtered,
@@ -143,7 +151,8 @@ function DivisionTable({
     direction: 'asc',
   });
 
-  const visibleColumns = COLUMNS.filter((col) => !hiddenColumns.includes(col.key));
+  const columns = getColumns(otherLabel);
+  const visibleColumns = columns.filter((col) => !hiddenColumns.includes(col.key));
 
   const handleSort = (key: SortKey) => {
     setSort((current) =>
@@ -206,17 +215,17 @@ function DivisionTable({
             <InputLabel>Columns</InputLabel>
             <Select
               multiple
-              value={COLUMNS.filter((col) => !hiddenColumns.includes(col.key)).map((col) => col.key)}
+              value={columns.filter((col) => !hiddenColumns.includes(col.key)).map((col) => col.key)}
               label="Columns"
               onChange={(event) => {
                 const selected = event.target.value as string[];
                 onHiddenColumnsChange(
-                  COLUMNS.map((col) => col.key).filter((key) => !selected.includes(key)),
+                  columns.map((col) => col.key).filter((key) => !selected.includes(key)),
                 );
               }}
               renderValue={(selected) => `Columns (${selected.length})`}
             >
-              {COLUMNS.map((col) => {
+              {columns.map((col) => {
                 const locked = col.key === 'name';
                 return (
                   <MenuItem key={col.key} value={col.key} disabled={locked}>
@@ -413,6 +422,7 @@ export default function EligibilityPage() {
                   ? `${UPPER_LABEL} side — ${breakdown.upper[0].competition}`
                   : `${UPPER_LABEL} side`
               }
+              otherLabel={LOWER_LABEL}
               summary={breakdown.upperSummary}
               visibleCount={upperPlayers.length}
               filtered={filtersActive}
@@ -430,6 +440,7 @@ export default function EligibilityPage() {
                   ? `${LOWER_LABEL} side — ${breakdown.lower[0].competition}`
                   : `${LOWER_LABEL} side`
               }
+              otherLabel={UPPER_LABEL}
               summary={breakdown.lowerSummary}
               visibleCount={lowerPlayers.length}
               filtered={filtersActive}
