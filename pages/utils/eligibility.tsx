@@ -288,6 +288,69 @@ function DivisionTable({
   );
 }
 
+function reportPlayerLine(player: PlayerEligibility, otherLabel: string): string {
+  return (
+    `${player.name} (#${player.usaId}): ` +
+    `played ${player.played} / sub ${player.substitute} ` +
+    `(participation ${player.participation}), ${otherLabel} appearances ${player.otherDivisionParticipation}`
+  );
+}
+
+function buildReport(breakdown: EligibilityBreakdown): string {
+  const sections = [
+    {
+      heading: `${UPPER_LABEL} side`,
+      competition: breakdown.upper[0]?.competition ?? '',
+      otherLabel: LOWER_LABEL,
+      players: breakdown.upper,
+    },
+    {
+      heading: `${LOWER_LABEL} side`,
+      competition: breakdown.lower[0]?.competition ?? '',
+      otherLabel: UPPER_LABEL,
+      players: breakdown.lower,
+    },
+  ];
+
+  const lines: string[] = [];
+  lines.push('ROCKY GORGE ELIGIBILITY REPORT');
+  lines.push(`Generated: ${new Date().toLocaleString()}`);
+  lines.push('');
+
+  for (const section of sections) {
+    const eligible = section.players.filter((p) => p.eligible);
+    const ineligible = section.players.filter((p) => !p.eligible);
+
+    lines.push('='.repeat(46));
+    lines.push(`${section.heading}${section.competition ? ` — ${section.competition}` : ''}`.trim());
+    lines.push('='.repeat(46));
+    lines.push('');
+    lines.push(`ELIGIBLE (${eligible.length})`);
+    if (eligible.length === 0) {
+      lines.push('  (none)');
+    } else {
+      for (const player of eligible) {
+        lines.push(`  ${reportPlayerLine(player, section.otherLabel)}`);
+      }
+    }
+    lines.push('');
+    lines.push(`INELIGIBLE (${ineligible.length})`);
+    if (ineligible.length === 0) {
+      lines.push('  (none)');
+    } else {
+      for (const player of ineligible) {
+        lines.push(`  ${reportPlayerLine(player, section.otherLabel)}`);
+        for (const reason of player.reasons) {
+          lines.push(`    • ${reason}`);
+        }
+      }
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
 interface CsvFormProps {
   csvText: string;
   fileName: string;
@@ -389,6 +452,19 @@ export default function EligibilityPage() {
     setDialogOpen(false);
   };
 
+  const handleExport = () => {
+    if (!breakdown) return;
+    const blob = new Blob([buildReport(breakdown)], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `eligibility-report-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
@@ -460,6 +536,9 @@ export default function EligibilityPage() {
             </Tabs>
             <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
               Edit Report Data
+            </Button>
+            <Button variant="outlined" size="small" onClick={handleExport}>
+              Export Report
             </Button>
           </Box>
           {activeTab === 0 && (
