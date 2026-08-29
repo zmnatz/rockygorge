@@ -199,7 +199,7 @@ function DivisionTable({
           gap: 2,
           alignItems: 'center',
           justifyContent: 'space-between',
-          flexWrap: 'wrap',
+          flexWrap: 'nowrap',
           mb: 2,
           pb: 2,
           borderBottom: 1,
@@ -211,9 +211,9 @@ function DivisionTable({
           size="small"
           value={playerSearch}
           onChange={(event) => onPlayerSearchChange(event.target.value)}
-          sx={{ minWidth: 260, flexGrow: 1 }}
+          sx={{ flex: '1 1 0px' }}
         />
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'nowrap' }}>
           <ToggleButtonGroup
             exclusive
             size="small"
