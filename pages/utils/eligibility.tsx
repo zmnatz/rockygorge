@@ -426,6 +426,13 @@ export default function EligibilityPage() {
         </Alert>
       )}
 
+      {breakdown && breakdown.ignoredTeamNames.length > 0 && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Ignored {breakdown.ignoredTeamNames.length} row(s) for team(s) not in
+          the eligibility config: {breakdown.ignoredTeamNames.join(', ')}.
+        </Alert>
+      )}
+
       {!breakdown && !error && (
         <Typography color="text.secondary">
           Upload a report and run the breakdown to see player eligibility.
@@ -492,13 +499,6 @@ export default function EligibilityPage() {
             />
           )}
         </>
-      )}
-
-      {breakdown && breakdown.ignoredTeamNames.length > 0 && (
-        <Alert severity="info" sx={{ mt: 3 }}>
-          Ignored {breakdown.ignoredTeamNames.length} row(s) for team(s) not in
-          the eligibility config: {breakdown.ignoredTeamNames.join(', ')}.
-        </Alert>
       )}
 
       <Dialog
