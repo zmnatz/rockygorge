@@ -155,9 +155,9 @@
   summary: 'Shirts, shorts and other miscellaneous items people leave at practice '
   title: Buy team gear
   options:
-    - name: Miscellaneous Items - $15
+    - name: Miscellaneous Items - $5
       value: 5
-    - name: Skipping out on Beers with Old Team
+    - name: Skipping out on Beers with Old Team - $4
       value: 4
 - slug: camp
   defaultAmount: 80
