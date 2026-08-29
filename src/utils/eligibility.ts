@@ -86,9 +86,6 @@ function evaluate(
   if (!role) throw new Error(`No division configured for team "${row.teamName}"`);
 
   const reasons: string[] = [];
-  if (!row.regoActive) {
-    reasons.push('Not registered — Player Rego Active is not Yes');
-  }
 
   if (role === 'upper') {
     const total = ownParticipation + otherParticipation;
@@ -124,7 +121,6 @@ function evaluate(
     lastName: row.lastName,
     name: [row.firstName, row.lastName].filter(Boolean).join(' '),
     lastRegistered: row.lastRegistered,
-    regoActive: row.regoActive,
     teamName: row.teamName,
     competition: row.competition,
     role,

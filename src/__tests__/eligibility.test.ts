@@ -27,7 +27,7 @@ const SAMPLE_CSV = [
   '"2164744","Nicolas","Capobianco","NA","NA","Rocky Gorge Rugby","Rocky Gorge MD1","MAC Men D1","0","0","0","0","","","","","","","","",""',
 ].join('\n');
 
-const row = (overrides: Record<string, string | number>) => ({
+const row = (overrides: Record<string, string | number | boolean>) => ({
   usaId: '100',
   firstName: 'Jane',
   lastName: 'Doe',
@@ -88,11 +88,17 @@ describe('computeBreakdown', () => {
     expect(burns.reasons.some((r) => r.includes('Needs 2 qualifying matches'))).toBe(true);
   });
 
-  it('excludes players with no active registration', () => {
-    const breakdown = computeBreakdown(parsePlayerRows(SAMPLE_CSV), config);
-    const capobianco = breakdown.lower.find((p) => p.lastName === 'Capobianco');
-    expect(capobianco?.eligible).toBe(false);
-    expect(capobianco?.reasons.some((r) => r.includes('Not registered'))).toBe(true);
+  it('ignores registration status — the report only lists registered players', () => {
+    const rows = [
+      row({ usaId: '1', regoActive: false, teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
+      row({ usaId: '1', regoActive: false, teamName: 'Rocky Gorge MD1' }),
+    ];
+    const breakdown = computeBreakdown(rows, config);
+    const d3 = breakdown.lower.find((p) => p.usaId === '1');
+    const d1 = breakdown.upper.find((p) => p.usaId === '1');
+    expect(d3?.reasons).toEqual([]);
+    expect(d3?.eligible).toBe(true);
+    expect(d1?.eligible).toBe(true);
   });
 
   it('declares a D3 player with 2 matches eligible for both divisions', () => {

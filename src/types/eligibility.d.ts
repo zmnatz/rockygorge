@@ -37,7 +37,6 @@ export interface PlayerEligibility {
   /** Display name, "First Last". */
   name: string;
   lastRegistered: string;
-  regoActive: boolean;
   /** The team (and competition) of the roster row this verdict was built from. */
   teamName: string;
   competition: string;

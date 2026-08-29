@@ -125,7 +125,7 @@ A league or local-playoff match that counts toward a player's Match Participatio
 _Avoid_: Game, friendly
 
 **Registration**:
-A player's USA Rugby membership state, read from the report's `Player Rego Active` and `Player Last Registered` fields. Active registration is required for eligibility; the last-registered date is carried into the breakdown for reference but not enforced.
+A player's USA Rugby membership state, read from the report's `Player Rego Active` and `Player Last Registered` fields. Registration is assumed — the report only lists registered players — so the breakdown shows the last-registered date for reference and does not gate eligibility on it.
 _Avoid_: Signup, CIPP
 
 **National Championship Series (NCS)**:
