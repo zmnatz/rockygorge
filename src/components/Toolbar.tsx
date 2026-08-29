@@ -9,8 +9,8 @@ import { useState } from "react";
 const headerLinks = links.filter(({ header, menuOnly }) => header && !menuOnly);
 const menuOnlyLinks = links.filter(({ menuOnly }) => menuOnly);
 
-/** Links always pinned in the dropdown menu, driven by content/links.yml. */
-const pinnedLinks = links.filter(({ alwaysInMenu }) => alwaysInMenu);
+/** Links that are always shown in the dropdown menu, per content/links.yml. */
+const alwaysInMenuLinks = links.filter(({ alwaysInMenu }) => alwaysInMenu);
 
 export function Toolbar () {
   const { user, isLoading, login, logout } = useIdentity();
@@ -22,7 +22,7 @@ export function Toolbar () {
   const visibleLinks = headerLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
 
   const menuLinks = ((): Link[] => {
-    const pinned = pinnedLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
+    const pinned = alwaysInMenuLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
     const inMenu = [
       ...(isMobile ? visibleLinks : []),
       ...pinned,

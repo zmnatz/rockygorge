@@ -32,13 +32,12 @@ const row = (overrides: Record<string, string | number | boolean>) => ({
   firstName: 'Jane',
   lastName: 'Doe',
   lastRegistered: 'Aug 1, 2026 MDT',
-  regoActive: true,
   teamName: 'Rocky Gorge MD3',
   competition: 'Capital Men D3',
   appearances: 0,
   played: 0,
-  reserve: 0,
   substitute: 0,
+  rounds: {},
   ...overrides,
 });
 
@@ -51,20 +50,25 @@ describe('parsePlayerRows', () => {
       firstName: 'Matthew',
       lastName: 'Burns',
       lastRegistered: 'Aug 27, 2026 MDT',
-      regoActive: true,
       teamName: 'Rocky Gorge MD3',
       competition: 'Capital Men D3',
       played: 0,
     });
-    expect(rows[2]).toMatchObject({ usaId: '2164744', regoActive: false });
   });
 
-  it('reads numeric totals from Played / Reserve / Substitute', () => {
+  it('reads numeric totals from Played and Substitute', () => {
     const csv =
       HEADER_CSV +
       '\n"1","A","B","NA","Yes","Club","Rocky Gorge MD1","MAC Men D1","4","2","1","1","",""';
     const [parsed] = parsePlayerRows(csv);
-    expect(parsed).toMatchObject({ appearances: 4, played: 2, reserve: 1, substitute: 1 });
+    expect(parsed).toMatchObject({ appearances: 4, played: 2, substitute: 1 });
+  });
+
+  it('keeps the per-round attendance codes for detail display', () => {
+    const data = ['1', 'A', 'B', 'NA', 'Yes', 'Club', 'Rocky Gorge MD1', 'MAC Men D1', '3', '1', '0', '1', 'S', 'R', 'S'];
+    const csv = `${HEADER_CSV}\n${data.map((value) => `"${value}"`).join(',')}`;
+    const [parsed] = parsePlayerRows(csv);
+    expect(parsed.rounds).toMatchObject({ 'Round 1': 'S', 'Round 2': 'R', 'Round 3': 'S' });
   });
 
   it('throws when a required column is missing', () => {
@@ -90,8 +94,8 @@ describe('computeBreakdown', () => {
 
   it('ignores registration status — the report only lists registered players', () => {
     const rows = [
-      row({ usaId: '1', regoActive: false, teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
-      row({ usaId: '1', regoActive: false, teamName: 'Rocky Gorge MD1' }),
+      row({ usaId: '1', teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
+      row({ usaId: '1', teamName: 'Rocky Gorge MD1' }),
     ];
     const breakdown = computeBreakdown(rows, config);
     const d3 = breakdown.lower.find((p) => p.usaId === '1');
@@ -192,6 +196,39 @@ describe('computeBreakdown', () => {
     expect(lower?.otherDivisionParticipation).toBe(3);
     expect(lower?.eligible).toBe(false);
     expect(lower?.reasons.some((r) => r.includes('exceeds'))).toBe(true);
+  });
+
+  it('carries the raw CSV rows for the detail modal', () => {
+    const rows = [
+      row({ usaId: '1', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3', played: 1, appearances: 1 }),
+      row({ usaId: '1', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3 Cup', played: 1, appearances: 1 }),
+    ];
+    const breakdown = computeBreakdown(rows, config);
+    const player = breakdown.lower[0];
+    expect(player.rows).toHaveLength(2);
+    expect(player.rows.map((source) => source.competition)).toEqual(['Capital Men D3', 'Capital Men D3 Cup']);
+    expect(player.participation).toBe(2);
+  });
+
+  it('shows all of a cross-division player\'s competitions in the modal', () => {
+    const rows = [
+      row({ usaId: '7', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3', played: 1, appearances: 1 }),
+      row({ usaId: '7', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3 Cup', played: 1, appearances: 1 }),
+      row({ usaId: '7', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 1, appearances: 1 }),
+    ];
+    const breakdown = computeBreakdown(rows, config);
+    const lower = breakdown.lower.find((p) => p.usaId === '7');
+    const upper = breakdown.upper.find((p) => p.usaId === '7');
+    expect(lower?.rows.map((source) => source.competition)).toEqual([
+      'Capital Men D3',
+      'Capital Men D3 Cup',
+      'MAC Men D1',
+    ]);
+    expect(upper?.rows.map((source) => source.competition)).toEqual([
+      'MAC Men D1',
+      'Capital Men D3',
+      'Capital Men D3 Cup',
+    ]);
   });
 
   it('excludes rows without a USA ID', () => {

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import {
   Alert,
   Box,
@@ -29,26 +29,14 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import { computeBreakdown, parsePlayerRows } from '@/utils/eligibility';
+import { computeBreakdown, divisionLabel, parsePlayerRows } from '@/utils/eligibility';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
 
-import type { DivisionSummary, EligibilityBreakdown, PlayerEligibility } from '@/types/eligibility';
+import type { EligibilityBreakdown, PlayerEligibility, PlayerRow } from '@/types/eligibility';
 
 const UPPER_LABEL = eligibility.upperDivision.label;
 const LOWER_LABEL = eligibility.lowerDivision.label;
-
-/** Title a division tab: the competition when the side is a single competition,
- *  otherwise the configured team name (a side can span multiple competitions). */
-function sideTitle(
-  label: string,
-  teamName: string,
-  summary: DivisionSummary,
-): string {
-  return summary.competitions.length === 1
-    ? `${label} side — ${summary.competitions[0]}`
-    : `${label} side — ${teamName}`;
-}
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
@@ -165,6 +153,7 @@ function DivisionTable({
     key: 'name',
     direction: 'asc',
   });
+  const [detail, setDetail] = useState<PlayerEligibility | null>(null);
 
   const columns = getColumns(otherLabel);
   const visibleColumns = columns.filter((col) => !hiddenColumns.includes(col.key));
@@ -272,7 +261,12 @@ function DivisionTable({
           </TableHead>
           <TableBody>
             {rows.map((player) => (
-              <TableRow key={player.usaId}>
+              <TableRow
+                key={player.usaId}
+                hover
+                onClick={() => setDetail(player)}
+                sx={{ cursor: 'pointer' }}
+              >
                 {visibleColumns.map((col) => (
                   <TableCell
                     key={col.key}
@@ -296,7 +290,148 @@ function DivisionTable({
           </TableBody>
         </Table>
       </TableContainer>
+      <PlayerDetailsDialog player={detail} onClose={() => setDetail(null)} />
     </Paper>
+  );
+}
+
+/** One labeled fact row in the player detail dialog. */
+function Fact({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, py: 0.5 }}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 'medium', textAlign: 'right' }}>
+        {value ?? '—'}
+      </Typography>
+    </Box>
+  );
+}
+
+/** The per-round attendance codes across a player's competitions, as a matrix
+ *  with one row per competition and one Round column per reported round. */
+function RoundsMatrix({ rows }: { rows: PlayerRow[] }) {
+  const roundNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const source of rows) {
+      for (const name of Object.keys(source.rounds)) names.add(name);
+    }
+    return [...names].sort((a, b) => {
+      const numOf = (name: string) => Number(name.match(/\d+/)?.[0]);
+      const na = numOf(a);
+      const nb = numOf(b);
+      if (Number.isNaN(na) && Number.isNaN(nb)) return a.localeCompare(b);
+      if (Number.isNaN(na)) return 1;
+      if (Number.isNaN(nb)) return -1;
+      return na - nb;
+    });
+  }, [rows]);
+
+  if (roundNames.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No round data in the CSV.
+      </Typography>
+    );
+  }
+  return (
+    <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Competition</TableCell>
+            {roundNames.map((round) => (
+              <TableCell key={round} align="center">
+                {round}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((source) => (
+            <TableRow key={source.competition || 'report row'}>
+              <TableCell>{source.competition || 'Report row'}</TableCell>
+              {roundNames.map((round) => {
+                const code = source.rounds[round];
+                const shown = code && code !== 'R' ? code : null;
+                return (
+                  <TableCell key={round} align="center">
+                    {shown ?? (
+                      <Box component="span" sx={{ color: 'text.disabled' }}>
+                        —
+                      </Box>
+                    )}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+/** Full CSV detail for one player, opened by clicking a table row. */
+function PlayerDetailsDialog({
+  player,
+  onClose,
+}: {
+  player: PlayerEligibility | null;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={player !== null} onClose={onClose} maxWidth="md" fullWidth>
+      {player !== null && (
+        <>
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="h6" component="span">
+                {player.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" component="span">
+                USA ID {player.usaId}
+              </Typography>
+              {statusChip(player.eligible)}
+            </Box>
+          </DialogTitle>
+          <DialogContent dividers>
+            {player.reasons.length > 0 && (
+              <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                {player.reasons.join(' · ')}
+              </Typography>
+            )}
+            <Box>
+              <Fact label="Last registered" value={player.lastRegistered} />
+              <Fact
+                label="Side"
+                value={player.role === 'upper' ? `${UPPER_LABEL} side` : `${LOWER_LABEL} side`}
+              />
+              <Fact label="Played" value={player.played} />
+              <Fact label="Substitute" value={player.substitute} />
+              <Fact label="Participation" value={player.participation} />
+              <Fact label="Other-division participation" value={player.otherDivisionParticipation} />
+            </Box>
+            {player.rows.map((source) => (
+              <Box key={source.competition || 'report row'} sx={{ mt: 2 }}>
+                <Typography variant="subtitle2">
+                  {source.competition || 'Report row'} — {source.teamName}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Appearances {source.appearances} · Played {source.played} · Substitute{' '}
+                  {source.substitute}
+                </Typography>
+              </Box>
+            ))}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2">Rounds by competition</Typography>
+              <RoundsMatrix rows={player.rows} />
+            </Box>
+          </DialogContent>
+        </>
+      )}
+    </Dialog>
   );
 }
 
@@ -311,14 +446,12 @@ function reportPlayerLine(player: PlayerEligibility, otherLabel: string): string
 function buildReport(breakdown: EligibilityBreakdown): string {
   const sections = [
     {
-      heading: `${UPPER_LABEL} side`,
-      competition: breakdown.upper[0]?.competition ?? '',
+      heading: divisionLabel(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary),
       otherLabel: LOWER_LABEL,
       players: breakdown.upper,
     },
     {
-      heading: `${LOWER_LABEL} side`,
-      competition: breakdown.lower[0]?.competition ?? '',
+      heading: divisionLabel(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary),
       otherLabel: UPPER_LABEL,
       players: breakdown.lower,
     },
@@ -334,7 +467,7 @@ function buildReport(breakdown: EligibilityBreakdown): string {
     const ineligible = section.players.filter((p) => !p.eligible);
 
     lines.push('='.repeat(46));
-    lines.push(`${section.heading}${section.competition ? ` — ${section.competition}` : ''}`.trim());
+    lines.push(section.heading);
     lines.push('='.repeat(46));
     lines.push('');
     lines.push(`ELIGIBLE (${eligible.length})`);
@@ -485,10 +618,9 @@ export default function EligibilityPage() {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 800 }}>
         Paste or upload the Rugby Xplorer matches-played report to see which
         players are NCS-eligible for the {UPPER_LABEL} and {LOWER_LABEL} sides.
-        Participation counts as Played + Substitute; Reserve and per-round
-        attendance do not. Players are assumed registered — the report only
-        lists registered players — and the registration date is shown for
-        reference.
+        Participation counts as Played + Substitute; per-round attendance codes
+        do not count. Players are assumed registered — the report only lists
+        registered players — and the registration date is shown for reference.
       </Typography>
 
       {!breakdown && (
@@ -557,7 +689,7 @@ export default function EligibilityPage() {
           </Box>
           {activeTab === 0 && (
             <DivisionTable
-              title={sideTitle(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary)}
+              title={divisionLabel(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary)}
               otherLabel={LOWER_LABEL}
               summary={breakdown.upperSummary}
               visibleCount={upperPlayers.length}
@@ -571,7 +703,7 @@ export default function EligibilityPage() {
           )}
           {activeTab === 1 && (
             <DivisionTable
-              title={sideTitle(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary)}
+              title={divisionLabel(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary)}
               otherLabel={UPPER_LABEL}
               summary={breakdown.lowerSummary}
               visibleCount={lowerPlayers.length}
