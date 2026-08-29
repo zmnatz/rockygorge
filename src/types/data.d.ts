@@ -90,6 +90,9 @@ export interface Link extends BaseNavigableItem {
   header: boolean;
   /** When true, the link is only shown to signed-in visitors. */
   authRequired?: boolean;
+  /** When true, the link appears only in the dropdown menu (mobile layout),
+   *  never as a desktop header button. */
+  menuOnly?: boolean;
 }
 
 /** A record of a member who has paid club dues. */

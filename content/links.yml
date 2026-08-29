@@ -29,6 +29,12 @@
   title: 'Where is Practice'
   summary: 'When and where the next practice is'
   header: true
+- slug: '/utils/eligibility'
+  href: '/utils/eligibility'
+  title: 'Eligibility'
+  summary: 'NCS player eligibility breakdown from the matches-played report'
+  header: false
+  menuOnly: true
 - slug: '/admin'
   href: '/admin'
   title: 'Admin'
