@@ -25,6 +25,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import { computeBreakdown, parsePlayerRows } from '@/utils/eligibility';
 import { compareValues, type SortDirection } from '@/utils/sort';
@@ -285,12 +288,58 @@ function DivisionTable({
   );
 }
 
+interface CsvFormProps {
+  csvText: string;
+  fileName: string;
+  canClear: boolean;
+  onFile: (event: ChangeEvent<HTMLInputElement>) => void;
+  onTextChange: (value: string) => void;
+  onRun: () => void;
+  onClear: () => void;
+}
+
+function CsvForm({ csvText, fileName, canClear, onFile, onTextChange, onRun, onClear }: CsvFormProps) {
+  return (
+    <>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'stretch', mb: 2, flexWrap: 'wrap' }}>
+        <Button variant="outlined" component="label" sx={{ height: 56 }}>
+          Choose CSV file…
+          <input type="file" accept=".csv,text/csv" hidden onChange={onFile} />
+        </Button>
+        <TextField
+          label="…or paste the CSV"
+          multiline
+          minRows={6}
+          maxRows={14}
+          fullWidth
+          value={csvText}
+          onChange={(event) => onTextChange(event.target.value)}
+        />
+      </Box>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button variant="contained" onClick={onRun} disabled={!csvText.trim()}>
+          Run Breakdown
+        </Button>
+        <Button variant="text" onClick={onClear} disabled={!canClear}>
+          Clear
+        </Button>
+        {fileName && (
+          <Typography variant="body2" color="text.secondary">
+            Loaded: {fileName}
+          </Typography>
+        )}
+      </Box>
+    </>
+  );
+}
+
 export default function EligibilityPage() {
   const [fileName, setFileName] = useState('');
   const [csvText, setCsvText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [breakdown, setBreakdown] = useState<EligibilityBreakdown | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered', 'played', 'sub']);
 
@@ -322,9 +371,11 @@ export default function EligibilityPage() {
     try {
       const rows = parsePlayerRows(csvText);
       setBreakdown(computeBreakdown(rows, eligibility));
+      setDialogOpen(false);
     } catch (err) {
       setBreakdown(null);
       setError(err instanceof Error ? err.message : 'Could not read the CSV.');
+      setDialogOpen(false);
     }
   };
 
@@ -335,6 +386,7 @@ export default function EligibilityPage() {
     setBreakdown(null);
     setStatusFilter('all');
     setHiddenColumns(['lastRegistered', 'played', 'sub']);
+    setDialogOpen(false);
   };
 
   return (
@@ -351,39 +403,22 @@ export default function EligibilityPage() {
         reference.
       </Typography>
 
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'stretch', mb: 2, flexWrap: 'wrap' }}>
-          <Button variant="outlined" component="label" sx={{ height: 56 }}>
-            Choose CSV file…
-            <input type="file" accept=".csv,text/csv" hidden onChange={handleFile} />
-          </Button>
-          <TextField
-            label="…or paste the CSV"
-            multiline
-            minRows={6}
-            maxRows={14}
-            fullWidth
-            value={csvText}
-            onChange={(event) => {
-              setCsvText(event.target.value);
+      {!breakdown && (
+        <Paper sx={{ p: 3, mb: 4 }}>
+          <CsvForm
+            csvText={csvText}
+            fileName={fileName}
+            canClear={Boolean(csvText)}
+            onFile={handleFile}
+            onTextChange={(value) => {
+              setCsvText(value);
               setFileName('');
             }}
+            onRun={handleRun}
+            onClear={handleClear}
           />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Button variant="contained" onClick={handleRun} disabled={!csvText.trim()}>
-            Run Breakdown
-          </Button>
-          <Button variant="text" onClick={handleClear} disabled={!csvText && !breakdown}>
-            Clear
-          </Button>
-          {fileName && (
-            <Typography variant="body2" color="text.secondary">
-              Loaded: {fileName}
-            </Typography>
-          )}
-        </Box>
-      </Paper>
+        </Paper>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -406,15 +441,27 @@ export default function EligibilityPage() {
 
       {breakdown && (
         <>
-          <Tabs
-            value={activeTab}
-            onChange={(_, newValue) => setActiveTab(newValue)}
-            sx={{ mb: 2 }}
-            aria-label="Eligibility by division"
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: 2,
+              mb: 2,
+            }}
           >
-            <Tab label={`${UPPER_LABEL} side`} />
-            <Tab label={`${LOWER_LABEL} side`} />
-          </Tabs>
+            <Tabs
+              value={activeTab}
+              onChange={(_, newValue) => setActiveTab(newValue)}
+              aria-label="Eligibility by division"
+            >
+              <Tab label={`${UPPER_LABEL} side`} />
+              <Tab label={`${LOWER_LABEL} side`} />
+            </Tabs>
+            <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
+              Edit Report Data
+            </Button>
+          </Box>
           {activeTab === 0 && (
             <DivisionTable
               title={
@@ -453,6 +500,29 @@ export default function EligibilityPage() {
           )}
         </>
       )}
+
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Edit Report Data</DialogTitle>
+        <DialogContent dividers sx={{ pt: 3 }}>
+          <CsvForm
+            csvText={csvText}
+            fileName={fileName}
+            canClear={Boolean(csvText) || Boolean(breakdown)}
+            onFile={handleFile}
+            onTextChange={(value) => {
+              setCsvText(value);
+              setFileName('');
+            }}
+            onRun={handleRun}
+            onClear={handleClear}
+          />
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 }
