@@ -70,19 +70,6 @@ export function Toolbar () {
             {title}
           </Button>
         ))}
-        {!isLoading && (
-          <Button
-            color="inherit"
-            sx={{ textTransform: "none", ml: 1 }}
-            onClick={() =>
-              isAuthenticated
-                ? logout()
-                : login()
-            }
-          >
-            {isAuthenticated ? "Log out" : "Log in"}
-          </Button>
-        )}
         <IconButton
           color="inherit"
           aria-label="app menu"

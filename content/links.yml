@@ -18,12 +18,14 @@
   href: '/gauntlet'
   title: 'Gauntlet'
   summary: 'Gorge gauntlet leaderboard'
-  header: true
+  header: false
+  menuOnly: true
 - slug: '/calendar'
   href: '/calendar'
   title: 'Calendar'
   summary: 'Gorge calendar'
-  header: true
+  header: false
+  menuOnly: true
 - slug: '/whereIsPractice'
   href: '/whereIsPractice'
   title: 'Where is Practice'
