@@ -1,5 +1,5 @@
 import { NextLinkComposed } from "@/utils/nextLink";
-import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem, Divider } from "@mui/material";
+import { AppBar, Container, Button, Box, Toolbar as MuiToolbar, IconButton, Menu, MenuItem, Divider, useMediaQuery } from "@mui/material";
 import links from "@content/links.yml";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useIdentity } from "@/components/IdentityProvider";
@@ -15,6 +15,7 @@ const alwaysInMenuSlugs = ['/gauntlet'];
 export function Toolbar () {
   const { user, isLoading, login, logout } = useIdentity();
   const isAuthenticated = user !== null;
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -24,7 +25,11 @@ export function Toolbar () {
     const pinned = alwaysInMenuSlugs
       .map((slug) => links.find((link) => link.slug === slug))
       .filter((link): link is Link => Boolean(link) && (!link.authRequired || isAuthenticated));
-    const inMenu = [...visibleLinks, ...pinned, ...menuOnlyLinks.filter(({ authRequired }) => !authRequired || isAuthenticated)];
+    const inMenu = [
+      ...(isMobile ? visibleLinks : []),
+      ...pinned,
+      ...menuOnlyLinks.filter(({ authRequired }) => !authRequired || isAuthenticated),
+    ];
     const seen = new Set<string>();
     return inMenu.filter((link) => {
       if (seen.has(link.slug)) return false;
