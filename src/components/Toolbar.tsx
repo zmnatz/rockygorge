@@ -82,7 +82,6 @@ export function Toolbar () {
           color="inherit"
           aria-label="app menu"
           title="Application Menu"
-          sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
           onClick={handleOpenMenu}
         >
           <MenuIcon />
