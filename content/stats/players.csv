@@ -1,22 +1,22 @@
-season,game,jersey,player,positive_carries,negative_carries,line_breaks,tries_scored,tackle_breaks,offloads,turnovers_given,try_assists,tackles_made,tackles_missed,steals,defensive_rucks,dominant_tackles,turnovers_forced,penalties
-2026-2027,Rocky Gorge D1 vs MSM,1,Bart Vermeulen,7,0,0,0,4,1,0,0,2,0,0,1,0,0,1
-2026-2027,Rocky Gorge D1 vs MSM,2,Tristan Cole,13,0,0,0,4,1,2,0,4,0,2,2,2,1,2
-2026-2027,Rocky Gorge D1 vs MSM,3,JT Hammond,0,0,0,0,0,0,0,0,3,0,0,2,2,1,2
-2026-2027,Rocky Gorge D1 vs MSM,4,James Nutland,7,0,0,0,1,0,1,0,5,0,0,2,0,0,2
-2026-2027,Rocky Gorge D1 vs MSM,5,Aiden Leaird,3,1,0,0,0,0,0,0,4,0,0,0,0,0,1
-2026-2027,Rocky Gorge D1 vs MSM,6,Evan Miller,5,0,0,0,0,0,0,0,6,3,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,7,Alex Florenzo,1,0,0,0,1,0,0,0,3,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,8,Adam Wiley,5,0,1,0,4,0,0,0,8,0,1,0,2,0,0
-2026-2027,Rocky Gorge D1 vs MSM,9,Mikey Williams,5,0,1,0,0,3,1,0,2,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,10,Jamison Hulbert,4,0,0,0,1,2,3,0,2,0,0,1,0,1,0
-2026-2027,Rocky Gorge D1 vs MSM,11,Jason Bland,7,0,1,0,0,0,0,0,0,1,0,1,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,12,Preston Jones,4,0,0,0,3,1,1,0,1,1,1,1,0,0,1
-2026-2027,Rocky Gorge D1 vs MSM,13,Ayo Abraham,6,0,0,0,4,0,2,0,3,4,0,1,0,1,0
-2026-2027,Rocky Gorge D1 vs MSM,14,Donte Speight,9,1,0,0,3,0,4,0,1,0,0,0,0,0,1
-2026-2027,Rocky Gorge D1 vs MSM,15,Braden Loughnane,7,0,0,0,1,1,3,0,0,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,16,Sam Gregoire,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,17,Kris Gough,5,0,0,0,1,1,1,0,0,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,18,Damon James,3,0,0,0,1,0,0,0,1,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,19,Tyler Tippett,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,20,Shemar Lewis,6,0,0,0,2,2,0,0,3,0,0,1,0,0,0
-2026-2027,Rocky Gorge D1 vs MSM,21,Gavin Shisler,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+season,date,division,opponent,jersey,player,positive_carries,negative_carries,line_breaks,tries_scored,tackle_breaks,offloads,attacking_rucks,turnovers_given,try_assists,tackles_made,tackles_missed,steals,defensive_rucks,dominant_tackles,turnovers_forced,penalties
+2026-2027,2026-08-29,D1,Mount St. Mary's,1,Bart Vermeulen,7,0,0,0,4,1,5,0,0,2,0,0,1,0,0,1
+2026-2027,2026-08-29,D1,Mount St. Mary's,2,Tristan Cole,13,0,0,0,4,1,8,2,0,4,0,2,2,2,1,2
+2026-2027,2026-08-29,D1,Mount St. Mary's,3,JT Hammond,0,0,0,0,0,0,2,0,0,3,0,0,2,2,1,2
+2026-2027,2026-08-29,D1,Mount St. Mary's,4,James Nutland,7,0,0,0,1,0,6,1,0,5,0,0,2,0,0,2
+2026-2027,2026-08-29,D1,Mount St. Mary's,5,Aiden Leaird,3,1,0,0,0,0,3,0,0,4,0,0,0,0,0,1
+2026-2027,2026-08-29,D1,Mount St. Mary's,6,Evan Miller,5,0,0,0,0,0,4,0,0,6,3,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,7,Alex Florenzo,1,0,0,0,1,0,2,0,0,3,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,8,Adam Wiley,5,0,1,0,4,0,7,0,0,8,0,1,0,2,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,9,Mikey Williams,5,0,1,0,0,3,3,1,0,2,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,10,Jamison Hulbert,4,0,0,0,1,2,4,3,0,2,0,0,1,0,1,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,11,Jason Bland,7,0,1,0,0,0,5,0,0,0,1,0,1,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,12,Preston Jones,4,0,0,0,3,1,3,1,0,1,1,1,1,0,0,1
+2026-2027,2026-08-29,D1,Mount St. Mary's,13,Ayo Abraham,6,0,0,0,4,0,6,2,0,3,4,0,1,0,1,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,14,Donte Speight,9,1,0,0,3,0,7,4,0,1,0,0,0,0,0,1
+2026-2027,2026-08-29,D1,Mount St. Mary's,15,Braden Loughnane,7,0,0,0,1,1,4,3,0,0,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,16,Sam Gregoire,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,17,Kris Gough,5,0,0,0,1,1,3,1,0,0,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,18,Damon James,3,0,0,0,1,0,2,0,0,1,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,19,Tyler Tippett,2,0,0,0,0,0,2,0,0,1,0,0,0,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,20,Shemar Lewis,6,0,0,0,2,2,4,0,0,3,0,0,1,0,0,0
+2026-2027,2026-08-29,D1,Mount St. Mary's,21,Gavin Shisler,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0

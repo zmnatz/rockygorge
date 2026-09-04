@@ -1,19 +1,20 @@
-import stats from '@content/stats/stats.yml'
 import { 
   Paper, Box, Typography, Breadcrumbs, Link as MuiLink,
   ToggleButton, ToggleButtonGroup, Grid
 } from '@mui/material'
 import { useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
+import { loadStatsFromCsv } from '@/utils/loadStats'
 import { STAT_CATEGORIES, TEAM_STAT_CATEGORIES, formatColumnTitle } from '@/utils/stats'
 import { slugify } from '@/utils/slugify'
 import { SortableTable } from '@/components/SortableTable'
 
 export async function getStaticPaths() {
+  const stats = loadStatsFromCsv()
   const games = Array.isArray(stats.games) ? stats.games : []
   return {
     paths: games.map((game) => ({
-      params: { gameId: slugify(game.opponent) },
+      params: { gameId: slugify(`${game.team}-${game.opponent}`) },
     })),
     fallback: false,
   }
@@ -21,21 +22,43 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
   const { gameId } = params
+  const stats = loadStatsFromCsv()
   const games = Array.isArray(stats.games) ? stats.games : []
-  const game = games.find(g => slugify(g.opponent) === gameId)
+  const game = games.find(g => slugify(`${g.team}-${g.opponent}`) === gameId || slugify(g.opponent) === gameId)
 
   if (!game) return { notFound: true }
 
-  const playerStats = game.players || []
+  const offensiveAggregates = (game.players || []).reduce((acc, p) => {
+    acc.positive_carries = (acc.positive_carries || 0) + Number(p.positive_carries || 0)
+    acc.negative_carries = (acc.negative_carries || 0) + Number(p.negative_carries || 0)
+    acc.line_breaks = (acc.line_breaks || 0) + Number(p.line_breaks || 0)
+    acc.tackle_breaks = (acc.tackle_breaks || 0) + Number(p.tackle_breaks || 0)
+    acc.off_loads = (acc.off_loads || 0) + Number(p.off_loads || p.offloads || 0)
+    return acc
+  }, {} as Record<string, number>)
+
+  const enhancedGame = {
+    ...game,
+    team_stats: {
+      ...game.team_stats,
+      ...offensiveAggregates,
+    }
+  }
+
+  const playerStats = enhancedGame.players || []
   const firstPlayer = playerStats[0] || {}
+  const statKeys = Object.values(STAT_CATEGORIES).flat()
   const allColumns = [
     { title: 'Player', dataIndex: 'name', key: 'name', minWidth: 200 },
-    ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game').map((key) => ({
+    ...statKeys.filter(key => Object.prototype.hasOwnProperty.call(firstPlayer, key)).map((key) => ({
+      title: formatColumnTitle(key), dataIndex: key, key,
+    })),
+    ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game' && !statKeys.includes(key)).map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
   ]
 
-  return { props: { game, allColumns } }
+  return { props: { game: enhancedGame, allColumns } }
 }
 
 export default function GameStatsPage({ game, allColumns }) {
@@ -68,12 +91,17 @@ export default function GameStatsPage({ game, allColumns }) {
           </MuiLink>
         </Link>
         <Typography color="text.secondary">Season: {game.season}</Typography>
-        <Typography color="text.primary">{game.opponent}</Typography>
+        <Typography color="text.secondary">Division: {game.division}</Typography>
+        {game.date && <Typography color="text.secondary">Date: {game.date}</Typography>}
+        <Typography color="text.primary">{game.game}</Typography>
       </Breadcrumbs>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4">Game Stats: {game.opponent}</Typography>
-        <Typography variant="h6" color="text.secondary">Season: {game.season}</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+        <Typography variant="h4">Game Stats: {game.game} ({game.division})</Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {game.date && <Typography variant="h6" color="text.secondary">Date: {game.date}</Typography>}
+          <Typography variant="h6" color="text.secondary">Season: {game.season}</Typography>
+        </Box>
       </Box>
 
       <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Team Performance</Typography>

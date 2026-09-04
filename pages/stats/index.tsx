@@ -1,38 +1,59 @@
-import stats from '@content/stats/stats.yml'
 import { 
   Select, MenuItem, FormControl, InputLabel, Box, Tabs, Tab, 
   TextField, Link as MuiLink, ToggleButton, ToggleButtonGroup, Typography
 } from '@mui/material'
 import { useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
+import { loadStatsFromCsv } from '@/utils/loadStats'
 import { STAT_CATEGORIES, TEAM_STAT_CATEGORIES, formatColumnTitle, aggregatePlayerStats } from '@/utils/stats'
 import { slugify } from '@/utils/slugify'
 import { SortableTable } from '@/components/SortableTable'
 
 export async function getStaticProps() {
+  const stats = loadStatsFromCsv()
   const games = Array.isArray(stats.games) ? stats.games : []
   const firstPlayer = games?.[0]?.players?.[0] || {}
+  const statKeys = Object.values(STAT_CATEGORIES).flat()
   const playerColumns = [
     { title: 'Player', dataIndex: 'name', key: 'name', minWidth: 200 },
-    ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game').map((key) => ({
+    ...statKeys.filter(key => Object.prototype.hasOwnProperty.call(firstPlayer, key)).map((key) => ({
+      title: formatColumnTitle(key), dataIndex: key, key,
+    })),
+    ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game' && !statKeys.includes(key)).map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
   ]
   const playerDataByGame = games.flatMap((game) =>
     Array.isArray(game.players) ? game.players.map((player) => ({
-      key: `${game.opponent}-${player.name}`, game: game.opponent, season: game.season, ...player,
+      key: `${game.team}-${game.opponent}-${player.name}`,
+      game: game.game,
+      division: game.division,
+      date: game.date,
+      season: game.season,
+      ...player,
     })) : []
   )
-  const gameList = games.map((game) => game.opponent)
+  const gameList = games.map((game) => game.game)
+  const teamStatKeys = Object.values(TEAM_STAT_CATEGORIES).flat()
   const firstTeamStats = games?.[0]?.team_stats || {}
   const teamColumns = [
-    { title: 'Game', dataIndex: 'game', key: 'game' },
-    ...Object.keys(firstTeamStats).map((key) => ({
+    { title: 'Date', dataIndex: 'date', key: 'date' },
+    { title: 'Division', dataIndex: 'division', key: 'division' },
+    { title: 'Opponent', dataIndex: 'opponent', key: 'opponent' },
+    ...teamStatKeys.filter(key => Object.prototype.hasOwnProperty.call(firstTeamStats, key)).map((key) => ({
+      title: formatColumnTitle(key), dataIndex: key, key,
+    })),
+    ...Object.keys(firstTeamStats).filter((key) => !teamStatKeys.includes(key)).map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
   ]
   const teamData = games.map((game) => ({
-    key: game.opponent, game: game.opponent, ...game.team_stats,
+    key: `${game.team}-${game.opponent}`,
+    date: game.date,
+    division: game.division,
+    opponent: game.opponent,
+    team: game.team,
+    ...game.team_stats,
   }))
   return { props: { playerColumns, playerDataByGame, gameList, teamColumns, teamData } }
 }
@@ -57,6 +78,8 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
     let cols = playerColumns
     if (selectedGame === 'all_detailed') {
       cols = [
+        { title: 'Date', dataIndex: 'date', key: 'date' },
+        { title: 'Division', dataIndex: 'division', key: 'division' },
         { title: 'Opponent', dataIndex: 'game', key: 'game' },
         { title: 'Season', dataIndex: 'season', key: 'season' },
         ...playerColumns
@@ -64,7 +87,7 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
     }
 
     return cols.filter(col => {
-      if (col.key === 'game' || col.key === 'name' || col.key === 'season') return true
+      if (col.key === 'game' || col.key === 'name' || col.key === 'season' || col.key === 'date' || col.key === 'division') return true
       return Object.entries(STAT_CATEGORIES).some(([category, fields]) => 
         visibleCategories.includes(category) && fields.includes(col.key)
       )
@@ -186,7 +209,22 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
       )}
 
       {activeTab === 1 && (
-        <SortableTable columns={teamColumns} data={teamData} categories={TEAM_STAT_CATEGORIES} />
+        <SortableTable 
+          columns={teamColumns} 
+          data={teamData} 
+          categories={TEAM_STAT_CATEGORIES} 
+          baseColumnFilter={(c) => c.key === 'opponent' || c.key === 'division' || c.key === 'date'}
+          renderCell={(col, row) => {
+            if (col.key === 'opponent') {
+              return (
+                <Link href={`/stats/game/${slugify(`${String(row.team ?? '')}-${String(row.opponent ?? '')}`)}`} passHref legacyBehavior>
+                  <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
+                </Link>
+              )
+            }
+            return row[col.dataIndex] as ReactNode
+          }}
+        />
       )}
     </Box>
   )

@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { Button, Container, TextField, Typography, Paper, Alert, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Autocomplete } from '@mui/material'
 import type { GetStaticProps } from 'next'
-import { load } from 'js-yaml'
-import fs from 'node:fs'
-import path from 'node:path'
 import { post } from '@/utils/api'
+import { loadStatsFromCsv } from '@/utils/loadStats'
 
 interface GauntletSubmitProps {
     playerNames: string[];
@@ -135,13 +133,11 @@ interface StatsFileData {
 
 export const getStaticProps: GetStaticProps = async () => {
     try {
-        const filePath = path.join(process.cwd(), 'content/stats/stats.yml');
-        const fileContents = fs.readFileSync(filePath, 'utf8');
-        const data = load(fileContents) as StatsFileData;
+        const stats = loadStatsFromCsv();
         
         const playerNames = new Set<string>();
-        if (data?.games) {
-            data.games.forEach((game) => {
+        if (stats?.games) {
+            stats.games.forEach((game) => {
                 if (game.players) {
                     game.players.forEach((player) => {
                         if (player.name) playerNames.add(player.name);
