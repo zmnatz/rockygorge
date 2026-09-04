@@ -109,7 +109,9 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns, ag
   return (
     <Box sx={{ width: '100%', p: 2 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Link href="/stats" passHref legacyBehavior>
+        <Link href="/stats">
+          {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+          }
           <MuiLink underline="hover" color="inherit">
             Stats
           </MuiLink>
@@ -161,7 +163,7 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns, ag
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
-      
+
       {logsBySeason.map(([season, logs]) => (
         <Box key={season} sx={{ mb: 6 }}>
           <Typography variant="h5" gutterBottom sx={{ borderBottom: '2px solid', borderColor: 'primary.main', display: 'inline-block', pb: 0.5 }}>
@@ -175,10 +177,13 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns, ag
             renderCell={(col, row) => {
               if (col.key === 'opponent' || col.key === 'game') {
                 return (
-                  <Link href={`/stats/game/${slugify(`${String(row.team ?? 'Rocky Gorge D1')}-${String(row[col.dataIndex] ?? '')}`)}`} passHref legacyBehavior>
+                  <Link
+                    href={`/stats/game/${slugify(`${String(row.team ?? 'Rocky Gorge D1')}-${String(row[col.dataIndex] ?? '')}`)}`}>
+                    {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                    }
                     <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
                   </Link>
-                )
+                );
               }
               return row[col.dataIndex] as ReactNode
             }}
@@ -186,5 +191,5 @@ export default function PlayerStatsPage({ playerName, playerLogs, allColumns, ag
         </Box>
       ))}
     </Box>
-  )
+  );
 }

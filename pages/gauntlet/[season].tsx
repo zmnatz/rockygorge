@@ -78,7 +78,7 @@ const GauntletSeason: NextPage<GauntletSeasonProps> = ({ columns, dataSource, se
                     The Gorge Gauntlet consists of four 500m intervals with 60 seconds of rest between sets. Please submit your time via the form below and send a photo of your time splits to the team WhatsApp.
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                    <Link href="/gauntlet/submit" passHref>
+                    <Link href="/gauntlet/submit">
                         <Button variant="outlined" size="small">
                             Submit Your Time
                         </Button>
@@ -86,7 +86,7 @@ const GauntletSeason: NextPage<GauntletSeasonProps> = ({ columns, dataSource, se
                 </Box>
             </Box>
         </TableContainer>
-    )
+    );
 }
 
 export default GauntletSeason

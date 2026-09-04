@@ -123,7 +123,7 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <h2>Team Statistics</h2>
       </Box>
-      
+
       <Tabs 
         value={activeTab} 
         onChange={(_, newValue) => setActiveTab(newValue)} 
@@ -190,17 +190,21 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
             renderCell={(col, row) => {
               if (col.key === 'name') {
                 return (
-                  <Link href={`/stats/${slugify(String(row[col.dataIndex] ?? ''))}`} passHref legacyBehavior>
+                  <Link href={`/stats/${slugify(String(row[col.dataIndex] ?? ''))}`}>
+                    {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                    }
                     <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
                   </Link>
-                )
+                );
               }
               if (col.key === 'game') {
                 return (
-                  <Link href={`/stats/game/${slugify(String(row[col.dataIndex] ?? ''))}`} passHref legacyBehavior>
+                  <Link href={`/stats/game/${slugify(String(row[col.dataIndex] ?? ''))}`}>
+                    {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                    }
                     <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
                   </Link>
-                )
+                );
               }
               return row[col.dataIndex] as ReactNode
             }}
@@ -217,15 +221,18 @@ export default function StatsPage({ playerColumns, playerDataByGame, gameList, t
           renderCell={(col, row) => {
             if (col.key === 'opponent') {
               return (
-                <Link href={`/stats/game/${slugify(`${String(row.team ?? '')}-${String(row.opponent ?? '')}`)}`} passHref legacyBehavior>
+                <Link
+                  href={`/stats/game/${slugify(`${String(row.team ?? '')}-${String(row.opponent ?? '')}`)}`}>
+                  {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                  }
                   <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
                 </Link>
-              )
+              );
             }
             return row[col.dataIndex] as ReactNode
           }}
         />
       )}
     </Box>
-  )
+  );
 }
