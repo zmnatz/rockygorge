@@ -5,7 +5,7 @@ import forms from '@content/forms.yml';
 import type { Event, Product, Form } from '@/types/data';
 
 describe('event cross-references', () => {
-  const visibleEvents = events.filter((e: Event) => !e.hide);
+  const visibleEvents = events.filter((e: Event) => e.home === true);
   const storeSlugs = new Set(store.map((s: Product) => s.slug));
   const formSlugs = new Set(forms.map((f: Form) => f.slug));
 

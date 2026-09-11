@@ -3,7 +3,7 @@
   description: Banquet Tickets
   summary: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
-  hide: true
+  home: false
   options:
     - name: Couple - $100
       value: 100
@@ -22,7 +22,7 @@
     [rockygorgerugby.com/forms/banquet](/forms/banquet)
 - slug: open
   defaultAmount: 450
-  hide: true
+  home: false
   description: Rocky Gorge Open
   summary: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
@@ -47,7 +47,7 @@
     - **Hole Sponsorship**: Sponsor a hole
     - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
 - slug: donations
-  hide: true
+  home: false
   defaultAmount: 50
   description: Donations
   summary: >-
@@ -74,6 +74,7 @@
   description: Fall Dues
   summary: 'Fall Season: $220'
   title: Pay your dues. Play rugby.
+  home: true
   options:
     - name: Player Dues - $220
       value: 220
@@ -117,6 +118,7 @@
   description: Supporter Dues
   summary: Help us support the Rocky Gorge community.
   title: Pay your damn dues! Support Rocky Gorge Rugby.
+  home: true
   options: []
   subscriptions:
     - name: GODs Tier
@@ -154,6 +156,7 @@
   description: Team Gear
   summary: 'Shirts, shorts and other miscellaneous items people leave at practice '
   title: Buy team gear
+  home: true
   options:
     - name: Miscellaneous Items - $5
       value: 5
@@ -164,7 +167,7 @@
   description: Training Camp
   summary: Spring training camp.
   title: Training Camp
-  hide: true
+  home: false
   options:
     - name: Lodging and Food - $80
       value: 80
@@ -173,6 +176,7 @@
   description: Sponsorship
   summary: Become a jersey sponsor
   title: Advertise with Rocky Gorge
+  home: true
   options:
     - name: Full Front - $1000
       value: 1000

@@ -2,6 +2,7 @@ import { TextField, FormControlLabel, Checkbox, Box, Typography, List, ListItem,
 import { Delete, Add } from '@mui/icons-material';
 import type { FieldConfig } from './types';
 import type { SubscriptionItem } from '@/types/data';
+import { getPath, setPath } from '@/utils/object-path';
 import { addOption, addSubscription, removeOption, removeSubscription, updateOption, updateSubscriptionField } from '@/utils/admin-subscriptions';
 
 interface FormFieldProps<T> {
@@ -126,9 +127,10 @@ export function FormField<T>({
     return <>{field.render(item, onChange)}</>;
   }
 
-  const value = item[field.name];
+  const record = item as unknown as Record<string, unknown>;
+  const value = getPath(record, field.name);
   const updateValue = (newValue: unknown) => {
-    onChange({ ...item, [field.name]: newValue });
+    onChange(setPath(record, field.name, newValue) as T);
   };
 
   switch (field.type) {

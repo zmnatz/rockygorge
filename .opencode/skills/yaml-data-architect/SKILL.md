@@ -13,3 +13,4 @@ This skill manages the structured YAML data that powers the application.
 - **Naming**: Use clear, descriptive keys in YAML. Prefer snake_case for keys.
 - **Organization**: Group related data into logical files and directories within `content/` and `config/`.
 - **Integration**: Ensure data structures are compatible with the TypeScript types defined in `src/types/`.
+- **Booleans**: Presence flags like `home`, `visibility.header`, `visibility.menu`, and `visibility.authRequired` are required `boolean` fields in `src/types/data.d.ts`. An absent boolean defaults to `false`, so boolean keys that are off may be omitted from `content/*.yml`; do not give them string values.

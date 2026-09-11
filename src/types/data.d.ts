@@ -7,7 +7,7 @@
  * - description: Longer text used for <meta> tags and subheadings (SEO)
  * - summary: Short card body text shown on the homepage
  * - details: Optional markdown rendered as HTML on the detail page
- * - hide: When true, excluded from the public homepage and listing
+ * - home: When true, shown on the public homepage and listing
  * - location: Snapshot of the source calendar item's location,
  *   copied at generation time; not used for rendering
  * - start: Snapshot of the source calendar item's start,
@@ -21,7 +21,7 @@ export interface BaseContentItem {
   description: string;
   summary: string;
   details?: string;
-  hide?: boolean;
+  home: boolean;
   location?: string;
   start?: string;
   end?: string;
@@ -35,14 +35,14 @@ export interface BaseContentItem {
  * - href: Full path the item links to (e.g. /contacts, forms/banquet)
  * - title: Display text in navigation and cards
  * - summary: Short description shown on cards; also used as tooltip in toolbar
- * - hide: When true, excluded from the public homepage
+ * - home: When true, shown on the public homepage
  */
 export interface BaseNavigableItem {
   slug: string;
   href: string;
   title: string;
   summary: string;
-  hide?: boolean;
+  home: boolean;
 }
 
 /** An event listing (e.g. Rocky Gorge Open). */
@@ -87,15 +87,18 @@ export interface SubscriptionItem {
 
 /** A toolbar/header navigation link. */
 export interface Link extends BaseNavigableItem {
+  /** Where the link is surfaced in the site navigation. */
+  visibility: LinkVisibility;
+}
+
+/** Where a navigation link is surfaced in the site navigation. */
+export interface LinkVisibility {
+  /** When true, shown as a desktop toolbar button. */
   header: boolean;
+  /** When true, shown in the dropdown menu. */
+  menu: boolean;
   /** When true, the link is only shown to signed-in visitors. */
-  authRequired?: boolean;
-  /** When true, the link appears only in the dropdown menu (mobile layout),
-   *  never as a desktop header button. */
-  menuOnly?: boolean;
-  /** When true, the link is always pinned in the dropdown menu on every
-   *  screen size. */
-  alwaysInMenu?: boolean;
+  authRequired: boolean;
 }
 
 /** A record of a member who has paid club dues. */

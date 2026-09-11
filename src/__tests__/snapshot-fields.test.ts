@@ -68,9 +68,9 @@ describe('snapshot fields on generatable content types', () => {
         expect(savedItem.end).toBe(SNAPSHOT_VALUES.end);
       });
 
-      it('keeps hidden-by-default behavior for new items', () => {
+      it('keeps not-shown-by-default behavior for new items', () => {
         const item = buildDefaultItem(type);
-        expect(item.hide).toBe(true);
+        expect(item.home).toBe(false);
       });
     });
   });

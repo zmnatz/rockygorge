@@ -1,4 +1,5 @@
 import type { CalendarSourceItem } from '@/components/CalendarCard/types';
+import { setPath } from '@/utils/object-path';
 import { slugify } from '@/utils/slugify';
 
 export interface DefaultField {
@@ -17,7 +18,11 @@ export function createDefaultItem(
       case 'number':
         break;
       case 'boolean':
-        item[name] = name === 'hide';
+        if (name.includes('.')) {
+          Object.assign(item, setPath(item, name, false));
+        } else {
+          item[name] = false;
+        }
         break;
       case 'keyValueMap':
       case 'textKeyValueMap':

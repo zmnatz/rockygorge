@@ -11,17 +11,22 @@ validateDataArray<Link>(links, {
     { name: 'href', type: 'string' },
     { name: 'title', type: 'string' },
     { name: 'summary', type: 'string' },
-    { name: 'header', type: 'boolean' },
-    { name: 'hide', type: 'boolean', optional: true },
-    { name: 'authRequired', type: 'boolean', optional: true },
-    { name: 'menuOnly', type: 'boolean', optional: true },
-    { name: 'alwaysInMenu', type: 'boolean', optional: true },
+    { name: 'visibility', type: 'object' },
+    { name: 'home', type: 'boolean' },
   ],
 });
 
 describe('links.yml', () => {
   it('has at least one header link', () => {
-    const headerLinks = links.filter((l: Link) => l.header);
+    const headerLinks = links.filter((l: Link) => l.visibility.header);
     expect(headerLinks.length).toBeGreaterThan(0);
+  });
+
+  it('declares all visibility booleans for every link', () => {
+    for (const link of links) {
+      expect(typeof link.visibility.header).toBe('boolean');
+      expect(typeof link.visibility.menu).toBe('boolean');
+      expect(typeof link.visibility.authRequired).toBe('boolean');
+    }
   });
 });

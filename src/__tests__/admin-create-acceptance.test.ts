@@ -27,7 +27,7 @@ const PAGE_SHAPES: Record<string, PageShape> = {
       { name: 'summary', type: 'string' },
       { name: 'title', type: 'string' },
       { name: 'options', type: 'object' },
-      { name: 'hide', type: 'boolean', optional: true },
+      { name: 'home', type: 'boolean', optional: true },
     ],
   },
   events: {
@@ -39,7 +39,7 @@ const PAGE_SHAPES: Record<string, PageShape> = {
       { name: 'summary', type: 'string' },
       { name: 'title', type: 'string' },
       { name: 'organizers', type: 'object' },
-      { name: 'hide', type: 'boolean', optional: true },
+      { name: 'home', type: 'boolean', optional: true },
     ],
   },
   links: {
@@ -50,8 +50,8 @@ const PAGE_SHAPES: Record<string, PageShape> = {
       { name: 'href', type: 'string' },
       { name: 'title', type: 'string' },
       { name: 'summary', type: 'string' },
-      { name: 'header', type: 'boolean' },
-      { name: 'hide', type: 'boolean', optional: true },
+      { name: 'visibility', type: 'object' },
+      { name: 'home', type: 'boolean', optional: true },
     ],
   },
   forms: {
@@ -64,7 +64,7 @@ const PAGE_SHAPES: Record<string, PageShape> = {
       { name: 'title', type: 'string' },
       { name: 'width', type: 'number' },
       { name: 'height', type: 'number' },
-      { name: 'hide', type: 'boolean' },
+      { name: 'home', type: 'boolean' },
       { name: 'summary', type: 'string', optional: true },
       { name: 'formLink', type: 'string', optional: true },
     ],
@@ -116,12 +116,12 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
     const shape = PAGE_SHAPES[type];
 
     describe(type, () => {
-      it('defaults the visibility boolean to hidden for pages with a hide field', () => {
+      it('defaults the visibility boolean to not shown on the homepage', () => {
         const item = buildDefaultItem(type);
         if (type === 'calendar') {
           expect(item.hideSummary).toBe(false);
         } else {
-          expect(item.hide).toBe(true);
+          expect(item.home).toBe(false);
         }
       });
 
@@ -188,17 +188,17 @@ describe('new item with only an id passes CI data-shape checks on every creatabl
 describe('edit mode keeps existing items working when the id is unchanged', () => {
   it('merging an edited item by original id preserves other items', () => {
     const original = [
-      { slug: 'a', hide: true },
-      { slug: 'b', hide: false },
+      { slug: 'a', home: true },
+      { slug: 'b', home: false },
     ];
-    const edited = { slug: 'a', hide: false };
+    const edited = { slug: 'a', home: false };
 
     const merged = original.map((item) =>
       (ITEM_ID_MAPPINGS.slug(item) === ITEM_ID_MAPPINGS.slug(original[0]) ? edited : item)
     );
 
-    expect(merged[0].hide).toBe(false);
-    expect(merged[1].hide).toBe(false);
+    expect(merged[0].home).toBe(false);
+    expect(merged[1].home).toBe(false);
     expect(merged).toHaveLength(2);
   });
 });

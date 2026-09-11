@@ -2,7 +2,7 @@
   description: Rocky Gorge Open
   summary: Sign up for the event or sponsor a hole for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
-  hide: true
+  home: false
   organizers:
     - Jameson Hulbert
     - Sam Gregoire

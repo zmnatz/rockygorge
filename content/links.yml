@@ -2,45 +2,71 @@
   href: '/banquet'
   title: 2025 Banquet
   summary: Buy your tickets for the 2025 banquet.
-  header: false
-  hide: true
+  home: false
+  visibility:
+    header: false
+    menu: false
+    authRequired: false
 - slug: '/contacts'
   href: '/contacts'
   title: Contacts
   summary: 'club contacts'
-  header: true
+  home: false
+  visibility:
+    header: true
+    menu: false
+    authRequired: false
 - slug: '/hallOfFame'
   href: '/hallOfFame'
   title: Hall of Fame
   summary: Recognized members of the Rocky Gorge Hall of Fame
-  header: true
+  home: false
+  visibility:
+    header: true
+    menu: false
+    authRequired: false
 - slug: '/gauntlet'
   href: '/gauntlet'
   title: 'Gauntlet'
   summary: 'Gorge gauntlet leaderboard'
-  header: false
-  menuOnly: true
-  alwaysInMenu: true
+  home: false
+  visibility:
+    header: false
+    menu: true
+    authRequired: false
 - slug: '/calendar'
   href: '/calendar'
   title: 'Calendar'
   summary: 'Gorge calendar'
-  header: false
-  menuOnly: true
+  home: false
+  visibility:
+    header: false
+    menu: true
+    authRequired: false
 - slug: '/whereIsPractice'
   href: '/whereIsPractice'
   title: 'Where is Practice'
   summary: 'When and where the next practice is'
-  header: true
+  home: false
+  visibility:
+    header: true
+    menu: false
+    authRequired: false
 - slug: '/utils/eligibility'
   href: '/utils/eligibility'
   title: 'Eligibility'
   summary: 'NCS player eligibility breakdown from the matches-played report'
-  header: false
-  menuOnly: true
+  home: false
+  visibility:
+    header: false
+    menu: true
+    authRequired: false
 - slug: '/admin'
   href: '/admin'
   title: 'Admin'
   summary: 'Admin dashboard'
-  header: true
-  authRequired: true
+  home: false
+  visibility:
+    header: true
+    menu: true
+    authRequired: true

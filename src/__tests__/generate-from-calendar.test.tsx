@@ -54,10 +54,10 @@ describe('createItemFromCalendar', () => {
     expect(item.end).toBe('2026-07-19');
   });
 
-  it('defaults the generated draft to hidden', () => {
+  it('defaults the generated draft to not shown on the homepage', () => {
     const item = createItemFromCalendar(timedSource, buildFields('events'));
 
-    expect(item.hide).toBe(true);
+    expect(item.home).toBe(false);
   });
 
   it('derives the slug from the title via slugify', () => {
