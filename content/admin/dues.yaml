@@ -26,6 +26,9 @@
 - name: Donte Speight
   monthly: true
   date: 2026-09-02
+- name: Chuck Moore
+  supporter: true
+  date: 2026-08-28
 - name: Dwayne Jenkins
   monthly: true
   supporter: true

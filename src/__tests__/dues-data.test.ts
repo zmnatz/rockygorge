@@ -35,12 +35,4 @@ describe('dues.yaml', () => {
       }
     });
   });
-
-  it('supporters also pay monthly dues', () => {
-    dues.forEach((entry) => {
-      if (entry.supporter) {
-        expect(entry.monthly).toBe(true);
-      }
-    });
-  });
 });

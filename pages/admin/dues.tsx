@@ -1,4 +1,7 @@
 import { 
+  Accordion, 
+  AccordionDetails, 
+  AccordionSummary, 
   Box, 
   Container, 
   Paper, 
@@ -13,31 +16,35 @@ import {
 import duesYaml from '@content/admin/dues.yaml';
 import type { Dues } from '@/types/data';
 
-function DuesTable({ title, entries }: { title: string; entries: Dues[] }) {
+function DuesTable({ title, entries, defaultOpen }: { title: string; entries: Dues[]; defaultOpen?: boolean }) {
   return (
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        {title} ({entries.length})
-      </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {entries.map((entry) => (
-              <TableRow key={entry.name}>
-                <TableCell>{entry.name}</TableCell>
-                <TableCell>{entry.date}</TableCell>
+    <Accordion defaultExpanded={defaultOpen}>
+      <AccordionSummary>
+        <Typography variant="h6">
+          {title} ({entries.length})
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Date</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+            </TableHead>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry.name}>
+                  <TableCell>{entry.name}</TableCell>
+                  <TableCell>{entry.date}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </AccordionDetails>
+    </Accordion>
   );
 }
 
@@ -53,7 +60,7 @@ export default function DuesAdmin({ monthlyDues, regularPayments, supporterDues 
         </Typography>
       </Box>
 
-      <DuesTable title="Monthly Dues" entries={monthlyDues} />
+      <DuesTable title="Monthly Dues" entries={monthlyDues} defaultOpen />
       <DuesTable title="Regular Payments" entries={regularPayments} />
       <DuesTable title="Supporter Dues" entries={supporterDues} />
     </Container>
@@ -65,8 +72,8 @@ function sortNewestFirst(entries: Dues[]): Dues[] {
 }
 
 export async function getStaticProps() {
-  const monthlyDues = sortNewestFirst(duesYaml.filter((entry) => entry.monthly));
-  const regularPayments = sortNewestFirst(duesYaml.filter((entry) => !entry.monthly));
+  const monthlyDues = sortNewestFirst(duesYaml.filter((entry) => entry.monthly && !entry.supporter));
+  const regularPayments = sortNewestFirst(duesYaml.filter((entry) => !entry.monthly && !entry.supporter));
   const supporterDues = sortNewestFirst(duesYaml.filter((entry) => entry.supporter));
 
   return {
