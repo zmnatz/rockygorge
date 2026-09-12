@@ -67,14 +67,14 @@ export default function DuesAdmin({ monthlyDues, regularPayments, supporterDues 
   );
 }
 
-function sortNewestFirst(entries: Dues[]): Dues[] {
-  return [...entries].sort((a, b) => b.date.localeCompare(a.date));
+function sortByName(entries: Dues[]): Dues[] {
+  return [...entries].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getStaticProps() {
-  const monthlyDues = sortNewestFirst(duesYaml.filter((entry) => entry.monthly && !entry.supporter));
-  const regularPayments = sortNewestFirst(duesYaml.filter((entry) => !entry.monthly && !entry.supporter));
-  const supporterDues = sortNewestFirst(duesYaml.filter((entry) => entry.supporter));
+  const monthlyDues = sortByName(duesYaml.filter((entry) => entry.monthly && !entry.supporter));
+  const regularPayments = sortByName(duesYaml.filter((entry) => !entry.monthly && !entry.supporter));
+  const supporterDues = sortByName(duesYaml.filter((entry) => entry.supporter));
 
   return {
     props: {
