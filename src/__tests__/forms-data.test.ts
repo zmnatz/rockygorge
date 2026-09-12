@@ -13,7 +13,7 @@ validateDataArray<Form>(forms, {
     { name: 'title', type: 'string' },
     { name: 'width', type: 'number' },
     { name: 'height', type: 'number' },
-    { name: 'home', type: 'boolean' },
+    { name: 'home', type: 'boolean', optional: true },
     { name: 'summary', type: 'string', optional: true },
     { name: 'formLink', type: 'string', optional: true },
   ],

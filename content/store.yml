@@ -3,7 +3,6 @@
   description: Banquet Tickets
   summary: Buy your tickets for the 2026 banquet.
   title: 2026 Banquet
-  home: false
   options:
     - name: Couple - $100
       value: 100
@@ -22,7 +21,6 @@
     [rockygorgerugby.com/forms/banquet](/forms/banquet)
 - slug: open
   defaultAmount: 450
-  home: false
   description: Rocky Gorge Open
   summary: Purchase packages and sponsorships for the 2026 Rocky Gorge Open.
   title: 2026 Rocky Gorge Open
@@ -47,7 +45,6 @@
     - **Hole Sponsorship**: Sponsor a hole
     - **Event Sponsorship**: Sponsor Gorge's 1st Annual Golf outing
 - slug: donations
-  home: false
   defaultAmount: 50
   description: Donations
   summary: >-
@@ -167,7 +164,6 @@
   description: Training Camp
   summary: Spring training camp.
   title: Training Camp
-  home: false
   options:
     - name: Lodging and Food - $80
       value: 80

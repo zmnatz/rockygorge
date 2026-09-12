@@ -3,7 +3,7 @@ import type React from 'react';
 export type FieldType = 'text' | 'number' | 'boolean' | 'textarea' | 'keyValueMap' | 'textList' | 'textKeyValueMap' | 'select' | 'subscriptionList';
 
 export interface FieldConfig<T> {
-  name: string;
+  name: keyof T;
   label: string;
   type?: FieldType;
   options?: string[];

@@ -16,3 +16,7 @@ export function toSectionCard(item: SectionCardItem, config: SectionCardConfig):
     summary: item.summary,
   };
 }
+
+export function showOnHome<T extends { home?: boolean }>(items: T[]): T[] {
+  return items.filter((item) => item.home === true);
+}

@@ -8,10 +8,7 @@ import { Grid, Typography } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { CalendarCard } from "@/components/CalendarCard";
 import { markdownToReact } from "@/utils/markdown";
-import { toSectionCard } from "@/utils/sections";
-
-const showOnHome = <T extends { home: boolean }>(items: T[]): T[] =>
-  items.filter((item) => item.home === true);
+import { showOnHome, toSectionCard } from "@/utils/sections";
 
 export const itemsBySource = {
   store: showOnHome(StoreItems),

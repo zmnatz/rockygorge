@@ -40,15 +40,6 @@ describe('createDefaultItem', () => {
     expect(item.header).toBe(false);
   });
 
-  it('defaults dotted boolean fields to nested false', () => {
-    const item = createDefaultItem([
-      { name: 'visibility.header', type: 'boolean' },
-      { name: 'visibility.menu', type: 'boolean' },
-      { name: 'visibility.authRequired', type: 'boolean' },
-    ]);
-    expect(item.visibility).toEqual({ header: false, menu: false, authRequired: false });
-  });
-
   it('defaults list and map fields to empty arrays', () => {
     const item = createDefaultItem(fields);
     expect(item.options).toEqual([]);

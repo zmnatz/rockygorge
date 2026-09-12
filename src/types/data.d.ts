@@ -21,7 +21,7 @@ export interface BaseContentItem {
   description: string;
   summary: string;
   details?: string;
-  home: boolean;
+  home?: boolean;
   location?: string;
   start?: string;
   end?: string;
@@ -35,14 +35,15 @@ export interface BaseContentItem {
  * - href: Full path the item links to (e.g. /contacts, forms/banquet)
  * - title: Display text in navigation and cards
  * - summary: Short description shown on cards; also used as tooltip in toolbar
- * - home: When true, shown on the public homepage
+ * - home: When true, shown on the public homepage.
+ *   Optional; defaults to false when omitted.
  */
 export interface BaseNavigableItem {
   slug: string;
   href: string;
   title: string;
   summary: string;
-  home: boolean;
+  home?: boolean;
 }
 
 /** An event listing (e.g. Rocky Gorge Open). */
@@ -87,18 +88,12 @@ export interface SubscriptionItem {
 
 /** A toolbar/header navigation link. */
 export interface Link extends BaseNavigableItem {
-  /** Where the link is surfaced in the site navigation. */
-  visibility: LinkVisibility;
-}
-
-/** Where a navigation link is surfaced in the site navigation. */
-export interface LinkVisibility {
-  /** When true, shown as a desktop toolbar button. */
-  header: boolean;
-  /** When true, shown in the dropdown menu. */
-  menu: boolean;
-  /** When true, the link is only shown to signed-in visitors. */
-  authRequired: boolean;
+  /** When true, shown as a desktop toolbar button. Defaults to false when omitted. */
+  header?: boolean;
+  /** When true, shown in the dropdown menu. Defaults to false when omitted. */
+  menu?: boolean;
+  /** When true, the link is only shown to signed-in visitors. Defaults to false when omitted. */
+  authRequired?: boolean;
 }
 
 /** A record of a member who has paid club dues. */

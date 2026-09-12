@@ -13,9 +13,9 @@ export function Toolbar () {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const visibleToUser = links.filter(({ visibility }) => !visibility.authRequired || isAuthenticated);
-  const visibleLinks = visibleToUser.filter(({ visibility }) => visibility.header);
-  const menuLinks = visibleToUser.filter(({ visibility }) => visibility.menu);
+  const visibleToUser = links.filter(({ authRequired }) => !authRequired || isAuthenticated);
+  const visibleLinks = visibleToUser.filter(({ header }) => header);
+  const menuLinks = visibleToUser.filter(({ menu }) => menu);
 
   const filteredMenuLinks = ((): Link[] => {
     const inMenu = [...(isMobile ? visibleLinks : []), ...menuLinks];
