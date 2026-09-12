@@ -8,7 +8,7 @@ store:
   columns:
     - field: "slug"
     - field: "title"
-    - field: "hide"
+    - field: "home"
       render: "boolean"
     - field: "slug"
       header: "Transactions"
@@ -32,8 +32,8 @@ store:
       type: "number"
     - name: "details"
       type: "textarea"
-    - name: "hide"
-      label: "Hide Item"
+    - name: "home"
+      label: "Show on Homepage"
       type: "boolean"
     - name: "options"
       type: "keyValueMap"
@@ -51,7 +51,7 @@ events:
   columns:
     - field: "slug"
     - field: "title"
-    - field: "hide"
+    - field: "home"
       render: "boolean"
   fields:
     - name: "slug"
@@ -70,8 +70,8 @@ events:
       type: "text"
     - name: "details"
       type: "textarea"
-    - name: "hide"
-      label: "Hide Event"
+    - name: "home"
+      label: "Show on Homepage"
       type: "boolean"
     - name: "organizers"
       type: "textList"
@@ -83,7 +83,7 @@ links:
   columns:
     - field: "slug"
     - field: "title"
-    - field: "hide"
+    - field: "home"
       render: "boolean"
   fields:
     - name: "slug"
@@ -97,14 +97,14 @@ links:
     - name: "header"
       label: "Is Header"
       type: "boolean"
-    - name: "menuOnly"
-      label: "Menu Only"
+    - name: "menu"
+      label: "Menu"
       type: "boolean"
-    - name: "alwaysInMenu"
-      label: "Always In Menu"
+    - name: "authRequired"
+      label: "Requires Auth"
       type: "boolean"
-    - name: "hide"
-      label: "Hide Link"
+    - name: "home"
+      label: "Show on Homepage"
       type: "boolean"
 
 forms:
@@ -117,7 +117,7 @@ forms:
   columns:
     - field: "slug"
     - field: "title"
-    - field: "hide"
+    - field: "home"
       render: "boolean"
   fields:
     - name: "slug"
@@ -137,8 +137,8 @@ forms:
       type: "number"
     - name: "height"
       type: "number"
-    - name: "hide"
-      label: "Hide Form"
+    - name: "home"
+      label: "Show on Homepage"
       type: "boolean"
 
 calendar:

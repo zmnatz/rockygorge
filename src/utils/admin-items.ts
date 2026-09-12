@@ -17,7 +17,7 @@ export function createDefaultItem(
       case 'number':
         break;
       case 'boolean':
-        item[name] = name === 'hide';
+        item[name] = false;
         break;
       case 'keyValueMap':
       case 'textKeyValueMap':

@@ -5,7 +5,6 @@
   summary: Nominate a Rocky Gorge club member for the hall of fame.
   width: 640
   height: 1300
-  hide: true
 - slug: asr
   href: 'forms/asr'
   formId: 1FAIpQLSfwXVgSwfl4cBA2ETcMo4iwK2mFTbzQ0LA1wKVOj3TiQJZLcQ
@@ -13,7 +12,6 @@
   summary: Travel information for the Atlantic Super Regionals tournament.
   width: 640 
   height: 3046
-  hide: true
 - slug: jerseys
   href: 'forms/jerseys'
   formId: 1FAIpQLSfDxsBp6WzSFpB7WqIitIsvUeEbJ6P72Cd6F4N7khqC7O_S0Q 
@@ -21,7 +19,6 @@
   summary: Captains please report who brought equipment after the game.
   width: 640
   height: 1307
-  hide: true
 - slug: contact
   href: 'forms/contact'
   formId: 1FAIpQLSdcsvnYSIRksBvbRCLr8ZjXsw2TgHxXhwyRNgGj2WXntKvW0w
@@ -29,7 +26,6 @@
   summary: Interested in joining the team? Fill out this form and we'll get back to you.
   width: 640
   height: 1496
-  hide: true
   formLink: https://docs.google.com/forms/d/1vjP0cDvmV-mdVkqFXQxbPj99bDQ-wKOq4OzI_5XkqFE/edit
 - slug: nationals
   href: 'forms/nationals'
@@ -38,12 +34,10 @@
   summary: Travel information for the Club National Tournament
   width: 700
   height: 520
-  hide: true
 - slug: banquet
   href: forms/banquet
   formId: 1FAIpQLSf4r-x7KGl4c9S11uk0m8D-GNpqbsoJ0eIZ0MKRBbRJrKKUhg
   title: 2026 Banquet
-  hide: true
   width: 700
   height: 1500
 - slug: open
@@ -51,7 +45,6 @@
   formId: 1FAIpQLSfUw99Ufbzd1tvwepfaTx1ky4yLebaEbuM7qWvNBAAp-geYJg
   title: Rocky Gorge Open
   summary: Sign up to join us for the first annual Rocky Gorge Open
-  hide: false
   width: 700
   height: 1600
 - slug: playerAdvocateNomination
@@ -59,6 +52,5 @@
   formId: 1FAIpQLSelNBHeBWyMGPMfoou9n5lj3u3Q-n_74Hy3xSMvO_B2VTwnwA
   title: Player Advocate Nomination
   summary: Nominate a player to be the next Player Advocate
-  hide: false
   height: 695
   width: 640

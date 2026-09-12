@@ -11,11 +11,10 @@ validateDataArray<Link>(links, {
     { name: 'href', type: 'string' },
     { name: 'title', type: 'string' },
     { name: 'summary', type: 'string' },
-    { name: 'header', type: 'boolean' },
-    { name: 'hide', type: 'boolean', optional: true },
+    { name: 'header', type: 'boolean', optional: true },
+    { name: 'menu', type: 'boolean', optional: true },
     { name: 'authRequired', type: 'boolean', optional: true },
-    { name: 'menuOnly', type: 'boolean', optional: true },
-    { name: 'alwaysInMenu', type: 'boolean', optional: true },
+    { name: 'home', type: 'boolean', optional: true },
   ],
 });
 

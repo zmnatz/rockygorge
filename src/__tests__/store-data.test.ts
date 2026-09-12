@@ -13,7 +13,7 @@ validateDataArray<Product>(store, {
     { name: 'summary', type: 'string' },
     { name: 'title', type: 'string' },
     { name: 'options', type: 'object' },
-    { name: 'hide', type: 'boolean', optional: true },
+    { name: 'home', type: 'boolean', optional: true },
     { name: 'location', type: 'string', optional: true },
     { name: 'start', type: 'string', optional: true },
     { name: 'end', type: 'string', optional: true },

@@ -8,13 +8,12 @@ import { Grid, Typography } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { CalendarCard } from "@/components/CalendarCard";
 import { markdownToReact } from "@/utils/markdown";
-import { toSectionCard } from "@/utils/sections";
+import { showOnHome, toSectionCard } from "@/utils/sections";
 
 export const itemsBySource = {
-  store: StoreItems.filter(item => !item.hide),
-  events: events.filter(event => !event.hide),
-  links: [...links, ...forms]
-    .filter(item => item.header !== true && item.hide !== true)
+  store: showOnHome(StoreItems),
+  events: showOnHome(events),
+  links: showOnHome([...links, ...forms]),
 };
 
 <Grid container spacing={2} sx={{ py: 2 }}>

@@ -6,12 +6,6 @@ import { useIdentity } from "@/components/IdentityProvider";
 import type { Link } from "@/types/data";
 import { useState } from "react";
 
-const headerLinks = links.filter(({ header, menuOnly }) => header && !menuOnly);
-const menuOnlyLinks = links.filter(({ menuOnly }) => menuOnly);
-
-/** Links that are always shown in the dropdown menu, per content/links.yml. */
-const alwaysInMenuLinks = links.filter(({ alwaysInMenu }) => alwaysInMenu);
-
 export function Toolbar () {
   const { user, isLoading, login, logout } = useIdentity();
   const isAuthenticated = user !== null;
@@ -19,15 +13,12 @@ export function Toolbar () {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const visibleLinks = headerLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
+  const visibleToUser = links.filter(({ authRequired }) => !authRequired || isAuthenticated);
+  const visibleLinks = visibleToUser.filter(({ header }) => header);
+  const menuLinks = visibleToUser.filter(({ menu }) => menu);
 
-  const menuLinks = ((): Link[] => {
-    const pinned = alwaysInMenuLinks.filter(({ authRequired }) => !authRequired || isAuthenticated);
-    const inMenu = [
-      ...(isMobile ? visibleLinks : []),
-      ...pinned,
-      ...menuOnlyLinks.filter(({ authRequired }) => !authRequired || isAuthenticated),
-    ];
+  const filteredMenuLinks = ((): Link[] => {
+    const inMenu = [...(isMobile ? visibleLinks : []), ...menuLinks];
     const seen = new Set<string>();
     return inMenu.filter((link) => {
       if (seen.has(link.slug)) return false;
@@ -82,7 +73,7 @@ export function Toolbar () {
           onClose={handleCloseMenu}
           keepMounted
         >
-          {menuLinks.map(({ slug, href, title, summary }) => (
+          {filteredMenuLinks.map(({ slug, href, title, summary }) => (
             <MenuItem
               key={slug}
               component="a"
@@ -93,7 +84,7 @@ export function Toolbar () {
               {title}
             </MenuItem>
           ))}
-          {!isLoading && menuLinks.length > 0 && <Divider />}
+          {!isLoading && filteredMenuLinks.length > 0 && <Divider />}
           {!isLoading && (
             <MenuItem
               onClick={() => {

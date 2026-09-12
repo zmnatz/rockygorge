@@ -16,7 +16,7 @@ describe('createDefaultItem', () => {
     { name: 'title', type: 'text' },
     { name: 'description', type: 'textarea' },
     { name: 'defaultAmount', type: 'number' },
-    { name: 'hide', type: 'boolean' },
+    { name: 'home', type: 'boolean' },
     { name: 'header', type: 'boolean' },
     { name: 'options', type: 'keyValueMap' },
     { name: 'supporters', type: 'textList' },
@@ -34,9 +34,9 @@ describe('createDefaultItem', () => {
     expect('defaultAmount' in item).toBe(false);
   });
 
-  it('defaults hide to true and other booleans to false', () => {
+  it('defaults all booleans to false', () => {
     const item = createDefaultItem(fields);
-    expect(item.hide).toBe(true);
+    expect(item.home).toBe(false);
     expect(item.header).toBe(false);
   });
 
@@ -129,8 +129,8 @@ describe('applyItemChange', () => {
 
   it('replaces the item matching the original id', () => {
     const items = [{ slug: 'banquet' }, { slug: 'open' }];
-    const result = applyItemChange(items, { slug: 'banquet', hide: false }, 'banquet', getId);
-    expect(result[0]).toEqual({ slug: 'banquet', hide: false });
+    const result = applyItemChange(items, { slug: 'banquet', home: false }, 'banquet', getId);
+    expect(result[0]).toEqual({ slug: 'banquet', home: false });
     expect(result).toHaveLength(2);
   });
 
