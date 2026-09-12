@@ -1,6 +1,8 @@
 import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListItem } from "@mui/material";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
+import QRCode from "qrcode";
 import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
 import events from "@content/events.yml";
 import store from "@content/store.yml";
@@ -25,11 +27,17 @@ export async function getStaticProps({ params }) {
   const storeItem = store.find((item) => item.slug === event.slug) ?? null;
   const form = forms.find((f) => f.slug === event.slug) ?? null;
 
+  let qrCode = null;
+  if (event.qrCode) {
+    qrCode = await QRCode.toDataURL(event.qrCode, { margin: 2, width: 300 });
+  }
+
   return {
     props: {
       ...event,
       storeItem,
       form,
+      qrCode,
     },
   };
 }
@@ -41,8 +49,9 @@ export default function EventPage({
   organizers,
   summary,
   storeItem,
-  form
-}: Event & { storeItem?: Product; form?: Form }) {
+  form,
+  qrCode,
+}: Event & { storeItem?: Product; form?: Form; qrCode?: string }) {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Head>
@@ -69,7 +78,16 @@ export default function EventPage({
           )}
         </Box>
 
-        {details && <Box sx={{ my: 3 }}>{markdownToReact(details)}</Box>}
+        {details && (
+          <Box sx={{ my: 3 }}>
+            {markdownToReact(details)}
+            {qrCode && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Image src={qrCode} alt="QR code" width={300} height={300} unoptimized />
+              </Box>
+            )}
+          </Box>
+        )}
         {organizers && organizers.length > 0 && (
           <Card sx={{ mt: 4 }}>
             <CardHeader title="Contact organizers for more detail" />

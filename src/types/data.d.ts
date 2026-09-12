@@ -49,6 +49,11 @@ export interface BaseNavigableItem {
 /** An event listing (e.g. Rocky Gorge Open). */
 export interface Event extends BaseContentItem {
   organizers: string[];
+  /**
+   * Optional URL to encode as a QR code, generated at build time and
+   * rendered below the event's markdown details.
+   */
+  qrCode?: string;
 }
 
 /** A Google Forms embed page. */

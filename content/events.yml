@@ -11,16 +11,21 @@
 - slug: springboks-vs-all-blacks-tailgate
   title: Tailgate
   summary: Info for the tailgate before the game.
-  description: |-
-    Look for the Rocky Gorge Flag. 
+  description: Look for the Rocky Gorge Flag.
+  details: |-
+    Games, Food, Drink, Music.
 
-    Games, Food, Drink, Music. 
+    BYOB encouraged.
 
-    BYOB encouraged. Donations graciously accepted to cover the food.
+    Kevin is providing the food — help him cover the costs:
+
+    **Send Kevin money on [Venmo](https://account.venmo.com/u/kevin-koch-5) here.**
+
+    Or scan the QR code below to contribute!
+  qrCode: https://account.venmo.com/u/kevin-koch-5
   location: Lot BC Row 11
   start: '2026-09-12T12:30:00-04:00'
   end: '2026-09-12T15:30:00-04:00'
-  details: ''
   home: true
   organizers:
     - Kevin Koch
