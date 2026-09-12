@@ -45,7 +45,6 @@
   formId: 1FAIpQLSfUw99Ufbzd1tvwepfaTx1ky4yLebaEbuM7qWvNBAAp-geYJg
   title: Rocky Gorge Open
   summary: Sign up to join us for the first annual Rocky Gorge Open
-  home: true
   width: 700
   height: 1600
 - slug: playerAdvocateNomination
@@ -53,6 +52,5 @@
   formId: 1FAIpQLSelNBHeBWyMGPMfoou9n5lj3u3Q-n_74Hy3xSMvO_B2VTwnwA
   title: Player Advocate Nomination
   summary: Nominate a player to be the next Player Advocate
-  home: true
   height: 695
   width: 640

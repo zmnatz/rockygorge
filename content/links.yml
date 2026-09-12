@@ -16,13 +16,11 @@
   href: '/gauntlet'
   title: 'Gauntlet'
   summary: 'Gorge gauntlet leaderboard'
-  home: true
   menu: true
 - slug: '/calendar'
   href: '/calendar'
   title: 'Calendar'
   summary: 'Gorge calendar'
-  home: true
   menu: true
 - slug: '/whereIsPractice'
   href: '/whereIsPractice'
@@ -33,7 +31,6 @@
   href: '/utils/eligibility'
   title: 'Eligibility'
   summary: 'NCS player eligibility breakdown from the matches-played report'
-  home: true
   menu: true
 - slug: '/admin'
   href: '/admin'
