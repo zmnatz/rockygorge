@@ -124,6 +124,10 @@ _Avoid_: One-time payer, lump-sum payer
 The club's supporter subscription tier (GODs), distinct from player Dues. On the Dues ledger a supporter is marked with the `supporter` flag. Supporter dues payers render in the Supporter Dues table at the bottom of the Dues admin page — a member with Supporter Dues appears only there, never in the Monthly Dues or Regular Payments tables. The flag is set by hand from the ledger, not derived from the store data.
 _Avoid_: GOD, patron, supporter (when meaning the store item)
 
+**Ledger Sync**:
+The admin action on the Dues item's transaction page that adds new payers from the visible transactions to the dues ledger (`content/admin/dues.yaml`). It sends only minimal row data — name, date, and the monthly/supporter flags derived from the transaction title ("dues subscription" and "GODs" signals) — never email, amounts, or transaction IDs. Anyone already on the ledger is skipped, and the change is proposed as a pull request for manual review before merge.
+_Avoid_: Auto-sync, ledger import
+
 ## Rugby & Eligibility
 
 Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5).
