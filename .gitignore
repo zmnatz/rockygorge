@@ -27,6 +27,9 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 
+# Netlify edge runtime (deno.lock)
+deno.lock
+
 # Reports
 /reports
 .cptr
