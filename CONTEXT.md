@@ -108,6 +108,26 @@ _Avoid_: Association, linking (payments context)
 The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
 _Avoid_: Purchase report, item sales
 
+**Dues**:
+A member's payment of the club's dues fee, tracked one row per person in the dues ledger (`content/admin/dues.yaml`) with a name, a date, whether the member is on the monthly plan, and whether they also pay Supporter Dues. The ledger is hand-maintained; amounts and PayPal details deliberately do not live in it — the Transaction report is the source for money figures.
+_Avoid_: Subscription, membership fee, ledger entry
+
+**Monthly Dues**:
+A Dues record marked as part of the auto-renewing monthly dues subscription (the `monthly` flag). A member with Monthly Dues appears only in the Monthly Dues table of the Dues admin page; any Supporter Dues member is excluded from it.
+_Avoid_: Monthly payer, recurring payer
+
+**Regular Payment**:
+A Dues record made as a one-time amount rather than on the monthly plan. A member with a Regular Payment appears only in the Regular Payments table; any Monthly Dues or Supporter Dues member is excluded from it.
+_Avoid_: One-time payer, lump-sum payer
+
+**Supporter Dues**:
+The club's supporter subscription tier (GODs), distinct from player Dues. On the Dues ledger a supporter is marked with the `supporter` flag. Supporter dues payers render in the Supporter Dues table at the bottom of the Dues admin page — a member with Supporter Dues appears only there, never in the Monthly Dues or Regular Payments tables. The flag is set by hand from the ledger, not derived from the store data.
+_Avoid_: GOD, patron, supporter (when meaning the store item)
+
+**Ledger Sync**:
+The admin action on the Dues item's transaction page that adds new payers from the visible transactions to the dues ledger (`content/admin/dues.yaml`). It sends only minimal row data — name, date, and the monthly/supporter flags derived from the transaction title ("dues subscription" and "GODs" signals) — never email, amounts, or transaction IDs. Anyone already on the ledger is skipped, and the change is proposed as a pull request for manual review before merge.
+_Avoid_: Auto-sync, ledger import
+
 ## Rugby & Eligibility
 
 Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5).

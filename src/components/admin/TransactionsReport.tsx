@@ -18,9 +18,11 @@ import {
 } from '@mui/material';
 import { useRequireAuth } from '@/components/RequireAuth';
 import { useTransactions } from '@/api/transactions';
+import { post } from '@/utils/api';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
 import { itemMatcher } from '@/utils/item-match';
+import { reduceTransactionsToLedgerDraft } from '@/utils/dues-ledger';
 import { compareValues } from '@/utils/sort';
 
 import type { DateRange } from '@/types/date-range';
@@ -100,6 +102,8 @@ export function TransactionsReport({
   const [range, setRange] = useState<DateRange | null>(null);
   const [filter, setFilter] = useState(initialFilter ?? '');
   const [sort, setSort] = useState<SortState>({ key: 'date', direction: 'desc' });
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{ severity: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const defaults = defaultDateRange();
@@ -170,6 +174,35 @@ export function TransactionsReport({
     downloadCsv(`${stem}_${range?.start ?? ''}_${range?.end ?? ''}.csv`, csv);
   };
 
+  /** Push the selected range's dues transactions into the ledger, sending only
+   *  the minimal row fields (name, date, monthly/supporter flags) so no
+   *  contact or money details leave the browser. */
+  const handleSyncLedger = async () => {
+    if (!item) return;
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const accessToken = await getAccessToken();
+      const entries = reduceTransactionsToLedgerDraft(visible);
+      const result = await post<{ message: string; added: number }>(
+        '/.netlify/functions/admin-dues-sync',
+        { entries },
+        accessToken,
+      );
+      setSyncMessage({
+        severity: 'success',
+        text: result.message,
+      });
+    } catch (error) {
+      setSyncMessage({
+        severity: 'error',
+        text: error instanceof Error ? error.message : 'Ledger sync failed.',
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>
@@ -207,6 +240,17 @@ export function TransactionsReport({
         <Button type="button" variant="outlined" onClick={handleExport} disabled={sorted.length === 0}>
           Export CSV
         </Button>
+        {item?.slug === 'dues' && (
+          <Button
+            type="button"
+            variant="contained"
+            color="secondary"
+            onClick={handleSyncLedger}
+            disabled={syncing || visible.length === 0}
+          >
+            {syncing ? 'Syncing ledger...' : 'Sync to Ledger'}
+          </Button>
+        )}
         {isFetching && <CircularProgress size={20} />}
       </Box>
 
@@ -223,6 +267,12 @@ export function TransactionsReport({
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error.message}
+        </Alert>
+      )}
+
+      {syncMessage && (
+        <Alert severity={syncMessage.severity} sx={{ mb: 2 }}>
+          {syncMessage.text}
         </Alert>
       )}
 
