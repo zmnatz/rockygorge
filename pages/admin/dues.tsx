@@ -13,7 +13,35 @@ import {
 import duesYaml from '@content/admin/dues.yaml';
 import type { Dues } from '@/types/data';
 
-export default function DuesAdmin({ dues }: { dues: Dues[] }) {
+function DuesTable({ title, entries }: { title: string; entries: Dues[] }) {
+  return (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h5" gutterBottom>
+        {title}
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {entries.map((entry) => (
+              <TableRow key={entry.name}>
+                <TableCell>{entry.name}</TableCell>
+                <TableCell>{entry.date}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+}
+
+export default function DuesAdmin({ monthlyDues, regularPayments }: { monthlyDues: Dues[]; regularPayments: Dues[] }) {
   return (
     <Container sx={{ mt: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -25,36 +53,24 @@ export default function DuesAdmin({ dues }: { dues: Dues[] }) {
         </Typography>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Monthly</TableCell>
-              <TableCell>Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {dues.map((entry) => (
-              <TableRow key={entry.name}>
-                <TableCell>{entry.name}</TableCell>
-                <TableCell>{entry.monthly ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{entry.date}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <DuesTable title="Monthly Dues" entries={monthlyDues} />
+      <DuesTable title="Regular Payments" entries={regularPayments} />
     </Container>
   );
 }
 
+function sortNewestFirst(entries: Dues[]): Dues[] {
+  return [...entries].sort((a, b) => b.date.localeCompare(a.date));
+}
+
 export async function getStaticProps() {
-  const dues = [...duesYaml].sort((a, b) => b.date.localeCompare(a.date));
+  const monthlyDues = sortNewestFirst(duesYaml.filter((entry) => entry.monthly));
+  const regularPayments = sortNewestFirst(duesYaml.filter((entry) => !entry.monthly));
 
   return {
     props: {
-      dues,
+      monthlyDues,
+      regularPayments,
     },
   };
 }

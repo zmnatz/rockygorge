@@ -30,92 +30,35 @@
   date: 2026-08-02
 - name: Dwayne Jenkins
   monthly: true
-  date: 2026-07-26
+  date: 2026-08-26
 - name: Matthew Carroll
   monthly: true
-  date: 2026-07-23
+  date: 2026-08-23
 - name: William Bush
   monthly: true
-  date: 2026-07-20
+  date: 2026-08-20
 - name: Tristan Cole
   monthly: true
-  date: 2026-07-16
+  date: 2026-08-18
 - name: Alexander Wolke
   monthly: true
-  date: 2026-07-16
+  date: 2026-08-16
 - name: John Bratt
   monthly: true
-  date: 2026-07-16
+  date: 2026-08-16
 - name: Zaven Mnatzakanian
   monthly: true
   date: 2026-07-15
 - name: Gregory Teliczan
   date: 2026-07-14
 - name: Aidan Leaird
-  email: aidanleaird137@gmail.com
-  type: Payment
-  status: S
-  description: Fall Dues
-  amount: 220.00
-  fee: -8.17
-  net: 211.83
-  transaction_id: 69L582272E105335V
   date: 2026-08-19
 - name: Braden Loughnane
-  email: bqloughnane@gmail.com
-  type: Payment
-  status: S
-  description: Fall Dues
-  amount: 220.00
-  fee: -7.07
-  net: 212.93
-  transaction_id: 7BJ83951HC357280M
   date: 2026-08-19
 - name: Evan Miller
-  email: evan.rugby100@gmail.com
-  type: Payment
-  status: S
-  description: Fall Dues
-  amount: 220.00
-  fee: -7.07
-  net: 212.93
-  transaction_id: 99339406M0160315C
   date: 2026-08-18
 - name: Tyler Tippett
-  email: tippettrugby1@gmail.com
-  type: Payment
-  status: S
-  description: Fall Dues
-  amount: 220.00
-  fee: -8.17
-  net: 211.83
-  transaction_id: 2G03673619893982F
   date: 2026-08-17
-- name: Alexander Wolke
-  email: awolke4@gmail.com
-  type: Payment
-  status: S
-  description: Rocky Gorge Yearly Dues Subscription
-  amount: 35.00
-  fee: -1.71
-  net: 33.29
-  transaction_id: 6FW24942XH569032K
-  date: 2026-08-16
-- name: John Bratt
-  email: johnbratt@johnbrattlaw.com
-  type: Payment
-  status: S
-  description: GODs Yearly Dues Subscription
-  amount: 20.00
-  fee: -1.19
-  net: 18.81
-  transaction_id: 64Y69908X8392482U
-  date: 2026-08-16
-- name: Tristan Cole
-  date: 2026-08-18
-- name: Dwayne Jenkins
-  monthly: true
-  date: 2026-08-26
 - name: John Warnick
   date: 2026-08-25
 - name: Alexander Florenzo
@@ -133,16 +76,10 @@
   date: 2026-08-24
 - name: Alex Gregory
   date: 2026-08-24
-- name: Matthew Carroll
-  monthly: true
-  date: 2026-08-23
 - name: Gavin Schisler
   date: 2026-08-23
 - name: Brandon Drummond
   date: 2026-08-21
-- name: William Bush
-  monthly: true
-  date: 2026-08-20
 - name: Justin Blocker
   date: 2026-08-20
 - name: Matthew Burns
