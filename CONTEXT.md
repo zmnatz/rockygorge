@@ -117,11 +117,11 @@ A Dues record marked as part of the auto-renewing monthly dues subscription (the
 _Avoid_: Monthly payer, recurring payer
 
 **Regular Payment**:
-A Dues record made as a one-time amount rather than on the monthly plan. A member with a Regular Payment appears only in the Regular Payments table; any Monthly Dues member is excluded from it.
+A Dues record made as a one-time amount rather than on the monthly plan. A member with a Regular Payment appears only in the Regular Payments table; any Monthly Dues or Supporter Dues member is excluded from it.
 _Avoid_: One-time payer, lump-sum payer
 
 **Supporter Dues**:
-The club's supporter subscription tier (GODs), distinct from player Dues. On the Dues ledger a supporter is marked with the `supporter` flag. Supporter dues payers render in the Supporter Dues table at the bottom of the Dues admin page — a member with Supporter Dues appears only there, never in the Monthly Dues table. The flag is set by hand from the ledger, not derived from the store data.
+The club's supporter subscription tier (GODs), distinct from player Dues. On the Dues ledger a supporter is marked with the `supporter` flag. Supporter dues payers render in the Supporter Dues table at the bottom of the Dues admin page — a member with Supporter Dues appears only there, never in the Monthly Dues or Regular Payments tables. The flag is set by hand from the ledger, not derived from the store data.
 _Avoid_: GOD, patron, supporter (when meaning the store item)
 
 ## Rugby & Eligibility
