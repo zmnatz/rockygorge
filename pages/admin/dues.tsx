@@ -17,7 +17,7 @@ function DuesTable({ title, entries }: { title: string; entries: Dues[] }) {
   return (
     <Box sx={{ mb: 4 }}>
       <Typography variant="h5" gutterBottom>
-        {title}
+        {title} ({entries.length})
       </Typography>
       <TableContainer component={Paper}>
         <Table>
