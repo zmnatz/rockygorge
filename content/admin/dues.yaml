@@ -10,6 +10,10 @@
 - name: James Nutland
   monthly: true
   date: 2026-09-08
+- name: Paula Henry
+  monthly: true
+  supporter: true
+  date: 2026-09-06
 - name: Tom Henry
   monthly: true
   supporter: true
