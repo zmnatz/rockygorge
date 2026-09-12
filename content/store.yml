@@ -148,7 +148,6 @@
     - Bill Bush
     - Mason McIlwee
     - John Bratt
-    - Joe Drummond
 - slug: gear
   defaultAmount: 5
   description: Team Gear
@@ -188,3 +187,19 @@
     logos to
 
     [sponsor@rockygorgerugby.com](mailto:sponsor@rockygorgerugby.com).
+- slug: tailgate
+  title: Springboks vs All Blacks Tailgate
+  description: Suggested donation to the club to cover food and drink costs.
+  summary: Come have food and drinks with the team.
+  location: Lot BC
+  start: '2026-09-12T12:30:00-04:00'
+  end: '2026-09-12T15:30:00-04:00'
+  details: ''
+  home: false
+  options:
+    - name: Suggested Donation
+      value: 20
+    - name: Fancy Donation
+      value: 50
+  supporters: []
+  defaultAmount: 20
