@@ -109,7 +109,7 @@ The read-only admin view at `/admin/transactions/[slug]` listing the Transaction
 _Avoid_: Purchase report, item sales
 
 **Dues**:
-A member's payment of the club's dues fee, tracked one row per person in the dues ledger (`content/admin/dues.yaml`) with a name, a date, and whether the member is on the monthly plan. The ledger is hand-maintained; amounts and PayPal details deliberately do not live in it — the Transaction report is the source for money figures.
+A member's payment of the club's dues fee, tracked one row per person in the dues ledger (`content/admin/dues.yaml`) with a name, a date, whether the member is on the monthly plan, and whether they also pay Supporter Dues. The ledger is hand-maintained; amounts and PayPal details deliberately do not live in it — the Transaction report is the source for money figures.
 _Avoid_: Subscription, membership fee, ledger entry
 
 **Monthly Dues**:
@@ -119,6 +119,10 @@ _Avoid_: Monthly payer, recurring payer
 **Regular Payment**:
 A Dues record made as a one-time amount rather than on the monthly plan. A member with a Regular Payment appears only in the Regular Payments table; any Monthly Dues member is excluded from it.
 _Avoid_: One-time payer, lump-sum payer
+
+**Supporter Dues**:
+The club's supporter subscription tier (GODs), distinct from player Dues. On the Dues ledger a supporter is marked with the `supporter` flag, and supporter dues payers render in the Supporter Dues table at the bottom of the Dues admin page. The flag is set by hand from the ledger, not derived from the store data.
+_Avoid_: GOD, patron, supporter (when meaning the store item)
 
 ## Rugby & Eligibility
 

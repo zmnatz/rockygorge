@@ -41,7 +41,7 @@ function DuesTable({ title, entries }: { title: string; entries: Dues[] }) {
   );
 }
 
-export default function DuesAdmin({ monthlyDues, regularPayments }: { monthlyDues: Dues[]; regularPayments: Dues[] }) {
+export default function DuesAdmin({ monthlyDues, regularPayments, supporterDues }: { monthlyDues: Dues[]; regularPayments: Dues[]; supporterDues: Dues[] }) {
   return (
     <Container sx={{ mt: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -55,6 +55,7 @@ export default function DuesAdmin({ monthlyDues, regularPayments }: { monthlyDue
 
       <DuesTable title="Monthly Dues" entries={monthlyDues} />
       <DuesTable title="Regular Payments" entries={regularPayments} />
+      <DuesTable title="Supporter Dues" entries={supporterDues} />
     </Container>
   );
 }
@@ -66,11 +67,13 @@ function sortNewestFirst(entries: Dues[]): Dues[] {
 export async function getStaticProps() {
   const monthlyDues = sortNewestFirst(duesYaml.filter((entry) => entry.monthly));
   const regularPayments = sortNewestFirst(duesYaml.filter((entry) => !entry.monthly));
+  const supporterDues = sortNewestFirst(duesYaml.filter((entry) => entry.supporter));
 
   return {
     props: {
       monthlyDues,
       regularPayments,
+      supporterDues,
     },
   };
 }

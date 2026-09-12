@@ -27,4 +27,20 @@ describe('dues.yaml', () => {
       }
     });
   });
+
+  it('supporter is a boolean when present', () => {
+    dues.forEach((entry) => {
+      if (entry.supporter !== undefined) {
+        expect(typeof entry.supporter).toBe('boolean');
+      }
+    });
+  });
+
+  it('supporters also pay monthly dues', () => {
+    dues.forEach((entry) => {
+      if (entry.supporter) {
+        expect(entry.monthly).toBe(true);
+      }
+    });
+  });
 });

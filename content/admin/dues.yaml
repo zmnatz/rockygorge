@@ -1,64 +1,38 @@
-- name: Jamison Hulbert
-  date: 2026-08-14
-- name: George Ding
-  date: 2026-08-12
+- name: Jamel Murray
+  date: 2026-09-11
 - name: Mason McIlwee
   monthly: true
-  date: 2026-08-11
+  supporter: true
+  date: 2026-09-11
 - name: Javier Diaz-Pender
   monthly: true
-  date: 2026-08-10
+  date: 2026-09-10
 - name: James Nutland
   monthly: true
-  date: 2026-08-08
-- name: Paula Henry
+  date: 2026-09-08
+- name: Tom Henry
   monthly: true
-  date: 2026-08-06
+  supporter: true
+  date: 2026-09-06
 - name: Adam Wiley
   monthly: true
-  date: 2026-08-05
+  date: 2026-09-05
 - name: Austin Bradley
   monthly: true
-  date: 2026-08-05
+  date: 2026-09-05
 - name: Josh Floyd
   monthly: true
-  date: 2026-08-04
-- name: Elmer Avila
-  date: 2026-08-03
+  date: 2026-09-04
 - name: Donte Speight
   monthly: true
-  date: 2026-08-02
+  date: 2026-09-02
 - name: Dwayne Jenkins
   monthly: true
+  supporter: true
   date: 2026-08-26
-- name: Matthew Carroll
+- name: Quinn Kastle
   monthly: true
-  date: 2026-08-23
-- name: William Bush
-  monthly: true
-  date: 2026-08-20
-- name: Tristan Cole
-  monthly: true
-  date: 2026-08-18
-- name: Alexander Wolke
-  monthly: true
-  date: 2026-08-16
-- name: John Bratt
-  monthly: true
-  date: 2026-08-16
-- name: Zaven Mnatzakanian
-  monthly: true
-  date: 2026-07-15
-- name: Gregory Teliczan
-  date: 2026-07-14
-- name: Aidan Leaird
-  date: 2026-08-19
-- name: Braden Loughnane
-  date: 2026-08-19
-- name: Evan Miller
-  date: 2026-08-18
-- name: Tyler Tippett
-  date: 2026-08-17
+  date: 2026-08-25
 - name: John Warnick
   date: 2026-08-25
 - name: Alexander Florenzo
@@ -69,17 +43,22 @@
   date: 2026-08-25
 - name: Jason Bland
   date: 2026-08-25
-- name: Quinn Kastle
-  monthly: true
-  date: 2026-08-25
 - name: Preston Jones
   date: 2026-08-24
 - name: Alex Gregory
   date: 2026-08-24
+- name: Matthew Carroll
+  monthly: true
+  supporter: true
+  date: 2026-08-23
 - name: Gavin Schisler
   date: 2026-08-23
 - name: Brandon Drummond
   date: 2026-08-21
+- name: William Bush
+  monthly: true
+  supporter: true
+  date: 2026-08-20
 - name: Justin Blocker
   date: 2026-08-20
 - name: Matthew Burns
@@ -94,3 +73,33 @@
   date: 2026-08-20
 - name: Alexander Wasilewski
   date: 2026-08-20
+- name: Aidan Leaird
+  date: 2026-08-19
+- name: Braden Loughnane
+  date: 2026-08-19
+- name: Tristan Cole
+  monthly: true
+  date: 2026-08-18
+- name: Evan Miller
+  date: 2026-08-18
+- name: Tyler Tippett
+  date: 2026-08-17
+- name: Alexander Wolke
+  monthly: true
+  date: 2026-08-16
+- name: John Bratt
+  monthly: true
+  supporter: true
+  date: 2026-08-16
+- name: Jamison Hulbert
+  date: 2026-08-14
+- name: George Ding
+  date: 2026-08-12
+- name: Elmer Avila
+  date: 2026-08-03
+- name: Zaven Mnatzakanian
+  monthly: true
+  supporter: true
+  date: 2026-07-15
+- name: Gregory Teliczan
+  date: 2026-07-14

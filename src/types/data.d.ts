@@ -100,6 +100,8 @@ export interface Link extends BaseNavigableItem {
 export interface Dues {
   name: string;
   monthly?: boolean;
+  /** When true, the member also pays the club's supporter (GODs) dues. */
+  supporter?: boolean;
   date: string;
 }
 
