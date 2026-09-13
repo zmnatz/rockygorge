@@ -7,6 +7,7 @@ import { Fragment } from "react";
 import { Grid, Typography } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { CalendarCard } from "@/components/CalendarCard";
+import { Scores } from "@/components/Scores";
 import { markdownToReact } from "@/utils/markdown";
 import { showOnHome, toSectionCard } from "@/utils/sections";
 
@@ -20,6 +21,8 @@ export const itemsBySource = {
   <Grid size={{xs: 12}} sx={{ textAlign: 'center' }}>
     {markdownToReact(home.hero.markdown)}
   </Grid>
+
+  <Scores />
 
   <Grid container spacing={2}>
     <Grid size={{ xs: 12, md: 6 }}>

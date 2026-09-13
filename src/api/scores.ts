@@ -4,6 +4,8 @@ import type { Score } from '@/components/Scores/types'
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 
+const CLUB_NAME = 'Rocky Gorge';
+
 const SCORES_QUERY = `query MatchCardsEntityPollQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
   getEntityFixturesAndResults(
     type: $type
@@ -92,13 +94,22 @@ async function fetchScores() {
         entityType: "club",
         type: "all",
         skip: 0,
-        limit: 8,
+        limit: 50,
       },
       query: SCORES_QUERY,
     });
-    return data.data.getEntityFixturesAndResults.filter(
-      (score) => score.homeTeam.score.length > 0 && score.awayTeam.score.length > 0
-    );
+    return data.data.getEntityFixturesAndResults
+      .filter(
+        (score) =>
+          (score.homeTeam.name.includes(CLUB_NAME) ||
+            score.awayTeam.name.includes(CLUB_NAME)) &&
+          score.homeTeam.score.length > 0 &&
+          score.awayTeam.score.length > 0
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
+      );
   } catch (error) {
     console.info('Unable to load scores', error);
     return [];
@@ -106,10 +117,9 @@ async function fetchScores() {
 }
 
 export function useScores() {
-  const query = useQuery({
+  return useQuery({
     queryKey: ['scores'],
     queryFn: fetchScores,
-    placeholderData: []
-  })
-  return query.data;
+    placeholderData: [],
+  });
 }

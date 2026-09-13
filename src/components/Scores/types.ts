@@ -1,11 +1,7 @@
-export interface Team {
-    crest: string;
-    name: string;
-    score: string;
-    teamId: string;
-}
-  
+import type { Team } from '@/types/match';
+
 export interface Score {
+    id: string;
     homeTeam: Team;
     awayTeam: Team;
     dateTime: Date;
