@@ -175,6 +175,11 @@ query. Example variables:
 ### Notes
 - `MatchCommentary` exposes no team side — only `id`, `minute`, `type`,
   `comment`. Derive home/away by matching roster names against the event text.
+- There are no player-level query fields (`getPlayer`, `allPlayers`, etc. do
+  not exist; `allSeasonStat` resolves empty). Player history is aggregated
+  from match-centre data instead: CMS player ids are stable across fixtures
+  with the shirt number appended (`<base>__<shirt>`), so the id base
+  identifies a player over time. See `src/utils/playerHistory.ts`.
 - Do NOT scrape `xplorer.rugby` `_next/data` JSON for this. That host sits
   behind a Vercel security checkpoint (HTTP 429 for automated clients), so a
   same-origin proxy can never work reliably. Use this CMS query instead.

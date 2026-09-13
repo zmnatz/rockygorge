@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { post } from "@/utils/api"
+import { postWithRetry } from "@/utils/api"
 import type { Score } from '@/components/Scores/types'
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
@@ -87,7 +87,7 @@ fragment Fixtures_broadcastPartners on BroadcastPartner {
 
 async function fetchScores() {
   try {
-    const data = await post<{ data: { getEntityFixturesAndResults: Score[] } }>(SCORES_URL, {
+    const data = await postWithRetry<{ data: { getEntityFixturesAndResults: Score[] } }>(SCORES_URL, {
       operationName: "MatchCardsEntityPollQuery",
       variables: {
         entityId: 91273,

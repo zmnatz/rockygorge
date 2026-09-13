@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
+import { Link as MuiLink } from '@mui/material';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,6 +11,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useMatch } from '@/components/Scores/useMatch';
 import { ScoreCard } from '@/components/Scores/ScoreCard';
+import { playerKey } from '@/utils/playerHistory';
 import type { MatchCommentary, MatchPlayer, Team } from '@/types/match';
 
 type EventFilter = 'all' | 'scores' | 'substitutions';
@@ -330,14 +333,17 @@ function TeamPanel({ team, isHome, lineup, substitutes, coaches, substituteActiv
         {coaches
           .filter((coach) => coach.isHome === isHome)
           .map((coach, index) => (
-            <Typography
+            <MuiLink
               // biome-ignore lint/suspicious/noArrayIndexKey: roster players have no stable id exposed by the API
               key={index}
+              component={NextLink}
+              href={`/players/${playerKey(coach.id)}`}
+              underline="hover"
               variant="body2"
-              sx={{ mb: 0.5 }}
+              sx={{ display: 'block', mb: 0.5 }}
             >
               {coach.name}
-            </Typography>
+            </MuiLink>
           ))}
       </Paper>
     </>
@@ -378,7 +384,14 @@ function RosterList({ players, activeNames }: { players: MatchPlayer[]; activeNa
               color: dimmed ? 'text.disabled' : 'inherit',
             }}
           >
-            <span>{player.name}</span>
+            <MuiLink
+              component={NextLink}
+              href={`/players/${playerKey(player.id)}`}
+              underline="hover"
+              color="inherit"
+            >
+              {player.name}
+            </MuiLink>
             <Typography variant="caption" color="text.secondary">
               {player.position}
             </Typography>

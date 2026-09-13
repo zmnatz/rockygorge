@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { get, post } from '@/utils/api';
+import { get, post, postWithRetry } from '@/utils/api';
 
 function mockFetch(status: number, body?: unknown) {
   const response = {
@@ -119,5 +119,42 @@ describe('error handling', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
 
     await expect(get('/api/test')).rejects.toThrow('Request failed: 502');
+  });
+});
+
+describe('postWithRetry', () => {
+  it('retries a 429 then succeeds', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(mockFetch(429, {})())
+      .mockResolvedValueOnce(mockFetch(200, { data: 1 })());
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await postWithRetry('/api/test', {}, null, {
+      baseDelayMs: 1,
+    });
+
+    expect(result).toEqual({ data: 1 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws immediately on non-retryable 4xx', async () => {
+    const fetchMock = mockFetch(400, {});
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(postWithRetry('/api/test', {})).rejects.toThrow(
+      'Request failed: 400'
+    );
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('gives up after exhausting retries', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockFetch(429, {})());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      postWithRetry('/api/test', {}, null, { retries: 2, baseDelayMs: 1 })
+    ).rejects.toThrow('Request failed: 429');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });

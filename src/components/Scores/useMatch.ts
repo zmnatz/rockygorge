@@ -1,33 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { post } from '@/utils/api';
+import { findFixtureById } from '@/utils/playerHistory';
 import type { MatchData, MatchPlayer } from '@/types/match';
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
-
-const CLUB_ENTITY_ID = 91273;
-
-interface FixtureLookupItem {
-  id: string;
-  compId: string;
-  season: string;
-  sourceType: string;
-}
-
-const FIXTURE_LOOKUP_QUERY = `query MatchCentreFixtureLookupQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
-  getEntityFixturesAndResults(
-    type: $type
-    entityId: $entityId
-    entityType: $entityType
-    limit: $limit
-    skip: $skip
-  ) {
-    id
-    compId
-    season
-    sourceType
-    __typename
-  }
-}`;
 
 const MATCH_CENTRE_QUERY = `query MatchCentreQuery($comp: CompInput) {
   getFixtureItem(comp: $comp) {
@@ -116,23 +92,7 @@ export function useMatch(matchId: string | undefined) {
 }
 
 async function fetchMatchData(matchId: string): Promise<MatchData> {
-  const lookup = await post<{
-    data: { getEntityFixturesAndResults: FixtureLookupItem[] };
-  }>(SCORES_URL, {
-    operationName: 'MatchCentreFixtureLookupQuery',
-    variables: {
-      entityId: CLUB_ENTITY_ID,
-      entityType: 'club',
-      type: 'all',
-      skip: 0,
-      limit: 100,
-    },
-    query: FIXTURE_LOOKUP_QUERY,
-  });
-
-  const fixture = lookup.data.getEntityFixturesAndResults.find(
-    (item) => item.id === matchId
-  );
+  const fixture = await findFixtureById(matchId);
 
   if (!fixture) {
     throw new Error('Failed to load match data');
