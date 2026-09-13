@@ -85,6 +85,21 @@ export default function GamePage() {
   // Only dim unused substitutes when the feed actually contains substitution
   // data — otherwise every bench player would look like they didn't play.
   const substituteActiveNames = substitutionCount > 0 ? cameOnNames : undefined;
+  const subOnMinutes =
+    substitutionCount > 0
+      ? (() => {
+          const minutes = new Map<string, string>();
+          for (const event of eventList) {
+            if (!isSubstitutionEvent(event.type)) continue;
+            const sub = parseSubstitution(event.comment);
+            const key = sub?.on.toLowerCase() ?? '';
+            if (key && !minutes.has(key)) {
+              minutes.set(key, event.minute);
+            }
+          }
+          return minutes;
+        })()
+      : undefined;
 
   return (
     <Box sx={{ py: 4, px: 2, maxWidth: { xs: 1100, lg: 1400, xl: 1800 }, mx: 'auto' }}>

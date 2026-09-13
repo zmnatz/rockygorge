@@ -113,6 +113,7 @@ describe('aggregatePlayerHistory', () => {
     // Substitution events are not scoring events, even when they name a player.
     const joe = histories.get('joe-id');
     expect(joe?.games[0].starter).toBe(false);
+    expect(joe?.games[0].played).toBe(true);
     expect(joe?.scoringEvents).toHaveLength(0);
   });
 

@@ -24,6 +24,7 @@ export interface PlayerGameLog {
   scoreAgainst: string;
   result: 'W' | 'L' | 'D';
   starter: boolean;
+  played: boolean;
 }
 
 export interface PlayerScoringEvent {
@@ -89,6 +90,15 @@ export function aggregatePlayerHistory(
     const { fixture, commentary, players, substitutes, coaches } = match;
     const roster = [...players, ...substitutes, ...coaches];
     const starterIds = new Set(players.map((player) => playerKey(player.id)));
+    const cameOnNames = new Set(
+      commentary.flatMap((event) => {
+        if (!event.type.toLowerCase().includes('substitut')) {
+          return [];
+        }
+        const onMatch = event.comment.match(/on:\s*(.+?)\s*$/i);
+        return onMatch ? [onMatch[1].trim().toLowerCase()] : [];
+      })
+    );
 
     for (const player of roster) {
       const key = playerKey(player.id);
@@ -107,6 +117,19 @@ export function aggregatePlayerHistory(
       const isHome = player.isHome;
       const ownScore = isHome ? fixture.homeTeam.score : fixture.awayTeam.score;
       const otherScore = isHome ? fixture.awayTeam.score : fixture.homeTeam.score;
+      const isStarter = starterIds.has(key);
+      const isSub = substitutes.some(
+        (sub) => playerKey(sub.id) === key || sub.name.toLowerCase() === player.name.toLowerCase()
+      );
+      const subName = player.name.toLowerCase();
+      const cameOn =
+        isStarter ||
+        !isSub ||
+        cameOnNames.has(subName) ||
+        [...cameOnNames].some(
+          (name) => name.split(/\s+/).pop() === subName.split(/\s+/).pop()
+        );
+
       history.games.push({
         fixtureId: fixture.id,
         season: fixture.season,
@@ -116,7 +139,8 @@ export function aggregatePlayerHistory(
         scoreFor: ownScore,
         scoreAgainst: otherScore,
         result: matchResult(ownScore, otherScore),
-        starter: starterIds.has(key),
+        starter: isStarter,
+        played: cameOn,
       });
 
       const name = player.name.toLowerCase();
