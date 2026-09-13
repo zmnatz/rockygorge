@@ -36,7 +36,7 @@ export function Toolbar () {
   };
 
   return <AppBar position="static">
-    <Container maxWidth="lg">
+    <Container maxWidth={false} sx={{ maxWidth: 1800, mx: "auto" }}>
       <MuiToolbar disableGutters>
         <Button
           component={NextLinkComposed}

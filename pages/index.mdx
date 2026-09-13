@@ -18,11 +18,11 @@ export const itemsBySource = {
 };
 
 <Grid container spacing={2} sx={{ py: 2 }}>
+  <Scores />
+
   <Grid size={{xs: 12}} sx={{ textAlign: 'center' }}>
     {markdownToReact(home.hero.markdown)}
   </Grid>
-
-  <Scores />
 
   <Grid container spacing={2}>
     <Grid size={{ xs: 12, md: 6 }}>

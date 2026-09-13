@@ -19,6 +19,7 @@ export interface FixtureItem {
 export interface MatchCommentary {
   id: string;
   minute: string;
+  type: string;
   comment: string;
   isHome: boolean;
 }

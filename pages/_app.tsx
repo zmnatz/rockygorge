@@ -28,7 +28,7 @@ export default function App({ Component, pageProps }) {
          </Head>
         <GoogleAnalytics />
         <Toolbar />
-        <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
+        <Container component="main" maxWidth={false} sx={{ py: 3, maxWidth: 1800, mx: "auto" }}>
           <MDXProvider components={mdxComponents}>
             <Component {...pageProps} />
           </MDXProvider>

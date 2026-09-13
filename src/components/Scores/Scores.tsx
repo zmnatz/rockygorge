@@ -1,16 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useScores } from '@/api/scores';
 import { ScoreCard } from './ScoreCard';
+
+const SCROLL_INTERVAL_MS = 8000;
 
 export function Scores() {
   const { data: scores, isLoading } = useScores();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    if (!hasInteracted || !scores || scores.length === 0) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(media.matches);
+    const handleChange = (event: MediaQueryListEvent) =>
+      setPrefersReducedMotion(event.matches);
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!scores || scores.length === 0) return;
+    if (isInteracting || prefersReducedMotion) return;
 
     const interval = setInterval(() => {
       if (scrollRef.current) {
@@ -21,30 +33,23 @@ export function Scores() {
           scrollRef.current.scrollBy({ left: clientWidth / 2, behavior: 'smooth' });
         }
       }
-    }, 5000);
+    }, SCROLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [scores, hasInteracted]);
+  }, [scores, isInteracting, prefersReducedMotion]);
 
-  if (isLoading) {
+  if (isLoading || !scores || scores.length === 0) {
     return null;
-  }
-
-  if (!scores || scores.length === 0) {
-    return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <Typography color="text.secondary">No recent scores available.</Typography>
-      </Box>
-    );
   }
 
   return (
     <Box sx={{ mt: 2, maxWidth: '100%', overflow: 'hidden' }}>
       <Box
         ref={scrollRef}
-        onMouseEnter={() => setHasInteracted(true)}
-        onTouchStart={() => setHasInteracted(true)}
-        onClick={() => setHasInteracted(true)}
+        onMouseEnter={() => setIsInteracting(true)}
+        onMouseLeave={() => setIsInteracting(false)}
+        onTouchStart={() => setIsInteracting(true)}
+        onTouchEnd={() => setIsInteracting(false)}
         sx={{
           display: 'flex',
           gap: 2,
@@ -77,7 +82,7 @@ export function Scores() {
               scrollSnapAlign: 'start',
             }}
           >
-            <ScoreCard score={score} />
+            <ScoreCard score={score} compact />
           </Box>
         ))}
       </Box>

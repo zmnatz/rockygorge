@@ -4,6 +4,6 @@ export interface Score {
     id: string;
     homeTeam: Team;
     awayTeam: Team;
-    dateTime: Date;
+    dateTime: string;
     compName: string;
 }

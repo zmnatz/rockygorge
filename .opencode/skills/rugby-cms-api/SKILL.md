@@ -113,12 +113,69 @@ To fetch data for Rocky Gorge Rugby (Club ID: `91273`):
 3. Provide the `operationName`, `variables`, and `query` in the request body.
 
 ## Individual Game Data
-Individual game details (e.g., Commentary, Player Lineups) are loaded from Next.js data JSON files.
+Individual game details (fixture, commentary, player lineups) come from the
+same CMS endpoint via a `CompInput`-keyed match centre query.
 
-### URL Pattern
-`/rugby-data/_next/data/{buildId}/{clubSlug}/match-centre/{matchId}.json?tab={tab}&club={clubSlug}&comp={matchId}`
+### GraphQL Query
+```graphql
+query MatchCentreQuery($comp: CompInput) {
+  getFixtureItem(comp: $comp) {
+    id
+    compId
+    compName
+    dateTime
+    venue
+    homeTeam { id name teamId score crest __typename }
+    awayTeam { id name teamId score crest __typename }
+    __typename
+  }
+  allMatchCommentary(comp: $comp) {
+    id
+    minute
+    type
+    comment
+    __typename
+  }
+  allMatchStatsSummary(comp: $comp) {
+    id
+    lineUp {
+      players { id name position shirtNumber isHome __typename }
+      substitutes { id name position shirtNumber isHome __typename }
+      coaches { id name position shirtNumber isHome __typename }
+      __typename
+    }
+    __typename
+  }
+}
+```
 
-### Examples
-- **Commentary**: `/rugby-data/_next/data/xPqU49OMRXdY91yiD34E3/rocky-gorge-rugby/match-centre/f2989ffad89ae4b2d.json?tab=Commentary&club=rocky-gorge-rugby&comp=f2989ffad89ae4b2d`
-- **Player Lineup**: `/rugby-data/_next/data/xPqU49OMRXdY91yiD34E3/rocky-gorge-rugby/match-centre/f2989ffad89ae4b2d.json?tab=Player-Lineup&club=rocky-gorge-rugby&comp=f2989ffad89ae4b2d`
+### CompInput Keying
+`CompInput` is `{ id, season, fixture, sourceType }` (all strings):
+
+- `id`: the competition id (`compId` from the fixtures list, e.g. `wa2qruTx4gcHZLaHn`)
+- `season`: the season string exactly as listed (e.g. `2025/2026`)
+- `fixture`: the fixture id (e.g. `f2989ffad89ae4b2d`)
+- `sourceType`: required — e.g. `2`. Omitting it resolves to `null`.
+
+Resolve these keys from `getEntityFixturesAndResults` first (it returns
+`compId`, `season`, `sourceType` per fixture), then issue the match centre
+query. Example variables:
+
+```json
+{
+  "comp": {
+    "id": "wa2qruTx4gcHZLaHn",
+    "season": "2025/2026",
+    "fixture": "f2989ffad89ae4b2d",
+    "sourceType": "2"
+  }
+}
+```
+
+### Notes
+- `MatchCommentary` exposes no team side — only `id`, `minute`, `type`,
+  `comment`. Derive home/away by matching roster names against the event text.
+- Do NOT scrape `xplorer.rugby` `_next/data` JSON for this. That host sits
+  behind a Vercel security checkpoint (HTTP 429 for automated clients), so a
+  same-origin proxy can never work reliably. Use this CMS query instead.
 
