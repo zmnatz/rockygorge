@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { useScores } from '@/api/scores';
 import { ScoreCard } from './ScoreCard';
@@ -28,11 +27,7 @@ export function Scores() {
   }, [scores, hasInteracted]);
 
   if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+    return null;
   }
 
   if (!scores || scores.length === 0) {
