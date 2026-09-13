@@ -102,7 +102,7 @@ export default function GamePage() {
       : undefined;
 
   return (
-    <Box sx={{ py: 4, px: 2, maxWidth: { xs: 1100, lg: 1400, xl: 1800 }, mx: 'auto' }}>
+    <Box sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 }, maxWidth: { xs: '100%', lg: 1400, xl: 1800 }, mx: 'auto' }}>
       <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Box sx={{ mb: 2 }}>
@@ -193,13 +193,18 @@ export default function GamePage() {
                 No match events match the selected filters.
               </Typography>
             )}
-            {visibleEvents.map((event) => (
-              <MatchEventRow
-                key={event.id}
-                event={event}
-                teamName={event.isHome ? game.homeTeam.name : game.awayTeam.name}
-              />
-            ))}
+            {visibleEvents.map((event) => {
+              const crest = event.isHome ? game.homeTeam.crest : game.awayTeam.crest;
+              const teamName = event.isHome ? game.homeTeam.name : game.awayTeam.name;
+              return (
+                <MatchEventRow
+                  key={event.id}
+                  event={event}
+                  crest={crest}
+                  teamName={teamName}
+                />
+              );
+            })}
           </Box>
         </Grid>
       </Grid>
@@ -228,15 +233,28 @@ function parseSubstitution(comment: string): { on: string; off: string } | null 
   return { off: match[1].trim(), on: match[2].trim() };
 }
 
+function parseScoringEvent(comment: string): { eventType: string; player: string } | null {
+  const match = comment.match(/^(.+?)\s*-\s*(.+?)$/);
+  if (!match) {
+    return null;
+  }
+  return { eventType: match[1].trim(), player: match[2].trim() };
+}
+
 function MatchEventRow({
   event,
+  crest,
   teamName,
 }: {
   event: MatchCommentary;
+  crest: string;
   teamName: string;
 }) {
   const substitution = isSubstitutionEvent(event.type)
     ? parseSubstitution(event.comment)
+    : null;
+  const scoring = !substitution && isScoreEvent(event.type)
+    ? parseScoringEvent(event.comment)
     : null;
 
   return (
@@ -259,34 +277,31 @@ function MatchEventRow({
         {event.minute}&apos;
       </Typography>
       {substitution ? (
-        <Box
-          sx={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            minWidth: 0,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }}
-        >
-          <Chip label="On" color="success" size="small" />
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 'bold', color: 'success.dark', overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
-            {substitution.on}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip label="On" color="success" size="small" />
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
+              {substitution.on}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip label="Off" variant="outlined" size="small" />
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textDecoration: 'line-through' }}
+            >
+              {substitution.off}
+            </Typography>
+          </Box>
+        </Box>
+      ) : scoring ? (
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+            {scoring.eventType}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            for
-          </Typography>
-          <Chip label="Off" variant="outlined" size="small" />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ textDecoration: 'line-through', overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
-            {substitution.off}
+            {scoring.player}
           </Typography>
         </Box>
       ) : (
@@ -294,13 +309,22 @@ function MatchEventRow({
           {event.comment}
         </Typography>
       )}
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ textAlign: 'right', whiteSpace: 'nowrap' }}
-      >
-        {teamName}
-      </Typography>
+      {crest ? (
+        <Box
+          component="img"
+          src={crest}
+          alt={teamName}
+          sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+        />
+      ) : (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ textAlign: 'right', whiteSpace: 'nowrap' }}
+        >
+          {teamName}
+        </Typography>
+      )}
     </Paper>
   );
 }

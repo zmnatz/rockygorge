@@ -12,6 +12,11 @@ interface ScoreCardProps {
 }
 
 export function ScoreCard({ score, compact, large }: ScoreCardProps) {
+  const homeScore = parseInt(score.homeTeam.score || '0', 10);
+  const awayScore = parseInt(score.awayTeam.score || '0', 10);
+  const homeWon = homeScore > awayScore;
+  const awayWon = awayScore > homeScore;
+
   if (compact) {
     return (
       <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -21,64 +26,121 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
         >
           <CardContent
             sx={{
-              px: 2,
+              px: { xs: 1.5, sm: 2 },
               py: 1,
               '&:last-child': { pb: 1 },
-              display: 'flex',
-              justifyContent: 'center',
             }}
           >
-          <Box sx={{ minWidth: 0, maxWidth: '100%' }}>
-            <Typography
-              variant="body2"
-              noWrap
-              sx={{
-                fontWeight: 'bold',
-                textAlign: 'center',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {score.homeTeam.name} vs {score.awayTeam.name}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                mt: 0.5,
-              }}
-            >
-              {score.homeTeam.crest && (
-                <Box
-                  component="img"
-                  src={score.homeTeam.crest}
-                  alt=""
-                  sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
-                />
-              )}
-              <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
-                {score.homeTeam.score}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+            {/* Mobile (xs): stacked rows with winner highlight */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, flexDirection: 'column', gap: 0.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontWeight: homeWon ? 'bold' : 'normal',
+                }}
+              >
+                {score.homeTeam.crest && (
+                  <Box
+                    component="img"
+                    src={score.homeTeam.crest}
+                    alt=""
+                    sx={{ width: 18, height: 18, objectFit: 'contain', flexShrink: 0 }}
+                  />
+                )}
+                <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
+                  {score.homeTeam.name}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  {score.homeTeam.score}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontWeight: awayWon ? 'bold' : 'normal',
+                }}
+              >
+                {score.awayTeam.crest && (
+                  <Box
+                    component="img"
+                    src={score.awayTeam.crest}
+                    alt=""
+                    sx={{ width: 18, height: 18, objectFit: 'contain', flexShrink: 0 }}
+                  />
+                )}
+                <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
+                  {score.awayTeam.name}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  {score.awayTeam.score}
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'right' }}>
                 {new Date(score.dateTime).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
                 })}
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
-                {score.awayTeam.score}
-              </Typography>
-              {score.awayTeam.crest && (
-                <Box
-                  component="img"
-                  src={score.awayTeam.crest}
-                  alt=""
-                  sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
-                />
-              )}
             </Box>
-          </Box>
+
+            {/* Desktop (sm+): original inline ticker */}
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'center' }}>
+              <Box sx={{ minWidth: 0, maxWidth: '100%' }}>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {score.homeTeam.name} vs {score.awayTeam.name}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mt: 0.5,
+                  }}
+                >
+                  {score.homeTeam.crest && (
+                    <Box
+                      component="img"
+                      src={score.homeTeam.crest}
+                      alt=""
+                      sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
+                    />
+                  )}
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
+                    {score.homeTeam.score}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                    {new Date(score.dateTime).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
+                    {score.awayTeam.score}
+                  </Typography>
+                  {score.awayTeam.crest && (
+                    <Box
+                      component="img"
+                      src={score.awayTeam.crest}
+                      alt=""
+                      sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       </Link>
@@ -96,86 +158,202 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
           mx: 'auto',
         }}
       >
+        {/* Mobile (xs): stacked rows with winner highlight */}
         <CardContent
           sx={{
-            display: 'flex',
+            display: { xs: 'flex', sm: 'none' },
+            flexDirection: 'column',
+            gap: 1,
+            px: 2,
+            py: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              fontWeight: homeWon ? 'bold' : 'normal',
+              color: homeWon ? 'text.primary' : 'text.secondary',
+            }}
+          >
+            {score.homeTeam.crest && (
+              <Box
+                component="img"
+                src={score.homeTeam.crest}
+                alt={score.homeTeam.name}
+                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+              />
+            )}
+            <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
+              {score.homeTeam.name}
+            </Typography>
+            <Typography variant={large ? 'h5' : 'h6'} sx={{ fontWeight: 'bold' }}>
+              {score.homeTeam.score}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              fontWeight: awayWon ? 'bold' : 'normal',
+              color: awayWon ? 'text.primary' : 'text.secondary',
+            }}
+          >
+            {score.awayTeam.crest && (
+              <Box
+                component="img"
+                src={score.awayTeam.crest}
+                alt={score.awayTeam.name}
+                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+              />
+            )}
+            <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
+              {score.awayTeam.name}
+            </Typography>
+            <Typography variant={large ? 'h5' : 'h6'} sx={{ fontWeight: 'bold' }}>
+              {score.awayTeam.score}
+            </Typography>
+          </Box>
+        </CardContent>
+
+        {/* Desktop (sm+): side by side */}
+        <CardContent
+          sx={{
+            display: { xs: 'none', sm: 'flex' },
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 2,
           }}
         >
-          {score.homeTeam.crest && (
-            <Box
-              component="img"
-              src={score.homeTeam.crest}
-              alt={score.homeTeam.name}
-              sx={{
-                width: large ? 76 : 56,
-                height: large ? 76 : 56,
-                objectFit: 'contain',
-                flexShrink: 0,
-              }}
-            />
-          )}
+          {/* Home team */}
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
-                justifyContent: 'center',
+              flexDirection: { xs: 'row', sm: 'column' },
+              alignItems: 'center',
+              justifyContent: { xs: 'space-between', sm: 'center' },
+              width: { xs: '100%', sm: 'auto' },
+              flex: 1,
+              minWidth: 0,
+              gap: { xs: 1.5, sm: 0 },
+            }}
+          >
+            {score.homeTeam.crest && (
+              <Box
+                component="img"
+                src={score.homeTeam.crest}
+                alt={score.homeTeam.name}
+                sx={{
+                  width: { xs: 36, sm: large ? 76 : 56 },
+                  height: { xs: 36, sm: large ? 76 : 56 },
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'flex-start', sm: 'center' },
                 minWidth: 0,
-                textAlign: 'center',
+                flex: { xs: 1, sm: 'none' },
               }}
             >
               <Typography
                 variant={large ? 'body1' : 'caption'}
                 noWrap
-                sx={{ fontWeight: 'medium', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                sx={{
+                  fontWeight: 'medium',
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  textAlign: { xs: 'left', sm: 'center' },
+                  width: '100%',
+                }}
               >
                 {score.homeTeam.name}
-            </Typography>
-            <Typography variant={large ? 'h4' : 'h5'} sx={{ fontWeight: 'bold' }}>
-              {score.homeTeam.score}
-            </Typography>
+              </Typography>
+              <Typography
+                variant={large ? 'h4' : 'h5'}
+                sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '2rem' } }}
+              >
+                {score.homeTeam.score}
+              </Typography>
+            </Box>
           </Box>
+
           <Typography
             variant={large ? 'h5' : 'h6'}
-            sx={{ color: 'text.secondary', fontWeight: 'bold', flexShrink: 0 }}
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 'bold',
+              flexShrink: 0,
+              my: { xs: -1, sm: 0 },
+            }}
           >
             vs
           </Typography>
+
+          {/* Away team */}
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
-                justifyContent: 'center',
+              flexDirection: { xs: 'row-reverse', sm: 'column' },
+              alignItems: 'center',
+              justifyContent: { xs: 'space-between', sm: 'center' },
+              width: { xs: '100%', sm: 'auto' },
+              flex: 1,
+              minWidth: 0,
+              gap: { xs: 1.5, sm: 0 },
+            }}
+          >
+            {score.awayTeam.crest && (
+              <Box
+                component="img"
+                src={score.awayTeam.crest}
+                alt={score.awayTeam.name}
+                sx={{
+                  width: { xs: 36, sm: large ? 76 : 56 },
+                  height: { xs: 36, sm: large ? 76 : 56 },
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'flex-end', sm: 'center' },
                 minWidth: 0,
-                textAlign: 'center',
+                flex: { xs: 1, sm: 'none' },
               }}
             >
               <Typography
                 variant={large ? 'body1' : 'caption'}
                 noWrap
-                sx={{ fontWeight: 'medium', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                sx={{
+                  fontWeight: 'medium',
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  textAlign: { xs: 'right', sm: 'center' },
+                  width: '100%',
+                }}
               >
                 {score.awayTeam.name}
-            </Typography>
-            <Typography variant={large ? 'h4' : 'h5'} sx={{ fontWeight: 'bold' }}>
-              {score.awayTeam.score}
-            </Typography>
+              </Typography>
+              <Typography
+                variant={large ? 'h4' : 'h5'}
+                sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '2rem' } }}
+              >
+                {score.awayTeam.score}
+              </Typography>
+            </Box>
           </Box>
-          {score.awayTeam.crest && (
-            <Box
-              component="img"
-              src={score.awayTeam.crest}
-              alt={score.awayTeam.name}
-              sx={{
-                width: large ? 76 : 56,
-                height: large ? 76 : 56,
-                objectFit: 'contain',
-                flexShrink: 0,
-              }}
-            />
-          )}
         </CardContent>
         <Box sx={{ textAlign: 'center', pb: 2 }}>
           <Typography variant="caption" color="text.secondary">
