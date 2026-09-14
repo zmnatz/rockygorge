@@ -4,7 +4,6 @@ import type { FixtureItem, MatchPlayer } from '@/types/match';
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 
 const CLUB_ENTITY_ID = 91273;
-const CLUB_NAME = 'Rocky Gorge';
 
 const MAX_FIXTURES = 500;
 const PAGE_SIZE = 100;

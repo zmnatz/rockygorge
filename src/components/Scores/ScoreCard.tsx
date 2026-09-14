@@ -22,7 +22,13 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
       <Link href={`/game?id=${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <Card
           className="score-card"
-          sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': { boxShadow: 4 },
+            // Theme adds side margins to cards below sm; inside the ticker
+            // carousel spacing comes from the scroll container, not the card.
+            mx: 0,
+          }}
         >
           <CardContent
             sx={{
@@ -79,7 +85,12 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                   {score.awayTeam.score}
                 </Typography>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'right' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ textAlign: 'right' }}
+                suppressHydrationWarning
+              >
                 {new Date(score.dateTime).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
@@ -121,7 +132,12 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                   <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
                     {score.homeTeam.score}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ flexShrink: 0 }}
+                    suppressHydrationWarning
+                  >
                     {new Date(score.dateTime).toLocaleDateString(undefined, {
                       month: 'short',
                       day: 'numeric',
