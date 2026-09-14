@@ -5,6 +5,7 @@
   "packageManager": "bun@1.3.14",
   "dependencies": {
     "@emotion/react": "^11.14.0",
+    "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.1",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
@@ -31,7 +32,9 @@
     "netlify": "netlify dev",
     "start": "next dev",
     "dev": "next dev",
-    "build": "next build",
+    "build": "bun run generate:players; bun run generate:scores; next build",
+    "generate:players": "bun scripts/generate-player-index.ts",
+    "generate:scores": "bun scripts/generate-scores-index.ts",
     "lint": "biome check .",
     "test": "vitest run",
     "prepare": "husky"

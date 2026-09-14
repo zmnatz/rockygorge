@@ -39,3 +39,45 @@ export function post<T>(url: string, body: unknown, accessToken?: string | null)
     headers,
   });
 }
+
+interface RetryOptions {
+  retries?: number;
+  baseDelayMs?: number;
+}
+
+function statusFromError(error: unknown): number | undefined {
+  const match = String((error as Error)?.message ?? '').match(
+    /Request failed: (\d{3})/
+  );
+  return match ? parseInt(match[1], 10) : undefined;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// POST with exponential backoff for transient failures (429 rate limits,
+// 5xx, network errors). Other 4xx errors throw immediately.
+export async function postWithRetry<T>(
+  url: string,
+  body: unknown,
+  accessToken?: string | null,
+  options?: RetryOptions
+): Promise<T> {
+  const retries = options?.retries ?? 3;
+  const baseDelayMs = options?.baseDelayMs ?? 1000;
+
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await post<T>(url, body, accessToken);
+    } catch (error) {
+      const status = statusFromError(error);
+      const retryable =
+        status === undefined || status === 429 || status >= 500;
+      if (!retryable || attempt >= retries) {
+        throw error;
+      }
+      await sleep(baseDelayMs * 2 ** attempt + Math.random() * 250);
+    }
+  }
+}

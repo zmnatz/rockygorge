@@ -1,5 +1,7 @@
 import { MDXProvider } from "@mdx-js/react";
 import Head from "next/head";
+import type { AppProps } from "next/app";
+import { CacheProvider, type EmotionCache } from "@emotion/react";
 
 import { Container, CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
@@ -11,10 +13,18 @@ import { Footer } from "@/components/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/utils/queryClient";
 import { IdentityProvider } from "@/components/IdentityProvider";
+import createEmotionCache from "@/utils/createEmotionCache";
 import GoogleAnalytics from "@/utils/analytics.mdx";
 
-export default function App({ Component, pageProps }) {
+const clientSideEmotionCache = createEmotionCache();
+
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache;
+}
+
+export default function App({ Component, pageProps, emotionCache = clientSideEmotionCache }: MyAppProps) {
   return (
+    <CacheProvider value={emotionCache}>
     <IdentityProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
@@ -28,7 +38,7 @@ export default function App({ Component, pageProps }) {
          </Head>
         <GoogleAnalytics />
         <Toolbar />
-        <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
+        <Container component="main" maxWidth={false} sx={{ py: 3, maxWidth: 1800, mx: "auto" }}>
           <MDXProvider components={mdxComponents}>
             <Component {...pageProps} />
           </MDXProvider>
@@ -37,5 +47,6 @@ export default function App({ Component, pageProps }) {
       </ThemeProvider>
     </QueryClientProvider>
     </IdentityProvider>
+    </CacheProvider>
   );
 }

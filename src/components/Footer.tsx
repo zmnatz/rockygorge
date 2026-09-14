@@ -15,7 +15,7 @@ export function Footer() {
         backgroundColor: "background.paper",
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false} sx={{ maxWidth: 1800, mx: "auto" }}>
         <Box
           sx={{
             display: "flex",
