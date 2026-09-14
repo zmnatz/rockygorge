@@ -18,3 +18,8 @@
   force = true
   status = 200
   headers = {X-goog-api-key = "AIzaSyDnoONpe29Y9gWIbhRKb_btifHo5X-d_Xo"}
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
