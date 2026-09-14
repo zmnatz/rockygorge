@@ -269,8 +269,6 @@ export async function buildPlayerHistories(
 ): Promise<Map<string, PlayerHistory>> {
   const fixtures = (await fetchAllFixtures()).filter(
     (fixture) =>
-      (fixture.homeTeam.name.includes(CLUB_NAME) ||
-        fixture.awayTeam.name.includes(CLUB_NAME)) &&
       fixture.homeTeam.score.length > 0 &&
       fixture.awayTeam.score.length > 0
   );
