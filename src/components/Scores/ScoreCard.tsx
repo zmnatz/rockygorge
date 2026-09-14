@@ -147,15 +147,15 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
     );
   }
   return (
-    <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
       <Card
         className="score-card"
         sx={{
           cursor: 'pointer',
           '&:hover': { boxShadow: 4 },
-          width: '100%',
-          maxWidth: 'none',
-          mx: 'auto',
+          width: '100% !important',
+          maxWidth: 'none !important',
+          mx: '0 !important',
         }}
       >
         {/* Mobile (xs): stacked rows with winner highlight */}
@@ -166,6 +166,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
             gap: 1,
             px: 2,
             py: 1.5,
+	    mx: 0,
             '&:last-child': { pb: 1.5 },
           }}
         >

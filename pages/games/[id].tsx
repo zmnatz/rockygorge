@@ -105,7 +105,7 @@ export default function GamePage() {
     <Box sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 }, maxWidth: { xs: '100%', lg: 1400, xl: 1800 }, mx: 'auto' }}>
       <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
         <Grid size={{ xs: 12, lg: 8 }}>
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, width: '100%' }}>
             <ScoreCard score={game} large />
           </Box>
           <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
