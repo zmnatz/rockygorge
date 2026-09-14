@@ -155,7 +155,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
           <MuiLink
             key={game.fixtureId}
             component={Link}
-            href={`/games/${game.fixtureId}`}
+              href={`/game?id=${game.fixtureId}`}
             underline="none"
             color="inherit"
           >
@@ -229,7 +229,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
           <MuiLink
             key={event.id}
             component={Link}
-            href={`/games/${event.fixtureId}`}
+              href={`/game?id=${event.fixtureId}`}
             underline="none"
             color="inherit"
           >

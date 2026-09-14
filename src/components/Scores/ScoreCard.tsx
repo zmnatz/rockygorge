@@ -19,7 +19,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
 
   if (compact) {
     return (
-      <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link href={`/game?id=${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <Card
           className="score-card"
           sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
@@ -147,7 +147,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
     );
   }
   return (
-    <Link href={`/games/${score.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
+    <Link href={`/game?id=${score.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
       <Card
         className="score-card"
         sx={{

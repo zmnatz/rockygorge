@@ -26,7 +26,7 @@ export default function GamePage() {
   const [eventFilter, setEventFilter] = useState<EventFilter>('all');
   const [teamFilter, setTeamFilter] = useState<TeamFilter>('all');
 
-  if (!matchId || isLoading) {
+  if (!router.isReady || isLoading) {
     return (
       <Box
         sx={{
@@ -41,7 +41,7 @@ export default function GamePage() {
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !matchId) {
     return (
       <Box
         sx={{
@@ -394,7 +394,7 @@ function TeamPanel({ team, isHome, lineup, substitutes, coaches, substituteActiv
               // biome-ignore lint/suspicious/noArrayIndexKey: roster players have no stable id exposed by the API
               key={index}
               component={NextLink}
-              href={`/players/${playerKey(coach.id)}`}
+              href={`/player?id=${playerKey(coach.id)}`}
               underline="hover"
               variant="body2"
               sx={{ display: 'block', mb: 0.5 }}
@@ -443,7 +443,7 @@ function RosterList({ players, activeNames }: { players: MatchPlayer[]; activeNa
           >
             <MuiLink
               component={NextLink}
-              href={`/players/${playerKey(player.id)}`}
+              href={`/player?id=${playerKey(player.id)}`}
               underline="hover"
               color="inherit"
             >
