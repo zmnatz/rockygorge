@@ -6,13 +6,29 @@ const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 const CLUB_ENTITY_ID = 91273;
 const CLUB_NAME = 'Rocky Gorge';
 
-// Gap between sequential fetches so build-time aggregation stays polite
-// to the CMS endpoint.
-const FETCH_GAP_MS = 500;
-
-// Upper bound on fixtures scanned so build-time aggregation stays finite.
 const MAX_FIXTURES = 500;
 const PAGE_SIZE = 100;
+const FETCH_GAP_MS = 500;
+
+let prebuiltHistories: Map<string, PlayerHistory> | null = null;
+
+export async function preloadPlayerHistories(): Promise<Map<string, PlayerHistory>> {
+  if (prebuiltHistories) {
+    return prebuiltHistories;
+  }
+  try {
+    const res = await fetch('/data/players.json');
+    if (res.ok) {
+      const json = await res.json();
+      prebuiltHistories = new Map(Object.entries(json));
+      return prebuiltHistories;
+    }
+  } catch {
+    // Fall back to live build if static json isn't present
+  }
+  prebuiltHistories = await buildPlayerHistories({});
+  return prebuiltHistories;
+}
 
 export interface PlayerGameLog {
   fixtureId: string;
