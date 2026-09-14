@@ -154,7 +154,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
           cursor: 'pointer',
           '&:hover': { boxShadow: 4 },
           width: '100%',
-          maxWidth: 600,
+          maxWidth: 'none',
           mx: 'auto',
         }}
       >
@@ -166,6 +166,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
             gap: 1,
             px: 2,
             py: 1.5,
+            '&:last-child': { pb: 1.5 },
           }}
         >
           <Box
@@ -225,6 +226,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 2,
+            '&:last-child': { pb: 2 },
           }}
         >
           {/* Home team */}

@@ -277,7 +277,16 @@ function MatchEventRow({
         {event.minute}&apos;
       </Typography>
       {substitution ? (
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 1,
+            minWidth: 0,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip label="On" color="success" size="small" />
             <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
@@ -296,7 +305,16 @@ function MatchEventRow({
           </Box>
         </Box>
       ) : scoring ? (
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: { xs: 0.25, sm: 1 },
+            minWidth: 0,
+          }}
+        >
           <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
             {scoring.eventType}
           </Typography>
