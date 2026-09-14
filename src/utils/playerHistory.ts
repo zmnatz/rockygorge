@@ -12,7 +12,9 @@ const FETCH_GAP_MS = 500;
 
 let prebuiltHistories: Map<string, PlayerHistory> | null = null;
 
-export async function preloadPlayerHistories(): Promise<Map<string, PlayerHistory>> {
+export async function preloadPlayerHistories(
+  options?: BuildOptions
+): Promise<Map<string, PlayerHistory>> {
   if (prebuiltHistories) {
     return prebuiltHistories;
   }
@@ -20,13 +22,15 @@ export async function preloadPlayerHistories(): Promise<Map<string, PlayerHistor
     const res = await fetch('/data/players.json');
     if (res.ok) {
       const json = await res.json();
-      prebuiltHistories = new Map(Object.entries(json));
+      prebuiltHistories = new Map(
+        Object.entries(json) as [string, PlayerHistory][]
+      );
       return prebuiltHistories;
     }
   } catch {
     // Fall back to live build if static json isn't present
   }
-  prebuiltHistories = await buildPlayerHistories({});
+  prebuiltHistories = await buildPlayerHistories(options ?? {});
   return prebuiltHistories;
 }
 

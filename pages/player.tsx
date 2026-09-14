@@ -14,7 +14,7 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  buildPlayerHistories,
+  preloadPlayerHistories,
   type BuildProgress,
   type PlayerHistory,
 } from '@/utils/playerHistory';
@@ -33,7 +33,7 @@ export default function PlayersPage() {
   } = useQuery({
     queryKey: ['playerHistories'],
     queryFn: () =>
-      buildPlayerHistories({
+      preloadPlayerHistories({
         concurrency: 3,
         onProgress: (value) => setProgress(value),
       }),
