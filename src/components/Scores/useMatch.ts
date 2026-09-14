@@ -88,6 +88,8 @@ export function useMatch(matchId: string | undefined) {
       return fetchMatchData(matchId);
     },
     enabled: !!matchId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }
 
