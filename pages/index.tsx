@@ -79,7 +79,7 @@ export default function Home({ initialScores }: HomeProps) {
                   const card = toSectionCard(item, section.card);
                   return (
                     <ProductCard key={card.key} title={card.title} href={card.href}>
-                      {card.summary}
+                      {markdownToReact(card.summary)}
                     </ProductCard>
                   );
                 })}
