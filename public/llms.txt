@@ -1,0 +1,30 @@
+# Rocky Gorge Rugby
+
+> Rocky Gorge Rugby Football Club: Division I and III men's rugby in Central
+> Maryland (Columbia, MD). Schedules, results, player histories, and club info.
+
+## Club
+
+- [Home](https://rockygorgerugby.com/): recent results, events, store, calendar
+- [Events](https://rockygorgerugby.com/events): fundraisers and club events
+- [Gauntlet leaderboard](https://rockygorgerugby.com/gauntlet): season standings
+- [Calendar](https://rockygorgerugby.com/calendar): training, matches, events
+- [Hall of Fame](https://rockygorgerugby.com/hallOfFame): club history and inductees
+
+## Games and players
+
+- Game pages live at `/game?id=<fixtureId>` with lineups, scores, and match events.
+- Player pages live at `/player?id=<playerId>` with games played and scoring history.
+- [Player stats index](https://rockygorgerugby.com/stats): per-player aggregates.
+
+## Machine-readable data
+
+- [Recent scores snapshot](https://rockygorgerugby.com/data/scores.json): latest
+  scored fixtures (home/away teams, scores, dates, crest URLs). Refreshed each build.
+- [Player histories](https://rockygorgerugby.com/data/players.json): per-player
+  game logs and scoring events keyed by player id. Refreshed each build.
+- Team crests: `/crests/<teamId>.webp` (96px WebP; falls back to the CMS URL).
+
+## Optional
+
+- [Dues and payments](https://rockygorgerugby.com/dues): registration, supporters, sponsorships

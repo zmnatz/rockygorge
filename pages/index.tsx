@@ -9,10 +9,12 @@ import StoreItems from '@content/store.yml';
 import events from '@content/events.yml';
 import { Fragment } from 'react';
 import { Grid, Typography } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { ProductCard } from '@/components/ProductCard';
 import { CalendarCard } from '@/components/CalendarCard';
 import { Scores } from '@/components/Scores';
 import type { Score } from '@/components/Scores/types';
+import { crestSrc } from '@/utils/crest';
 import { markdownToReact } from '@/utils/markdown';
 import { showOnHome, toSectionCard } from '@/utils/sections';
 
@@ -46,14 +48,44 @@ export const itemsBySource = {
   links: showOnHome([...links, ...forms]),
 };
 
+function HomeSections() {
+  return (
+    <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+      {home.sections.map((section) => (
+        <Fragment key={section.source}>
+          {section.title && (
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="h5">{section.title}</Typography>
+            </Grid>
+          )}
+          {itemsBySource[section.source].map((item) => {
+            const card = toSectionCard(item, section.card);
+            return (
+              <ProductCard key={card.key} title={card.title} href={card.href}>
+                {markdownToReact(card.summary)}
+              </ProductCard>
+            );
+          })}
+        </Fragment>
+      ))}
+    </Grid>
+  );
+}
+
 export default function Home({ initialScores }: HomeProps) {
   const crests = [
     ...new Set(
-      initialScores.flatMap((score) => [score.homeTeam.crest, score.awayTeam.crest]).filter(Boolean)
+      initialScores
+        .flatMap((score) => [score.homeTeam.crest, score.awayTeam.crest])
+        .filter(Boolean)
+        .map((crest) => crestSrc(crest))
     ),
   ];
   return (
     <Grid container spacing={2} sx={{ py: 2, width: '100%', maxWidth: 1200, mx: 'auto' }}>
+      <Typography component="h1" variant="h4" sx={visuallyHidden}>
+        Rocky Gorge Rugby
+      </Typography>
       <Head>
         {crests.map((crest) => (
           <link key={crest} rel="preload" as="image" href={crest} />
@@ -67,25 +99,7 @@ export default function Home({ initialScores }: HomeProps) {
 
       <Grid container spacing={2} sx={{ width: '100%' }}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
-            {home.sections.map((section) => (
-              <Fragment key={section.source}>
-                {section.title && (
-                  <Grid size={{ xs: 12 }}>
-                    <Typography variant="h5">{section.title}</Typography>
-                  </Grid>
-                )}
-                {itemsBySource[section.source].map((item) => {
-                  const card = toSectionCard(item, section.card);
-                  return (
-                    <ProductCard key={card.key} title={card.title} href={card.href}>
-                      {card.summary}
-                    </ProductCard>
-                  );
-                })}
-              </Fragment>
-            ))}
-          </Grid>
+          <HomeSections />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <CalendarCard calendars={home.calendars} />

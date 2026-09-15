@@ -1,4 +1,17 @@
 import { createTheme } from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
+
+declare module "@mui/material/Paper" {
+  interface PaperPropsVariantOverrides {
+    clickable: true;
+  }
+}
+
+declare module "@mui/material/Typography" {
+  interface TypographyPropsVariantOverrides {
+    skipLink: true;
+  }
+}
 
 export const theme = createTheme({
   palette: {
@@ -81,6 +94,38 @@ theme.components = {
         },
       },
     },
+    variants: [
+      {
+        // Whole-card navigation (see ProductCard): the header title link
+        // stretches over the card while content links stay clickable above it.
+        props: { variant: "clickable" },
+        style: ({ theme }) => ({
+          height: "100%",
+          position: "relative",
+          cursor: "pointer",
+          "&:hover": {
+            boxShadow: theme.shadows[4],
+          },
+          // Focus lands on the white-on-blue title link, where the theme's
+          // primary outline would be invisible — ring the card instead.
+          "&:focus-within": {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: "2px",
+          },
+          "& .MuiCardHeader-root a:focus-visible": {
+            outline: "none",
+          },
+          "& .MuiCardHeader-root a::after": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+          },
+          "& .MuiCardContent-root a": {
+            position: "relative",
+          },
+        }),
+      },
+    ],
   },
   MuiCardContent: {
     styleOverrides: {
@@ -127,6 +172,31 @@ theme.components = {
         },
       },
     },
+    variants: [
+      {
+        // Keyboard-only skip link: hidden until focused, then pinned visible.
+        props: { variant: "skipLink" },
+        style: ({ theme }) => ({
+          ...visuallyHidden,
+          "&:focus-visible": {
+            clip: "auto",
+            clipPath: "none",
+            height: "auto",
+            width: "auto",
+            margin: 0,
+            overflow: "visible",
+            position: "fixed",
+            top: theme.spacing(2),
+            left: theme.spacing(2),
+            zIndex: theme.zIndex.modal,
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+            padding: theme.spacing(1),
+            borderRadius: theme.shape.borderRadius,
+          },
+        }),
+      },
+    ],
   },
   MuiListSubheader: {
     styleOverrides: {
@@ -189,6 +259,16 @@ theme.components = {
     styleOverrides: {
       html: {
         scrollBehavior: "smooth",
+      },
+      main: {
+        maxWidth: 1800,
+        marginLeft: "auto",
+        marginRight: "auto",
+        paddingTop: theme.spacing(3),
+        paddingBottom: theme.spacing(3),
+        "&:focus": {
+          outline: "none",
+        },
       },
       "*": {
         boxSizing: "border-box",

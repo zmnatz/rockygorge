@@ -1,6 +1,7 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
+import Typography from "@mui/material/Typography";
 import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, CircularProgress } from "@mui/material";
 import { useCalendarEvents } from "@/api/calendar";
 import { formatEventTime } from "@/utils/calendar";
@@ -14,22 +15,33 @@ interface CalendarCardProps {
 export function CalendarCard({calendars}: CalendarCardProps) {
   const { data, isFetching, error } = useCalendarEvents();
   return (
-    <Card>
-      <CardHeader title={calendars.length > 1 ? "Calendar" : calendars[0]} component={Link} href="/calendar"/>
-      <CardContent component={List}>
-      {isFetching && <ListItem sx={{textAlign: 'center'}}>
-        <CircularProgress/>
-      </ListItem>}
-      {error && <MuiLink component={Link} href="/calendar">Check out upcoming events</MuiLink>}
-      {!isFetching && !error && calendars.filter(calendar => data[calendar])
-        .map(calendar =>
-          <CalendarSection key={calendar} 
-            title={calendars.length > 1 ? calendar : undefined} 
-            data={data[calendar]}
-          />
-        )
-      }
-    </CardContent>
+    <Card component="section">
+      <CardHeader
+        disableTypography
+        title={
+          <Typography component="h3" variant="h6">
+            <MuiLink component={Link} href="/calendar" underline="hover" color="inherit">
+              {calendars.length > 1 ? "Calendar" : calendars[0]}
+            </MuiLink>
+          </Typography>
+        }
+      />
+      <CardContent>
+      <List sx={{ p: 0 }}>
+        {isFetching && <ListItem sx={{textAlign: 'center'}}>
+          <CircularProgress/>
+        </ListItem>}
+        {error && <MuiLink component={Link} href="/calendar">Check out upcoming events</MuiLink>}
+        {!isFetching && !error && calendars.filter(calendar => data[calendar])
+          .map(calendar =>
+            <CalendarSection key={calendar}
+              title={calendars.length > 1 ? calendar : undefined}
+              data={data[calendar]}
+            />
+          )
+        }
+      </List>
+      </CardContent>
     </Card>
   );
 }

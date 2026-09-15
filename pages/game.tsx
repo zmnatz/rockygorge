@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import NextLink from 'next/link';
 import { Link as MuiLink } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -9,7 +10,9 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { visuallyHidden } from '@mui/utils';
 import { useMatch } from '@/components/Scores/useMatch';
+import { Crest } from '@/components/Crest';
 import { ScoreCard } from '@/components/Scores/ScoreCard';
 import { playerKey } from '@/utils/playerHistory';
 import type { MatchCommentary, MatchPlayer, Team } from '@/types/match';
@@ -85,24 +88,21 @@ export default function GamePage() {
   // Only dim unused substitutes when the feed actually contains substitution
   // data — otherwise every bench player would look like they didn't play.
   const substituteActiveNames = substitutionCount > 0 ? cameOnNames : undefined;
-  const subOnMinutes =
-    substitutionCount > 0
-      ? (() => {
-          const minutes = new Map<string, string>();
-          for (const event of eventList) {
-            if (!isSubstitutionEvent(event.type)) continue;
-            const sub = parseSubstitution(event.comment);
-            const key = sub?.on.toLowerCase() ?? '';
-            if (key && !minutes.has(key)) {
-              minutes.set(key, event.minute);
-            }
-          }
-          return minutes;
-        })()
-      : undefined;
 
   return (
     <Box sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 }, maxWidth: { xs: '100%', lg: 1400, xl: 1800 }, mx: 'auto' }}>
+      <Head>
+        <title>
+          {game.homeTeam.name} vs {game.awayTeam.name} | Rocky Gorge Rugby
+        </title>
+        <meta
+          name="description"
+          content={`${game.homeTeam.name} ${game.homeTeam.score} - ${game.awayTeam.score} ${game.awayTeam.name}: lineups, scores and match events.`}
+        />
+      </Head>
+      <Typography variant="h4" component="h1" sx={visuallyHidden}>
+        {game.homeTeam.name} vs {game.awayTeam.name}
+      </Typography>
       <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Box sx={{ mb: 2, width: '100%' }}>
@@ -328,12 +328,7 @@ function MatchEventRow({
         </Typography>
       )}
       {crest ? (
-        <Box
-          component="img"
-          src={crest}
-          alt={teamName}
-          sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
-        />
+        <Crest src={crest} alt={teamName} />
       ) : (
         <Typography
           variant="caption"
