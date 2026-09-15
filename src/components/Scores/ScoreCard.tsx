@@ -3,6 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
+import { Crest } from '@/components/Crest';
 import type { Score } from './types';
 
 interface ScoreCardProps {
@@ -19,7 +20,10 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
 
   if (compact) {
     return (
-      <Link href={`/game?id=${score.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link
+        href={`/game?id=${score.id}`}
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+      >
         <Card
           className="score-card"
           sx={{
@@ -47,14 +51,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                   fontWeight: homeWon ? 'bold' : 'normal',
                 }}
               >
-                {score.homeTeam.crest && (
-                  <Box
-                    component="img"
-                    src={score.homeTeam.crest}
-                    alt=""
-                    sx={{ width: 18, height: 18, objectFit: 'contain', flexShrink: 0 }}
-                  />
-                )}
+                <Crest src={score.homeTeam.crest} alt="" />
                 <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
                   {score.homeTeam.name}
                 </Typography>
@@ -70,14 +67,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                   fontWeight: awayWon ? 'bold' : 'normal',
                 }}
               >
-                {score.awayTeam.crest && (
-                  <Box
-                    component="img"
-                    src={score.awayTeam.crest}
-                    alt=""
-                    sx={{ width: 18, height: 18, objectFit: 'contain', flexShrink: 0 }}
-                  />
-                )}
+                <Crest src={score.awayTeam.crest} alt="" />
                 <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
                   {score.awayTeam.name}
                 </Typography>
@@ -121,14 +111,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                     mt: 0.5,
                   }}
                 >
-                  {score.homeTeam.crest && (
-                    <Box
-                      component="img"
-                      src={score.homeTeam.crest}
-                      alt=""
-                      sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
-                    />
-                  )}
+                  <Crest src={score.homeTeam.crest} alt="" />
                   <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
                     {score.homeTeam.score}
                   </Typography>
@@ -146,14 +129,7 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
                   <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
                     {score.awayTeam.score}
                   </Typography>
-                  {score.awayTeam.crest && (
-                    <Box
-                      component="img"
-                      src={score.awayTeam.crest}
-                      alt=""
-                      sx={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }}
-                    />
-                  )}
+                  <Crest src={score.awayTeam.crest} alt="" />
                 </Box>
               </Box>
             </Box>
@@ -195,14 +171,11 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
               color: homeWon ? 'text.primary' : 'text.secondary',
             }}
           >
-            {score.homeTeam.crest && (
-              <Box
-                component="img"
-                src={score.homeTeam.crest}
-                alt={score.homeTeam.name}
-                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
-              />
-            )}
+            <Crest
+              src={score.homeTeam.crest}
+              alt={score.homeTeam.name}
+              size="md"
+            />
             <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
               {score.homeTeam.name}
             </Typography>
@@ -219,14 +192,11 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
               color: awayWon ? 'text.primary' : 'text.secondary',
             }}
           >
-            {score.awayTeam.crest && (
-              <Box
-                component="img"
-                src={score.awayTeam.crest}
-                alt={score.awayTeam.name}
-                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
-              />
-            )}
+            <Crest
+              src={score.awayTeam.crest}
+              alt={score.awayTeam.name}
+              size="md"
+            />
             <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
               {score.awayTeam.name}
             </Typography>
@@ -259,19 +229,11 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
               gap: { xs: 1.5, sm: 0 },
             }}
           >
-            {score.homeTeam.crest && (
-              <Box
-                component="img"
-                src={score.homeTeam.crest}
-                alt={score.homeTeam.name}
-                sx={{
-                  width: { xs: 36, sm: large ? 76 : 56 },
-                  height: { xs: 36, sm: large ? 76 : 56 },
-                  objectFit: 'contain',
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            <Crest
+              src={score.homeTeam.crest}
+              alt={score.homeTeam.name}
+              size={large ? 'xl' : 'lg'}
+            />
             <Box
               sx={{
                 display: 'flex',
@@ -329,19 +291,11 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
               gap: { xs: 1.5, sm: 0 },
             }}
           >
-            {score.awayTeam.crest && (
-              <Box
-                component="img"
-                src={score.awayTeam.crest}
-                alt={score.awayTeam.name}
-                sx={{
-                  width: { xs: 36, sm: large ? 76 : 56 },
-                  height: { xs: 36, sm: large ? 76 : 56 },
-                  objectFit: 'contain',
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            <Crest
+              src={score.awayTeam.crest}
+              alt={score.awayTeam.name}
+              size={large ? 'xl' : 'lg'}
+            />
             <Box
               sx={{
                 display: 'flex',

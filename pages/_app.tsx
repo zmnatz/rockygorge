@@ -3,7 +3,7 @@ import Head from "next/head";
 import type { AppProps } from "next/app";
 import { CacheProvider, type EmotionCache } from "@emotion/react";
 
-import { Container, CssBaseline } from "@mui/material";
+import { Container, CssBaseline, Link as MuiLink } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { mdxComponents } from '@/utils/mdx'
@@ -37,8 +37,11 @@ export default function App({ Component, pageProps, emotionCache = clientSideEmo
            />
          </Head>
         <GoogleAnalytics />
+        <MuiLink href="#main-content" variant="skipLink">
+          Skip to main content
+        </MuiLink>
         <Toolbar />
-        <Container component="main" maxWidth={false} sx={{ py: 3, maxWidth: 1800, mx: "auto" }}>
+        <Container component="main" id="main-content" tabIndex={-1} maxWidth={false}>
           <MDXProvider components={mdxComponents}>
             <Component {...pageProps} />
           </MDXProvider>

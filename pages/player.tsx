@@ -10,8 +10,10 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { Link as MuiLink } from '@mui/material';
 import Link from 'next/link';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
+import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
   preloadPlayerHistories,
@@ -111,8 +113,18 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
 
   return (
     <>
+      <Head>
+        <title>{history.name} | Rocky Gorge Rugby</title>
+        <meta
+          name="description"
+          content={`${history.name} (${history.teamName}): ${history.games.length} games played and ${history.scoringEvents.length} scoring events.`}
+        />
+      </Head>
+      <Typography variant="h4" component="h1" sx={visuallyHidden}>
+        {history.name}
+      </Typography>
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }} aria-hidden="true">
           {history.name}
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">

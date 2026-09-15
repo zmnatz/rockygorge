@@ -32,18 +32,20 @@
     "netlify": "netlify dev",
     "start": "next dev",
     "dev": "next dev",
-    "build": "bun run generate:players; bun run generate:scores; next build",
+    "build": "bun run generate:players; bun run generate:scores; bun run generate:crests; next build",
     "generate:players": "bun scripts/generate-player-index.ts",
     "generate:scores": "bun scripts/generate-scores-index.ts",
+    "generate:crests": "bun scripts/generate-crests.ts",
     "lint": "biome check .",
     "test": "vitest run",
     "prepare": "husky"
   },
   "browserslist": [
-    ">0.2%",
+    ">0.5%",
+    "last 2 versions",
+    "Firefox ESR",
     "not dead",
-    "not ie <= 11",
-    "not op_mini all"
+    "not ie <= 11"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.7",

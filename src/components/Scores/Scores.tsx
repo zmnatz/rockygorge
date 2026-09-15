@@ -1,5 +1,7 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import { visuallyHidden } from '@mui/utils';
 import { useScores } from '@/api/scores';
 import type { Score } from './types';
 import { ScoreCard } from './ScoreCard';
@@ -22,7 +24,10 @@ export function Scores({ initialScores }: { initialScores?: Score[] }) {
   const visible = scores.slice(0, MAX_GAMES);
 
   return (
-    <Box sx={{ mt: 2, maxWidth: '100%' }}>
+    <Box component="section" aria-label="Recent results" sx={{ mt: 2, maxWidth: '100%' }}>
+      <Typography component="h2" variant="h6" sx={visuallyHidden}>
+        Recent results
+      </Typography>
       <Grid container spacing={2} columns={{ xs: 1, sm: 2 }} sx={{ justifyContent: 'center' }}>
         {visible.map((score, index) => (
           <Grid
