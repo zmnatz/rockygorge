@@ -10,9 +10,11 @@ interface ScoreCardProps {
   score: Score;
   compact?: boolean;
   large?: boolean;
+  /** Hides the competition/date footer (used where the list already labels it). */
+  hideFooter?: boolean;
 }
 
-export function ScoreCard({ score, compact, large }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, hideFooter }: ScoreCardProps) {
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
   const awayScore = parseInt(score.awayTeam.score || '0', 10);
   const homeWon = homeScore > awayScore;
@@ -328,11 +330,13 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
             </Box>
           </Box>
         </CardContent>
-        <Box sx={{ textAlign: 'center', pb: 2 }}>
-          <Typography variant="caption" color="text.secondary">
-            {score.compName} • {new Date(score.dateTime).toLocaleDateString()}
-          </Typography>
-        </Box>
+        {!hideFooter && (
+          <Box sx={{ textAlign: 'center', pb: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              {score.compName} • {new Date(score.dateTime).toLocaleDateString()}
+            </Typography>
+          </Box>
+        )}
       </Card>
     </Link>
   );

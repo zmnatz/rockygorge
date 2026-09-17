@@ -8,6 +8,9 @@ const CLUB_ENTITY_ID = 91273;
 const MAX_FIXTURES = 500;
 const PAGE_SIZE = 100;
 const FETCH_GAP_MS = 500;
+// Breathing room between match-centre requests so snapshot builds don't trip
+// the CMS rate limit (HTTP 429).
+const MATCH_CENTRE_GAP_MS = 300;
 
 let prebuiltHistories: Map<string, PlayerHistory> | null = null;
 
@@ -309,6 +312,7 @@ export async function buildPlayerHistories(
         }
         done += 1;
         onProgress?.({ done, total: done + fixtures.length });
+        await new Promise((resolve) => setTimeout(resolve, MATCH_CENTRE_GAP_MS));
       }
     });
   await Promise.all(workers);
