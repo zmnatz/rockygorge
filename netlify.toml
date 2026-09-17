@@ -10,7 +10,10 @@
   package = "netlify-plugin-cache"
 
   [plugins.inputs]
-    paths = [".next/cache"]
+    # .next/cache speeds up page prerendering; public/crests persists the
+    # snapshotted team logos so generate:crests only downloads new teams
+    # (it skips files that already exist).
+    paths = [".next/cache", "public/crests"]
 
 [[redirects]]
   from = "/api/calendar"
