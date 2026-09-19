@@ -6,6 +6,7 @@ import {
   CENTRE_IDLE_POLL_MS,
   FIXTURES_IDLE_POLL_MS,
   LIVE_POLL_MS,
+  assignMatchWindows,
   centrePollInterval,
   defaultSideIndex,
   findSideMatches,
@@ -37,13 +38,13 @@ function fixture(partial: Partial<GamedayFixture> & { id: string }): GamedayFixt
   };
 }
 
-function calendarItem(summary: string, start: string): CalendarSourceItem {
+function calendarItem(summary: string, start: string, end = start): CalendarSourceItem {
   return {
     summary,
     location: 'Supplee Lane',
     htmlLink: 'https://example.test/calendar',
     start,
-    end: start,
+    end,
   };
 }
 
@@ -151,6 +152,93 @@ describe('resolveMatchLocation', () => {
   });
 });
 
+describe('assignMatchWindows', () => {
+  function doubleheader(blockHours = 4) {
+    const start = atDaysOffset(0, 13);
+    const end = new Date(new Date(start).getTime() + blockHours * 3600 * 1000).toISOString();
+    // Listed D1-first to prove the split orders D3 first regardless.
+    const matches = findSideMatches(
+      [
+        fixture({ id: 'd1', dateTime: start }),
+        fixture({
+          id: 'd3',
+          dateTime: start,
+          homeTeam: { name: 'Rocky Gorge MD3' },
+          awayTeam: { name: 'Washington MD3' },
+        }),
+      ],
+      sides
+    );
+    return { matches, start, end };
+  }
+
+  it('splits a shared block D3-first with D1 at the midpoint', () => {
+    const { matches, start, end } = doubleheader();
+    const assigned = assignMatchWindows(matches, [
+      calendarItem('RG vs Washington', start, end),
+    ]);
+
+    const d3 = assigned.find((entry) => entry.match.side.label === 'D3');
+    const d1 = assigned.find((entry) => entry.match.side.label === 'D1');
+    expect(d3).toBeDefined();
+    expect(d1).toBeDefined();
+    expect(d3?.item).toBe(d1?.item);
+    expect(d3?.kickoff).toBe(start);
+    expect(d1?.kickoff).toBe(
+      new Date(
+        (new Date(start).getTime() + new Date(end).getTime()) / 2
+      ).toISOString()
+    );
+  });
+
+  it('keeps separately tagged blocks unsplit', () => {
+    const { matches, start, end } = doubleheader();
+    const assigned = assignMatchWindows(matches, [
+      calendarItem('RG D1 vs Washington', start, end),
+      calendarItem('RG D3 vs Washington', start, end),
+    ]);
+
+    for (const entry of assigned) {
+      expect(entry.kickoff).toBe(start);
+    }
+    expect(assigned[0].item).not.toBe(assigned[1].item);
+  });
+
+  it('leaves a lone Match on its own start', () => {
+    const start = atDaysOffset(0, 13);
+    const matches = findSideMatches([fixture({ id: 'solo', dateTime: start })], sides);
+    const assigned = assignMatchWindows(matches, [
+      calendarItem('RG vs Washington', start),
+    ]);
+
+    expect(assigned).toHaveLength(1);
+    expect(assigned[0].kickoff).toBe(start);
+  });
+
+  it('leaves shared date-only blocks without kickoffs', () => {
+    const { matches } = doubleheader();
+    const start = new Date(atDaysOffset(0, 13));
+    const dayOnly = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+    const assigned = assignMatchWindows(matches, [
+      calendarItem('RG vs Washington', dayOnly, dayOnly),
+    ]);
+
+    expect(assigned.map((entry) => entry.kickoff)).toEqual([undefined, undefined]);
+  });
+
+  it('returns no item or kickoff without a calendar match', () => {
+    const matches = findSideMatches(
+      [fixture({ id: 'solo', dateTime: atDaysOffset(0, 13) })],
+      sides
+    );
+    const assigned = assignMatchWindows(matches, []);
+
+    expect(assigned).toEqual([
+      { match: matches[0], item: undefined, kickoff: undefined },
+    ]);
+  });
+});
+
 describe('toLocalDayKey', () => {
   it('formats a local calendar day', () => {
     expect(toLocalDayKey(new Date(2026, 8, 19, 12))).toBe('2026-09-19');
@@ -158,6 +246,12 @@ describe('toLocalDayKey', () => {
 
   it('returns empty for invalid dates', () => {
     expect(toLocalDayKey('not-a-date')).toBe('');
+  });
+
+  it('reads date-only values as local days', () => {
+    expect(toLocalDayKey('2026-09-19')).toBe(
+      toLocalDayKey(new Date(2026, 8, 19, 12))
+    );
   });
 });
 

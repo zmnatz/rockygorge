@@ -13,12 +13,13 @@ import { useMatch } from '@/components/Scores/useMatch';
 import matchesConfig from '@config/matches.yml';
 import type { ResolvedGameday, SideMatch } from '@/types/gameday';
 import {
+  assignMatchWindows,
   defaultSideIndex,
-  matchCalendarItem,
   matchStatus,
   resolveGameday,
   resolveMatchLocation,
 } from '@/utils/gameday';
+import { formatStartDate } from '@/utils/calendar';
 
 const sides = matchesConfig.sides;
 
@@ -101,7 +102,12 @@ function GamedayDay({
     selected !== null && selected < resolved.matches.length
       ? selected
       : fallback;
-  const match: SideMatch | undefined = resolved.matches[activeIndex];
+  const assignments = useMemo(
+    () => assignMatchWindows(resolved.matches, calendarQuery.data ?? []),
+    [resolved.matches, calendarQuery.data]
+  );
+  const assignment = assignments[activeIndex];
+  const match: SideMatch | undefined = assignment?.match;
 
   const clubFixture = match
     ? fixtures.find((fixture) => fixture.id === match.fixture.id)
@@ -122,19 +128,11 @@ function GamedayDay({
     ? matchStatus({ status: clubFixture.status, isLive: clubFixture.isLive })
     : null;
 
-  const calendarMatch = match
-    ? matchCalendarItem(match, calendarQuery.data ?? [])
-    : undefined;
   const location = resolveMatchLocation(
-    calendarMatch?.location,
+    assignment?.item?.location,
     clubFixture?.venue
   );
-  // The feed stamps placeholder times, so the score card shows the
-  // calendar item's real start when matched. Date-only items carry no
-  // time and fall back to the feed.
-  const kickoff = calendarMatch?.start?.includes('T')
-    ? calendarMatch.start
-    : undefined;
+  const kickoff = assignment?.kickoff;
 
   if (!match) {
     return (
@@ -169,17 +167,36 @@ function GamedayDay({
             color={status === 'Live' ? 'error' : 'default'}
           />
         )}
-        {resolved.matches.length > 1 && (
+        {assignments.length > 1 && (
           <Tabs
             value={activeIndex}
             onChange={(_event, value) => setSelected(value)}
             aria-label="Choose side"
           >
-            {resolved.matches.map((sideMatch, index) => (
+            {assignments.map(({ match: sideMatch, kickoff: sideKickoff }, index) => (
               <Tab
                 key={sideMatch.side.label}
-                label={sideMatch.side.label}
                 value={index}
+                label={
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <span>{sideMatch.side.label}</span>
+                    {sideKickoff && (
+                      <Typography
+                        variant="caption"
+                        component="span"
+                        color="text.secondary"
+                      >
+                        {formatStartDate(sideKickoff)}
+                      </Typography>
+                    )}
+                  </Box>
+                }
               />
             ))}
           </Tabs>

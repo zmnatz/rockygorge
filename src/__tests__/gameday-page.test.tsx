@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { formatStartDate } from '@/utils/calendar';
 import type { ClubFixture } from '@/api/scores';
 import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 
@@ -96,13 +97,13 @@ function clubFixture(
   };
 }
 
-function calendarItem(summary: string, start: string): CalendarSourceItem {
+function calendarItem(summary: string, start: string, end = start): CalendarSourceItem {
   return {
     summary,
     location: 'Supplee Lane',
     htmlLink: 'https://example.test/calendar',
     start,
-    end: start,
+    end,
   };
 }
 
@@ -119,6 +120,8 @@ beforeEach(() => {
 describe('GamedayPage', () => {
   it('toggles between both Sides and defaults to the live Match', () => {
     const d1At = atDaysOffset(0, 13);
+    const blockEnd = new Date(new Date(d1At).getTime() + 2 * 3600 * 1000).toISOString();
+    const d1Mid = new Date(new Date(d1At).getTime() + 3600 * 1000).toISOString();
     const d3At = atDaysOffset(0, 15);
     mocks.fixtures = [
       clubFixture('d1', 'Rocky Gorge MD1', 'Washington MD1', d1At, {
@@ -127,7 +130,7 @@ describe('GamedayPage', () => {
       }),
       clubFixture('d3', 'Rocky Gorge MD3', 'Washington MD3', d3At),
     ];
-    mocks.calendar = [calendarItem('RG vs Washington', d1At)];
+    mocks.calendar = [calendarItem('RG vs Washington', d1At, blockEnd)];
     mocks.centreById = {
       d1: { home: 'Rocky Gorge MD1', away: 'Washington MD1' },
       d3: { home: 'Rocky Gorge MD3', away: 'Washington MD3' },
@@ -137,11 +140,20 @@ describe('GamedayPage', () => {
 
     expect(html).toContain('<title>Gameday | Rocky Gorge Rugby</title>');
     expect(html).toContain('aria-label="Choose side"');
-    expect(html).toContain('>D1<');
-    expect(html).toContain('>D3<');
+    // Tabs carry each Side plus its calendar date and time: D3 opens the
+    // shared block, live D1 follows at the midpoint.
+    const d1Tab = html.indexOf('>D1</span>');
+    const d1Time = html.indexOf(formatStartDate(d1Mid));
+    const d3Tab = html.indexOf('>D3</span>');
+    const d3Time = html.indexOf(formatStartDate(d1At));
+    expect(d1Tab).toBeGreaterThan(-1);
+    expect(d3Tab).toBeGreaterThan(-1);
+    expect(d1Time).toBeGreaterThan(d1Tab);
+    expect(d3Time).toBeGreaterThan(d3Tab);
+    expect(d3Tab).toBeGreaterThan(d1Time);
     expect(html).toContain('>Live<');
     expect(html).toContain('data-location="Supplee Lane"');
-    expect(html).toContain(`data-kickoff="${d1At}"`);
+    expect(html).toContain(`data-kickoff="${d1Mid}"`);
     expect(html).not.toContain('Kickoff');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
     expect(html).not.toContain('Rocky Gorge MD3 vs Washington MD3');

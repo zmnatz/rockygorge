@@ -13,7 +13,7 @@ import type {
 export const RECENT_DAY_WINDOW = 2;
 
 export function toLocalDayKey(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(value);
+  const date = value instanceof Date ? value : parseDayInput(value);
   if (Number.isNaN(date.getTime())) {
     return '';
   }
@@ -148,6 +148,86 @@ export function defaultSideIndex(matches: SideMatch[]): number {
 // `@` away). A division tag in the summary disambiguates when both Sides
 // play the same opponent. No confident match returns undefined rather
 // than guessing.
+export interface MatchWindowAssignment {
+  match: SideMatch;
+  item: CalendarSourceItem | undefined;
+  // Timed kickoff for the score card: the item's start, except on a
+  // shared doubleheader block (below). Undefined when there is no
+  // confident timed start.
+  kickoff: string | undefined;
+}
+
+// Assigns every Match of the day to its calendar item. When both Sides
+// share one block — the doubleheader day, one 3–4 hour calendar event —
+// the block splits in half: club convention is D3 first, D1 halfway
+// through. Separate blocks (or a lone Match) keep their own start.
+export function assignMatchWindows(
+  matches: SideMatch[],
+  items: CalendarSourceItem[]
+): MatchWindowAssignment[] {
+  const itemByMatch = new Map<SideMatch, CalendarSourceItem | undefined>(
+    matches.map((match) => [match, matchCalendarItem(match, items)])
+  );
+  const groups = new Map<CalendarSourceItem, SideMatch[]>();
+  for (const match of matches) {
+    const item = itemByMatch.get(match);
+    if (!item) {
+      continue;
+    }
+    const group = groups.get(item) ?? [];
+    group.push(match);
+    groups.set(item, group);
+  }
+  const kickoffByMatch = new Map<SideMatch, string | undefined>();
+  for (const [item, group] of groups) {
+    if (group.length < 2) {
+      kickoffByMatch.set(group[0], timedStart(item.start));
+      continue;
+    }
+    const ordered = [...group].sort(byDoubleheaderOrder);
+    const slots = splitWindow(item.start, item.end, ordered.length);
+    ordered.forEach((match, index) => {
+      kickoffByMatch.set(match, slots?.[index] ?? timedStart(item.start));
+    });
+  }
+  return matches.map((match) => ({
+    match,
+    item: itemByMatch.get(match),
+    kickoff: kickoffByMatch.get(match),
+  }));
+}
+
+// Club convention on shared doubleheader days: the D3 (Lower Division)
+// side plays the early game.
+function byDoubleheaderOrder(a: SideMatch, b: SideMatch): number {
+  return (a.side.label === 'D3' ? 0 : 1) - (b.side.label === 'D3' ? 0 : 1);
+}
+
+function timedStart(start: string): string | undefined {
+  return start.includes('T') ? start : undefined;
+}
+
+function splitWindow(
+  start: string,
+  end: string,
+  parts: number
+): string[] | undefined {
+  const from = new Date(start).getTime();
+  const to = new Date(end).getTime();
+  if (
+    !start.includes('T') ||
+    !end.includes('T') ||
+    Number.isNaN(from) ||
+    Number.isNaN(to) ||
+    to <= from ||
+    parts < 1
+  ) {
+    return undefined;
+  }
+  return Array.from({ length: parts }, (_, index) =>
+    new Date(from + ((to - from) * index) / parts).toISOString()
+  );
+}
 export function matchCalendarItem(
   match: SideMatch,
   items: CalendarSourceItem[]
@@ -247,6 +327,19 @@ export function resolveMatchLocation(
     return undefined;
   }
   return venue;
+}
+
+// Date-only values (calendar all-day items) parse as UTC midnight under
+// `new Date`, which lands on the previous local day west of Greenwich.
+// Treat them as local midnight like the calendar utils do.
+function parseDayInput(value: string): Date {
+  if (!value.includes('T')) {
+    const [year, month, day] = value.split('-').map(Number);
+    if (year && month && day) {
+      return new Date(year, month - 1, day);
+    }
+  }
+  return new Date(value);
 }
 
 function dayStart(key: string): number {
