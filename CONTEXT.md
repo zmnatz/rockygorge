@@ -128,6 +128,28 @@ _Avoid_: GOD, patron, supporter (when meaning the store item)
 The admin action on the Dues item's transaction page that adds new payers from the visible transactions to the dues ledger (`content/admin/dues.yaml`). It sends only minimal row data — name, date, and the monthly/supporter flags derived from the transaction title ("dues subscription" and "GODs" signals) — never email, amounts, or transaction IDs. Anyone already on the ledger is skipped, and the change is proposed as a pull request for manual review before merge.
 _Avoid_: Auto-sync, ledger import
 
+## Gameday & Matches
+
+**Gameday**:
+The calendar day on which the club plays one or more Matches. The Gameday page (`/gameday`) resolves a single day: the current day when a Match is played today, otherwise the most recent day with a Match within the last two days, otherwise the next future day with a Match.
+_Avoid_: Game day, matchday, game night
+
+**Match**:
+A single fixture from the rugby CMS feed involving the club — one Side (Upper or Lower Division) against an opponent. Carries kickoff, status (Fixture, Live, or Result), venue, and home/away teams. The detailed view of a Match is the Match Centre at `/game?id=...`; Gameday pages reference Matches by their feed id.
+_Avoid_: Game (ambient use), fixture (developer-layer term)
+
+**Match Centre**:
+The detailed match view — score, lineups, match events — rendered by shared components, reachable at `/game?id=...` and embedded on the Gameday page. Both surfaces render the same components so a Match looks identical in either place.
+_Avoid_: Game detail, game page, match page
+
+**Side**:
+A Rocky Gorge team that plays in a competition. The club fields two Sides: the Upper Division (`Rocky Gorge MD1`, competing in MAC Men D1) and the Lower Division (`Rocky Gorge MD3`, competing in Capital Men D3). User-facing labels are D1 and D3.
+_Avoid_: Division (when meaning a Side), team, squad
+
+**Match Calendar Item**:
+A Calendar Item in the Matches category that corresponds to a Match. It is matched to a fixture by opponent name and home/away direction, with the division tag disambiguating when both Sides play the same opponent. It is the source of a Match's real location and times.
+_Avoid_: Match entry, schedule item, calendar match
+
 ## Rugby & Eligibility
 
 Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5).

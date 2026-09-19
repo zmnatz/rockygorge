@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { post } from '@/utils/api';
+import { centrePollInterval } from '@/utils/gameday';
 import { findFixtureById } from '@/utils/playerHistory';
 import type { MatchData, MatchPlayer } from '@/types/match';
 
@@ -12,6 +13,8 @@ const MATCH_CENTRE_QUERY = `query MatchCentreQuery($comp: CompInput) {
     compName
     dateTime
     venue
+    isLive
+    status
     homeTeam {
       id
       name
@@ -78,34 +81,44 @@ interface MatchCentreResponse {
   allMatchStatsSummary: MatchData['allMatchStatsSummary'] | null;
 }
 
-export function useMatch(matchId: string | undefined) {
+export interface MatchCompInput {
+  id: string;
+  season: string;
+  fixture: string;
+  sourceType: string;
+}
+
+// Callers that already hold the fixture list (e.g. the Gameday page) pass
+// compInput to skip the paged findFixtureById lookup. Omitting it keeps
+// the original lookup behaviour for single-match pages.
+export function useMatch(matchId: string | undefined, compInput?: MatchCompInput) {
   return useQuery({
     queryKey: ['match', matchId],
     queryFn: async () => {
       if (!matchId) {
         throw new Error('Missing match id');
       }
-      return fetchMatchData(matchId);
+      return fetchMatchData(matchId, compInput);
     },
     enabled: !!matchId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    // Minutely while the Match is live or near kickoff, calm otherwise.
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (!data) {
+        return false;
+      }
+      return centrePollInterval({
+        isLive: data.getFixtureItem.isLive,
+        dateTime: data.getFixtureItem.dateTime,
+      });
+    },
   });
 }
 
-async function fetchMatchData(matchId: string): Promise<MatchData> {
-  const fixture = await findFixtureById(matchId);
-
-  if (!fixture) {
-    throw new Error('Failed to load match data');
-  }
-
-  const comp = {
-    id: fixture.compId,
-    season: fixture.season,
-    fixture: fixture.id,
-    sourceType: fixture.sourceType ?? '2',
-  };
+async function fetchMatchData(matchId: string, compInput?: MatchCompInput): Promise<MatchData> {
+  const comp = compInput ?? (await compFromLookup(matchId));
 
   const response = await post<{ data: MatchCentreResponse }>(SCORES_URL, {
     operationName: 'MatchCentreQuery',
@@ -133,6 +146,21 @@ async function fetchMatchData(matchId: string): Promise<MatchData> {
     allMatchStatsSummary: allMatchStatsSummary ?? {
       lineUp: { players: [], substitutes: [], coaches: [] },
     },
+  };
+}
+
+async function compFromLookup(matchId: string): Promise<MatchCompInput> {
+  const fixture = await findFixtureById(matchId);
+
+  if (!fixture) {
+    throw new Error('Failed to load match data');
+  }
+
+  return {
+    id: fixture.compId,
+    season: fixture.season,
+    fixture: fixture.id,
+    sourceType: fixture.sourceType ?? '2',
   };
 }
 
