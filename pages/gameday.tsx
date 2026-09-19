@@ -1,0 +1,254 @@
+import { useMemo, useState } from 'react';
+import Head from 'next/head';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
+import { useCalendarSourceItems } from '@/api/calendar';
+import { useGamedayFixtures, type ClubFixture } from '@/api/scores';
+import { MatchCentre } from '@/components/MatchCentre';
+import { useMatch } from '@/components/Scores/useMatch';
+import matchesConfig from '@config/matches.yml';
+import type { ResolvedGameday, SideMatch } from '@/types/gameday';
+import {
+  defaultSideIndex,
+  formatDayKey,
+  gamedayHeading,
+  matchCalendarItem,
+  matchStatus,
+  resolveGameday,
+} from '@/utils/gameday';
+import { formatStartDate } from '@/utils/calendar';
+
+const sides = matchesConfig.sides;
+
+const PAGE_WIDTH = {
+  px: { xs: 2, md: 3 },
+  maxWidth: { xs: '100%', lg: 1400, xl: 1800 },
+  mx: 'auto',
+} as const;
+
+const HEAD = (
+  <Head>
+    <title>Gameday | Rocky Gorge Rugby</title>
+    <meta
+      name="description"
+      content="Rocky Gorge gameday: scores, lineups, and match events for the D1 and D3 sides, plus kickoff times and locations."
+    />
+  </Head>
+);
+
+export default function GamedayPage() {
+  const fixturesQuery = useGamedayFixtures();
+
+  const resolved = useMemo(
+    () => resolveGameday(fixturesQuery.data ?? [], sides),
+    [fixturesQuery.data]
+  );
+
+  return (
+    <>
+      {HEAD}
+      {fixturesQuery.isPending && (
+        <Centered>
+          <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Loading gameday…
+          </Typography>
+        </Centered>
+      )}
+      {fixturesQuery.isError && (
+        <Centered>
+          <Typography variant="h6">Gameday failed to load.</Typography>
+        </Centered>
+      )}
+      {fixturesQuery.data && resolved.kind === 'none' && (
+        <Box sx={{ ...PAGE_WIDTH, pt: { xs: 2, md: 4 }, textAlign: 'center' }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Gameday
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            No matches scheduled. Check back closer to the season.
+          </Typography>
+        </Box>
+      )}
+      {fixturesQuery.data && resolved.kind !== 'none' && (
+        <GamedayDay
+          key={resolved.date}
+          fixtures={fixturesQuery.data}
+          resolved={resolved}
+        />
+      )}
+    </>
+  );
+}
+
+// Keyed by resolved day above, so the in-memory side selection resets
+// exactly when the day changes. There is no routing: the toggle below is
+// plain component state, defaulting to live, earlier kickoff, then D1.
+function GamedayDay({
+  fixtures,
+  resolved,
+}: {
+  fixtures: ClubFixture[];
+  resolved: ResolvedGameday;
+}) {
+  const calendarQuery = useCalendarSourceItems();
+
+  const [selected, setSelected] = useState<number | null>(null);
+  const fallback = defaultSideIndex(resolved.matches);
+  const activeIndex =
+    selected !== null && selected < resolved.matches.length
+      ? selected
+      : fallback;
+  const match: SideMatch | undefined = resolved.matches[activeIndex];
+
+  const clubFixture = match
+    ? fixtures.find((fixture) => fixture.id === match.fixture.id)
+    : undefined;
+  const centreQuery = useMatch(
+    match?.fixture.id,
+    clubFixture
+      ? {
+          id: clubFixture.compId,
+          season: clubFixture.season,
+          fixture: clubFixture.id,
+          sourceType: clubFixture.sourceType ?? '2',
+        }
+      : undefined
+  );
+
+  const status = clubFixture
+    ? matchStatus({ status: clubFixture.status, isLive: clubFixture.isLive })
+    : null;
+
+  const calendarMatch = match
+    ? matchCalendarItem(match, calendarQuery.data ?? [])
+    : undefined;
+  const kickoff = calendarMatch
+    ? formatStartDate(calendarMatch.start)
+    : clubFixture
+      ? formatStartDate(clubFixture.dateTime)
+      : '';
+  const location = calendarMatch?.location || clubFixture?.venue || '';
+
+  if (!match) {
+    return (
+      <Centered>
+        <Typography variant="body2" color="text.secondary">
+          No match selected.
+        </Typography>
+      </Centered>
+    );
+  }
+
+  return (
+    <>
+      <Box sx={{ ...PAGE_WIDTH, pt: { xs: 2, md: 4 }, textAlign: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {gamedayHeading(resolved.kind)}
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+          {formatDayKey(resolved.date)} · {match.side.label} vs {match.opponent}
+        </Typography>
+        {status && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+            <Chip
+              label={status}
+              size="small"
+              color={
+                status === 'Live'
+                  ? 'error'
+                  : status === 'Scheduled'
+                    ? 'info'
+                    : 'default'
+              }
+            />
+          </Box>
+        )}
+        {resolved.matches.length > 1 && (
+          <Tabs
+            value={activeIndex}
+            onChange={(_event, value) => setSelected(value)}
+            centered
+            aria-label="Choose side"
+            sx={{ mt: 1 }}
+          >
+            {resolved.matches.map((sideMatch, index) => (
+              <Tab
+                key={sideMatch.side.label}
+                label={sideMatch.side.label}
+                value={index}
+              />
+            ))}
+          </Tabs>
+        )}
+        {(kickoff || location) && (
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              bgcolor: 'action.hover',
+              borderRadius: 2,
+              textAlign: 'left',
+            }}
+          >
+            {kickoff && (
+              <>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Kickoff
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {kickoff}
+                </Typography>
+              </>
+            )}
+            {location && (
+              <>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
+                  Location
+                </Typography>
+                <Typography variant="body1">{location}</Typography>
+              </>
+            )}
+          </Box>
+        )}
+      </Box>
+      {centreQuery.isPending && (
+        <Centered>
+          <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Loading match details…
+          </Typography>
+        </Centered>
+      )}
+      {centreQuery.isError && (
+        <Centered>
+          <Typography variant="body2" color="text.secondary">
+            Match details failed to load.
+          </Typography>
+        </Centered>
+      )}
+      {centreQuery.data && <MatchCentre data={centreQuery.data} />}
+    </>
+  );
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 2,
+        minHeight: '60vh',
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
