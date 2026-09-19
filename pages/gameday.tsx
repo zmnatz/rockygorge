@@ -129,6 +129,12 @@ function GamedayDay({
     calendarMatch?.location,
     clubFixture?.venue
   );
+  // The feed stamps placeholder times, so the score card shows the
+  // calendar item's real start when matched. Date-only items carry no
+  // time and fall back to the feed.
+  const kickoff = calendarMatch?.start?.includes('T')
+    ? calendarMatch.start
+    : undefined;
 
   if (!match) {
     return (
@@ -195,7 +201,11 @@ function GamedayDay({
         </Centered>
       )}
       {centreQuery.data && (
-        <MatchCentre data={centreQuery.data} location={location} />
+        <MatchCentre
+          data={centreQuery.data}
+          location={location}
+          kickoff={kickoff}
+        />
       )}
     </>
   );

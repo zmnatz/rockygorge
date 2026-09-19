@@ -16,10 +16,14 @@ interface ScoreCardProps {
   // Optional venue: renders a location button under the caption that
   // opens the map dialog. Only the Gameday page passes one today.
   location?: string;
+  // Optional kickoff override: the feed stamps placeholder times, so the
+  // Gameday page passes the calendar item's real start when matched.
+  kickoff?: string;
 }
 
-export function ScoreCard({ score, compact, large, location }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location, kickoff }: ScoreCardProps) {
   const [mapOpen, setMapOpen] = useState(false);
+  const when = kickoff ?? score.dateTime;
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
   const awayScore = parseInt(score.awayTeam.score || '0', 10);
   const homeWon = homeScore > awayScore;
@@ -330,8 +334,8 @@ export function ScoreCard({ score, compact, large, location }: ScoreCardProps) {
       </CardContent>
       <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
         <Typography variant="caption" color="text.secondary">
-          {score.compName} • {new Date(score.dateTime).toLocaleDateString()} •{' '}
-          {new Date(score.dateTime).toLocaleTimeString(undefined, {
+          {score.compName} • {new Date(when).toLocaleDateString()} •{' '}
+          {new Date(when).toLocaleTimeString(undefined, {
             hour: 'numeric',
             minute: '2-digit',
           })}
@@ -346,12 +350,12 @@ export function ScoreCard({ score, compact, large, location }: ScoreCardProps) {
           >
             {location}
           </Button>
-          <VenueDialog
-            location={location}
-            start={score.dateTime}
-            open={mapOpen}
-            onClose={() => setMapOpen(false)}
-          />
+            <VenueDialog
+              location={location}
+              start={when}
+              open={mapOpen}
+              onClose={() => setMapOpen(false)}
+            />
         </Box>
       )}
     </Card>

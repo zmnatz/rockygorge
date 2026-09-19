@@ -48,15 +48,18 @@ vi.mock('@/components/MatchCentre', () => ({
   MatchCentre: ({
     data,
     location,
+    kickoff,
   }: {
     data: {
       getFixtureItem: { homeTeam: { name: string }; awayTeam: { name: string } };
     };
     location?: string;
+    kickoff?: string;
   }) => (
     <div
       data-centre={`${data.getFixtureItem.homeTeam.name} vs ${data.getFixtureItem.awayTeam.name}`}
       data-location={location ?? ''}
+      data-kickoff={kickoff ?? ''}
     />
   ),
 }));
@@ -138,6 +141,7 @@ describe('GamedayPage', () => {
     expect(html).toContain('>D3<');
     expect(html).toContain('>Live<');
     expect(html).toContain('data-location="Supplee Lane"');
+    expect(html).toContain(`data-kickoff="${d1At}"`);
     expect(html).not.toContain('Kickoff');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
     expect(html).not.toContain('Rocky Gorge MD3 vs Washington MD3');
@@ -170,6 +174,20 @@ describe('GamedayPage', () => {
 
     expect(html).toContain('aria-label="Choose side"');
     expect(html).toContain('data-centre="Rocky Gorge MD3 vs Washington MD3"');
+  });
+
+  it('falls back to the feed time for date-only calendar items', () => {
+    const kickoff = atDaysOffset(0, 13);
+    const start = new Date(kickoff);
+    const dayOnly = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+    mocks.fixtures = [clubFixture('d1', 'Rocky Gorge MD1', 'Washington MD1', kickoff)];
+    mocks.calendar = [calendarItem('RG vs Washington', dayOnly)];
+    mocks.centreById = { d1: { home: 'Rocky Gorge MD1', away: 'Washington MD1' } };
+
+    const html = render();
+
+    expect(html).toContain('data-kickoff=""');
+    expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
   });
 
   it('shows the empty state with no Matches', () => {

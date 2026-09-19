@@ -10,9 +10,11 @@ interface MatchCentreProps {
   data: MatchData;
   // Optional venue, forwarded to the score card's map dialog.
   location?: string;
+  // Optional kickoff override, forwarded to the score card caption.
+  kickoff?: string;
 }
 
-export function MatchCentre({ data, location }: MatchCentreProps) {
+export function MatchCentre({ data, location, kickoff }: MatchCentreProps) {
   const { getFixtureItem: game, allMatchCommentary: events, allMatchStatsSummary: stats } = data;
   const lineup = sortByShirtNumber(stats?.lineUp?.players);
   const substitutes = sortByShirtNumber(stats?.lineUp?.substitutes);
@@ -38,7 +40,7 @@ export function MatchCentre({ data, location }: MatchCentreProps) {
       <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Box sx={{ mb: 2, width: '100%' }}>
-            <ScoreCard score={game} large location={location} />
+            <ScoreCard score={game} large location={location} kickoff={kickoff} />
           </Box>
           <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
             <Grid size={{ xs: 12, md: 6 }}>

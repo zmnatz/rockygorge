@@ -34,4 +34,20 @@ describe('ScoreCard', () => {
 
     expect(html).not.toContain('Supplee Lane');
   });
+
+  it('prefers the calendar kickoff over the feed time', () => {
+    const kickoff = '2026-09-19T15:00:00Z';
+    const withFeed = renderToStaticMarkup(<ScoreCard score={score()} />);
+    const withCalendar = renderToStaticMarkup(
+      <ScoreCard score={score()} kickoff={kickoff} />
+    );
+
+    expect(withCalendar).not.toBe(withFeed);
+    expect(withCalendar).toContain(
+      new Date(kickoff).toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    );
+  });
 });
