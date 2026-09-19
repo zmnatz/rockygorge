@@ -19,8 +19,8 @@ import {
   matchCalendarItem,
   matchStatus,
   resolveGameday,
+  resolveMatchLocation,
 } from '@/utils/gameday';
-import { formatStartDate } from '@/utils/calendar';
 
 const sides = matchesConfig.sides;
 
@@ -127,12 +127,10 @@ function GamedayDay({
   const calendarMatch = match
     ? matchCalendarItem(match, calendarQuery.data ?? [])
     : undefined;
-  const kickoff = calendarMatch
-    ? formatStartDate(calendarMatch.start)
-    : clubFixture
-      ? formatStartDate(clubFixture.dateTime)
-      : '';
-  const location = calendarMatch?.location || clubFixture?.venue || '';
+  const location = resolveMatchLocation(
+    calendarMatch?.location,
+    clubFixture?.venue
+  );
 
   if (!match) {
     return (
@@ -185,36 +183,6 @@ function GamedayDay({
             ))}
           </Tabs>
         )}
-        {(kickoff || location) && (
-          <Box
-            sx={{
-              mt: 2,
-              p: 2,
-              bgcolor: 'action.hover',
-              borderRadius: 2,
-              textAlign: 'left',
-            }}
-          >
-            {kickoff && (
-              <>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Kickoff
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                  {kickoff}
-                </Typography>
-              </>
-            )}
-            {location && (
-              <>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
-                  Location
-                </Typography>
-                <Typography variant="body1">{location}</Typography>
-              </>
-            )}
-          </Box>
-        )}
       </Box>
       {centreQuery.isPending && (
         <Centered>
@@ -231,7 +199,9 @@ function GamedayDay({
           </Typography>
         </Centered>
       )}
-      {centreQuery.data && <MatchCentre data={centreQuery.data} />}
+      {centreQuery.data && (
+        <MatchCentre data={centreQuery.data} location={location} />
+      )}
     </>
   );
 }

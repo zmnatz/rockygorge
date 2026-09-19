@@ -8,9 +8,11 @@ import { isSubstitutionEvent, parseSubstitution, sortByShirtNumber } from './mat
 
 interface MatchCentreProps {
   data: MatchData;
+  // Optional venue, forwarded to the score card's map dialog.
+  location?: string;
 }
 
-export function MatchCentre({ data }: MatchCentreProps) {
+export function MatchCentre({ data, location }: MatchCentreProps) {
   const { getFixtureItem: game, allMatchCommentary: events, allMatchStatsSummary: stats } = data;
   const lineup = sortByShirtNumber(stats?.lineUp?.players);
   const substitutes = sortByShirtNumber(stats?.lineUp?.substitutes);
@@ -36,7 +38,7 @@ export function MatchCentre({ data }: MatchCentreProps) {
       <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Box sx={{ mb: 2, width: '100%' }}>
-            <ScoreCard score={game} large />
+            <ScoreCard score={game} large location={location} />
           </Box>
           <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
             <Grid size={{ xs: 12, md: 6 }}>

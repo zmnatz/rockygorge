@@ -230,6 +230,25 @@ export function centrePollInterval(
   return CENTRE_IDLE_POLL_MS;
 }
 
+// Resolves the venue string to point the map at: the calendar item's
+// location wins; otherwise the feed venue unless it is blank or a TBA
+// placeholder (no directions value, and the map would only mislead).
+// Undefined when there is nowhere to point at.
+export function resolveMatchLocation(
+  calendarLocation: string | undefined,
+  feedVenue: string | undefined
+): string | undefined {
+  const calendar = calendarLocation?.trim();
+  if (calendar) {
+    return calendar;
+  }
+  const venue = feedVenue?.trim();
+  if (!venue || /^tba\b/i.test(venue)) {
+    return undefined;
+  }
+  return venue;
+}
+
 export function gamedayHeading(kind: GamedayKind): string {
   switch (kind) {
     case 'today':

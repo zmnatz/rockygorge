@@ -15,6 +15,7 @@ import {
   matchCalendarItem,
   matchStatus,
   resolveGameday,
+  resolveMatchLocation,
   toLocalDayKey,
 } from '@/utils/gameday';
 
@@ -145,6 +146,37 @@ describe('centrePollInterval', () => {
     expect(centrePollInterval({ dateTime: 'not-a-date' }, now)).toBe(
       CENTRE_IDLE_POLL_MS
     );
+  });
+});
+
+describe('resolveMatchLocation', () => {
+  it('prefers the calendar location', () => {
+    expect(resolveMatchLocation('Supplee Lane', 'Dorey Park')).toBe(
+      'Supplee Lane'
+    );
+  });
+
+  it('trims whitespace', () => {
+    expect(resolveMatchLocation('  Supplee Lane  ', undefined)).toBe(
+      'Supplee Lane'
+    );
+  });
+
+  it('falls back to a real feed venue', () => {
+    expect(resolveMatchLocation(undefined, 'Dorey Park')).toBe('Dorey Park');
+    expect(resolveMatchLocation('', 'Dorey Park')).toBe('Dorey Park');
+  });
+
+  it.each(['TBA', 'TBA - Capital Rugby 2', 'tba whatever'])(
+    'omits the placeholder venue %s',
+    (venue) => {
+      expect(resolveMatchLocation(undefined, venue)).toBeUndefined();
+    }
+  );
+
+  it('returns undefined with nowhere to point at', () => {
+    expect(resolveMatchLocation(undefined, undefined)).toBeUndefined();
+    expect(resolveMatchLocation('', '  ')).toBeUndefined();
   });
 });
 

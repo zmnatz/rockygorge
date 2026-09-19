@@ -47,13 +47,16 @@ vi.mock('@/components/Scores/useMatch', () => ({
 vi.mock('@/components/MatchCentre', () => ({
   MatchCentre: ({
     data,
+    location,
   }: {
     data: {
       getFixtureItem: { homeTeam: { name: string }; awayTeam: { name: string } };
     };
+    location?: string;
   }) => (
     <div
       data-centre={`${data.getFixtureItem.homeTeam.name} vs ${data.getFixtureItem.awayTeam.name}`}
+      data-location={location ?? ''}
     />
   ),
 }));
@@ -135,7 +138,8 @@ describe('GamedayPage', () => {
     expect(html).toContain('>D3<');
     expect(html).toContain('D1 vs Washington MD1');
     expect(html).toContain('>Live<');
-    expect(html).toContain('Supplee Lane');
+    expect(html).toContain('data-location="Supplee Lane"');
+    expect(html).not.toContain('Kickoff');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
     expect(html).not.toContain('Rocky Gorge MD3 vs Washington MD3');
   });
@@ -150,6 +154,7 @@ describe('GamedayPage', () => {
     expect(html).not.toContain('aria-label="Choose side"');
     expect(html).toContain('D1 vs Washington MD1');
     expect(html).toContain('>Scheduled<');
+    expect(html).toContain('data-location="Test Venue"');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
   });
 

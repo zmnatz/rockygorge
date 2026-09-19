@@ -1,18 +1,26 @@
+import { useState } from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import PlaceIcon from '@mui/icons-material/Place';
 import Link from 'next/link';
 import { Crest } from '@/components/Crest';
 import type { Score } from './types';
+import { VenueDialog } from './VenueDialog';
 
 interface ScoreCardProps {
   score: Score;
   compact?: boolean;
   large?: boolean;
+  // Optional venue: renders a location button under the caption that
+  // opens the map dialog. Only the Gameday page passes one today.
+  location?: string;
 }
 
-export function ScoreCard({ score, compact, large }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location }: ScoreCardProps) {
+  const [mapOpen, setMapOpen] = useState(false);
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
   const awayScore = parseInt(score.awayTeam.score || '0', 10);
   const homeWon = homeScore > awayScore;
@@ -328,11 +336,37 @@ export function ScoreCard({ score, compact, large }: ScoreCardProps) {
             </Box>
           </Box>
         </CardContent>
-        <Box sx={{ textAlign: 'center', pb: 2 }}>
+        <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
           <Typography variant="caption" color="text.secondary">
-            {score.compName} • {new Date(score.dateTime).toLocaleDateString()}
+            {score.compName} • {new Date(score.dateTime).toLocaleDateString()} •{' '}
+            {new Date(score.dateTime).toLocaleTimeString(undefined, {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
           </Typography>
         </Box>
+        {location && (
+          <Box sx={{ textAlign: 'center', pb: 2 }}>
+            <Button
+              size="small"
+              startIcon={<PlaceIcon fontSize="small" />}
+              onClick={(event) => {
+                // The card itself links to the game page; keep the
+                // location tap on the map dialog instead.
+                event.preventDefault();
+                setMapOpen(true);
+              }}
+            >
+              {location}
+            </Button>
+            <VenueDialog
+              location={location}
+              start={score.dateTime}
+              open={mapOpen}
+              onClose={() => setMapOpen(false)}
+            />
+          </Box>
+        )}
       </Card>
     </Link>
   );
