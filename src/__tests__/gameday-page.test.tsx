@@ -136,7 +136,6 @@ describe('GamedayPage', () => {
     expect(html).toContain('aria-label="Choose side"');
     expect(html).toContain('>D1<');
     expect(html).toContain('>D3<');
-    expect(html).toContain('D1 vs Washington MD1');
     expect(html).toContain('>Live<');
     expect(html).toContain('data-location="Supplee Lane"');
     expect(html).not.toContain('Kickoff');
@@ -152,7 +151,6 @@ describe('GamedayPage', () => {
     const html = render();
 
     expect(html).not.toContain('aria-label="Choose side"');
-    expect(html).toContain('D1 vs Washington MD1');
     expect(html).toContain('>Scheduled<');
     expect(html).toContain('data-location="Test Venue"');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
@@ -171,7 +169,6 @@ describe('GamedayPage', () => {
     const html = render();
 
     expect(html).toContain('aria-label="Choose side"');
-    expect(html).toContain('D3 vs Washington MD3');
     expect(html).toContain('data-centre="Rocky Gorge MD3 vs Washington MD3"');
   });
 

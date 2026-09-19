@@ -249,32 +249,6 @@ export function resolveMatchLocation(
   return venue;
 }
 
-export function gamedayHeading(kind: GamedayKind): string {
-  switch (kind) {
-    case 'today':
-      return "Today's Gameday";
-    case 'recap':
-      return 'Gameday Recap';
-    case 'next':
-      return 'Next Gameday';
-    case 'none':
-      return 'Gameday';
-  }
-}
-
-// Renders a local day key (yyyy-mm-dd) for the page header.
-export function formatDayKey(key: string): string {
-  const [year, month, day] = key.split('-').map(Number);
-  if (!year || !month || !day) {
-    return key;
-  }
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
 function dayStart(key: string): number {
   const [year, month, day] = key.split('-').map(Number);
   return new Date(year, month - 1, day).getTime();

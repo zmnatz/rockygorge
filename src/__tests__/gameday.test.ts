@@ -10,8 +10,6 @@ import {
   defaultSideIndex,
   findSideMatches,
   fixturesPollInterval,
-  formatDayKey,
-  gamedayHeading,
   matchCalendarItem,
   matchStatus,
   resolveGameday,
@@ -60,33 +58,6 @@ describe('matches config', () => {
       'MAC Men D1',
       'Capital Men D3',
     ]);
-  });
-});
-
-describe('gamedayHeading', () => {
-  it.each([
-    ['today', "Today's Gameday"],
-    ['recap', 'Gameday Recap'],
-    ['next', 'Next Gameday'],
-    ['none', 'Gameday'],
-  ] as const)('maps %s', (kind, expected) => {
-    expect(gamedayHeading(kind)).toBe(expected);
-  });
-});
-
-describe('formatDayKey', () => {
-  it('formats a day key in local time', () => {
-    expect(formatDayKey('2026-09-19')).toBe(
-      new Date(2026, 8, 19).toLocaleDateString(undefined, {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-      })
-    );
-  });
-
-  it('passes invalid keys through', () => {
-    expect(formatDayKey('nope')).toBe('nope');
   });
 });
 

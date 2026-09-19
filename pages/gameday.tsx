@@ -14,8 +14,6 @@ import matchesConfig from '@config/matches.yml';
 import type { ResolvedGameday, SideMatch } from '@/types/gameday';
 import {
   defaultSideIndex,
-  formatDayKey,
-  gamedayHeading,
   matchCalendarItem,
   matchStatus,
   resolveGameday,
@@ -142,37 +140,40 @@ function GamedayDay({
     );
   }
 
+  // No page header: the score card below already carries the matchup,
+  // date, and kickoff time. This row holds just the status and, on
+  // two-match days, the side toggle.
   return (
     <>
-      <Box sx={{ ...PAGE_WIDTH, pt: { xs: 2, md: 4 }, textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {gamedayHeading(resolved.kind)}
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          {formatDayKey(resolved.date)} · {match.side.label} vs {match.opponent}
-        </Typography>
+      <Box
+        sx={{
+          ...PAGE_WIDTH,
+          pt: { xs: 2, md: 4 },
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
         {status && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-            <Chip
-              label={status}
-              size="small"
-              color={
-                status === 'Live'
-                  ? 'error'
-                  : status === 'Scheduled'
-                    ? 'info'
-                    : 'default'
-              }
-            />
-          </Box>
+          <Chip
+            label={status}
+            size="small"
+            color={
+              status === 'Live'
+                ? 'error'
+                : status === 'Scheduled'
+                  ? 'info'
+                  : 'default'
+            }
+          />
         )}
         {resolved.matches.length > 1 && (
           <Tabs
             value={activeIndex}
             onChange={(_event, value) => setSelected(value)}
-            centered
             aria-label="Choose side"
-            sx={{ mt: 1 }}
           >
             {resolved.matches.map((sideMatch, index) => (
               <Tab
