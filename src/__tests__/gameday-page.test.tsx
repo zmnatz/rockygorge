@@ -151,7 +151,7 @@ describe('GamedayPage', () => {
     const html = render();
 
     expect(html).not.toContain('aria-label="Choose side"');
-    expect(html).toContain('>Scheduled<');
+    expect(html).not.toContain('>Scheduled<');
     expect(html).toContain('data-location="Test Venue"');
     expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
   });

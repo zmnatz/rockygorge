@@ -156,17 +156,11 @@ function GamedayDay({
           flexWrap: 'wrap',
         }}
       >
-        {status && (
+        {status && status !== 'Scheduled' && (
           <Chip
             label={status}
             size="small"
-            color={
-              status === 'Live'
-                ? 'error'
-                : status === 'Scheduled'
-                  ? 'info'
-                  : 'default'
-            }
+            color={status === 'Live' ? 'error' : 'default'}
           />
         )}
         {resolved.matches.length > 1 && (
