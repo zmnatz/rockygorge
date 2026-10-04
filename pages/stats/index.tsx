@@ -16,7 +16,7 @@ export async function getStaticProps() {
   const statKeys = Object.values(STAT_CATEGORIES).flat()
   const playerColumns = [
     { title: 'Player', dataIndex: 'name', key: 'name', minWidth: 200 },
-    ...statKeys.filter(key => Object.prototype.hasOwnProperty.call(firstPlayer, key)).map((key) => ({
+    ...statKeys.filter(key => Object.hasOwn(firstPlayer, key)).map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
     ...Object.keys(firstPlayer).filter((key) => key !== 'name' && key !== 'game' && !statKeys.includes(key)).map((key) => ({
@@ -40,7 +40,7 @@ export async function getStaticProps() {
     { title: 'Date', dataIndex: 'date', key: 'date' },
     { title: 'Division', dataIndex: 'division', key: 'division' },
     { title: 'Opponent', dataIndex: 'opponent', key: 'opponent' },
-    ...teamStatKeys.filter(key => Object.prototype.hasOwnProperty.call(firstTeamStats, key)).map((key) => ({
+    ...teamStatKeys.filter(key => Object.hasOwn(firstTeamStats, key)).map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
     ...Object.keys(firstTeamStats).filter((key) => !teamStatKeys.includes(key)).map((key) => ({
