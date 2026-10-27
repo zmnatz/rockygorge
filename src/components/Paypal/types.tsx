@@ -1,6 +1,6 @@
 import type React from "react";
 
-interface Option {
+export interface Option {
   name: string;
   value: number;
 }

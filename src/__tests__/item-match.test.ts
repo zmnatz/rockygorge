@@ -16,6 +16,7 @@ const godTier = {
 };
 
 const dues = {
+  slug: 'dues',
   title: 'Pay your dues. Play rugby.',
   description: 'Fall Dues',
   subscriptions: [
@@ -34,6 +35,7 @@ const dues = {
 };
 
 const supporters = {
+  slug: 'supporters',
   title: 'Pay your damn dues! Support Rocky Gorge Rugby.',
   description: 'Supporter Dues',
   subscriptions: [
@@ -57,6 +59,7 @@ function transaction(itemTitle: string, overrides: Partial<PaypalTransaction> = 
     fee: -3,
     net: 97,
     txnId: 'TXN-1',
+    ...overrides,
   };
 }
 
@@ -95,7 +98,7 @@ describe('itemMatcher', () => {
   });
 
   it('does not match when the item text appears as a substring of an unrelated title', () => {
-    const open = { title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' };
+    const open = { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' };
     expect(itemMatcher(open)(transaction('Open Enrollment'))).toBe(false);
   });
 });

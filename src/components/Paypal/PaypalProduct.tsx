@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
 import { PaypalProvider } from './utils'
-import type { PaypalProductProps } from "./types";
+import type { Option, PaypalProductProps } from "./types";
 
 export function PaypalProduct({
   options = [],
@@ -80,7 +80,7 @@ export function PaypalProduct({
 function generateOrderInfo(
   description: string,
   amount: number,
-  option?: { name: string; value: number },
+  option?: Option,
   slug?: string,
 ): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
   const value = `${amount}`;
