@@ -11,6 +11,7 @@ import type {
   PaypalTransactionType,
 } from '../types/paypal';
 import { DAY_MS, MAX_RANGE_DAYS, countDays, isValidDate, parseDate } from './date-range';
+import { parseItemSlugTag } from './item-slug-tag';
 
 export const MAX_WINDOW_DAYS = 31;
 export const PAGE_SIZE = 500;
@@ -28,17 +29,6 @@ export type RangeQuery = {
 export function parseMoney(value: string | undefined): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-/** A trailing `[slug]` key appended to an order line item or description at
- *  checkout (see ADR 005); stripping it yields the displayed item title and
- *  the machine-readable item key. */
-const ITEM_SLUG_PATTERN = /\s*\[([a-z0-9][a-z0-9-]*)\]$/;
-
-function extractItemSlug(title: string): { itemSlug: string; itemTitle: string } {
-  const match = title.match(ITEM_SLUG_PATTERN);
-  if (!match) return { itemSlug: '', itemTitle: title };
-  return { itemSlug: match[1], itemTitle: title.replace(ITEM_SLUG_PATTERN, '') };
 }
 
 export function deriveType(amount: number, hasReference: boolean): PaypalTransactionType {
@@ -67,7 +57,7 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
     info.transaction_subject ||
     info.transaction_note ||
     '';
-  const { itemSlug, itemTitle } = extractItemSlug(itemTitleRaw);
+  const { itemSlug, itemTitle } = parseItemSlugTag(itemTitleRaw);
 
   return {
     date: (info.transaction_initiation_date ?? '').split('T')[0],

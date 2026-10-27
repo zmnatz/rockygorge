@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
 import { PaypalProvider } from './utils'
+import { formatItemSlugTag } from '@/utils/item-slug-tag'
 import type { Option, PaypalProductProps } from "./types";
 
 export function PaypalProduct({
@@ -84,7 +85,7 @@ function generateOrderInfo(
   slug?: string,
 ): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
   const value = `${amount}`;
-  const keySuffix = slug ? ` [${slug}]` : '';
+  const keySuffix = slug ? formatItemSlugTag(slug) : '';
   const purchaseUnit: import("@paypal/paypal-js/types/apis/orders").PurchaseUnit = {
     description: `${description}${keySuffix}`,
     amount: {
