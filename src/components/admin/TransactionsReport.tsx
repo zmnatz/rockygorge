@@ -137,7 +137,7 @@ export function TransactionsReport({
     if (item) return data.filter(itemMatcher(item));
     const query = filter.trim().toLowerCase();
     return data.filter((txn) => {
-      if (itemSlug && txn.itemSlug === itemSlug) return true;
+      if (itemSlug && txn.itemSlug) return txn.itemSlug === itemSlug;
       if (!query) return true;
       return (
         txn.name.toLowerCase().includes(query) ||
