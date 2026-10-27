@@ -1,11 +1,13 @@
-/** The store item slug is carried through PayPal as a trailing ` [slug]` tag
- *  on the order's line-item name and description (see ADR 005). Writing and
- *  reading the tag both live here so the two sides cannot drift apart. */
+/** The store item slug is carried through PayPal as a trailing ` [item:slug]`
+ *  tag on the order's line-item name and description (see ADR 009). The
+ *  `item:` prefix keeps the tag from matching ordinary bracketed title text
+ *  such as `[2-day]`. Writing and reading the tag both live here so the two
+ *  sides cannot drift apart. */
 
-const ITEM_SLUG_PATTERN = /\s*\[([a-z0-9][a-z0-9-]*)\]$/;
+const ITEM_SLUG_PATTERN = /\s*\[item:([a-z0-9][a-z0-9-]*)\]$/;
 
 export function formatItemSlugTag(slug: string): string {
-  return ` [${slug}]`;
+  return ` [item:${slug}]`;
 }
 
 export function parseItemSlugTag(title: string): { itemSlug: string; itemTitle: string } {

@@ -16,7 +16,7 @@ export interface PaypalTransaction {
   type: PaypalTransactionType;
   status: string;
   itemTitle: string;
-  /** The store item slug embedded in the order at checkout (`[slug]` suffix
+  /** The store item slug embedded in the order at checkout (` [item:slug]` suffix
    *  on the item title); empty for transactions that predate the change. */
   itemSlug: string;
   gross: number;

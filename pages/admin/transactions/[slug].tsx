@@ -18,9 +18,9 @@ export default function AdminItemTransactionsPage({ item }: AdminItemTransaction
             ? `Transactions attributed to "${item.title}" in the selected date range.`
             : `Transactions matching "${item.description}" in the selected date range.`
         }
-        item={hasSubscriptions ? item : undefined}
+        item={item}
+        scoped={hasSubscriptions}
         initialFilter={hasSubscriptions ? undefined : item.description}
-        itemSlug={item.slug}
         fileStem={`paypal-transactions_${item.slug}`}
       />
     </RequireAuth>

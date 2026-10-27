@@ -85,31 +85,23 @@ function generateOrderInfo(
   slug?: string,
 ): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
   const value = `${amount}`;
+  const usd = (usdValue: string) => ({ currency_code: "USD", value: usdValue });
   const keySuffix = slug ? formatItemSlugTag(slug) : '';
   const purchaseUnit: import("@paypal/paypal-js/types/apis/orders").PurchaseUnit = {
     description: `${description}${keySuffix}`,
-    amount: {
-      currency_code: "USD",
-      value,
-    },
+    amount: usd(value),
   };
   if (option) {
     purchaseUnit.items = [
       {
         name: `${option.name}${keySuffix}`,
         quantity: "1",
-        unit_amount: {
-          currency_code: "USD",
-          value,
-        },
+        unit_amount: usd(value),
         category: "DIGITAL_GOODS",
       },
     ];
     purchaseUnit.amount.breakdown = {
-      item_total: {
-        currency_code: "USD",
-        value,
-      },
+      item_total: usd(value),
     };
   }
   return {

@@ -11,7 +11,11 @@ describe('item slug tag', () => {
     expect(parseItemSlugTag('Banquet Tickets')).toEqual({ itemSlug: '', itemTitle: 'Banquet Tickets' });
   });
 
+  it('does not read an unprefixed bracketed suffix as a slug', () => {
+    expect(parseItemSlugTag('Banquet Tickets [2-day]')).toEqual({ itemSlug: '', itemTitle: 'Banquet Tickets [2-day]' });
+  });
+
   it('only recognises a tag at the end of the title', () => {
-    expect(parseItemSlugTag('[banquet] Tickets')).toEqual({ itemSlug: '', itemTitle: '[banquet] Tickets' });
+    expect(parseItemSlugTag('[item:banquet] Tickets')).toEqual({ itemSlug: '', itemTitle: '[item:banquet] Tickets' });
   });
 });

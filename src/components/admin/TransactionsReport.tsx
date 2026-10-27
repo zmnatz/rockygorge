@@ -21,7 +21,7 @@ import { useTransactions } from '@/api/transactions';
 import { post } from '@/utils/api';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
-import { itemMatcher } from '@/utils/item-match';
+import { itemMatcher, matchBySlug } from '@/utils/item-match';
 import { reduceTransactionsToLedgerDraft } from '@/utils/dues-ledger';
 import { compareValues } from '@/utils/sort';
 
@@ -42,6 +42,7 @@ const COLUMNS: TransactionColumn[] = [
   { key: 'type', label: 'Type' },
   { key: 'status', label: 'Status' },
   { key: 'itemTitle', label: 'Item Title' },
+  { key: 'itemSlug', label: 'Item Slug' },
   { key: 'gross', label: 'Gross', numeric: true },
   { key: 'fee', label: 'Fee', numeric: true },
   { key: 'net', label: 'Net', numeric: true },
@@ -81,13 +82,12 @@ export interface TransactionsReportProps {
   /** Value the free-text filter input starts with (used when the report is not
    *  scoped to a Store Item), e.g. a store item's description. */
   initialFilter?: string;
-  /** When present, the report is scoped to this Store Item: only attributed
-   *  transactions (by description/title text or subscription plan) are shown,
-   *  and the free-text filter is hidden. */
+  /** The Store Item the report is about. Transactions carrying its slug are
+   *  always shown, even when the free-text filter would exclude them. */
   item?: StoreItem;
-  /** Store item key: transactions carrying this slug are always shown, even
-   *  when the free-text filter would exclude them. */
-  itemSlug?: string;
+  /** When true (with `item`), only transactions attributed to the item by the
+   *  Item Match rule are shown and the free-text filter is hidden. */
+  scoped?: boolean;
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
 }
@@ -97,7 +97,7 @@ export function TransactionsReport({
   subtitle,
   initialFilter,
   item,
-  itemSlug,
+  scoped = false,
   fileStem,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
@@ -134,10 +134,11 @@ export function TransactionsReport({
   };
 
   const visible = useMemo(() => {
-    if (item) return data.filter(itemMatcher(item));
+    if (scoped && item) return data.filter(itemMatcher(item));
     const query = filter.trim().toLowerCase();
     return data.filter((txn) => {
-      if (itemSlug && txn.itemSlug) return txn.itemSlug === itemSlug;
+      const bySlug = item ? matchBySlug(txn, item.slug) : null;
+      if (bySlug !== null) return bySlug;
       if (!query) return true;
       return (
         txn.name.toLowerCase().includes(query) ||
@@ -145,7 +146,7 @@ export function TransactionsReport({
         txn.itemTitle.toLowerCase().includes(query)
       );
     });
-  }, [data, filter, item, itemSlug]);
+  }, [data, filter, item, scoped]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;
@@ -260,7 +261,7 @@ export function TransactionsReport({
         {isFetching && <CircularProgress size={20} />}
       </Box>
 
-      {!item && (
+      {!scoped && (
         <TextField
           label="Filter by Name, Email, or Item"
           value={filter}

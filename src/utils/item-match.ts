@@ -32,9 +32,17 @@ function matchKeys(item: Pick<StoreItem, 'title' | 'description' | 'subscription
   return { description, title, subscription: [...subscription] };
 }
 
+/** Slug attribution is authoritative: a transaction carrying an `itemSlug`
+ *  (embedded at checkout, see ADR 009) is attributed by that slug alone.
+ *  Returns null when the transaction carries no slug, so the caller falls
+ *  back to text matching. */
+export function matchBySlug(txn: Pick<PaypalTransaction, 'itemSlug'>, slug: string): boolean | null {
+  if (!txn.itemSlug) return null;
+  return txn.itemSlug === slug;
+}
+
 /** Build a predicate that attributes Transactions to a Store Item. A
- *  transaction carrying an `itemSlug` (embedded at checkout, see ADR 005) is
- *  attributed by that slug alone. Otherwise the transaction's item title must
+ *  transaction carrying an `itemSlug` is attributed by that slug alone. Otherwise the transaction's item title must
  *  contain the item's `description` (case-insensitive), falling back to its
  *  `title` when no description matches; when the item carries Subscription
  *  Plans, it also matches when its item title contains a plan identifier
@@ -46,7 +54,8 @@ export function itemMatcher(
 ): (txn: PaypalTransaction) => boolean {
   const keys = matchKeys(item);
   return (txn) => {
-    if (txn.itemSlug) return txn.itemSlug === item.slug;
+    const bySlug = matchBySlug(txn, item.slug);
+    if (bySlug !== null) return bySlug;
     const title = txn.itemTitle.toLowerCase();
     if (keys.description && title.includes(keys.description)) return true;
     if (keys.title && title.includes(keys.title)) return true;
