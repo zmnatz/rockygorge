@@ -1,6 +1,6 @@
 import type React from "react";
 
-interface Option {
+export interface Option {
   name: string;
   value: number;
 }
@@ -22,4 +22,6 @@ export interface PaypalProductProps {
   subscriptions?: SubscriptionItem[];
   donation?: boolean;
   supporters?: string[];
+  /** Stable, machine-readable item key embedded in the PayPal order. */
+  slug?: string;
 }

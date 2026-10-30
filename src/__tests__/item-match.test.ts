@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { itemMatcher } from '@/utils/item-match';
+import { itemMatcher, itemSlugsMatching } from '@/utils/item-match';
 import type { PaypalTransaction } from '@/types/paypal';
 
-const banquet = { title: '2026 Banquet', description: 'Banquet Tickets' };
+const banquet = { slug: 'banquet', title: '2026 Banquet', description: 'Banquet Tickets' };
 
 const godTier = {
   name: 'GODs Tier',
@@ -16,6 +16,7 @@ const godTier = {
 };
 
 const dues = {
+  slug: 'dues',
   title: 'Pay your dues. Play rugby.',
   description: 'Fall Dues',
   subscriptions: [
@@ -34,6 +35,7 @@ const dues = {
 };
 
 const supporters = {
+  slug: 'supporters',
   title: 'Pay your damn dues! Support Rocky Gorge Rugby.',
   description: 'Supporter Dues',
   subscriptions: [
@@ -44,7 +46,7 @@ const supporters = {
   ],
 };
 
-function transaction(itemTitle: string): PaypalTransaction {
+function transaction(itemTitle: string, overrides: Partial<PaypalTransaction> = {}): PaypalTransaction {
   return {
     date: '2026-05-01',
     name: 'Jane Doe',
@@ -52,14 +54,25 @@ function transaction(itemTitle: string): PaypalTransaction {
     type: 'Payment',
     status: 'S',
     itemTitle,
+    itemSlug: '',
     gross: 100,
     fee: -3,
     net: 97,
     txnId: 'TXN-1',
+    ...overrides,
   };
 }
 
 describe('itemMatcher', () => {
+  it('matches authoritatively by item slug, ignoring the item title text', () => {
+    expect(itemMatcher(banquet)(transaction('Open Enrollment', { itemSlug: 'banquet' }))).toBe(true);
+  });
+
+  it('rejects a slug-carrying transaction for a different item even when its title text matches', () => {
+    const open = { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Banquet Tickets' };
+    expect(itemMatcher(open)(transaction('Banquet Tickets', { itemSlug: 'banquet' }))).toBe(false);
+  });
+
   it('matches when the item title contains the description', () => {
     expect(itemMatcher(banquet)(transaction('Banquet Tickets'))).toBe(true);
   });
@@ -85,7 +98,7 @@ describe('itemMatcher', () => {
   });
 
   it('does not match when the item text appears as a substring of an unrelated title', () => {
-    const open = { title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' };
+    const open = { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' };
     expect(itemMatcher(open)(transaction('Open Enrollment'))).toBe(false);
   });
 });
@@ -136,5 +149,21 @@ describe('itemMatcher — subscription billing', () => {
 
   it('does not let a plan keyword pull the payment onto another item', () => {
     expect(itemMatcher(supporters)(transaction('Rocky Gorge Yearly Dues Subscription'))).toBe(false);
+  });
+});
+
+describe('itemSlugsMatching', () => {
+  const items = [
+    { slug: 'banquet', title: '2026 Banquet', description: 'Banquet Tickets' },
+    { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' },
+  ];
+
+  it('returns the slugs whose description or title contains the query', () => {
+    expect(itemSlugsMatching(items, 'banquet tickets')).toEqual(new Set(['banquet']));
+    expect(itemSlugsMatching(items, '2026')).toEqual(new Set(['banquet', 'open']));
+  });
+
+  it('returns no slugs for an empty query', () => {
+    expect(itemSlugsMatching(items, '  ')).toEqual(new Set());
   });
 });
