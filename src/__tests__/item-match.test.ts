@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { itemMatcher } from '@/utils/item-match';
+import { itemMatcher, itemSlugsMatching } from '@/utils/item-match';
 import type { PaypalTransaction } from '@/types/paypal';
 
 const banquet = { slug: 'banquet', title: '2026 Banquet', description: 'Banquet Tickets' };
@@ -149,5 +149,21 @@ describe('itemMatcher — subscription billing', () => {
 
   it('does not let a plan keyword pull the payment onto another item', () => {
     expect(itemMatcher(supporters)(transaction('Rocky Gorge Yearly Dues Subscription'))).toBe(false);
+  });
+});
+
+describe('itemSlugsMatching', () => {
+  const items = [
+    { slug: 'banquet', title: '2026 Banquet', description: 'Banquet Tickets' },
+    { slug: 'open', title: '2026 Rocky Gorge Open', description: 'Rocky Gorge Open' },
+  ];
+
+  it('returns the slugs whose description or title contains the query', () => {
+    expect(itemSlugsMatching(items, 'banquet tickets')).toEqual(new Set(['banquet']));
+    expect(itemSlugsMatching(items, '2026')).toEqual(new Set(['banquet', 'open']));
+  });
+
+  it('returns no slugs for an empty query', () => {
+    expect(itemSlugsMatching(items, '  ')).toEqual(new Set());
   });
 });

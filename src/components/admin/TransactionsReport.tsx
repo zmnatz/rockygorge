@@ -21,7 +21,7 @@ import { useTransactions } from '@/api/transactions';
 import { post } from '@/utils/api';
 import { downloadCsv, toCsv } from '@/utils/csv';
 import { MAX_RANGE_DAYS, countDays } from '@/utils/date-range';
-import { itemMatcher, matchBySlug } from '@/utils/item-match';
+import { itemMatcher, itemSlugsMatching, matchBySlug } from '@/utils/item-match';
 import { reduceTransactionsToLedgerDraft } from '@/utils/dues-ledger';
 import { compareValues } from '@/utils/sort';
 
@@ -76,6 +76,8 @@ function formatCell(txn: PaypalTransaction, col: TransactionColumn): string {
   return col.numeric ? (txn[col.key] as number).toFixed(2) : String(txn[col.key]);
 }
 
+const NO_STORE_ITEMS: StoreItem[] = [];
+
 export interface TransactionsReportProps {
   title: string;
   subtitle: string;
@@ -88,6 +90,9 @@ export interface TransactionsReportProps {
   /** When true (with `item`), only transactions attributed to the item by the
    *  Item Match rule are shown and the free-text filter is hidden. */
   scoped?: boolean;
+  /** Store Items the free-text filter can match by name: a search for an
+   *  item's title or description also finds its transactions by slug. */
+  storeItems?: StoreItem[];
   /** Prefix used for the exported CSV filename. */
   fileStem?: string;
 }
@@ -98,6 +103,7 @@ export function TransactionsReport({
   initialFilter,
   item,
   scoped = false,
+  storeItems = NO_STORE_ITEMS,
   fileStem,
 }: TransactionsReportProps) {
   const { getAccessToken } = useRequireAuth();
@@ -136,17 +142,19 @@ export function TransactionsReport({
   const visible = useMemo(() => {
     if (scoped && item) return data.filter(itemMatcher(item));
     const query = filter.trim().toLowerCase();
+    const slugsByName = itemSlugsMatching(storeItems, query);
     return data.filter((txn) => {
       const bySlug = item ? matchBySlug(txn, item.slug) : null;
       if (bySlug !== null) return bySlug;
       if (!query) return true;
+      if (txn.itemSlug && slugsByName.has(txn.itemSlug)) return true;
       return (
         txn.name.toLowerCase().includes(query) ||
         txn.email.toLowerCase().includes(query) ||
         txn.itemTitle.toLowerCase().includes(query)
       );
     });
-  }, [data, filter, item, scoped]);
+  }, [data, filter, item, scoped, storeItems]);
 
   const sorted = useMemo(() => {
     const { key, direction } = sort;

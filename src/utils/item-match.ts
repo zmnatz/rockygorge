@@ -62,3 +62,21 @@ export function itemMatcher(
     return keys.subscription.some((key) => title.includes(key));
   };
 }
+
+/** The slugs of the Store Items whose `title` or `description` contains the
+ *  free-text query (case-insensitive). The report uses these so a search for an
+ *  item's name also finds its transactions, including option purchases whose
+ *  title is only the option name. */
+export function itemSlugsMatching(
+  items: Pick<StoreItem, 'slug' | 'title' | 'description'>[],
+  query: string,
+): Set<string> {
+  const needle = query.trim().toLowerCase();
+  const slugs = new Set<string>();
+  if (!needle) return slugs;
+  for (const item of items) {
+    const text = [item.title, item.description].map((value) => (value ?? '').toLowerCase());
+    if (text.some((value) => value.includes(needle))) slugs.add(item.slug);
+  }
+  return slugs;
+}
