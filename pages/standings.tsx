@@ -31,7 +31,9 @@ import {
   teamIdentities,
   upcomingOf,
   useCapitalFixtures,
+  snapshotLadder,
   useCompLadder,
+  useStandingsSnapshot,
   type CapitalFixture,
   type FixtureDateGroup,
   type LadderPool,
@@ -82,7 +84,14 @@ export default function StandingsPage() {
   const [team, setTeam] = useState<string>(ALL);
   const initializedFromUrl = useRef(false);
 
-  const { data: fixtures, isPending, isError, refetch } = useCapitalFixtures();
+  // The build snapshot paints the page straight away; live data replaces it
+  // once loaded, and a failed live fetch keeps showing the snapshot.
+  const snapshotQuery = useStandingsSnapshot();
+  const liveFixtures = useCapitalFixtures();
+  const fixtures = liveFixtures.data ?? snapshotQuery.data?.fixtures;
+  const isPending = !fixtures && (liveFixtures.isPending || snapshotQuery.isPending);
+  const isError = !fixtures && liveFixtures.isError;
+  const refetch = liveFixtures.refetch;
 
   // Sevens tournaments and one-off comps stay off the league board entirely.
   const leagueFixtures = useMemo(
@@ -237,6 +246,7 @@ export default function StandingsPage() {
     [leagueFixtures, ladderCompId, ladderSeason]
   );
   const ladderQuery = useCompLadder(ladderKey);
+  const ladder = ladderQuery.data ?? snapshotLadder(snapshotQuery.data, ladderKey);
 
   // Division-wide results feed the streak column; the team filter only
   // highlights rows, it never narrows the table.
@@ -252,14 +262,14 @@ export default function StandingsPage() {
     [leagueFixtures, ladderSeason, ladderCompId]
   );
   const visiblePools = useMemo(() => {
-    const pools = ladderQuery.data?.ladderPools ?? [];
+    const pools = ladder?.ladderPools ?? [];
     if (team === ALL) {
       return pools;
     }
     return pools.filter((pool) =>
       pool.teams.some((row) => teamNames.includes(row.name))
     );
-  }, [ladderQuery.data, team, teamNames]);
+  }, [ladder, team, teamNames]);
 
   const handleSeasonChange = (value: string) => {
     setSeason(value);
@@ -411,11 +421,11 @@ export default function StandingsPage() {
               teamNames={teamNames}
               comps={comps}
               pools={visiblePools}
-              showPoolNames={(ladderQuery.data?.ladderPools.length ?? 0) > 1}
+              showPoolNames={(ladder?.ladderPools.length ?? 0) > 1}
               compResults={compResults}
-              isPending={ladderQuery.isPending}
-              isError={ladderQuery.isError}
-              isEmpty={!ladderQuery.data}
+              isPending={!ladder && ladderQuery.isPending}
+              isError={!ladder && ladderQuery.isError}
+              isEmpty={!ladder}
               onSelectComp={handleCompChange}
             />
           )}

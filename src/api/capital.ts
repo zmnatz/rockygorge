@@ -285,6 +285,33 @@ export function useCapitalFixtures() {
   });
 }
 
+async function fetchStandingsSnapshot(): Promise<StandingsSnapshot | null> {
+  try {
+    const res = await fetch('/data/standings.json');
+    return res.ok ? ((await res.json()) as StandingsSnapshot) : null;
+  } catch {
+    // No prebuilt snapshot (e.g. dev before first generate) -- live fills in.
+    return null;
+  }
+}
+
+// The build-time snapshot, served as a static file rather than page props
+// (it is too large to inline). /standings shows it until live data lands.
+export function useStandingsSnapshot() {
+  return useQuery({
+    queryKey: ['standings-snapshot'],
+    queryFn: fetchStandingsSnapshot,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
+
+export function snapshotLadder(
+  snapshot: StandingsSnapshot | null | undefined,
+  key: LadderKey | null
+): CompLadder | undefined {
+  return key ? snapshot?.ladders[ladderSnapshotKey(key.compId, key.season)] : undefined;
+}
+
 export function useCompLadder(key: LadderKey | null) {
   return useQuery({
     queryKey: ['capital-ladder', key?.compId, key?.season],
@@ -624,4 +651,64 @@ export function ladderKeyFor(
     fixtureId: fixture.id,
     sourceType: fixture.sourceType || '2',
   };
+}
+
+// Every league competition/season pair, keyed off its first fixture, so a
+// build can snapshot all ladders up front.
+export function ladderKeysOf(fixtures: CapitalFixture[]): LadderKey[] {
+  const keys = new Map<string, LadderKey>();
+  for (const fixture of fixtures) {
+    if (!fixture.compId || !isLeagueComp(fixture.compName)) {
+      continue;
+    }
+    const id = ladderSnapshotKey(fixture.compId, fixture.season);
+    if (!keys.has(id)) {
+      keys.set(id, {
+        compId: fixture.compId,
+        season: fixture.season,
+        fixtureId: fixture.id,
+        sourceType: fixture.sourceType || '2',
+      });
+    }
+  }
+  return [...keys.values()];
+}
+
+export function ladderSnapshotKey(compId: string, season: string): string {
+  return `${compId}|${season}`;
+}
+
+// Build-time copy of everything /standings shows: the merged fixture list
+// plus every league ladder. The page renders from it instantly, then
+// refreshes live.
+export interface StandingsSnapshot {
+  generatedAt: string;
+  fixtures: CapitalFixture[];
+  ladders: Record<string, CompLadder>;
+}
+
+export async function buildStandingsSnapshot({
+  fetchFixtures = fetchAllCapitalFixtures,
+  fetchLadder = fetchCompLadder,
+  now = () => new Date(),
+  gapMs = 0,
+}: {
+  fetchFixtures?: () => Promise<CapitalFixture[]>;
+  fetchLadder?: (key: LadderKey) => Promise<CompLadder | null>;
+  now?: () => Date;
+  gapMs?: number;
+} = {}): Promise<StandingsSnapshot> {
+  const fixtures = await fetchFixtures();
+  const ladders: Record<string, CompLadder> = {};
+  for (const key of ladderKeysOf(fixtures)) {
+    // A missing ladder just falls back to the live fetch on the page.
+    const ladder = await fetchLadder(key).catch(() => null);
+    if (ladder) {
+      ladders[ladderSnapshotKey(key.compId, key.season)] = ladder;
+    }
+    if (gapMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, gapMs));
+    }
+  }
+  return { generatedAt: now().toISOString(), fixtures, ladders };
 }
