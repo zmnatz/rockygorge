@@ -14,7 +14,6 @@ import {
   isResult,
   isSevensComp,
   buildStandingsSnapshot,
-  combineSeasonSnapshots,
   seasonSnapshotFile,
   splitStandingsSnapshot,
   ladderKeyFor,
@@ -444,13 +443,6 @@ describe('splitStandingsSnapshot', () => {
     const { index } = splitStandingsSnapshot(snapshot);
     expect(index.defaultSeason).toBe('2025/2026');
     expect(index.generatedAt).toBe('2026-11-02T10:00:00.000Z');
-  });
-
-  it('round-trips through combineSeasonSnapshots', () => {
-    const { seasons } = splitStandingsSnapshot(snapshot);
-    const combined = combineSeasonSnapshots([seasons['2025/2026'], seasons['2024/2025']]);
-    expect(combined.fixtures.map((item) => item.id)).toEqual(['new1', 'old1']);
-    expect(combined.ladders).toEqual(snapshot.ladders);
   });
 });
 

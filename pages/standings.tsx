@@ -84,9 +84,8 @@ export default function StandingsPage() {
   const [team, setTeam] = useState<string>(ALL);
   const initializedFromUrl = useRef(false);
 
-  // The build snapshot paints the page straight away (the URL's season
-  // first, the rest in the background); live data replaces it once loaded,
-  // and a failed live fetch keeps showing the snapshot.
+  // The build snapshot is split by season and only the selected season is
+  // loaded (the URL's on first visit, else the newest with results).
   const urlSeason = router.isReady ? queryParam(router.query.season) : undefined;
   const standingsSnapshot = useStandingsSnapshot(
     router.isReady ? season || urlSeason : null
@@ -107,21 +106,13 @@ export default function StandingsPage() {
     [fixtures]
   );
 
-  // Seasons still loading in the background are listed from the index.
+  // Only one season is loaded from the snapshot, so the full list comes
+  // from its index (or, on the live fallback, from the fixtures).
   const snapshotSeasons = standingsSnapshot.index?.seasons;
   const seasons = useMemo(
-    () => [...new Set([...seasonsOf(leagueFixtures), ...(snapshotSeasons ?? [])])].sort().reverse(),
+    () => snapshotSeasons ?? seasonsOf(leagueFixtures),
     [leagueFixtures, snapshotSeasons]
   );
-  // URL filters are checked against the data, so seed only once the URL's
-  // season (or every season, for All) is in hand.
-  const { loadedSeasons, isComplete } = standingsSnapshot;
-  const readyToSeed =
-    !!liveFixtures.data ||
-    isComplete ||
-    (loadedSeasons.length > 0 &&
-      urlSeason !== ALL &&
-      (!urlSeason || !snapshotSeasons?.includes(urlSeason) || loadedSeasons.includes(urlSeason)));
   const comps = useMemo(
     () => (season ? compsOf(leagueFixtures, season) : []),
     [leagueFixtures, season]
@@ -146,7 +137,6 @@ export default function StandingsPage() {
     if (
       !router.isReady ||
       initializedFromUrl.current ||
-      !readyToSeed ||
       leagueFixtures.length === 0
     ) {
       return;
@@ -161,7 +151,7 @@ export default function StandingsPage() {
     }
     const urlSeason = queryParam(router.query.season);
     const resolvedSeason =
-      urlSeason && (urlSeason === ALL || seasons.includes(urlSeason))
+      urlSeason && seasons.includes(urlSeason)
         ? urlSeason
         : defaultSeason(leagueFixtures);
     setSeason(resolvedSeason);
@@ -181,7 +171,16 @@ export default function StandingsPage() {
     ) {
       setTeam(urlTeam);
     }
-  }, [router.isReady, router.query, leagueFixtures, readyToSeed, seasons]);
+  }, [router.isReady, router.query, leagueFixtures, seasons]);
+
+  // A team picked in one season stays selected when switching seasons, as
+  // long as it plays in the new one; checked once that season has loaded.
+  const seasonLoaded = leagueFixtures.some((item) => item.season === season);
+  useEffect(() => {
+    if (seasonLoaded && team !== ALL && !findTeamIdentity(teams, team)) {
+      setTeam(ALL);
+    }
+  }, [seasonLoaded, team, teams]);
 
   // Default to the newest season with results once fixtures load.
   useEffect(() => {
@@ -245,7 +244,7 @@ export default function StandingsPage() {
         leagueFixtures.some(
           (item) =>
             item.compId === comp.compId &&
-            (season === '' || season === ALL || item.season === season) &&
+            (season === '' || item.season === season) &&
             (names.includes(item.homeTeam?.name) || names.includes(item.awayTeam?.name))
         )
       );
@@ -256,14 +255,7 @@ export default function StandingsPage() {
     return comps[0]?.compId ?? ALL;
   }, [compId, comps, leagueFixtures, season, team, identity]);
 
-  // The official table needs one season: with All seasons, use the newest
-  // season that has results for the active division.
-  const ladderSeason = useMemo(() => {
-    if (season && season !== ALL) {
-      return season;
-    }
-    return defaultSeason(leagueFixtures.filter((item) => item.compId === ladderCompId));
-  }, [season, leagueFixtures, ladderCompId]);
+  const ladderSeason = season;
 
   const ladderKey = useMemo(
     () =>
@@ -277,14 +269,12 @@ export default function StandingsPage() {
   // division publishes no table.
   const ladderSeasonInIndex =
     !!ladderKey && !!standingsSnapshot.index?.seasons.includes(ladderKey.season);
-  const ladderSeasonLoaded =
-    !!ladderKey && standingsSnapshot.loadedSeasons.includes(ladderKey.season);
   const liveLadder = !standingsSnapshot.isPending && !!ladderKey && !ladderSeasonInIndex;
   const ladderQuery = useCompLadder(ladderKey, liveLadder);
   const ladder = snapshotLadder(standingsSnapshot.snapshot, ladderKey) ?? ladderQuery.data;
   const ladderPending =
     !ladder &&
-    (liveLadder ? ladderQuery.isPending : standingsSnapshot.isPending || !ladderSeasonLoaded);
+    (liveLadder ? ladderQuery.isPending : standingsSnapshot.isPending || !seasonLoaded);
 
   // Division-wide results feed the streak column; the team filter only
   // highlights rows, it never narrows the table.
@@ -309,14 +299,11 @@ export default function StandingsPage() {
     );
   }, [ladder, team, teamNames]);
 
+  // Division ids are minted per season, so a season switch always resets the
+  // division; the team is re-checked once the new season loads (see above).
   const handleSeasonChange = (value: string) => {
     setSeason(value);
-    if (compId !== ALL && !compsOf(leagueFixtures, value).some((comp) => comp.compId === compId)) {
-      setCompId(ALL);
-    }
-    if (team !== ALL && !findTeamIdentity(teamIdentities(leagueFixtures, value, compId), team)) {
-      setTeam(ALL);
-    }
+    setCompId(ALL);
   };
 
   const handleCompChange = (value: string) => {
@@ -382,9 +369,6 @@ export default function StandingsPage() {
                 label="Season"
                 onChange={(event) => handleSeasonChange(event.target.value)}
               >
-                <MenuItem value={ALL}>
-                  <em>All seasons</em>
-                </MenuItem>
                 {seasons.map((name) => (
                   <MenuItem key={name} value={name}>
                     {name}
@@ -475,7 +459,6 @@ export default function StandingsPage() {
               </Box>
               <FixtureList
                 groups={tab === 'scores' ? scoreGroups : fixtureGroups}
-                season={season}
                 showTime={tab === 'fixtures'}
                 emptyMessage={
                   tab === 'scores'
@@ -607,12 +590,10 @@ function DateChips({ groups }: { groups: FixtureDateGroup[] }) {
 
 function FixtureList({
   groups,
-  season,
   showTime,
   emptyMessage,
 }: {
   groups: FixtureDateGroup[];
-  season: string;
   showTime: boolean;
   emptyMessage: string;
 }) {
@@ -651,9 +632,6 @@ function FixtureList({
               {dayCount} {dayCount === 1 ? 'game' : 'games'}
             </Typography>
             {group.divisions.map((division) => {
-              const divisionSeasons = [
-                ...new Set(division.fixtures.map((item) => item.season)),
-              ].filter(Boolean);
               const rounds = [
                 ...new Set(division.fixtures.map((item) => item.round)),
               ].filter(Boolean);
@@ -665,9 +643,6 @@ function FixtureList({
                     sx={{ fontWeight: 'bold', mb: 1 }}
                   >
                     {division.compName}
-                    {season === ALL && divisionSeasons.length > 0
-                      ? ` • ${divisionSeasons.join(', ')}`
-                      : ''}
                     {rounds.length > 0 ? ` • ${rounds.join(' / ')}` : ''}
                   </Typography>
                   <Grid container spacing={2} columns={{ xs: 1, sm: 2, lg: 3 }}>

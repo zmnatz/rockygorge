@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { postWithRetry } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
@@ -302,61 +302,43 @@ async function fetchSnapshotFile<T>(file: string): Promise<T | null> {
   }
 }
 
-// Loads the season the page needs first (the URL's, else the index's
-// default), then the remaining seasons in the background so season
-// switches and All seasons work from the snapshot too. Pass null to hold
-// off until the wanted season is known (e.g. before the router is ready).
-export function useStandingsSnapshot(prioritySeason: string | null | undefined) {
+// Loads the snapshot for one season (the wanted one, else the index's
+// default). Pass null to hold off until the wanted season is known (e.g.
+// before the router is ready).
+export function useStandingsSnapshot(wantedSeason: string | null | undefined) {
   const indexQuery = useQuery({
     queryKey: ['standings-snapshot', 'index'],
     queryFn: () => fetchSnapshotFile<StandingsSnapshotIndex>('index.json'),
     staleTime: Number.POSITIVE_INFINITY,
   });
   const index = indexQuery.data ?? null;
-  const priority =
-    index && prioritySeason !== null
-      ? prioritySeason && index.seasons.includes(prioritySeason)
-        ? prioritySeason
+  const season =
+    index && wantedSeason !== null
+      ? wantedSeason && index.seasons.includes(wantedSeason)
+        ? wantedSeason
         : index.defaultSeason
       : '';
-  const priorityQuery = useQuery({
-    queryKey: ['standings-snapshot', priority],
-    queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(priority)),
-    enabled: !!priority,
+  const seasonQuery = useQuery({
+    queryKey: ['standings-snapshot', season],
+    queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season)),
+    enabled: !!season,
     staleTime: Number.POSITIVE_INFINITY,
   });
-  const rest = index && priorityQuery.isSuccess ? index.seasons.filter((s) => s !== priority) : [];
-  const restQueries = useQueries({
-    queries: rest.map((season) => ({
-      queryKey: ['standings-snapshot', season],
-      queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season)),
-      staleTime: Number.POSITIVE_INFINITY,
-    })),
-  });
-  const loaded = [priorityQuery.data, ...restQueries.map((query) => query.data)].filter(
-    (data): data is SeasonSnapshot => !!data
-  );
-  const loadedSeasons = loaded.map((season) => season.season);
-  // Season files never change once fetched, so the loaded set identifies
-  // the combined snapshot.
-  const loadedKey = loadedSeasons.join();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the loaded season set
+  const data = seasonQuery.data;
   const snapshot = useMemo<StandingsSnapshot | undefined>(
     () =>
-      index && loaded.length > 0
-        ? { generatedAt: index.generatedAt, ...combineSeasonSnapshots(loaded) }
+      index && data
+        ? { generatedAt: index.generatedAt, fixtures: data.fixtures, ladders: data.ladders }
         : undefined,
-    [index, loadedKey]
+    [index, data]
   );
   return {
     index,
     snapshot,
-    loadedSeasons,
-    isComplete: !!index && loadedSeasons.length === index.seasons.length,
     // Still pending while waiting to learn the wanted season, so callers
     // don't treat "not requested yet" as "no snapshot".
     isPending:
-      indexQuery.isPending || (!!index && (prioritySeason === null || priorityQuery.isPending)),
+      indexQuery.isPending || (!!index && (wantedSeason === null || seasonQuery.isPending)),
   };
 }
 
@@ -401,15 +383,6 @@ export function splitStandingsSnapshot(snapshot: StandingsSnapshot): {
       seasons: seasonNames,
     },
     seasons,
-  };
-}
-
-export function combineSeasonSnapshots(
-  seasons: SeasonSnapshot[]
-): Omit<StandingsSnapshot, 'generatedAt'> {
-  return {
-    fixtures: seasons.flatMap((season) => season.fixtures),
-    ladders: Object.assign({}, ...seasons.map((season) => season.ladders)),
   };
 }
 
