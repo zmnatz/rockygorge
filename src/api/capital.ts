@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { postWithRetry } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
 
@@ -276,16 +277,123 @@ export async function fetchCompLadder(key: LadderKey): Promise<CompLadder | null
   return response.data.compLadder;
 }
 
-export function useCapitalFixtures() {
+export function useCapitalFixtures(enabled = true) {
   return useQuery({
     queryKey: ['capital-fixtures'],
     queryFn: fetchAllCapitalFixtures,
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 }
 
-export function useCompLadder(key: LadderKey | null) {
+// The build writes the snapshot split by season so the page only downloads
+// what it shows: public/data/standings/index.json lists the seasons, and
+// each season lives in its own file.
+const SNAPSHOT_DIR = '/data/standings';
+
+async function fetchSnapshotFile<T>(file: string): Promise<T | null> {
+  try {
+    const res = await fetch(`${SNAPSHOT_DIR}/${file}`);
+    return res.ok ? ((await res.json()) as T) : null;
+  } catch {
+    // No prebuilt snapshot (e.g. dev before first generate) -- live fills in.
+    return null;
+  }
+}
+
+// Loads the snapshot for one season (the wanted one, else the index's
+// default). Pass null to hold off until the wanted season is known (e.g.
+// before the router is ready).
+export function useStandingsSnapshot(wantedSeason: string | null | undefined) {
+  const indexQuery = useQuery({
+    queryKey: ['standings-snapshot', 'index'],
+    queryFn: () => fetchSnapshotFile<StandingsSnapshotIndex>('index.json'),
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+  const index = indexQuery.data ?? null;
+  const season =
+    index && wantedSeason !== null
+      ? wantedSeason && index.seasons.includes(wantedSeason)
+        ? wantedSeason
+        : index.defaultSeason
+      : '';
+  const seasonQuery = useQuery({
+    queryKey: ['standings-snapshot', season],
+    queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season)),
+    enabled: !!season,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+  const data = seasonQuery.data;
+  const snapshot = useMemo<StandingsSnapshot | undefined>(
+    () =>
+      index && data
+        ? { generatedAt: index.generatedAt, fixtures: data.fixtures, ladders: data.ladders }
+        : undefined,
+    [index, data]
+  );
+  return {
+    index,
+    snapshot,
+    // Still pending while waiting to learn the wanted season, so callers
+    // don't treat "not requested yet" as "no snapshot".
+    isPending:
+      indexQuery.isPending || (!!index && (wantedSeason === null || seasonQuery.isPending)),
+  };
+}
+
+export interface StandingsSnapshotIndex {
+  generatedAt: string;
+  defaultSeason: string;
+  seasons: string[];
+}
+
+export interface SeasonSnapshot {
+  season: string;
+  fixtures: CapitalFixture[];
+  ladders: Record<string, CompLadder>;
+}
+
+export function seasonSnapshotFile(season: string): string {
+  return `${season.replace(/[^0-9A-Za-z]+/g, '-')}.json`;
+}
+
+export function splitStandingsSnapshot(snapshot: StandingsSnapshot): {
+  index: StandingsSnapshotIndex;
+  seasons: Record<string, SeasonSnapshot>;
+} {
+  const seasonNames = seasonsOf(snapshot.fixtures);
+  const seasons: Record<string, SeasonSnapshot> = {};
+  for (const season of seasonNames) {
+    seasons[season] = { season, fixtures: [], ladders: {} };
+  }
+  for (const fixture of snapshot.fixtures) {
+    seasons[fixture.season]?.fixtures.push(fixture);
+  }
+  for (const [key, ladder] of Object.entries(snapshot.ladders)) {
+    const season = key.slice(key.indexOf('|') + 1);
+    if (seasons[season]) {
+      seasons[season].ladders[key] = ladder;
+    }
+  }
+  return {
+    index: {
+      generatedAt: snapshot.generatedAt,
+      defaultSeason: defaultSeason(snapshot.fixtures),
+      seasons: seasonNames,
+    },
+    seasons,
+  };
+}
+
+export function snapshotLadder(
+  snapshot: StandingsSnapshot | null | undefined,
+  key: LadderKey | null
+): CompLadder | undefined {
+  return key ? snapshot?.ladders[ladderSnapshotKey(key.compId, key.season)] : undefined;
+}
+
+export function useCompLadder(key: LadderKey | null, enabled = true) {
   return useQuery({
     queryKey: ['capital-ladder', key?.compId, key?.season],
     queryFn: async () => {
@@ -294,7 +402,7 @@ export function useCompLadder(key: LadderKey | null) {
       }
       return fetchCompLadder(key);
     },
-    enabled: !!key,
+    enabled: enabled && !!key,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
@@ -624,4 +732,64 @@ export function ladderKeyFor(
     fixtureId: fixture.id,
     sourceType: fixture.sourceType || '2',
   };
+}
+
+// Every league competition/season pair, keyed off its first fixture, so a
+// build can snapshot all ladders up front.
+export function ladderKeysOf(fixtures: CapitalFixture[]): LadderKey[] {
+  const keys = new Map<string, LadderKey>();
+  for (const fixture of fixtures) {
+    if (!fixture.compId || !isLeagueComp(fixture.compName)) {
+      continue;
+    }
+    const id = ladderSnapshotKey(fixture.compId, fixture.season);
+    if (!keys.has(id)) {
+      keys.set(id, {
+        compId: fixture.compId,
+        season: fixture.season,
+        fixtureId: fixture.id,
+        sourceType: fixture.sourceType || '2',
+      });
+    }
+  }
+  return [...keys.values()];
+}
+
+export function ladderSnapshotKey(compId: string, season: string): string {
+  return `${compId}|${season}`;
+}
+
+// Build-time copy of everything /standings shows: the merged fixture list
+// plus every league ladder. The page renders from it instantly, then
+// refreshes live.
+export interface StandingsSnapshot {
+  generatedAt: string;
+  fixtures: CapitalFixture[];
+  ladders: Record<string, CompLadder>;
+}
+
+export async function buildStandingsSnapshot({
+  fetchFixtures = fetchAllCapitalFixtures,
+  fetchLadder = fetchCompLadder,
+  now = () => new Date(),
+  gapMs = 0,
+}: {
+  fetchFixtures?: () => Promise<CapitalFixture[]>;
+  fetchLadder?: (key: LadderKey) => Promise<CompLadder | null>;
+  now?: () => Date;
+  gapMs?: number;
+} = {}): Promise<StandingsSnapshot> {
+  const fixtures = await fetchFixtures();
+  const ladders: Record<string, CompLadder> = {};
+  for (const key of ladderKeysOf(fixtures)) {
+    // A missing ladder just falls back to the live fetch on the page.
+    const ladder = await fetchLadder(key).catch(() => null);
+    if (ladder) {
+      ladders[ladderSnapshotKey(key.compId, key.season)] = ladder;
+    }
+    if (gapMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, gapMs));
+    }
+  }
+  return { generatedAt: now().toISOString(), fixtures, ladders };
 }

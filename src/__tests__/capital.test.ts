@@ -13,7 +13,12 @@ import {
   isLeagueComp,
   isResult,
   isSevensComp,
+  buildStandingsSnapshot,
+  seasonSnapshotFile,
+  splitStandingsSnapshot,
   ladderKeyFor,
+  ladderKeysOf,
+  ladderSnapshotKey,
   mergeFixtures,
   parseTeamIdentity,
   resultsOf,
@@ -335,6 +340,115 @@ describe('ladderKeyFor', () => {  it('builds a ladder key from the first matchin
 
   it('returns null when no fixture matches', () => {
     expect(ladderKeyFor([fixture('x')], 'missing', ALL)).toBeNull();
+  });
+});
+
+describe('ladderKeysOf', () => {
+  it('lists one ladder key per league competition and season', () => {
+    const fixtures = [
+      fixture('a1', { compId: 'd3', season: '2025/2026' }),
+      fixture('a2', { compId: 'd3', season: '2025/2026' }),
+      fixture('b1', { compId: 'd3', season: '2024/2025' }),
+      fixture('c1', { compId: 'd1', compName: 'MAC Men D1', season: '2025/2026' }),
+    ];
+    expect(ladderKeysOf(fixtures).map((key) => [key.compId, key.season, key.fixtureId])).toEqual([
+      ['d3', '2025/2026', 'a1'],
+      ['d3', '2024/2025', 'b1'],
+      ['d1', '2025/2026', 'c1'],
+    ]);
+  });
+
+  it('skips sevens and one-off competitions', () => {
+    const fixtures = [
+      fixture('s', { compId: 's', compName: "MAC 7s - S'kill 7's" }),
+      fixture('x', { compId: 'x', compName: 'Capital Women D2-D1 Crossovers' }),
+    ];
+    expect(ladderKeysOf(fixtures)).toEqual([]);
+  });
+});
+
+describe('buildStandingsSnapshot', () => {
+  const ladder = (id: string) => ({ id, hasPools: false, ladderPools: [] });
+
+  it('bundles the fixtures with every league ladder, keyed by comp and season', async () => {
+    const fixtures = [
+      fixture('a1', { compId: 'd3', season: '2025/2026' }),
+      fixture('c1', { compId: 'd1', compName: 'MAC Men D1', season: '2025/2026' }),
+    ];
+    const snapshot = await buildStandingsSnapshot({
+      fetchFixtures: async () => fixtures,
+      fetchLadder: async (key) => ladder(key.compId),
+      now: () => new Date('2026-11-02T10:00:00Z'),
+    });
+    expect(snapshot.generatedAt).toBe('2026-11-02T10:00:00.000Z');
+    expect(snapshot.fixtures).toBe(fixtures);
+    expect(snapshot.ladders).toEqual({
+      [ladderSnapshotKey('d3', '2025/2026')]: ladder('d3'),
+      [ladderSnapshotKey('d1', '2025/2026')]: ladder('d1'),
+    });
+  });
+
+  it('leaves out ladders that are missing or fail to load', async () => {
+    const fixtures = [
+      fixture('a1', { compId: 'd3' }),
+      fixture('b1', { compId: 'd4', compName: 'Capital Men D4' }),
+      fixture('c1', { compId: 'd2', compName: 'Capital Men D2' }),
+    ];
+    const snapshot = await buildStandingsSnapshot({
+      fetchFixtures: async () => fixtures,
+      fetchLadder: async (key) => {
+        if (key.compId === 'd4') throw new Error('HTTP 429');
+        return key.compId === 'd2' ? null : ladder(key.compId);
+      },
+      now: () => new Date(),
+    });
+    expect(Object.keys(snapshot.ladders)).toEqual([ladderSnapshotKey('d3', '2025/2026')]);
+  });
+});
+
+describe('splitStandingsSnapshot', () => {
+  const ladder = (id: string) => ({ id, hasPools: false, ladderPools: [] });
+  const fixtures = [
+    fixture('new1', { compId: 'd3', season: '2025/2026', dateTime: '2026-03-01T17:00:00+00:00' }),
+    fixture('new2', {
+      compId: 'd3',
+      season: '2026/2027',
+      dateTime: '2026-12-01T17:00:00+00:00',
+      homeTeam: { name: 'A', score: '', crest: '' },
+      awayTeam: { name: 'B', score: '', crest: '' },
+    }),
+    fixture('old1', { compId: 'd3', season: '2024/2025', dateTime: '2025-03-01T17:00:00+00:00' }),
+  ];
+  const snapshot = {
+    generatedAt: '2026-11-02T10:00:00.000Z',
+    fixtures,
+    ladders: {
+      [ladderSnapshotKey('d3', '2025/2026')]: ladder('new'),
+      [ladderSnapshotKey('d3', '2024/2025')]: ladder('old'),
+    },
+  };
+
+  it('writes one file per season, newest first, with that season only', () => {
+    const { index, seasons } = splitStandingsSnapshot(snapshot);
+    expect(index.seasons).toEqual(['2026/2027', '2025/2026', '2024/2025']);
+    expect(seasons['2024/2025']).toEqual({
+      season: '2024/2025',
+      fixtures: [fixtures[2]],
+      ladders: { [ladderSnapshotKey('d3', '2024/2025')]: ladder('old') },
+    });
+    expect(seasons['2026/2027'].ladders).toEqual({});
+  });
+
+  it('indexes the default season as the newest one with results', () => {
+    const { index } = splitStandingsSnapshot(snapshot);
+    expect(index.defaultSeason).toBe('2025/2026');
+    expect(index.generatedAt).toBe('2026-11-02T10:00:00.000Z');
+  });
+});
+
+describe('seasonSnapshotFile', () => {
+  it('turns a season into a safe file name', () => {
+    expect(seasonSnapshotFile('2025/2026')).toBe('2025-2026.json');
   });
 });
 
