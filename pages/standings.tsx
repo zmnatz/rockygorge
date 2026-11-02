@@ -24,7 +24,7 @@ import {
   filterFixtures,
   findTeamIdentity,
   groupFixturesByDate,
-  isSevensComp,
+  isLeagueComp,
   ladderKeyFor,
   resultsOf,
   seasonsOf,
@@ -83,9 +83,9 @@ export default function StandingsPage() {
 
   const { data: fixtures, isPending, isError, refetch } = useCapitalFixtures();
 
-  // Sevens tournaments stay off the league board entirely.
+  // Sevens tournaments and crossovers stay off the league board entirely.
   const leagueFixtures = useMemo(
-    () => fixtures?.filter((fixture) => !isSevensComp(fixture.compName)) ?? [],
+    () => fixtures?.filter((fixture) => isLeagueComp(fixture.compName)) ?? [],
     [fixtures]
   );
 

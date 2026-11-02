@@ -416,8 +416,21 @@ export function isSevensComp(compName: string): boolean {
   return SEVENS_PATTERN.test(compName || '');
 }
 
+const CROSSOVER_PATTERN = /\bcrossovers?\b/i;
+
+// Crossover competitions (e.g. "Capital Women D2-D1 Crossovers") are
+// inter-division one-offs with no standing of their own.
+export function isCrossoverComp(compName: string): boolean {
+  return CROSSOVER_PATTERN.test(compName || '');
+}
+
+// Competitions that belong on the league board: not sevens, not crossovers.
+export function isLeagueComp(compName: string): boolean {
+  return !isSevensComp(compName) && !isCrossoverComp(compName);
+}
+
 // Division prestige rank from the comp name: D1 -> 1, D2 -> 2, ... comps
-// without a division number (tournaments, crossovers) sort last.
+// without a division number (e.g. tournaments) sort last.
 export function divisionRank(compName: string): number {
   const match = (compName || '').match(/D(\d+)/i);
   return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
@@ -446,7 +459,7 @@ export function compsOf(fixtures: CapitalFixture[], season: string): CompOption[
     if (
       (season === ALL || fixture.season === season) &&
       fixture.compId &&
-      !isSevensComp(fixture.compName)
+      isLeagueComp(fixture.compName)
     ) {
       if (!seen.has(fixture.compId)) {
         seen.set(fixture.compId, fixture.compName);

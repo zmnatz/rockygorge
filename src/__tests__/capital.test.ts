@@ -9,6 +9,8 @@ import {
   filterFixtures,
   findTeamIdentity,
   groupFixturesByDate,
+  isCrossoverComp,
+  isLeagueComp,
   isResult,
   isSevensComp,
   ladderKeyFor,
@@ -94,6 +96,29 @@ describe('teamIdentities', () => {
   });
 });
 
+describe('isCrossoverComp', () => {
+  it('detects crossover competitions in any naming style', () => {
+    expect(isCrossoverComp("Capital Women's Crossovers")).toBe(true);
+    expect(isCrossoverComp('Capital Women’s Crossovers')).toBe(true);
+    expect(isCrossoverComp('Capital Men Extra D1 D2 Crossover')).toBe(true);
+    expect(isCrossoverComp('Capital Women D2-D1 Crossovers')).toBe(true);
+  });
+
+  it('keeps regular divisions', () => {
+    expect(isCrossoverComp('Capital Women D2')).toBe(false);
+    expect(isCrossoverComp('Capital Men Extra Competition')).toBe(false);
+    expect(isCrossoverComp('')).toBe(false);
+  });
+});
+
+describe('isLeagueComp', () => {
+  it('excludes sevens and crossovers from the league board', () => {
+    expect(isLeagueComp('Capital Men D3')).toBe(true);
+    expect(isLeagueComp("MAC 7s - S'kill 7's")).toBe(false);
+    expect(isLeagueComp('Capital Women D2-D1 Crossovers')).toBe(false);
+  });
+});
+
 describe('isSevensComp', () => {
   it('detects sevens tournaments in any naming style', () => {
     expect(isSevensComp("MAC 7s - S'kill 7's")).toBe(true);
@@ -173,9 +198,10 @@ describe('compsOf', () => {
     ]);
   });
 
-  it('drops sevens tournaments and lists D1 first working down', () => {
+  it('drops sevens tournaments and crossovers, listing D1 first working down', () => {
     const fixtures = [
       fixture('1', { compId: 's', compName: "MAC 7s - S'kill 7's" }),
+      fixture('4', { compId: 'x', compName: 'Capital Women D2-D1 Crossovers' }),
       fixture('2', { compId: 'd3', compName: 'Capital Men D3' }),
       fixture('3', { compId: 'd1', compName: 'MAC Men D1' }),
     ];
