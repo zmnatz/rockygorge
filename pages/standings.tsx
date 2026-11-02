@@ -91,9 +91,13 @@ export default function StandingsPage() {
   const standingsSnapshot = useStandingsSnapshot(
     router.isReady ? season || urlSeason : null
   );
-  const liveFixtures = useCapitalFixtures();
-  const fixtures = liveFixtures.data ?? standingsSnapshot.snapshot?.fixtures;
-  const isPending = !fixtures && (liveFixtures.isPending || standingsSnapshot.isPending);
+  // The CMS is only a fallback for when no snapshot was built: the nightly
+  // build keeps the snapshot at most a day old.
+  const liveEnabled = !standingsSnapshot.isPending && !standingsSnapshot.snapshot;
+  const liveFixtures = useCapitalFixtures(liveEnabled);
+  const fixtures = standingsSnapshot.snapshot?.fixtures ?? liveFixtures.data;
+  const isPending =
+    !fixtures && (standingsSnapshot.isPending || (liveEnabled && liveFixtures.isPending));
   const isError = !fixtures && liveFixtures.isError;
   const refetch = liveFixtures.refetch;
 
@@ -268,8 +272,19 @@ export default function StandingsPage() {
         : null,
     [leagueFixtures, ladderCompId, ladderSeason]
   );
-  const ladderQuery = useCompLadder(ladderKey);
-  const ladder = ladderQuery.data ?? snapshotLadder(standingsSnapshot.snapshot, ladderKey);
+  // Ladders come from the snapshot too; the CMS is asked only for a season
+  // the snapshot doesn't have. A snapshot season without a ladder means the
+  // division publishes no table.
+  const ladderSeasonInIndex =
+    !!ladderKey && !!standingsSnapshot.index?.seasons.includes(ladderKey.season);
+  const ladderSeasonLoaded =
+    !!ladderKey && standingsSnapshot.loadedSeasons.includes(ladderKey.season);
+  const liveLadder = !standingsSnapshot.isPending && !!ladderKey && !ladderSeasonInIndex;
+  const ladderQuery = useCompLadder(ladderKey, liveLadder);
+  const ladder = snapshotLadder(standingsSnapshot.snapshot, ladderKey) ?? ladderQuery.data;
+  const ladderPending =
+    !ladder &&
+    (liveLadder ? ladderQuery.isPending : standingsSnapshot.isPending || !ladderSeasonLoaded);
 
   // Division-wide results feed the streak column; the team filter only
   // highlights rows, it never narrows the table.
@@ -446,8 +461,8 @@ export default function StandingsPage() {
               pools={visiblePools}
               showPoolNames={(ladder?.ladderPools.length ?? 0) > 1}
               compResults={compResults}
-              isPending={!ladder && ladderQuery.isPending}
-              isError={!ladder && ladderQuery.isError}
+              isPending={ladderPending}
+              isError={!ladder && liveLadder && ladderQuery.isError}
               isEmpty={!ladder}
               onSelectComp={handleCompChange}
             />

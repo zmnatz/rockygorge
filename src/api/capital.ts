@@ -277,10 +277,11 @@ export async function fetchCompLadder(key: LadderKey): Promise<CompLadder | null
   return response.data.compLadder;
 }
 
-export function useCapitalFixtures() {
+export function useCapitalFixtures(enabled = true) {
   return useQuery({
     queryKey: ['capital-fixtures'],
     queryFn: fetchAllCapitalFixtures,
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
@@ -352,7 +353,10 @@ export function useStandingsSnapshot(prioritySeason: string | null | undefined) 
     snapshot,
     loadedSeasons,
     isComplete: !!index && loadedSeasons.length === index.seasons.length,
-    isPending: indexQuery.isPending || (!!priority && priorityQuery.isPending),
+    // Still pending while waiting to learn the wanted season, so callers
+    // don't treat "not requested yet" as "no snapshot".
+    isPending:
+      indexQuery.isPending || (!!index && (prioritySeason === null || priorityQuery.isPending)),
   };
 }
 
@@ -416,7 +420,7 @@ export function snapshotLadder(
   return key ? snapshot?.ladders[ladderSnapshotKey(key.compId, key.season)] : undefined;
 }
 
-export function useCompLadder(key: LadderKey | null) {
+export function useCompLadder(key: LadderKey | null, enabled = true) {
   return useQuery({
     queryKey: ['capital-ladder', key?.compId, key?.season],
     queryFn: async () => {
@@ -425,7 +429,7 @@ export function useCompLadder(key: LadderKey | null) {
       }
       return fetchCompLadder(key);
     },
-    enabled: !!key,
+    enabled: enabled && !!key,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
