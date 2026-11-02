@@ -2,9 +2,29 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseCsv } from '@/utils/csv'
 
-export function loadStatsFromCsv() {
+export interface GamePlayer {
+  name: string;
+  jersey: string;
+  [key: string]: string | number;
+}
+
+export interface GameRecord {
+  season: string;
+  date: string;
+  team: string;
+  division: string;
+  opponent: string;
+  game: string;
+  result: string;
+  score_for: string;
+  score_against: string;
+  team_stats: Record<string, string | number>;
+  players: GamePlayer[];
+}
+
+export function loadStatsFromCsv(): { games: GameRecord[] } {
   const statsDir = path.join(process.cwd(), 'content/stats')
-  const games: any[] = []
+  const games: GameRecord[] = []
 
   const teamCsvPath = path.join(statsDir, 'team.csv')
   const playersCsvPath = fs.existsSync(path.join(statsDir, 'players.csv')) 
@@ -39,7 +59,7 @@ export function loadStatsFromCsv() {
         const scoreAgainst = tRow[teamHeader.indexOf('score_against')]
         const gameTitle = `${team} vs ${opponent}`
 
-        const teamStats: Record<string, any> = {
+        const teamStats: Record<string, string | number> = {
           total_penalties_gorge: Number(tRow[teamHeader.indexOf('total_penalties')] || 0),
           total_penalties_opponent: Number(tRow[teamHeader.indexOf('opponent_penalties')] || 0),
           total_knocks_gorge: Number(tRow[teamHeader.indexOf('total_knocks')] || 0),
@@ -57,7 +77,7 @@ export function loadStatsFromCsv() {
           maul_success: tRow[teamHeader.indexOf('maul_success')],
         }
 
-        const gamePlayers: any[] = []
+        const gamePlayers: GamePlayer[] = []
         playerDataRows.forEach((pRow) => {
           if (pRow.length < playerHeader.length) return
           const pSeason = pRow[playerHeader.indexOf('season')]
@@ -71,7 +91,7 @@ export function loadStatsFromCsv() {
               const idx = playerHeader.indexOf(colName)
               if (idx === -1) return 0
               const val = Number(pRow[idx])
-              return isNaN(val) ? 0 : val
+              return Number.isNaN(val) ? 0 : val
             }
 
             const playerName = pRow[playerHeader.indexOf('player')] || ''

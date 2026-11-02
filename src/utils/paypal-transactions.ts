@@ -11,6 +11,7 @@ import type {
   PaypalTransactionType,
 } from '../types/paypal';
 import { DAY_MS, MAX_RANGE_DAYS, countDays, isValidDate, parseDate } from './date-range';
+import { parseItemSlugTag } from './item-slug-tag';
 
 export const MAX_WINDOW_DAYS = 31;
 export const PAGE_SIZE = 500;
@@ -47,15 +48,20 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
 
   // Subscription billing payments carry their tier as `item_options` (e.g.
   // "DUES: GODs") rather than a description, so options join the item title
-  // alongside any item name to keep the chosen plan attributable.
-  const itemTitle =
-    (cart.item_details ?? [])
-      .flatMap((item) => [item.item_name ?? '', item.item_options ?? ''])
-      .filter(Boolean)
-      .join('; ') ||
-    info.transaction_subject ||
-    info.transaction_note ||
-    '';
+  // alongside any item name to keep the chosen plan attributable. Each item
+  // name is parsed for its slug tag before joining, so the tag is found even
+  // when options follow it.
+  const lineItems = (cart.item_details ?? []).map((item) => ({
+    name: parseItemSlugTag(item.item_name ?? ''),
+    options: item.item_options ?? '',
+  }));
+  const fallback = parseItemSlugTag(info.transaction_subject || info.transaction_note || '');
+  const lineItemTitle = lineItems
+    .flatMap((item) => [item.name.itemTitle, item.options])
+    .filter(Boolean)
+    .join('; ');
+  const itemTitle = lineItemTitle || fallback.itemTitle;
+  const itemSlug = lineItems.find((item) => item.name.itemSlug)?.name.itemSlug || fallback.itemSlug;
 
   return {
     date: (info.transaction_initiation_date ?? '').split('T')[0],
@@ -64,6 +70,7 @@ export function flattenTransaction(txn: PaypalRawTransaction): PaypalTransaction
     type: deriveType(gross, Boolean(info.paypal_reference_id)),
     status: info.transaction_status ?? '',
     itemTitle,
+    itemSlug,
     gross,
     fee,
     net,

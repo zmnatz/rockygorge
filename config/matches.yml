@@ -1,0 +1,11 @@
+# Gameday Sides: the club's teams as named in the rugby CMS feed.
+# teamName identifies the club's Side in a fixture; compName is the
+# competition shown on the page. Order sets the toggle order and the
+# default-Side fallback.
+sides:
+  - label: D1
+    teamName: Rocky Gorge MD1
+    compName: MAC Men D1
+  - label: D3
+    teamName: Rocky Gorge MD3
+    compName: Capital Men D3

@@ -10,6 +10,7 @@ function txn(partial: Partial<PaypalTransaction>): PaypalTransaction {
     type: 'Payment',
     status: 'T0000',
     itemTitle: '',
+    itemSlug: '',
     gross: 0,
     fee: 0,
     net: 0,

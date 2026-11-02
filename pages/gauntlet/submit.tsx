@@ -123,14 +123,6 @@ export default function GauntletSubmit({ playerNames = [] }: GauntletSubmitProps
     )
 }
 
-interface StatsFileData {
-    games?: Array<{
-        players?: Array<{
-            name?: string;
-        }>;
-    }>;
-}
-
 export const getStaticProps: GetStaticProps = async () => {
     try {
         const stats = loadStatsFromCsv();

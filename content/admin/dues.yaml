@@ -1,3 +1,24 @@
+- name: William Weeks
+  monthly: true
+  supporter: true
+  date: 2026-10-03
+- name: Jacob  Saintcross
+  monthly: true
+  supporter: true
+  date: 2026-10-03
+- name: Seth Hardy
+  monthly: true
+  date: 2026-10-01
+- name: James Hulbert
+  monthly: true
+  supporter: true
+  date: 2026-09-25
+- name: Julian Alvarez
+  date: 2026-09-24
+- name: Justin Smith
+  date: 2026-09-22
+- name: AJ Conway
+  date: 2026-09-22
 - name: Jamel Murray
   date: 2026-09-11
 - name: Mason McIlwee

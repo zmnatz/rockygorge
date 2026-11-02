@@ -22,6 +22,11 @@
   title: 'Calendar'
   summary: 'Gorge calendar'
   menu: true
+- slug: '/standings'
+  href: '/standings'
+  title: 'Standings'
+  summary: 'Capital Rugby Union standings, scores and fixtures'
+  menu: true
 - slug: '/whereIsPractice'
   href: '/whereIsPractice'
   title: 'Where is Practice'

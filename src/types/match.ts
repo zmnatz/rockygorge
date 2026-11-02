@@ -14,6 +14,10 @@ export interface FixtureItem {
   venue: string;
   homeTeam: Team;
   awayTeam: Team;
+  // Present only when the query projects them (match centre does;
+  // the player-history projection does not).
+  isLive?: boolean;
+  status?: string;
 }
 
 export interface MatchCommentary {

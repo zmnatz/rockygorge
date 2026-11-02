@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 
 import { FlexiblePaymentForm, PaymentOptions, SupporterCard, Subscription} from "./components";
 import { PaypalProvider } from './utils'
-import type { PaypalProductProps } from "./types";
+import { formatItemSlugTag } from '@/utils/item-slug-tag'
+import type { Option, PaypalProductProps } from "./types";
 
 export function PaypalProduct({
   options = [],
@@ -20,16 +21,18 @@ export function PaypalProduct({
   subscriptions = [],
   donation = false,
   supporters,
+  slug,
 }: PaypalProductProps) {
   const [editAmount, setEditAmount] = useState<number>();
   const amount = editAmount ?? defaultAmount;
   const router = useRouter();
 
   const handleSelect = (_event: React.ChangeEvent<HTMLInputElement>, value: string) => setEditAmount(Number(value));
+  const selectedOption = options.find((option) => option.value === amount);
   const createOrder = async (
     _data: object,
     actions: CreateOrderBraintreeActions,
-  ) => actions.order.create(generateOrderInfo(description, amount));
+  ) => actions.order.create(generateOrderInfo(description, amount, selectedOption, slug));
 
   const handleApprove = async (_data: object, actions: OnApproveBraintreeActions) => {
     await actions.order.capture();
@@ -75,17 +78,34 @@ export function PaypalProduct({
 
 
 
-function generateOrderInfo(description: string, amount: number): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
-  return {
-    purchase_units: [
+function generateOrderInfo(
+  description: string,
+  amount: number,
+  option?: Option,
+  slug?: string,
+): import("@paypal/paypal-js/types/apis/orders").CreateOrderRequestBody {
+  const value = `${amount}`;
+  const usd = (usdValue: string) => ({ currency_code: "USD", value: usdValue });
+  const keySuffix = slug ? formatItemSlugTag(slug) : '';
+  const purchaseUnit: import("@paypal/paypal-js/types/apis/orders").PurchaseUnit = {
+    description: `${description}${keySuffix}`,
+    amount: usd(value),
+  };
+  if (option) {
+    purchaseUnit.items = [
       {
-        description,
-        amount: {
-          currency_code: "USD",
-          value: `${amount}`,
-        },
+        name: `${option.name}${keySuffix}`,
+        quantity: "1",
+        unit_amount: usd(value),
+        category: "DIGITAL_GOODS",
       },
-    ],
+    ];
+    purchaseUnit.amount.breakdown = {
+      item_total: usd(value),
+    };
+  }
+  return {
+    purchase_units: [purchaseUnit],
   };
 }
 

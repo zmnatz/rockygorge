@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
+import Link from 'next/link';
 import { useScores } from '@/api/scores';
 import type { Score } from './types';
 import { ScoreCard } from './ScoreCard';
@@ -35,7 +36,12 @@ export function Scores({ initialScores }: { initialScores?: Score[] }) {
             size={{ xs: 1, sm: 1 }}
             sx={index >= XS_GAMES ? { display: { xs: 'none', sm: 'block' } } : undefined}
           >
-            <ScoreCard score={score} compact />
+            <Link
+              href={`/game?id=${score.id}`}
+              style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+            >
+              <ScoreCard score={score} compact />
+            </Link>
           </Grid>
         ))}
       </Grid>

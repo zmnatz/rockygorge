@@ -32,21 +32,51 @@ function matchKeys(item: Pick<StoreItem, 'title' | 'description' | 'subscription
   return { description, title, subscription: [...subscription] };
 }
 
-/** Build a predicate that attributes Transactions to a Store Item: a
- *  transaction matches when its item title contains the item's `description`
- *  (case-insensitive), falling back to its `title` when no description
- *  matches; when the item carries Subscription Plans, a transaction also
- *  matches when its item title contains a plan identifier (name, hosted-button
- *  id, chosen option value, or explicit keyword). The item's keys are prepared
- *  once, so the predicate is safe to reuse across many transactions. */
+/** Slug attribution is authoritative: a transaction carrying an `itemSlug`
+ *  (embedded at checkout, see ADR 009) is attributed by that slug alone.
+ *  Returns null when the transaction carries no slug, so the caller falls
+ *  back to text matching. */
+export function matchBySlug(txn: Pick<PaypalTransaction, 'itemSlug'>, slug: string): boolean | null {
+  if (!txn.itemSlug) return null;
+  return txn.itemSlug === slug;
+}
+
+/** Build a predicate that attributes Transactions to a Store Item. A
+ *  transaction carrying an `itemSlug` is attributed by that slug alone. Otherwise the transaction's item title must
+ *  contain the item's `description` (case-insensitive), falling back to its
+ *  `title` when no description matches; when the item carries Subscription
+ *  Plans, it also matches when its item title contains a plan identifier
+ *  (name, hosted-button id, chosen option value, or explicit keyword). The
+ *  item's keys are prepared once, so the predicate is safe to reuse across
+ *  many transactions. */
 export function itemMatcher(
-  item: Pick<StoreItem, 'title' | 'description' | 'subscriptions'>,
+  item: Pick<StoreItem, 'slug' | 'title' | 'description' | 'subscriptions'>,
 ): (txn: PaypalTransaction) => boolean {
   const keys = matchKeys(item);
   return (txn) => {
+    const bySlug = matchBySlug(txn, item.slug);
+    if (bySlug !== null) return bySlug;
     const title = txn.itemTitle.toLowerCase();
     if (keys.description && title.includes(keys.description)) return true;
     if (keys.title && title.includes(keys.title)) return true;
     return keys.subscription.some((key) => title.includes(key));
   };
+}
+
+/** The slugs of the Store Items whose `title` or `description` contains the
+ *  free-text query (case-insensitive). The report uses these so a search for an
+ *  item's name also finds its transactions, including option purchases whose
+ *  title is only the option name. */
+export function itemSlugsMatching(
+  items: Pick<StoreItem, 'slug' | 'title' | 'description'>[],
+  query: string,
+): Set<string> {
+  const needle = query.trim().toLowerCase();
+  const slugs = new Set<string>();
+  if (!needle) return slugs;
+  for (const item of items) {
+    const text = [item.title, item.description].map((value) => (value ?? '').toLowerCase());
+    if (text.some((value) => value.includes(needle))) slugs.add(item.slug);
+  }
+  return slugs;
 }

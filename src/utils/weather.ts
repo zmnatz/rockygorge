@@ -13,6 +13,31 @@ export interface OpenMeteoForecastResponse {
   hourly: OpenMeteoHourly;
 }
 
+export interface GeocodedLocation {
+  lat: number;
+  lon: number;
+}
+
+// Parses an Open-Meteo geocoding response, taking the top result.
+// Null when nothing placed the name.
+export function parseGeocodeResponse(data: unknown): GeocodedLocation | null {
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+  const results = (data as { results?: unknown }).results;
+  if (!Array.isArray(results) || results.length === 0) {
+    return null;
+  }
+  const first = results[0] as { latitude?: unknown; longitude?: unknown };
+  if (
+    typeof first.latitude !== 'number' ||
+    typeof first.longitude !== 'number'
+  ) {
+    return null;
+  }
+  return { lat: first.latitude, lon: first.longitude };
+}
+
 export interface PracticeWeatherSummary {
   inclement: boolean;
   atPractice: boolean;

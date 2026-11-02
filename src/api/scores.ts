@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
+import matchesConfig from '@config/matches.yml'
 import { postWithRetry } from "@/utils/api"
+import { fixturesPollInterval, resolveGameday } from "@/utils/gameday"
 import type { Score } from '@/components/Scores/types'
+import type { Team } from '@/types/match'
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 
@@ -109,6 +112,93 @@ export async function fetchLiveScores(): Promise<Score[]> {
       (a, b) =>
         new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
     );
+}
+
+// Slim fixture projection for Gameday resolution: everything the
+// day/side/calendar logic needs, one request covering the whole feed
+// (limit 50 would miss upcoming games). Rich data (crests, lineups,
+// events) comes from the match-centre query per selected Match.
+export interface ClubFixture {
+  id: string;
+  compId: string;
+  compName: string;
+  dateTime: string;
+  season: string;
+  status: string;
+  venue: string;
+  sourceType: string;
+  isLive: boolean;
+  homeTeam: Pick<Team, 'name'>;
+  awayTeam: Pick<Team, 'name'>;
+}
+
+const FIXTURES_QUERY = `query GamedayFixturesQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
+  getEntityFixturesAndResults(
+    type: $type
+    entityId: $entityId
+    entityType: $entityType
+    limit: $limit
+    skip: $skip
+  ) {
+    id
+    compId
+    compName
+    dateTime
+    season
+    status
+    venue
+    sourceType
+    isLive
+    homeTeam {
+      name
+      __typename
+    }
+    awayTeam {
+      name
+      __typename
+    }
+    __typename
+  }
+}`;
+
+const FIXTURE_LIMIT = 500;
+
+export async function fetchClubFixtures(): Promise<ClubFixture[]> {
+  const data = await postWithRetry<{ data: { getEntityFixturesAndResults: ClubFixture[] } }>(SCORES_URL, {
+    operationName: "GamedayFixturesQuery",
+    variables: {
+      entityId: 91273,
+      entityType: "club",
+      type: "all",
+      skip: 0,
+      limit: FIXTURE_LIMIT,
+    },
+    query: FIXTURES_QUERY,
+  });
+  const teamNames = new Set(matchesConfig.sides.map((side) => side.teamName));
+  return data.data.getEntityFixturesAndResults
+    .filter(
+      (fixture) =>
+        teamNames.has(fixture.homeTeam.name) ||
+        teamNames.has(fixture.awayTeam.name)
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
+    );
+}
+
+export function useGamedayFixtures() {
+  const sides = matchesConfig.sides;
+  return useQuery({
+    queryKey: ['gameday', 'fixtures'],
+    queryFn: fetchClubFixtures,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    // Brisk while the resolved day is current or in-window, calm otherwise.
+    refetchInterval: (query) =>
+      fixturesPollInterval(resolveGameday(query.state.data ?? [], sides).kind),
+  });
 }
 
 async function fetchStaticScores(): Promise<Score[]> {

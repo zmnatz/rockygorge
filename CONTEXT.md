@@ -64,6 +64,17 @@ _Avoid_: Bad weather, rain
 A synthetic-turf practice location that does not close for rain, used as the fallback when a Practice Field is closed.
 _Avoid_: Backup field, turf
 
+**Option**:
+A selectable amount tier on a store item, a `name`/`value` pair in the item's `options` array. Choosing an option fixes the purchase amount to its value. Not to be confused with a subscription option, which selects a tier on a hosted PayPal plan.
+_Avoid_: Tier, package (when referring to a store item option)
+
+**Selected option**:
+The option whose value equals the current purchase amount. Derived from the amount by value-match rather than tracked as user state; if the amount matches no option value (a custom amount entered in the flexible payment form), there is no selected option.
+
+**Transaction line item**:
+The purchase record carried on a one-time PayPal order when a selected option exists — it names the option and its amount so the purchase tier is identifiable in the transaction report. When there is no selected option, no line item is carried.
+_Avoid_: Cart entry, invoice item
+
 ## Admin
 
 **Admin handler**:
@@ -101,11 +112,11 @@ The amount the club actually received from a Transaction — gross amount plus t
 _Avoid_: Total, balance
 
 **Item Match**:
-A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
+A Transaction is attributed to a Store Item by its slug when the order carried one (`itemSlug`, embedded at checkout, see ADR 009); that slug is authoritative for new transactions. Otherwise it is attributed by text: the transaction's item title must contain the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
 _Avoid_: Association, linking (payments context)
 
 **Item Transactions**:
-The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
+The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. On every item page, transactions whose `itemSlug` equals the item's slug are always shown, regardless of the filter. The unscoped report at `/admin/transactions` always offers the free-text filter.
 _Avoid_: Purchase report, item sales
 
 **Dues**:
@@ -127,6 +138,28 @@ _Avoid_: GOD, patron, supporter (when meaning the store item)
 **Ledger Sync**:
 The admin action on the Dues item's transaction page that adds new payers from the visible transactions to the dues ledger (`content/admin/dues.yaml`). It sends only minimal row data — name, date, and the monthly/supporter flags derived from the transaction title ("dues subscription" and "GODs" signals) — never email, amounts, or transaction IDs. Anyone already on the ledger is skipped, and the change is proposed as a pull request for manual review before merge.
 _Avoid_: Auto-sync, ledger import
+
+## Gameday & Matches
+
+**Gameday**:
+The calendar day on which the club plays one or more Matches. The Gameday page (`/gameday`) resolves a single day: the current day when a Match is played today, otherwise the most recent day with a Match within the last two days, otherwise the next future day with a Match.
+_Avoid_: Game day, matchday, game night
+
+**Match**:
+A single fixture from the rugby CMS feed involving the club — one Side (Upper or Lower Division) against an opponent. Carries kickoff, status (Fixture, Live, or Result), venue, and home/away teams. The detailed view of a Match is the Match Centre at `/game?id=...`; Gameday pages reference Matches by their feed id.
+_Avoid_: Game (ambient use), fixture (developer-layer term)
+
+**Match Centre**:
+The detailed match view — score, lineups, match events — rendered by shared components, reachable at `/game?id=...` and embedded on the Gameday page. Both surfaces render the same components so a Match looks identical in either place.
+_Avoid_: Game detail, game page, match page
+
+**Side**:
+A Rocky Gorge team that plays in a competition. The club fields two Sides: the Upper Division (`Rocky Gorge MD1`, competing in MAC Men D1) and the Lower Division (`Rocky Gorge MD3`, competing in Capital Men D3). User-facing labels are D1 and D3.
+_Avoid_: Division (when meaning a Side), team, squad
+
+**Match Calendar Item**:
+A Calendar Item in the Matches category that corresponds to a Match. It is matched to a fixture by opponent name and home/away direction, with the division tag disambiguating when both Sides play the same opponent. It is the source of a Match's real location and times.
+_Avoid_: Match entry, schedule item, calendar match
 
 ## Rugby & Eligibility
 

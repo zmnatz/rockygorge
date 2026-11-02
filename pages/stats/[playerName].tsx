@@ -61,7 +61,7 @@ export async function getStaticProps({ params }) {
     { title: 'Date', dataIndex: 'date', key: 'date', minWidth: 100 },
     { title: 'Division', dataIndex: 'division', key: 'division', minWidth: 80 },
     { title: 'Opponent', dataIndex: 'opponent', key: 'opponent', minWidth: 150 },
-    ...statKeys.filter(key => Object.prototype.hasOwnProperty.call(firstPlayerStats, key) && key !== 'name').map((key) => ({
+    ...statKeys.filter(key => Object.hasOwn(firstPlayerStats, key) && key !== 'name').map((key) => ({
       title: formatColumnTitle(key), dataIndex: key, key,
     })),
     ...Object.keys(firstPlayerStats).filter((key) => key !== 'name' && key !== 'opponent' && key !== 'game' && key !== 'key' && key !== 'season' && key !== 'date' && key !== 'division' && !statKeys.includes(key)).map((key) => ({

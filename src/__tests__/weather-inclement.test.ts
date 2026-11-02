@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  parseGeocodeResponse,
   summarizeInclementWeather,
   weatherCodeToType,
   zonedNaiveToUtc,
@@ -185,5 +186,31 @@ describe('summarizeInclementWeather', () => {
       '2026-08-19T21:45:00-04:00',
     );
     expect(summary.temperatureAtPractice).toBeNull();
+  });
+});
+
+describe('parseGeocodeResponse', () => {
+  it('takes the top result coordinates', () => {
+    expect(
+      parseGeocodeResponse({
+        results: [
+          { latitude: 39.1168, longitude: -76.8876, name: 'Supplee Ln' },
+          { latitude: 0, longitude: 0, name: 'Elsewhere' },
+        ],
+      })
+    ).toEqual({ lat: 39.1168, lon: -76.8876 });
+  });
+
+  it('returns null when nothing placed the name', () => {
+    expect(parseGeocodeResponse({})).toBeNull();
+    expect(parseGeocodeResponse({ results: [] })).toBeNull();
+    expect(parseGeocodeResponse(null)).toBeNull();
+    expect(parseGeocodeResponse('nope')).toBeNull();
+  });
+
+  it('returns null for malformed coordinates', () => {
+    expect(
+      parseGeocodeResponse({ results: [{ latitude: '39', longitude: -76 }] })
+    ).toBeNull();
   });
 });

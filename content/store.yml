@@ -149,6 +149,12 @@
     - Mason McIlwee
     - John Bratt
     - Joe Drummond
+    - Josh “Skittles” Floyd
+    - Austin Bradley
+    - James Park
+    - Jim Hulbert
+    - Bill Weeks
+    - Jake Saintcross
 - slug: gear
   defaultAmount: 5
   description: Team Gear
@@ -156,8 +162,8 @@
   title: Buy team gear
   home: true
   options:
-    - name: Miscellaneous Items - $5
-      value: 5
+    - name: Miscellaneous Items - $6
+      value: 6
     - name: Skipping out on Beers with Old Team - $4
       value: 4
 - slug: camp
