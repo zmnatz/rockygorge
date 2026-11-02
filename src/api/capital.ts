@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { postWithRetry } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
 
@@ -285,24 +286,127 @@ export function useCapitalFixtures() {
   });
 }
 
-async function fetchStandingsSnapshot(): Promise<StandingsSnapshot | null> {
+// The build writes the snapshot split by season so the page only downloads
+// what it shows: public/data/standings/index.json lists the seasons, and
+// each season lives in its own file.
+const SNAPSHOT_DIR = '/data/standings';
+
+async function fetchSnapshotFile<T>(file: string): Promise<T | null> {
   try {
-    const res = await fetch('/data/standings.json');
-    return res.ok ? ((await res.json()) as StandingsSnapshot) : null;
+    const res = await fetch(`${SNAPSHOT_DIR}/${file}`);
+    return res.ok ? ((await res.json()) as T) : null;
   } catch {
     // No prebuilt snapshot (e.g. dev before first generate) -- live fills in.
     return null;
   }
 }
 
-// The build-time snapshot, served as a static file rather than page props
-// (it is too large to inline). /standings shows it until live data lands.
-export function useStandingsSnapshot() {
-  return useQuery({
-    queryKey: ['standings-snapshot'],
-    queryFn: fetchStandingsSnapshot,
+// Loads the season the page needs first (the URL's, else the index's
+// default), then the remaining seasons in the background so season
+// switches and All seasons work from the snapshot too. Pass null to hold
+// off until the wanted season is known (e.g. before the router is ready).
+export function useStandingsSnapshot(prioritySeason: string | null | undefined) {
+  const indexQuery = useQuery({
+    queryKey: ['standings-snapshot', 'index'],
+    queryFn: () => fetchSnapshotFile<StandingsSnapshotIndex>('index.json'),
     staleTime: Number.POSITIVE_INFINITY,
   });
+  const index = indexQuery.data ?? null;
+  const priority =
+    index && prioritySeason !== null
+      ? prioritySeason && index.seasons.includes(prioritySeason)
+        ? prioritySeason
+        : index.defaultSeason
+      : '';
+  const priorityQuery = useQuery({
+    queryKey: ['standings-snapshot', priority],
+    queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(priority)),
+    enabled: !!priority,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+  const rest = index && priorityQuery.isSuccess ? index.seasons.filter((s) => s !== priority) : [];
+  const restQueries = useQueries({
+    queries: rest.map((season) => ({
+      queryKey: ['standings-snapshot', season],
+      queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season)),
+      staleTime: Number.POSITIVE_INFINITY,
+    })),
+  });
+  const loaded = [priorityQuery.data, ...restQueries.map((query) => query.data)].filter(
+    (data): data is SeasonSnapshot => !!data
+  );
+  const loadedSeasons = loaded.map((season) => season.season);
+  // Season files never change once fetched, so the loaded set identifies
+  // the combined snapshot.
+  const loadedKey = loadedSeasons.join();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the loaded season set
+  const snapshot = useMemo<StandingsSnapshot | undefined>(
+    () =>
+      index && loaded.length > 0
+        ? { generatedAt: index.generatedAt, ...combineSeasonSnapshots(loaded) }
+        : undefined,
+    [index, loadedKey]
+  );
+  return {
+    index,
+    snapshot,
+    loadedSeasons,
+    isComplete: !!index && loadedSeasons.length === index.seasons.length,
+    isPending: indexQuery.isPending || (!!priority && priorityQuery.isPending),
+  };
+}
+
+export interface StandingsSnapshotIndex {
+  generatedAt: string;
+  defaultSeason: string;
+  seasons: string[];
+}
+
+export interface SeasonSnapshot {
+  season: string;
+  fixtures: CapitalFixture[];
+  ladders: Record<string, CompLadder>;
+}
+
+export function seasonSnapshotFile(season: string): string {
+  return `${season.replace(/[^0-9A-Za-z]+/g, '-')}.json`;
+}
+
+export function splitStandingsSnapshot(snapshot: StandingsSnapshot): {
+  index: StandingsSnapshotIndex;
+  seasons: Record<string, SeasonSnapshot>;
+} {
+  const seasonNames = seasonsOf(snapshot.fixtures);
+  const seasons: Record<string, SeasonSnapshot> = {};
+  for (const season of seasonNames) {
+    seasons[season] = { season, fixtures: [], ladders: {} };
+  }
+  for (const fixture of snapshot.fixtures) {
+    seasons[fixture.season]?.fixtures.push(fixture);
+  }
+  for (const [key, ladder] of Object.entries(snapshot.ladders)) {
+    const season = key.slice(key.indexOf('|') + 1);
+    if (seasons[season]) {
+      seasons[season].ladders[key] = ladder;
+    }
+  }
+  return {
+    index: {
+      generatedAt: snapshot.generatedAt,
+      defaultSeason: defaultSeason(snapshot.fixtures),
+      seasons: seasonNames,
+    },
+    seasons,
+  };
+}
+
+export function combineSeasonSnapshots(
+  seasons: SeasonSnapshot[]
+): Omit<StandingsSnapshot, 'generatedAt'> {
+  return {
+    fixtures: seasons.flatMap((season) => season.fixtures),
+    ladders: Object.assign({}, ...seasons.map((season) => season.ladders)),
+  };
 }
 
 export function snapshotLadder(

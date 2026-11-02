@@ -84,12 +84,16 @@ export default function StandingsPage() {
   const [team, setTeam] = useState<string>(ALL);
   const initializedFromUrl = useRef(false);
 
-  // The build snapshot paints the page straight away; live data replaces it
-  // once loaded, and a failed live fetch keeps showing the snapshot.
-  const snapshotQuery = useStandingsSnapshot();
+  // The build snapshot paints the page straight away (the URL's season
+  // first, the rest in the background); live data replaces it once loaded,
+  // and a failed live fetch keeps showing the snapshot.
+  const urlSeason = router.isReady ? queryParam(router.query.season) : undefined;
+  const standingsSnapshot = useStandingsSnapshot(
+    router.isReady ? season || urlSeason : null
+  );
   const liveFixtures = useCapitalFixtures();
-  const fixtures = liveFixtures.data ?? snapshotQuery.data?.fixtures;
-  const isPending = !fixtures && (liveFixtures.isPending || snapshotQuery.isPending);
+  const fixtures = liveFixtures.data ?? standingsSnapshot.snapshot?.fixtures;
+  const isPending = !fixtures && (liveFixtures.isPending || standingsSnapshot.isPending);
   const isError = !fixtures && liveFixtures.isError;
   const refetch = liveFixtures.refetch;
 
@@ -99,7 +103,21 @@ export default function StandingsPage() {
     [fixtures]
   );
 
-  const seasons = useMemo(() => seasonsOf(leagueFixtures), [leagueFixtures]);
+  // Seasons still loading in the background are listed from the index.
+  const snapshotSeasons = standingsSnapshot.index?.seasons;
+  const seasons = useMemo(
+    () => [...new Set([...seasonsOf(leagueFixtures), ...(snapshotSeasons ?? [])])].sort().reverse(),
+    [leagueFixtures, snapshotSeasons]
+  );
+  // URL filters are checked against the data, so seed only once the URL's
+  // season (or every season, for All) is in hand.
+  const { loadedSeasons, isComplete } = standingsSnapshot;
+  const readyToSeed =
+    !!liveFixtures.data ||
+    isComplete ||
+    (loadedSeasons.length > 0 &&
+      urlSeason !== ALL &&
+      (!urlSeason || !snapshotSeasons?.includes(urlSeason) || loadedSeasons.includes(urlSeason)));
   const comps = useMemo(
     () => (season ? compsOf(leagueFixtures, season) : []),
     [leagueFixtures, season]
@@ -121,7 +139,12 @@ export default function StandingsPage() {
 
   // Seed filters from the URL once (e.g. shared ?tab=scores&season=... links).
   useEffect(() => {
-    if (!router.isReady || initializedFromUrl.current || leagueFixtures.length === 0) {
+    if (
+      !router.isReady ||
+      initializedFromUrl.current ||
+      !readyToSeed ||
+      leagueFixtures.length === 0
+    ) {
       return;
     }
     initializedFromUrl.current = true;
@@ -134,7 +157,7 @@ export default function StandingsPage() {
     }
     const urlSeason = queryParam(router.query.season);
     const resolvedSeason =
-      urlSeason && (urlSeason === ALL || seasonsOf(leagueFixtures).includes(urlSeason))
+      urlSeason && (urlSeason === ALL || seasons.includes(urlSeason))
         ? urlSeason
         : defaultSeason(leagueFixtures);
     setSeason(resolvedSeason);
@@ -154,7 +177,7 @@ export default function StandingsPage() {
     ) {
       setTeam(urlTeam);
     }
-  }, [router.isReady, router.query, leagueFixtures]);
+  }, [router.isReady, router.query, leagueFixtures, readyToSeed, seasons]);
 
   // Default to the newest season with results once fixtures load.
   useEffect(() => {
@@ -246,7 +269,7 @@ export default function StandingsPage() {
     [leagueFixtures, ladderCompId, ladderSeason]
   );
   const ladderQuery = useCompLadder(ladderKey);
-  const ladder = ladderQuery.data ?? snapshotLadder(snapshotQuery.data, ladderKey);
+  const ladder = ladderQuery.data ?? snapshotLadder(standingsSnapshot.snapshot, ladderKey);
 
   // Division-wide results feed the streak column; the team filter only
   // highlights rows, it never narrows the table.

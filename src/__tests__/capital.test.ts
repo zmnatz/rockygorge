@@ -14,6 +14,9 @@ import {
   isResult,
   isSevensComp,
   buildStandingsSnapshot,
+  combineSeasonSnapshots,
+  seasonSnapshotFile,
+  splitStandingsSnapshot,
   ladderKeyFor,
   ladderKeysOf,
   ladderSnapshotKey,
@@ -401,6 +404,59 @@ describe('buildStandingsSnapshot', () => {
       now: () => new Date(),
     });
     expect(Object.keys(snapshot.ladders)).toEqual([ladderSnapshotKey('d3', '2025/2026')]);
+  });
+});
+
+describe('splitStandingsSnapshot', () => {
+  const ladder = (id: string) => ({ id, hasPools: false, ladderPools: [] });
+  const fixtures = [
+    fixture('new1', { compId: 'd3', season: '2025/2026', dateTime: '2026-03-01T17:00:00+00:00' }),
+    fixture('new2', {
+      compId: 'd3',
+      season: '2026/2027',
+      dateTime: '2026-12-01T17:00:00+00:00',
+      homeTeam: { name: 'A', score: '', crest: '' },
+      awayTeam: { name: 'B', score: '', crest: '' },
+    }),
+    fixture('old1', { compId: 'd3', season: '2024/2025', dateTime: '2025-03-01T17:00:00+00:00' }),
+  ];
+  const snapshot = {
+    generatedAt: '2026-11-02T10:00:00.000Z',
+    fixtures,
+    ladders: {
+      [ladderSnapshotKey('d3', '2025/2026')]: ladder('new'),
+      [ladderSnapshotKey('d3', '2024/2025')]: ladder('old'),
+    },
+  };
+
+  it('writes one file per season, newest first, with that season only', () => {
+    const { index, seasons } = splitStandingsSnapshot(snapshot);
+    expect(index.seasons).toEqual(['2026/2027', '2025/2026', '2024/2025']);
+    expect(seasons['2024/2025']).toEqual({
+      season: '2024/2025',
+      fixtures: [fixtures[2]],
+      ladders: { [ladderSnapshotKey('d3', '2024/2025')]: ladder('old') },
+    });
+    expect(seasons['2026/2027'].ladders).toEqual({});
+  });
+
+  it('indexes the default season as the newest one with results', () => {
+    const { index } = splitStandingsSnapshot(snapshot);
+    expect(index.defaultSeason).toBe('2025/2026');
+    expect(index.generatedAt).toBe('2026-11-02T10:00:00.000Z');
+  });
+
+  it('round-trips through combineSeasonSnapshots', () => {
+    const { seasons } = splitStandingsSnapshot(snapshot);
+    const combined = combineSeasonSnapshots([seasons['2025/2026'], seasons['2024/2025']]);
+    expect(combined.fixtures.map((item) => item.id)).toEqual(['new1', 'old1']);
+    expect(combined.ladders).toEqual(snapshot.ladders);
+  });
+});
+
+describe('seasonSnapshotFile', () => {
+  it('turns a season into a safe file name', () => {
+    expect(seasonSnapshotFile('2025/2026')).toBe('2025-2026.json');
   });
 });
 
