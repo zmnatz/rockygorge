@@ -9,7 +9,7 @@ import {
   filterFixtures,
   findTeamIdentity,
   groupFixturesByDate,
-  isCrossoverComp,
+  isOneOffComp,
   isLeagueComp,
   isResult,
   isSevensComp,
@@ -96,23 +96,28 @@ describe('teamIdentities', () => {
   });
 });
 
-describe('isCrossoverComp', () => {
-  it('detects crossover competitions in any naming style', () => {
-    expect(isCrossoverComp("Capital Women's Crossovers")).toBe(true);
-    expect(isCrossoverComp('Capital Women’s Crossovers')).toBe(true);
-    expect(isCrossoverComp('Capital Men Extra D1 D2 Crossover')).toBe(true);
-    expect(isCrossoverComp('Capital Women D2-D1 Crossovers')).toBe(true);
+describe('isOneOffComp', () => {
+  it('detects crossover and extra competitions in any naming style', () => {
+    expect(isOneOffComp('Capital Men Extra Competition')).toBe(true);
+    expect(isOneOffComp("Capital Women's Crossovers")).toBe(true);
+    expect(isOneOffComp('Capital Women’s Crossovers')).toBe(true);
+    expect(isOneOffComp('Capital Men Extra D1 D2 Crossover')).toBe(true);
+    expect(isOneOffComp('Capital Women D2-D1 Crossovers')).toBe(true);
   });
 
-  it('keeps regular divisions', () => {
-    expect(isCrossoverComp('Capital Women D2')).toBe(false);
-    expect(isCrossoverComp('Capital Men Extra Competition')).toBe(false);
-    expect(isCrossoverComp('')).toBe(false);
+  it('keeps regular divisions and championship rounds', () => {
+    expect(isOneOffComp('Capital Women D2')).toBe(false);
+    expect(isOneOffComp('Capital Men D3 Playoffs')).toBe(false);
+    expect(isOneOffComp('ASR Semifinals - Capital and Empire')).toBe(false);
+    expect(isOneOffComp('2025 National Championships')).toBe(false);
+    expect(isOneOffComp('2025 Super Regional Atlantic')).toBe(false);
+    expect(isOneOffComp('')).toBe(false);
   });
 });
 
 describe('isLeagueComp', () => {
-  it('excludes sevens and crossovers from the league board', () => {
+  it('excludes sevens, crossovers and extra competitions from the league board', () => {
+    expect(isLeagueComp('Capital Men Extra Competition')).toBe(false);
     expect(isLeagueComp('Capital Men D3')).toBe(true);
     expect(isLeagueComp("MAC 7s - S'kill 7's")).toBe(false);
     expect(isLeagueComp('Capital Women D2-D1 Crossovers')).toBe(false);

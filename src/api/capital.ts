@@ -416,17 +416,18 @@ export function isSevensComp(compName: string): boolean {
   return SEVENS_PATTERN.test(compName || '');
 }
 
-const CROSSOVER_PATTERN = /\bcrossovers?\b/i;
+const ONE_OFF_PATTERN = /\bcrossovers?\b|\bextra\b/i;
 
-// Crossover competitions (e.g. "Capital Women D2-D1 Crossovers") are
-// inter-division one-offs with no standing of their own.
-export function isCrossoverComp(compName: string): boolean {
-  return CROSSOVER_PATTERN.test(compName || '');
+// One-off competitions -- crossovers (e.g. "Capital Women D2-D1 Crossovers")
+// and extras (e.g. "Capital Men Extra Competition") -- have no standing of
+// their own. Championship rounds (playoffs, semifinals, nationals) stay.
+export function isOneOffComp(compName: string): boolean {
+  return ONE_OFF_PATTERN.test(compName || '');
 }
 
-// Competitions that belong on the league board: not sevens, not crossovers.
+// Competitions that belong on the league board: not sevens, not one-offs.
 export function isLeagueComp(compName: string): boolean {
-  return !isSevensComp(compName) && !isCrossoverComp(compName);
+  return !isSevensComp(compName) && !isOneOffComp(compName);
 }
 
 // Division prestige rank from the comp name: D1 -> 1, D2 -> 2, ... comps

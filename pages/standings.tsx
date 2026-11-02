@@ -83,7 +83,7 @@ export default function StandingsPage() {
 
   const { data: fixtures, isPending, isError, refetch } = useCapitalFixtures();
 
-  // Sevens tournaments and crossovers stay off the league board entirely.
+  // Sevens tournaments and one-off comps stay off the league board entirely.
   const leagueFixtures = useMemo(
     () => fixtures?.filter((fixture) => isLeagueComp(fixture.compName)) ?? [],
     [fixtures]
