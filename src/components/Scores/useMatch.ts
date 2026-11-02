@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { post } from '@/utils/api';
 import { centrePollInterval } from '@/utils/gameday';
 import { findFixtureById } from '@/utils/playerHistory';
+import { findCapitalFixtureById } from '@/api/capital';
 import type { MatchData, MatchPlayer } from '@/types/match';
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
@@ -150,7 +151,10 @@ async function fetchMatchData(matchId: string, compInput?: MatchCompInput): Prom
 }
 
 async function compFromLookup(matchId: string): Promise<MatchCompInput> {
-  const fixture = await findFixtureById(matchId);
+  // Club feed first (fast path for Rocky Gorge games), then the union-wide
+  // Capital feed so any league fixture on the standings page resolves too.
+  const fixture =
+    (await findFixtureById(matchId)) ?? (await findCapitalFixtureById(matchId));
 
   if (!fixture) {
     throw new Error('Failed to load match data');

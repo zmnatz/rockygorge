@@ -19,9 +19,11 @@ interface ScoreCardProps {
   // Optional kickoff override: the feed stamps placeholder times, so the
   // Gameday page passes the calendar item's real start when matched.
   kickoff?: string;
+  /** Hides the competition/date footer (used where the list already labels it). */
+  hideFooter?: boolean;
 }
 
-export function ScoreCard({ score, compact, large, location, kickoff }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location, kickoff, hideFooter }: ScoreCardProps) {
   const [mapOpen, setMapOpen] = useState(false);
   const when = kickoff ?? score.dateTime;
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
@@ -332,6 +334,7 @@ export function ScoreCard({ score, compact, large, location, kickoff }: ScoreCar
           </Box>
         </Box>
       </CardContent>
+      {!hideFooter && (
       <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
         <Typography variant="caption" color="text.secondary">
           {score.compName} • {new Date(when).toLocaleDateString()} •{' '}
@@ -341,6 +344,7 @@ export function ScoreCard({ score, compact, large, location, kickoff }: ScoreCar
           })}
         </Typography>
       </Box>
+      )}
       {location && (
         <Box sx={{ textAlign: 'center', pb: 2 }}>
           <Button
