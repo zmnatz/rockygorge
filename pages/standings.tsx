@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -607,7 +608,12 @@ function FixtureList({
                   <Grid container spacing={2} columns={{ xs: 1, sm: 2, lg: 3 }}>
                     {division.fixtures.map((item) => (
                       <Grid key={item.id} size={{ xs: 1, sm: 1, lg: 1 }}>
-                        <ScoreCard score={toScore(item)} hideFooter />
+                        <Link
+                          href={`/game?id=${item.id}`}
+                          style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                        >
+                          <ScoreCard score={toScore(item)} hideFooter />
+                        </Link>
                         {showTime && (
                           <Typography
                             variant="caption"
