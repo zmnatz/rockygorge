@@ -398,6 +398,7 @@ export default function StandingsPage() {
               teamNames={teamNames}
               comps={comps}
               pools={visiblePools}
+              showPoolNames={(ladderQuery.data?.ladderPools.length ?? 0) > 1}
               compResults={compResults}
               isPending={ladderQuery.isPending}
               isError={ladderQuery.isError}
@@ -435,6 +436,7 @@ function StandingsTabPanel({
   teamNames,
   comps,
   pools,
+  showPoolNames,
   compResults,
   isPending,
   isError,
@@ -446,6 +448,7 @@ function StandingsTabPanel({
   teamNames: string[];
   comps: { compId: string; compName: string }[];
   pools: LadderPool[];
+  showPoolNames: boolean;
   compResults: CapitalFixture[];
   isPending: boolean;
   isError: boolean;
@@ -502,6 +505,7 @@ function StandingsTabPanel({
               pool={pool}
               selectedTeamNames={teamNames}
               fixtures={compResults}
+              showPoolName={showPoolNames}
             />
           ))}
           <Typography variant="caption" color="text.secondary">

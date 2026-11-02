@@ -34,16 +34,22 @@ export function StandingsTable({
   pool,
   selectedTeamNames,
   fixtures,
+  showPoolName = true,
 }: {
   pool: LadderPool;
   selectedTeamNames: string[];
   fixtures: CapitalFixture[];
+  /** Off when the division has a single pool, whose CMS name (e.g.
+   *  "pool-default") would only be noise above the table. */
+  showPoolName?: boolean;
 }) {
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-        {pool.poolName} ({pool.teams.length} {pool.teams.length === 1 ? 'team' : 'teams'})
-      </Typography>
+      {showPoolName && (
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+          {pool.poolName} ({pool.teams.length} {pool.teams.length === 1 ? 'team' : 'teams'})
+        </Typography>
+      )}
       <TableContainer component={Paper} variant="outlined">
         <Table size="small" aria-label={`${pool.poolName} standings`}>
           <TableHead>
