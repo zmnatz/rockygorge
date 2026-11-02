@@ -39,6 +39,7 @@ import {
 
 type StandingsTab = 'standings' | 'scores' | 'fixtures';
 
+const STANDINGS_PATH = '/standings';
 const TAB_VALUES: StandingsTab[] = ['standings', 'scores', 'fixtures'];
 
 const TAB_LABELS: Record<StandingsTab, string> = {
@@ -159,9 +160,21 @@ export default function StandingsPage() {
     }
   }, [leagueFixtures, season]);
 
-  // Keep the URL in sync so filtered views are shareable.
+  // Keep the URL in sync so filtered views are shareable. Only replace when
+  // the filters actually differ from the URL: the router object changes when
+  // a link is clicked, and an unconditional replace here would cancel that
+  // navigation and bounce the visitor back to the standings page.
   useEffect(() => {
     if (!router.isReady || !initializedFromUrl.current || !season) {
+      return;
+    }
+    if (
+      router.pathname !== STANDINGS_PATH ||
+      (queryParam(router.query.tab) === tab &&
+        queryParam(router.query.season) === season &&
+        queryParam(router.query.comp) === compId &&
+        queryParam(router.query.team) === team)
+    ) {
       return;
     }
     router.replace(
