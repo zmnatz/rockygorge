@@ -64,6 +64,17 @@ _Avoid_: Bad weather, rain
 A synthetic-turf practice location that does not close for rain, used as the fallback when a Practice Field is closed.
 _Avoid_: Backup field, turf
 
+**Option**:
+A selectable amount tier on a store item, a `name`/`value` pair in the item's `options` array. Choosing an option fixes the purchase amount to its value. Not to be confused with a subscription option, which selects a tier on a hosted PayPal plan.
+_Avoid_: Tier, package (when referring to a store item option)
+
+**Selected option**:
+The option whose value equals the current purchase amount. Derived from the amount by value-match rather than tracked as user state; if the amount matches no option value (a custom amount entered in the flexible payment form), there is no selected option.
+
+**Transaction line item**:
+The purchase record carried on a one-time PayPal order when a selected option exists — it names the option and its amount so the purchase tier is identifiable in the transaction report. When there is no selected option, no line item is carried.
+_Avoid_: Cart entry, invoice item
+
 ## Admin
 
 **Admin handler**:
@@ -101,11 +112,11 @@ The amount the club actually received from a Transaction — gross amount plus t
 _Avoid_: Total, balance
 
 **Item Match**:
-A Transaction is attributed to a Store Item when the transaction's item title contains the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
+A Transaction is attributed to a Store Item by its slug when the order carried one (`itemSlug`, embedded at checkout, see ADR 009); that slug is authoritative for new transactions. Otherwise it is attributed by text: the transaction's item title must contain the store item's `description` (case-insensitive); if no description matches, the `title` is tried. When the item carries Subscription Plans (dues, supporters), a Transaction is also attributed when its item title contains a plan identifier — the plan `name`, its hosted-button `id`, a chosen option `value`, or an explicit plan `keyword` (strings PayPal reports on each payment that the plan metadata doesn't already capture). A transaction may match several items and appears on each matching item's page; a transaction matching no item appears on no item page.
 _Avoid_: Association, linking (payments context)
 
 **Item Transactions**:
-The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. The unscoped report at `/admin/transactions` always offers the free-text filter.
+The read-only admin view at `/admin/transactions/[slug]` listing the Transactions attributed to one Store Item within a chosen date range. For items that carry Subscription Plans (dues and supporters), the list is scoped by the Item Match rule so recurring payments appear alongside one-time purchases, and the free-text filter is hidden. Other items keep the report's free-text filter, pre-filled with the item's `description`. On every item page, transactions whose `itemSlug` equals the item's slug are always shown, regardless of the filter. The unscoped report at `/admin/transactions` always offers the free-text filter.
 _Avoid_: Purchase report, item sales
 
 **Dues**:

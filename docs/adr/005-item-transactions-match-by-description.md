@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR 009](009-item-transactions-match-by-slug.md): the text match is now the fallback for transactions that predate the embedded slug.
 
 ## Context
 
