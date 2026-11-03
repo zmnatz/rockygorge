@@ -80,7 +80,7 @@ interface FixtureLookupItem {
   awayTeam: { name: string; score: string };
 }
 
-interface MatchCentreData {
+export interface MatchCentreData {
   fixture: FixtureItem & { season: string };
   commentary: { id: string; minute: string; type: string; comment: string }[];
   players: MatchPlayer[];
@@ -368,8 +368,8 @@ async function fetchAllFixtures(): Promise<FixtureLookupItem[]> {
   return all;
 }
 
-async function fetchMatchCentre(
-  fixture: FixtureLookupItem
+export async function fetchMatchCentre(
+  fixture: Pick<FixtureLookupItem, 'id' | 'compId' | 'season' | 'sourceType'>
 ): Promise<MatchCentreData | null> {
   const response = await postWithRetry<{ data: MatchCentreResponse }>(SCORES_URL, {
     operationName: 'PlayerHistoryMatchCentreQuery',
