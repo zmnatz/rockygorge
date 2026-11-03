@@ -80,7 +80,7 @@ interface FixtureLookupItem {
   awayTeam: { name: string; score: string };
 }
 
-export interface MatchCentreData {
+interface MatchCentreData {
   fixture: FixtureItem & { season: string };
   commentary: { id: string; minute: string; type: string; comment: string }[];
   players: MatchPlayer[];

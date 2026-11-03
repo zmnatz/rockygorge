@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fetchAllCapitalFixtures, seasonSnapshotFile } from '../src/api/capital';
+import {
+  fetchAllCapitalFixtures,
+  type StandingsSnapshotIndex,
+  seasonSnapshotFile,
+} from '../src/api/capital';
 import {
   buildLeadersSnapshot,
   fetchLeaderMatch,
@@ -17,14 +21,14 @@ const MAX_FAILED_SHARE = 0.05;
 const CACHE_PATH = path.join(process.cwd(), '.cache', 'leaders', 'matches.json');
 
 function loadCache(): MatchCache & { save(): void } {
-  let entries: Record<string, LeaderMatch> = {};
+  let entries: Record<string, LeaderMatch | null> = {};
   try {
     entries = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
   } catch {
     // First build, or the cache was cleared.
   }
   return {
-    get: (id) => entries[id],
+    get: (id) => (id in entries ? entries[id] : undefined),
     set: (id, match) => {
       entries[id] = match;
     },
@@ -35,8 +39,9 @@ function loadCache(): MatchCache & { save(): void } {
   };
 }
 
-// Best-effort like the other snapshots: /standings must never fail the build
-// because the CMS is throttling. On failure the previous snapshot is kept.
+// Best-effort like the other snapshots: a throttled CMS must never fail the
+// build. On failure the previous snapshot is kept; Netlify caches
+// public/data/leaders between builds so there is one to keep.
 async function generate() {
   console.log('Building scoring leaderboard snapshot for static export...');
   const outDir = path.join(process.cwd(), 'public', 'data', 'leaders');
@@ -61,11 +66,15 @@ async function generate() {
     for (const season of snapshot.seasons) {
       fs.writeFileSync(path.join(outDir, seasonSnapshotFile(season.season)), JSON.stringify(season));
     }
+    // Same index shape as the standings snapshot; seasons are newest first,
+    // and every listed season has played games, so the newest is the default.
     const seasons = snapshot.seasons.map((season) => season.season);
-    fs.writeFileSync(
-      path.join(outDir, 'index.json'),
-      JSON.stringify({ generatedAt: snapshot.generatedAt, defaultSeason: seasons[0] ?? '', seasons })
-    );
+    const index: StandingsSnapshotIndex = {
+      generatedAt: snapshot.generatedAt,
+      defaultSeason: seasons[0] ?? '',
+      seasons,
+    };
+    fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(index));
     console.log(
       `Saved scoring leaders for ${snapshot.attempted - snapshot.failed} of ${snapshot.attempted} games across ${seasons.length} seasons to public/data/leaders/`
     );

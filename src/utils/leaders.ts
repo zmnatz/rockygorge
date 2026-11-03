@@ -6,19 +6,26 @@ import { fetchMatchCentre } from '@/utils/playerHistory';
 // carries no player id, so players are identified by team + name, with the
 // team taken from that match's lineup.
 
+export interface LeaderFixture {
+  id: string;
+  compId: string;
+  compName: string;
+  season: string;
+  dateTime: string;
+  homeTeam: { name: string };
+  awayTeam: { name: string };
+}
+
+export interface LineupEntry {
+  name: string;
+  isHome: boolean;
+}
+
 export interface LeaderMatch {
-  fixture: {
-    id: string;
-    compId: string;
-    compName: string;
-    season: string;
-    dateTime: string;
-    homeTeam: { name: string };
-    awayTeam: { name: string };
-  };
+  fixture: LeaderFixture;
   commentary: { type: string; comment: string }[];
-  players: { name: string; isHome: boolean }[];
-  substitutes: { name: string; isHome: boolean }[];
+  players: LineupEntry[];
+  substitutes: LineupEntry[];
 }
 
 export interface PlayerLine {
@@ -95,9 +102,15 @@ export interface LeadersSeason {
   divisions: LeadersDivision[];
 }
 
-export function buildLeaders(matches: LeaderMatch[]): LeadersSeason[] {
+// Tallies scoring per season and division. `played` is every played game,
+// so coverage counts games whose match centre never loaded too; it defaults
+// to the games in `matches`.
+export function tallyLeaders(
+  matches: LeaderMatch[],
+  played: LeaderFixture[] = matches.map((match) => match.fixture)
+): LeadersSeason[] {
   const seasons = new Map<string, Map<string, LeadersDivision>>();
-  for (const { fixture, commentary, players, substitutes } of matches) {
+  const divisionFor = (fixture: LeaderFixture): LeadersDivision => {
     const divisions = seasons.get(fixture.season) ?? new Map<string, LeadersDivision>();
     seasons.set(fixture.season, divisions);
     const division = divisions.get(fixture.compId) ?? {
@@ -109,8 +122,14 @@ export function buildLeaders(matches: LeaderMatch[]): LeadersSeason[] {
       players: [],
     };
     divisions.set(fixture.compId, division);
+    return division;
+  };
+  for (const fixture of played) {
+    divisionFor(fixture).games += 1;
+  }
+  for (const { fixture, commentary, players, substitutes } of matches) {
+    const division = divisionFor(fixture);
     const roster = [...players, ...substitutes];
-    division.games += 1;
     if (commentary.some((event) => scoringKind(event.type))) {
       division.gamesWithScoring += 1;
     }
@@ -172,10 +191,19 @@ export interface LeadersSnapshot {
 // this are trusted from the cache; newer ones are refetched every build.
 const SETTLED_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Match centres fetched on an earlier build, keyed by fixture id.
+// Match centres fetched on an earlier build, keyed by fixture id. null
+// records a game the CMS has no match centre for, so it isn't asked again;
+// undefined means not fetched yet.
 export interface MatchCache {
-  get(fixtureId: string): LeaderMatch | undefined;
-  set(fixtureId: string, match: LeaderMatch): void;
+  get(fixtureId: string): LeaderMatch | null | undefined;
+  set(fixtureId: string, match: LeaderMatch | null): void;
+}
+
+export interface LeadersBuildResult extends LeadersSnapshot {
+  // Played games the build tried to load, and how many fetches threw
+  // (throttling, network) -- the script rejects the build above a threshold.
+  attempted: number;
+  failed: number;
 }
 
 export async function buildLeadersSnapshot({
@@ -192,13 +220,14 @@ export async function buildLeadersSnapshot({
   now?: () => Date;
   concurrency?: number;
   gapMs?: number;
-}): Promise<LeadersSnapshot & { attempted: number; failed: number }> {
+}): Promise<LeadersBuildResult> {
   const at = now();
-  const queue = (await fetchFixtures()).filter(
+  const played = (await fetchFixtures()).filter(
     (fixture) => isLeagueComp(fixture.compName) && isResult(fixture, at.getTime())
   );
+  const queue = [...played];
   const matches: LeaderMatch[] = [];
-  const attempted = queue.length;
+  const attempted = played.length;
   // Thrown fetches (throttling, network) count as failures; a game with no
   // match centre published is simply absent data.
   let failed = 0;
@@ -206,17 +235,17 @@ export async function buildLeadersSnapshot({
     for (let fixture = queue.shift(); fixture; fixture = queue.shift()) {
       const settled = at.getTime() - new Date(fixture.dateTime).getTime() > SETTLED_MS;
       const cached = settled ? cache.get(fixture.id) : undefined;
-      if (cached) {
-        matches.push(cached);
+      if (cached !== undefined) {
+        if (cached) matches.push(cached);
         continue;
       }
-      const match = await fetchMatch(fixture).catch(() => {
-        failed += 1;
-        return null;
-      });
-      if (match) {
+      try {
+        const match = await fetchMatch(fixture);
         cache.set(fixture.id, match);
-        matches.push(match);
+        if (match) matches.push(match);
+      } catch {
+        // Not cached: a failed fetch is retried on the next build.
+        failed += 1;
       }
       if (gapMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, gapMs));
@@ -224,7 +253,7 @@ export async function buildLeadersSnapshot({
     }
   });
   await Promise.all(workers);
-  return { generatedAt: at.toISOString(), seasons: buildLeaders(matches), attempted, failed };
+  return { generatedAt: at.toISOString(), seasons: tallyLeaders(matches, played), attempted, failed };
 }
 
 // CMS adapter: the match centre for one fixture, trimmed to what the
@@ -236,7 +265,7 @@ export async function fetchLeaderMatch(fixture: CapitalFixture): Promise<LeaderM
   if (!data) {
     return null;
   }
-  const lineup = (players: { name: string; isHome: boolean }[]) =>
+  const lineup = (players: LineupEntry[]) =>
     players.map(({ name, isHome }) => ({ name, isHome }));
   return {
     fixture: {

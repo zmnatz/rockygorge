@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CapitalFixture } from '@/api/capital';
-import { buildLeaders, buildLeadersSnapshot, type LeaderMatch } from '@/utils/leaders';
+import { buildLeadersSnapshot, tallyLeaders, type LeaderMatch } from '@/utils/leaders';
 
 function match(
   id: string,
@@ -29,9 +29,9 @@ function match(
   };
 }
 
-describe('buildLeaders', () => {
+describe('tallyLeaders', () => {
   it('credits a try to the scorer and their team', () => {
-    const [season] = buildLeaders([match('m1', [['Try', 'Try - Riley Lopez']])]);
+    const [season] = tallyLeaders([match('m1', [['Try', 'Try - Riley Lopez']])]);
     expect(season.season).toBe('2025/2026');
     expect(season.divisions[0].compName).toBe('Capital Men D3');
     expect(season.divisions[0].players[0]).toMatchObject({
@@ -43,7 +43,7 @@ describe('buildLeaders', () => {
   });
 
   it('tallies kicks made and attempted, scoring conversions 2 and goals 3', () => {
-    const [season] = buildLeaders([
+    const [season] = tallyLeaders([
       match('m1', [
         ['Conversion', 'Conversion - Sam Kicker'],
         ['Conversion', 'Conversion - Sam Kicker'],
@@ -66,7 +66,7 @@ describe('buildLeaders', () => {
   });
 
   it('keeps same-named players on different teams apart and matches names case-insensitively', () => {
-    const [season] = buildLeaders([
+    const [season] = tallyLeaders([
       match('m1', [['Try', 'Try - riley LOPEZ']]),
       match('m2', [['Try', 'Try - Riley Lopez']], {
         homeTeam: { name: 'Severn River MD3' },
@@ -81,7 +81,7 @@ describe('buildLeaders', () => {
   });
 
   it('counts scorers it cannot place in the lineup as unattributed rather than guessing', () => {
-    const [season] = buildLeaders([
+    const [season] = tallyLeaders([
       // Named on both sides of the same match: ambiguous.
       match('m1', [['Try', 'Try - Jo Smith']], {}, { home: ['Jo Smith'], away: ['Jo Smith'] }),
       // Not in either lineup.
@@ -94,7 +94,7 @@ describe('buildLeaders', () => {
   it('never credits the CMS placeholder for hidden players', () => {
     // Players who opt out of publication appear as "Name Withheld"; several
     // different people share it, so it is not a player.
-    const [season] = buildLeaders([
+    const [season] = tallyLeaders([
       match('m1', [['Try', 'Try - Name Withheld']], {}, { home: ['Name Withheld', 'Riley Lopez'] }),
     ]);
     expect(season.divisions[0].players).toEqual([]);
@@ -103,7 +103,7 @@ describe('buildLeaders', () => {
 
   it('ranks by points then tries, orders divisions D1 first and seasons newest first', () => {
     const d1 = { compId: 'd1', compName: 'MAC Men D1' };
-    const seasons = buildLeaders([
+    const seasons = tallyLeaders([
       match('old', [['Try', 'Try - Riley Lopez']], { season: '2024/2025' }),
       match('m1', [
         ['Try', 'Try - Riley Lopez'],
@@ -127,7 +127,7 @@ describe('buildLeaders', () => {
   });
 
   it('reports how many of a division’s games had scoring logged', () => {
-    const [season] = buildLeaders([
+    const [season] = tallyLeaders([
       match('m1', [['Try', 'Try - Riley Lopez']]),
       match('m2', [['Substitution - Tactical', 'Substitution - Tactical Off: Riley Lopez']]),
     ]);
@@ -151,9 +151,12 @@ describe('buildLeadersSnapshot', () => {
     awayTeam: { name: 'Roanoke MD3', score: '10', crest: '' },
     ...overrides,
   });
-  const memoryCache = (entries: Record<string, LeaderMatch> = {}) => ({
+  // A match centre for a fixture in this suite's season.
+  const centre = (id: string, events: [string, string][]) =>
+    match(id, events, { season: '2026/2027' });
+  const memoryCache = (entries: Record<string, LeaderMatch | null> = {}) => ({
     get: (id: string) => entries[id],
-    set: (id: string, value: LeaderMatch) => {
+    set: (id: string, value: LeaderMatch | null) => {
       entries[id] = value;
     },
     entries,
@@ -184,8 +187,8 @@ describe('buildLeadersSnapshot', () => {
 
   it('reuses cached games older than a week and refetches recent ones', async () => {
     const cache = memoryCache({
-      old: match('old', [['Try', 'Try - Riley Lopez']]),
-      recent: match('recent', []),
+      old: centre('old', [['Try', 'Try - Riley Lopez']]),
+      recent: centre('recent', []),
     });
     const fetched: string[] = [];
     const snapshot = await buildLeadersSnapshot({
@@ -197,7 +200,7 @@ describe('buildLeadersSnapshot', () => {
       ],
       fetchMatch: async (item) => {
         fetched.push(item.id);
-        return match(item.id, [['Try', 'Try - Sam Kicker']]);
+        return centre(item.id, [['Try', 'Try - Sam Kicker']]);
       },
       cache,
       now: () => now,
@@ -212,12 +215,44 @@ describe('buildLeadersSnapshot', () => {
     ]);
   });
 
+  it('counts every played game toward coverage, even when its match centre is missing', async () => {
+    const snapshot = await buildLeadersSnapshot({
+      fetchFixtures: async () => [fixture('ok'), fixture('no-centre'), fixture('throttled')],
+      fetchMatch: async (item) => {
+        if (item.id === 'throttled') throw new Error('HTTP 429');
+        if (item.id === 'no-centre') return null;
+        return centre(item.id, [['Try', 'Try - Riley Lopez']]);
+      },
+      cache: memoryCache(),
+      now: () => now,
+    });
+    expect(snapshot.seasons[0].divisions[0]).toMatchObject({ games: 3, gamesWithScoring: 1 });
+  });
+
+  it('remembers settled games that have no match centre instead of refetching them', async () => {
+    const cache = memoryCache({ 'known-empty': null });
+    const fetched: string[] = [];
+    const build = () =>
+      buildLeadersSnapshot({
+        fetchFixtures: async () => [fixture('known-empty'), fixture('newly-empty')],
+        fetchMatch: async (item) => {
+          fetched.push(item.id);
+          return null;
+        },
+        cache,
+        now: () => now,
+      });
+    await build();
+    await build();
+    expect(fetched).toEqual(['newly-empty']);
+  });
+
   it('reports games it could not fetch so a throttled build can be rejected', async () => {
     const snapshot = await buildLeadersSnapshot({
       fetchFixtures: async () => [fixture('ok'), fixture('throttled')],
       fetchMatch: async (item) => {
         if (item.id === 'throttled') throw new Error('HTTP 429');
-        return match(item.id, [['Try', 'Try - Riley Lopez']]);
+        return centre(item.id, [['Try', 'Try - Riley Lopez']]);
       },
       cache: memoryCache(),
       now: () => now,
