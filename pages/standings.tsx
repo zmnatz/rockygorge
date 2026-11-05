@@ -201,32 +201,67 @@ export default function StandingsPage() {
     }
   }, [leagueFixtures, season]);
 
-  // Keep the URL in sync so filtered views are shareable. Only replace when
-  // the filters actually differ from the URL: the router object changes when
-  // a link is clicked, and an unconditional replace here would cancel that
-  // navigation and bounce the visitor back to the standings page.
+  // Keep the URL and the filters in step, in both directions, so filtered
+  // views are shareable and the browser's back/forward buttons walk through
+  // the filters the visitor picked. A filter change pushes a history entry;
+  // back/forward changes the URL, which is applied to the filters here.
+  // `pendingKey` is a push still on its way to the router, `applyingUrl` a
+  // URL still on its way into state, so neither side reverts the other.
+  const stateKey = `${tab}|${season}|${compId}|${team}`;
+  const prevStateKey = useRef('');
+  const pendingKey = useRef<string | null>(null);
+  const applyingUrl = useRef(false);
   useEffect(() => {
     if (!router.isReady || !initializedFromUrl.current || !season) {
       return;
     }
-    if (
-      router.pathname !== STANDINGS_PATH ||
-      (queryParam(router.query.tab) === tab &&
-        queryParam(router.query.season) === season &&
-        queryParam(router.query.comp) === compId &&
-        queryParam(router.query.team) === team)
-    ) {
+    const stateChanged = prevStateKey.current !== stateKey;
+    const firstSync = prevStateKey.current === '';
+    prevStateKey.current = stateKey;
+    if (router.pathname !== STANDINGS_PATH) {
       return;
     }
-    router.replace(
-      {
-        pathname: router.pathname,
-        query: { tab, season, comp: compId, team },
-      },
-      undefined,
-      { shallow: true }
-    );
-  }, [tab, season, compId, team, router]);
+    const urlSeason = queryParam(router.query.season);
+    const urlTabParam = queryParam(router.query.tab);
+    const urlTab =
+      urlTabParam === 'results'
+        ? 'scores'
+        : urlTabParam && (TAB_VALUES as string[]).includes(urlTabParam)
+          ? (urlTabParam as StandingsTab)
+          : 'standings';
+    const urlComp = queryParam(router.query.comp) ?? ALL;
+    const urlTeam = queryParam(router.query.team) ?? ALL;
+    const urlKey = `${urlTab}|${urlSeason}|${urlComp}|${urlTeam}`;
+    if (urlKey === stateKey) {
+      pendingKey.current = null;
+      applyingUrl.current = false;
+      return;
+    }
+    if (stateChanged) {
+      // A filter changed: reflect it in the URL. The first sync only
+      // completes the URL (e.g. a bare /standings), so it doesn't add history.
+      applyingUrl.current = false;
+      pendingKey.current = stateKey;
+      const navigate = firstSync || !urlSeason ? router.replace : router.push;
+      navigate.call(
+        router,
+        { pathname: router.pathname, query: { tab, season, comp: compId, team } },
+        undefined,
+        { shallow: true }
+      );
+      return;
+    }
+    // Only the URL changed (back/forward): apply it. An unknown team or
+    // division is dropped by the checks that follow a season load.
+    if (pendingKey.current !== null || applyingUrl.current || !urlSeason) {
+      return;
+    }
+    applyingUrl.current = true;
+    setTab(urlTab);
+    setSeason(urlSeason);
+    setCompId(urlComp);
+    setTeam(urlTeam);
+  }, [stateKey, tab, season, compId, team, router]);
 
   const filtered = useMemo(
     () => filterFixtures(leagueFixtures, { season: season || ALL, compId, team: teamNames }),
