@@ -617,7 +617,14 @@ export function filterFixtures(
   );
 }
 
-export function isResult(fixture: CapitalFixture): boolean {
+// A played game with a score. Scores on games dated in the future (e.g.
+// forfeits keyed in ahead of the scheduled date) are ignored, so those games
+// stay fixtures until their date comes round.
+export function isResult(fixture: CapitalFixture, now: number = Date.now()): boolean {
+  const kickoff = new Date(fixture.dateTime).getTime();
+  if (kickoff > now) {
+    return false;
+  }
   return (
     fixture.homeTeam?.score !== undefined &&
     fixture.homeTeam?.score !== '' &&
@@ -626,17 +633,23 @@ export function isResult(fixture: CapitalFixture): boolean {
   );
 }
 
-export function resultsOf(fixtures: CapitalFixture[]): CapitalFixture[] {
+export function resultsOf(
+  fixtures: CapitalFixture[],
+  now: number = Date.now()
+): CapitalFixture[] {
   return fixtures
-    .filter(isResult)
+    .filter((fixture) => isResult(fixture, now))
     .sort(
       (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
     );
 }
 
-export function upcomingOf(fixtures: CapitalFixture[]): CapitalFixture[] {
+export function upcomingOf(
+  fixtures: CapitalFixture[],
+  now: number = Date.now()
+): CapitalFixture[] {
   return fixtures
-    .filter((fixture) => !isResult(fixture))
+    .filter((fixture) => !isResult(fixture, now))
     .sort(
       (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
     );
