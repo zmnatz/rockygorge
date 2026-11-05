@@ -58,6 +58,16 @@ describe('tallyLeaders', () => {
     expect(season.divisions[0].players[0].playerId).toBe('RileyLopez');
   });
 
+  it('leaves the player id empty for lineups cached without ids', () => {
+    const m = match('m1', [['Try', 'Try - Riley Lopez']]);
+    const legacy = {
+      ...m,
+      players: m.players.map(({ name, isHome }) => ({ name, isHome })) as typeof m.players,
+    };
+    const [season] = tallyLeaders([legacy]);
+    expect(season.divisions[0].players[0]).toMatchObject({ name: 'Riley Lopez', playerId: '' });
+  });
+
   it('tallies made kicks, scoring conversions 2 and goals 3', () => {
     const [season] = tallyLeaders([
       match('m1', [

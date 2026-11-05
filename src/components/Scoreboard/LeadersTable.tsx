@@ -13,11 +13,12 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import { Crest } from '@/components/Crest';
-import { ALL, type CapitalFixture } from '@/api/capital';
+import type { CapitalFixture } from '@/api/capital';
 import type { LeadersDivision } from '@/utils/leaders';
 import { teamCrest } from '@/utils/scoreboard';
 import {
   coverageNote,
+  playersOfTeams,
   type LeaderSortKey,
   sortPlayers,
 } from '@/utils/leadersView';
@@ -38,8 +39,9 @@ const SORTABLE: { key: LeaderSortKey; label: string; collapsible?: boolean }[] =
   { key: 'points', label: 'Points' },
 ];
 
-// Player scoring leaders for one division. Players are team + name only (the
-// CMS has no player id), so rows aren't linked to player pages.
+// Player scoring leaders for one division. The commentary names scorers
+// without an id, so each is matched to the match lineup by team + name; the
+// lineup's player id (when the snapshot has one) links to the player page.
 export function LeadersTable({
   division,
   season,
@@ -77,10 +79,7 @@ export function LeadersTable({
       </MuiLink>
     </Box>
   );
-  // A selected team narrows the list to its players, ranked among themselves.
-  const players = selectedTeamNames.includes(ALL)
-    ? division.players
-    : division.players.filter((player) => selectedTeamNames.includes(player.team));
+  const players = playersOfTeams(division.players, selectedTeamNames);
   const sorted = sortPlayers(players, sortKey);
   const rows = showAll ? sorted : sorted.slice(0, PAGE_SIZE);
 
@@ -126,14 +125,14 @@ export function LeadersTable({
           <TableBody>
             {rows.map((player, index) => {
               return (
-                <TableRow key={`${player.team}|${player.name}`}>
+                <TableRow key={`${player.team}|${player.playerId || player.name}`}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>
                     {/* Snapshots built before ids were recorded have none. */}
                     {player.playerId ? (
                       <MuiLink
                         component={NextLink}
-                        href={`/player?id=${player.playerId}`}
+                        href={`/player?id=${encodeURIComponent(player.playerId)}`}
                         underline="hover"
                         color="inherit"
                         variant="body2"

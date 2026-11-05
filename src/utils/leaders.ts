@@ -168,7 +168,8 @@ export function tallyLeaders(
       );
       if (!line) {
         line = {
-          playerId: playerKey(player.id),
+          // Entries cached before lineups carried ids have none.
+          playerId: player.id ? playerKey(player.id) : '',
           name,
           team,
           tries: 0,

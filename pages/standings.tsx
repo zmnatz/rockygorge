@@ -211,6 +211,15 @@ export default function StandingsPage() {
   const prevStateKey = useRef('');
   const pendingKey = useRef<string | null>(null);
   const applyingUrl = useRef(false);
+  // A cancelled or failed navigation never reaches the URL, so don't wait on it.
+  useEffect(() => {
+    const reset = () => {
+      pendingKey.current = null;
+      applyingUrl.current = false;
+    };
+    router.events.on('routeChangeError', reset);
+    return () => router.events.off('routeChangeError', reset);
+  }, [router.events]);
   useEffect(() => {
     if (!router.isReady || !initializedFromUrl.current || !season) {
       return;
@@ -240,9 +249,12 @@ export default function StandingsPage() {
     if (stateChanged) {
       // A filter changed: reflect it in the URL. The first sync only
       // completes the URL (e.g. a bare /standings), so it doesn't add history.
+      // A correction right after applying a URL (an unknown team or division
+      // dropped) replaces the entry, or back would land on the bad URL again.
+      const correcting = applyingUrl.current;
       applyingUrl.current = false;
       pendingKey.current = stateKey;
-      const navigate = firstSync || !urlSeason ? router.replace : router.push;
+      const navigate = firstSync || correcting || !urlSeason ? router.replace : router.push;
       navigate.call(
         router,
         { pathname: router.pathname, query: { tab, season, comp: compId, team } },

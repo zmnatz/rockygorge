@@ -1,3 +1,4 @@
+import { ALL } from '@/api/capital';
 import type { LeadersDivision, PlayerLine } from '@/utils/leaders';
 
 export type LeaderSortKey = 'points' | 'tries' | 'conversions' | 'penaltyGoals';
@@ -12,6 +13,11 @@ export function sortPlayers(players: PlayerLine[], key: LeaderSortKey): PlayerLi
       b.tries - a.tries ||
       a.name.localeCompare(b.name)
   );
+}
+
+// A selected team narrows the list to its players; ALL leaves it whole.
+export function playersOfTeams(players: PlayerLine[], teamNames: string[]): PlayerLine[] {
+  return teamNames.includes(ALL) ? players : players.filter((player) => teamNames.includes(player.team));
 }
 
 export function coverageNote(
