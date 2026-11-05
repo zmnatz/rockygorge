@@ -36,3 +36,6 @@ deno.lock
 # Reports
 /reports
 .cptr
+
+# Claude Code git worktrees
+/.claude/worktrees/
