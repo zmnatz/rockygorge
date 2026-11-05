@@ -1,28 +1,35 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildPlayerHistories } from '../src/utils/playerHistory';
+import { buildPlayerHistories, playerSnapshotFile } from '../src/utils/playerHistory';
 
 // Best-effort like the other snapshots: /player falls back to building
 // histories live, so a throttled CMS (HTTP 429) must never fail the build.
 async function generate() {
   console.log('Building player histories for static export...');
-  const outDir = path.join(process.cwd(), 'public', 'data');
-  const outPath = path.join(outDir, 'players.json');
+  const dataDir = path.join(process.cwd(), 'public', 'data');
+  const outDir = path.join(dataDir, 'players');
+  const tmpDir = path.join(dataDir, 'players.tmp');
   try {
     const histories = await buildPlayerHistories({ concurrency: 3 });
-    const plainObj = Object.fromEntries(histories);
-    fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(outPath, JSON.stringify(plainObj, null, 2));
-    console.log(`Saved ${histories.size} player histories to public/data/players.json`);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    fs.mkdirSync(tmpDir, { recursive: true });
+    for (const [id, history] of histories) {
+      fs.writeFileSync(
+        path.join(tmpDir, playerSnapshotFile(id)),
+        JSON.stringify(history)
+      );
+    }
+    // Swap in only once complete so a failed run never leaves a partial set.
+    fs.rmSync(outDir, { recursive: true, force: true });
+    fs.renameSync(tmpDir, outDir);
+    fs.rmSync(path.join(dataDir, 'players.json'), { force: true });
+    console.log(`Saved ${histories.size} player histories to public/data/players/`);
   } catch (err) {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
     console.warn(
       'Player histories unavailable, keeping previous snapshot:',
       (err as Error).message
     );
-    if (!fs.existsSync(outPath)) {
-      fs.mkdirSync(outDir, { recursive: true });
-      fs.writeFileSync(outPath, JSON.stringify({}));
-    }
   }
 }
 
