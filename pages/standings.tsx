@@ -318,6 +318,15 @@ export default function StandingsPage() {
     setCompId(ALL);
   };
 
+  // A team link in the Leaders table: show that team's standings in the
+  // division it was listed under.
+  const handleSelectTeamFromLeaders = (name: string) => {
+    const found = findTeamIdentity(teamIdentities(leagueFixtures, season, ladderCompId), name);
+    setCompId(ladderCompId);
+    setTeam(found?.display ?? name);
+    setTab('standings');
+  };
+
   const handleCompChange = (value: string) => {
     setCompId(value);
     if (team !== ALL && !findTeamIdentity(teamIdentities(leagueFixtures, season, value), team)) {
@@ -471,6 +480,8 @@ export default function StandingsPage() {
               comps={comps}
               teamNames={teamNames}
               season={season}
+              fixtures={compResults}
+              onSelectTeam={handleSelectTeamFromLeaders}
               division={leadersDivision}
               isPending={leaders.isPending}
               onSelectComp={handleCompChange}
@@ -592,11 +603,15 @@ function LeadersTabPanel({
   activeCompId,
   comps,
   season,
+  fixtures,
+  onSelectTeam,
   teamNames,
   division,
   isPending,
   onSelectComp,
 }: {
+  fixtures: CapitalFixture[];
+  onSelectTeam: (team: string) => void;
   activeCompId: string;
   comps: { compId: string; compName: string }[];
   season: string;
@@ -639,7 +654,13 @@ function LeadersTabPanel({
         </Typography>
       )}
       {!isPending && division && division.players.length > 0 && (
-        <LeadersTable division={division} season={season} selectedTeamNames={teamNames} />
+        <LeadersTable
+          division={division}
+          season={season}
+          selectedTeamNames={teamNames}
+          fixtures={fixtures}
+          onSelectTeam={onSelectTeam}
+        />
       )}
     </Box>
   );

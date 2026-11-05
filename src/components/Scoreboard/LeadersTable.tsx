@@ -12,7 +12,10 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
+import { Crest } from '@/components/Crest';
+import { ALL, type CapitalFixture } from '@/api/capital';
 import type { LeadersDivision } from '@/utils/leaders';
+import { teamCrest } from '@/utils/scoreboard';
 import {
   coverageNote,
   type LeaderSortKey,
@@ -41,18 +44,54 @@ export function LeadersTable({
   division,
   season,
   selectedTeamNames,
+  fixtures,
+  onSelectTeam,
 }: {
   division: LeadersDivision;
   season: string;
   selectedTeamNames: string[];
+  /** The division's fixtures, the source of team crests. */
+  fixtures: CapitalFixture[];
+  onSelectTeam: (team: string) => void;
 }) {
   const [sortKey, setSortKey] = useState<LeaderSortKey>('points');
   const [showAll, setShowAll] = useState(false);
-  const sorted = sortPlayers(division.players, sortKey);
+  const teamLink = (team: string, variant: 'body2' | 'caption', color: string) => (
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+      <Crest src={teamCrest(fixtures, team)} alt="" name={team} />
+      <MuiLink
+        component={NextLink}
+        href={teamHref(team, season, division.compId)}
+        // Already on this page, so the filters change in place; a modified
+        // click still opens the link normally.
+        onClick={(event: React.MouseEvent) => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+          event.preventDefault();
+          onSelectTeam(team);
+        }}
+        underline="hover"
+        color={color}
+        variant={variant}
+      >
+        {team}
+      </MuiLink>
+    </Box>
+  );
+  // A selected team narrows the list to its players, ranked among themselves.
+  const players = selectedTeamNames.includes(ALL)
+    ? division.players
+    : division.players.filter((player) => selectedTeamNames.includes(player.team));
+  const sorted = sortPlayers(players, sortKey);
   const rows = showAll ? sorted : sorted.slice(0, PAGE_SIZE);
 
   return (
     <Box>
+      {players.length === 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+          No scoring leaders for the selected team in this division.
+        </Typography>
+      )}
+      {players.length > 0 && (
       <TableContainer component={Paper} variant="outlined">
         <Table size="small" aria-label={`${division.compName} scoring leaders`}>
           <TableHead>
@@ -86,17 +125,8 @@ export function LeadersTable({
           </TableHead>
           <TableBody>
             {rows.map((player, index) => {
-              const selected = selectedTeamNames.includes(player.team);
               return (
-                <TableRow
-                  key={`${player.team}|${player.name}`}
-                  selected={selected}
-                  sx={
-                    selected
-                      ? { bgcolor: 'primary.light', '& .MuiTableCell-root': { fontWeight: 'bold' } }
-                      : undefined
-                  }
-                >
+                <TableRow key={`${player.team}|${player.name}`}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>
                     {/* Snapshots built before ids were recorded have none. */}
@@ -113,27 +143,12 @@ export function LeadersTable({
                     ) : (
                       <Typography variant="body2">{player.name}</Typography>
                     )}
-                    <MuiLink
-                      component={NextLink}
-                      href={teamHref(player.team, season, division.compId)}
-                      underline="hover"
-                      color="text.secondary"
-                      variant="caption"
-                      sx={{ display: { xs: 'block', md: 'none' } }}
-                    >
-                      {player.team}
-                    </MuiLink>
+                    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                      {teamLink(player.team, 'caption', 'text.secondary')}
+                    </Box>
                   </TableCell>
                   <TableCell sx={COLLAPSIBLE_SX}>
-                    <MuiLink
-                      component={NextLink}
-                      href={teamHref(player.team, season, division.compId)}
-                      underline="hover"
-                      color="inherit"
-                      variant="body2"
-                    >
-                      {player.team}
-                    </MuiLink>
+                    {teamLink(player.team, 'body2', 'inherit')}
                   </TableCell>
                   <TableCell align="right">{player.games}</TableCell>
                   <TableCell align="right">{player.tries}</TableCell>
@@ -153,6 +168,7 @@ export function LeadersTable({
           </TableBody>
         </Table>
       </TableContainer>
+      )}
       {sorted.length > PAGE_SIZE && (
         <Button size="small" sx={{ mt: 1 }} onClick={() => setShowAll((value) => !value)}>
           {showAll ? `Show top ${PAGE_SIZE}` : `Show all ${sorted.length} players`}
