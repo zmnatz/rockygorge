@@ -470,6 +470,7 @@ export default function StandingsPage() {
               activeCompId={ladderCompId}
               comps={comps}
               teamNames={teamNames}
+              season={season}
               division={leadersDivision}
               isPending={leaders.isPending}
               onSelectComp={handleCompChange}
@@ -590,6 +591,7 @@ function StandingsTabPanel({
 function LeadersTabPanel({
   activeCompId,
   comps,
+  season,
   teamNames,
   division,
   isPending,
@@ -597,6 +599,7 @@ function LeadersTabPanel({
 }: {
   activeCompId: string;
   comps: { compId: string; compName: string }[];
+  season: string;
   teamNames: string[];
   division: LeadersDivision | undefined;
   isPending: boolean;
@@ -636,7 +639,7 @@ function LeadersTabPanel({
         </Typography>
       )}
       {!isPending && division && division.players.length > 0 && (
-        <LeadersTable division={division} selectedTeamNames={teamNames} />
+        <LeadersTable division={division} season={season} selectedTeamNames={teamNames} />
       )}
     </Box>
   );

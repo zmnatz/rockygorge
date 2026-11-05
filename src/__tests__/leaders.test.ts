@@ -8,7 +8,8 @@ function match(
   overrides: Partial<LeaderMatch['fixture']> = {},
   lineup: { home?: string[]; away?: string[]; homeSubs?: string[] } = {}
 ): LeaderMatch {
-  const side = (names: string[], isHome: boolean) => names.map((name) => ({ name, isHome }));
+  const side = (names: string[], isHome: boolean) =>
+    names.map((name) => ({ id: `${name.replace(/\s+/g, '')}__9`, name, isHome }));
   return {
     fixture: {
       id,
@@ -52,7 +53,12 @@ describe('tallyLeaders', () => {
     expect(season.divisions[0].players[0]).toMatchObject({ name: 'Riley Lopez', games: 3 });
   });
 
-  it('tallies kicks made and attempted, scoring conversions 2 and goals 3', () => {
+  it('carries the stable player id without the shirt number', () => {
+    const [season] = tallyLeaders([match('m1', [['Try', 'Try - Riley Lopez']])]);
+    expect(season.divisions[0].players[0].playerId).toBe('RileyLopez');
+  });
+
+  it('tallies made kicks, scoring conversions 2 and goals 3', () => {
     const [season] = tallyLeaders([
       match('m1', [
         ['Conversion', 'Conversion - Sam Kicker'],
@@ -67,12 +73,19 @@ describe('tallyLeaders', () => {
       name: 'Sam Kicker',
       tries: 0,
       conversions: 2,
-      conversionAttempts: 3,
       penaltyGoals: 1,
-      penaltyGoalAttempts: 2,
       dropGoals: 1,
       points: 2 * 2 + 3 + 3,
     });
+  });
+
+  it('ignores missed kicks entirely', () => {
+    const [season] = tallyLeaders([
+      match('m1', [['Conversion Unsuccessful', 'Conversion Unsuccessful - Sam Kicker']]),
+    ]);
+    expect(season.divisions[0].players).toEqual([]);
+    expect(season.divisions[0].unattributed).toBe(0);
+    expect(season.divisions[0].gamesWithScoring).toBe(0);
   });
 
   it('keeps same-named players on different teams apart and matches names case-insensitively', () => {

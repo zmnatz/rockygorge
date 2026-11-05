@@ -1,5 +1,5 @@
 import { type CapitalFixture, compareCompNames, isLeagueComp, isResult } from '@/api/capital';
-import { fetchMatchCentre } from '@/utils/playerHistory';
+import { fetchMatchCentre, playerKey } from '@/utils/playerHistory';
 
 // Player scoring leaderboards per season and division, built from match
 // centre data. The CMS commentary names the scorer ("Try - Riley Lopez") but
@@ -17,6 +17,8 @@ export interface LeaderFixture {
 }
 
 export interface LineupEntry {
+  // CMS player id, with the shirt number appended per match (see playerKey).
+  id: string;
   name: string;
   isHome: boolean;
 }
@@ -29,13 +31,13 @@ export interface LeaderMatch {
 }
 
 export interface PlayerLine {
+  // Stable CMS player id, for linking to the player page.
+  playerId: string;
   name: string;
   team: string;
   tries: number;
   conversions: number;
-  conversionAttempts: number;
   penaltyGoals: number;
-  penaltyGoalAttempts: number;
   dropGoals: number;
   points: number;
   // Games the player was named in the match squad (starters and bench), in
@@ -47,25 +49,22 @@ type ScoringKind = 'try' | 'conversion' | 'penaltyGoal' | 'dropGoal';
 
 // Commentary types seen in the feed: "Try", "Conversion", "Conversion
 // Unsuccessful", "Penalty Goal", "Penalty Goal Unsuccessful" and "Field
-// Goal" (a drop goal). Anything else (substitutions, cards) isn't scoring.
-function scoringKind(type: string): { kind: ScoringKind; made: boolean } | null {
+// Goal" (a drop goal). Missed kicks, substitutions and cards aren't scoring.
+function scoringKind(type: string): ScoringKind | null {
   const normalized = type.toLowerCase();
-  const made = !normalized.includes('unsuccessful');
-  if (normalized.startsWith('try')) return { kind: 'try', made };
-  if (normalized.startsWith('conversion')) return { kind: 'conversion', made };
-  if (normalized.startsWith('penalty goal')) return { kind: 'penaltyGoal', made };
+  if (normalized.includes('unsuccessful')) return null;
+  if (normalized.startsWith('try')) return 'try';
+  if (normalized.startsWith('conversion')) return 'conversion';
+  if (normalized.startsWith('penalty goal')) return 'penaltyGoal';
   if (normalized.startsWith('field goal') || normalized.startsWith('drop goal')) {
-    return { kind: 'dropGoal', made };
+    return 'dropGoal';
   }
   return null;
 }
 
 const POINTS: Record<ScoringKind, number> = { try: 5, conversion: 2, penaltyGoal: 3, dropGoal: 3 };
 
-function record(line: PlayerLine, kind: ScoringKind, made: boolean): void {
-  if (kind === 'conversion') line.conversionAttempts += 1;
-  if (kind === 'penaltyGoal') line.penaltyGoalAttempts += 1;
-  if (!made) return;
+function record(line: PlayerLine, kind: ScoringKind): void {
   if (kind === 'try') line.tries += 1;
   if (kind === 'conversion') line.conversions += 1;
   if (kind === 'penaltyGoal') line.penaltyGoals += 1;
@@ -169,20 +168,19 @@ export function tallyLeaders(
       );
       if (!line) {
         line = {
+          playerId: playerKey(player.id),
           name,
           team,
           tries: 0,
           conversions: 0,
-          conversionAttempts: 0,
           penaltyGoals: 0,
-          penaltyGoalAttempts: 0,
           dropGoals: 0,
           points: 0,
           games: 0,
         };
         division.players.push(line);
       }
-      record(line, scoring.kind, scoring.made);
+      record(line, scoring);
     }
   }
   for (const [division, counts] of appearances) {
@@ -288,7 +286,7 @@ export async function fetchLeaderMatch(fixture: CapitalFixture): Promise<LeaderM
     return null;
   }
   const lineup = (players: LineupEntry[]) =>
-    players.map(({ name, isHome }) => ({ name, isHome }));
+    players.map(({ id, name, isHome }) => ({ id, name, isHome }));
   return {
     fixture: {
       id: fixture.id,

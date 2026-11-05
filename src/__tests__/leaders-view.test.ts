@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { PlayerLine } from '@/utils/leaders';
-import { coverageNote, formatMadeOf, sortPlayers } from '@/utils/leadersView';
+import { coverageNote, sortPlayers } from '@/utils/leadersView';
 
 function player(overrides: Partial<PlayerLine>): PlayerLine {
   return {
+    playerId: 'a',
     name: 'A',
     team: 'T',
     tries: 0,
     conversions: 0,
-    conversionAttempts: 0,
     penaltyGoals: 0,
-    penaltyGoalAttempts: 0,
     dropGoals: 0,
     points: 0,
     games: 0,
@@ -41,13 +40,6 @@ describe('sortPlayers', () => {
 
   it('ranks by conversions made', () => {
     expect(sortPlayers(players, 'conversions')[0].name).toBe('Kicker');
-  });
-});
-
-describe('formatMadeOf', () => {
-  it('shows made/attempted', () => {
-    expect(formatMadeOf(54, 62)).toBe('54/62');
-    expect(formatMadeOf(0, 0)).toBe('0/0');
   });
 });
 

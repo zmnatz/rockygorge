@@ -24,6 +24,12 @@ function loadCache(): MatchCache & { save(): void } {
   let entries: Record<string, LeaderMatch | null> = {};
   try {
     entries = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
+    // Entries cached before lineups carried player ids are refetched.
+    for (const [id, match] of Object.entries(entries)) {
+      if (match && [...match.players, ...match.substitutes].some((entry) => !entry.id)) {
+        delete entries[id];
+      }
+    }
   } catch {
     // First build, or the cache was cleared.
   }

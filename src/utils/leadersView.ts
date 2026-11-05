@@ -14,10 +14,6 @@ export function sortPlayers(players: PlayerLine[], key: LeaderSortKey): PlayerLi
   );
 }
 
-export function formatMadeOf(made: number, attempted: number): string {
-  return `${made}/${attempted}`;
-}
-
 export function coverageNote(
   division: Pick<LeadersDivision, 'games' | 'gamesWithScoring' | 'unattributed'>
 ): string {

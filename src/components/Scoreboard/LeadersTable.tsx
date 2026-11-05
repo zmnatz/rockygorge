@@ -1,4 +1,6 @@
+import NextLink from 'next/link';
 import { useState } from 'react';
+import MuiLink from '@mui/material/Link';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -13,13 +15,18 @@ import Typography from '@mui/material/Typography';
 import type { LeadersDivision } from '@/utils/leaders';
 import {
   coverageNote,
-  formatMadeOf,
   type LeaderSortKey,
   sortPlayers,
 } from '@/utils/leadersView';
 
 const PAGE_SIZE = 25;
 const COLLAPSIBLE_SX = { display: { xs: 'none', md: 'table-cell' } };
+
+// A team links to its view on the standings page for the same season and
+// division.
+function teamHref(team: string, season: string, compId: string) {
+  return { pathname: '/standings', query: { tab: 'standings', season, comp: compId, team } };
+}
 
 const SORTABLE: { key: LeaderSortKey; label: string; collapsible?: boolean }[] = [
   { key: 'tries', label: 'Tries' },
@@ -32,9 +39,11 @@ const SORTABLE: { key: LeaderSortKey; label: string; collapsible?: boolean }[] =
 // CMS has no player id), so rows aren't linked to player pages.
 export function LeadersTable({
   division,
+  season,
   selectedTeamNames,
 }: {
   division: LeadersDivision;
+  season: string;
   selectedTeamNames: string[];
 }) {
   const [sortKey, setSortKey] = useState<LeaderSortKey>('points');
@@ -90,23 +99,49 @@ export function LeadersTable({
                 >
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>
-                    <Typography variant="body2">{player.name}</Typography>
-                    <Typography
-                      variant="caption"
+                    {/* Snapshots built before ids were recorded have none. */}
+                    {player.playerId ? (
+                      <MuiLink
+                        component={NextLink}
+                        href={`/player?id=${player.playerId}`}
+                        underline="hover"
+                        color="inherit"
+                        variant="body2"
+                      >
+                        {player.name}
+                      </MuiLink>
+                    ) : (
+                      <Typography variant="body2">{player.name}</Typography>
+                    )}
+                    <MuiLink
+                      component={NextLink}
+                      href={teamHref(player.team, season, division.compId)}
+                      underline="hover"
                       color="text.secondary"
+                      variant="caption"
                       sx={{ display: { xs: 'block', md: 'none' } }}
                     >
                       {player.team}
-                    </Typography>
+                    </MuiLink>
                   </TableCell>
-                  <TableCell sx={COLLAPSIBLE_SX}>{player.team}</TableCell>
+                  <TableCell sx={COLLAPSIBLE_SX}>
+                    <MuiLink
+                      component={NextLink}
+                      href={teamHref(player.team, season, division.compId)}
+                      underline="hover"
+                      color="inherit"
+                      variant="body2"
+                    >
+                      {player.team}
+                    </MuiLink>
+                  </TableCell>
                   <TableCell align="right">{player.games}</TableCell>
                   <TableCell align="right">{player.tries}</TableCell>
                   <TableCell align="right" sx={COLLAPSIBLE_SX}>
-                    {formatMadeOf(player.conversions, player.conversionAttempts)}
+                    {player.conversions}
                   </TableCell>
                   <TableCell align="right" sx={COLLAPSIBLE_SX}>
-                    {formatMadeOf(player.penaltyGoals, player.penaltyGoalAttempts)}
+                    {player.penaltyGoals}
                   </TableCell>
                   <TableCell align="right">{player.points}</TableCell>
                   <TableCell align="right" sx={COLLAPSIBLE_SX}>
@@ -124,8 +159,7 @@ export function LeadersTable({
         </Button>
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        {coverageNote(division)} Conversions and penalty goals show made/attempted.
-        Games counts matches the player was named in the squad. Points: try 5, conversion 2, penalty goal 3, drop goal 3. Players are
+        {coverageNote(division)} Games counts matches the player was named in the squad. Points: try 5, conversion 2, penalty goal 3, drop goal 3. Players are
         matched by team and name.
       </Typography>
     </Box>
