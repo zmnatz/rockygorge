@@ -57,6 +57,11 @@ declare module '@config/eligibility.yml' {
   export default eligibility;
 }
 
+declare module '@config/features.yml' {
+  const features: { playerLinks: boolean };
+  export default features;
+}
+
 declare module '@config/matches.yml' {
   const matches: import('./gameday').MatchesConfig;
   export default matches;

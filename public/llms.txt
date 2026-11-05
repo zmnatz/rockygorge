@@ -21,8 +21,8 @@
 
 - [Recent scores snapshot](https://rockygorgerugby.com/data/scores.json): latest
   scored fixtures (home/away teams, scores, dates, crest URLs). Refreshed each build.
-- [Player histories](https://rockygorgerugby.com/data/players.json): per-player
-  game logs and scoring events keyed by player id. Refreshed each build.
+- Player histories: `/data/players/<playerId>.json` per player (game logs and
+  scoring events). Refreshed each build.
 - Team crests: `/crests/<teamId>.webp` (96px WebP; falls back to the CMS URL).
 
 ## Optional

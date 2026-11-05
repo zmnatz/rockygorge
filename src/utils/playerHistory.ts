@@ -12,28 +12,33 @@ const FETCH_GAP_MS = 500;
 // the CMS rate limit (HTTP 429).
 const MATCH_CENTRE_GAP_MS = 300;
 
-let prebuiltHistories: Map<string, PlayerHistory> | null = null;
+// Under public/; the script writes it, the page fetches it from the site root.
+export const PLAYERS_SNAPSHOT_DIR = 'data/players';
 
-export async function preloadPlayerHistories(
-  options?: BuildOptions
-): Promise<Map<string, PlayerHistory>> {
-  if (prebuiltHistories) {
-    return prebuiltHistories;
+// Per-player snapshot path, shared by the build script and the player page.
+export function playerSnapshotFile(id: string): string {
+  return `${encodeURIComponent(id)}.json`;
+}
+
+// Loads one player's history from the per-player snapshot (written by
+// scripts/generate-players.ts). Player links only come from results, so
+// a missing file just means null; any other failure throws. The host's
+// catch-all rewrite answers a missing file with index.html and a 200, so a
+// non-JSON response counts as missing too.
+export async function loadPlayerHistory(
+  id: string
+): Promise<PlayerHistory | null> {
+  const res = await fetch(`/${PLAYERS_SNAPSHOT_DIR}/${playerSnapshotFile(id)}`);
+  if (res.status === 404) {
+    return null;
   }
-  try {
-    const res = await fetch('/data/players.json');
-    if (res.ok) {
-      const json = await res.json();
-      prebuiltHistories = new Map(
-        Object.entries(json) as [string, PlayerHistory][]
-      );
-      return prebuiltHistories;
-    }
-  } catch {
-    // Fall back to live build if static json isn't present
+  if (!res.ok) {
+    throw new Error(`Player history request failed: ${res.status}`);
   }
-  prebuiltHistories = await buildPlayerHistories(options ?? {});
-  return prebuiltHistories;
+  if (!res.headers.get('content-type')?.includes('json')) {
+    return null;
+  }
+  return (await res.json()) as PlayerHistory;
 }
 
 export interface PlayerGameLog {
@@ -276,14 +281,8 @@ interface MatchCentreResponse {
   } | null;
 }
 
-export interface BuildProgress {
-  done: number;
-  total: number;
-}
-
 interface BuildOptions {
   concurrency?: number;
-  onProgress?: (progress: BuildProgress) => void;
 }
 
 export async function buildPlayerHistories(
@@ -295,9 +294,7 @@ export async function buildPlayerHistories(
       fixture.awayTeam.score.length > 0
   );
 
-  const onProgress = options?.onProgress;
   const matches: MatchCentreData[] = [];
-  let done = 0;
   const workers = new Array(Math.max(1, options?.concurrency ?? 1))
     .fill(null)
     .map(async () => {
@@ -310,8 +307,6 @@ export async function buildPlayerHistories(
         if (data) {
           matches.push(data);
         }
-        done += 1;
-        onProgress?.({ done, total: done + fixtures.length });
         await new Promise((resolve) => setTimeout(resolve, MATCH_CENTRE_GAP_MS));
       }
     });
