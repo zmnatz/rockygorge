@@ -3,8 +3,8 @@ import path from 'node:path';
 import {
   fetchAllCapitalFixtures,
   type StandingsSnapshotIndex,
-  seasonSnapshotFile,
 } from '../src/api/capital';
+import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
   buildLeadersSnapshot,
   fetchLeaderMatch,
@@ -67,11 +67,6 @@ async function generate() {
       );
       return;
     }
-    fs.rmSync(outDir, { recursive: true, force: true });
-    fs.mkdirSync(outDir, { recursive: true });
-    for (const season of snapshot.seasons) {
-      fs.writeFileSync(path.join(outDir, seasonSnapshotFile(season.season)), JSON.stringify(season));
-    }
     // Same index shape as the standings snapshot; seasons are newest first,
     // and every listed season has played games, so the newest is the default.
     const seasons = snapshot.seasons.map((season) => season.season);
@@ -80,7 +75,7 @@ async function generate() {
       defaultSeason: seasons[0] ?? '',
       seasons,
     };
-    fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(index));
+    writeSeasonSnapshot(outDir, index, snapshot.seasons);
     console.log(
       `Saved scoring leaders for ${snapshot.attempted - snapshot.failed} of ${snapshot.attempted} games across ${seasons.length} seasons to public/data/leaders/`
     );

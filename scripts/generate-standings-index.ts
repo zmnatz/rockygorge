@@ -1,10 +1,9 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import {
   buildStandingsSnapshot,
-  seasonSnapshotFile,
   splitStandingsSnapshot,
 } from '../src/api/capital';
+import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 
 // Best-effort like the other snapshots: /standings falls back to live CMS
 // data when the snapshot is missing, so a throttled CMS (HTTP 429) must
@@ -16,14 +15,7 @@ async function generate() {
   try {
     const snapshot = await buildStandingsSnapshot({ gapMs: 300 });
     const { index, seasons } = splitStandingsSnapshot(snapshot);
-    // Written fresh only after a successful pull, so a throttled CMS leaves
-    // the previous snapshot untouched.
-    fs.rmSync(outDir, { recursive: true, force: true });
-    fs.mkdirSync(outDir, { recursive: true });
-    for (const season of Object.values(seasons)) {
-      fs.writeFileSync(path.join(outDir, seasonSnapshotFile(season.season)), JSON.stringify(season));
-    }
-    fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(index));
+    writeSeasonSnapshot(outDir, index, Object.values(seasons));
     console.log(
       `Saved ${snapshot.fixtures.length} fixtures and ${Object.keys(snapshot.ladders).length} ladders across ${index.seasons.length} seasons to public/data/standings/`
     );

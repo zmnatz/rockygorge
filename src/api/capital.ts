@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { postWithRetry } from '@/utils/api';
+import { postWithRetry, sleep } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
 
 export const CAPITAL_UNION_ID = 90067;
@@ -166,7 +166,7 @@ async function fetchFeed(
     if (page.length < PAGE_SIZE) {
       break;
     }
-    await new Promise((resolve) => setTimeout(resolve, FETCH_GAP_MS));
+    await sleep(FETCH_GAP_MS);
   }
   return all;
 }
@@ -801,7 +801,7 @@ export async function buildStandingsSnapshot({
       ladders[ladderSnapshotKey(key.compId, key.season)] = ladder;
     }
     if (gapMs > 0) {
-      await new Promise((resolve) => setTimeout(resolve, gapMs));
+      await sleep(gapMs);
     }
   }
   return { generatedAt: now().toISOString(), fixtures, ladders };

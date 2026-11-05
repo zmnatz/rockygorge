@@ -1,5 +1,7 @@
+import { sleep } from '@/utils/api';
 import { type CapitalFixture, compareCompNames, isLeagueComp, isResult } from '@/api/capital';
 import { fetchMatchCentre, playerKey } from '@/utils/playerHistory';
+import { type ScoringKind, scoringKind } from '@/utils/scoring';
 
 // Player scoring leaderboards per season and division, built from match
 // centre data. The CMS commentary names the scorer ("Try - Riley Lopez") but
@@ -45,31 +47,20 @@ export interface PlayerLine {
   games: number;
 }
 
-type ScoringKind = 'try' | 'conversion' | 'penaltyGoal' | 'dropGoal';
-
-// Commentary types seen in the feed: "Try", "Conversion", "Conversion
-// Unsuccessful", "Penalty Goal", "Penalty Goal Unsuccessful" and "Field
-// Goal" (a drop goal). Missed kicks, substitutions and cards aren't scoring.
-function scoringKind(type: string): ScoringKind | null {
-  const normalized = type.toLowerCase();
-  if (normalized.includes('unsuccessful')) return null;
-  if (normalized.startsWith('try')) return 'try';
-  if (normalized.startsWith('conversion')) return 'conversion';
-  if (normalized.startsWith('penalty goal')) return 'penaltyGoal';
-  if (normalized.startsWith('field goal') || normalized.startsWith('drop goal')) {
-    return 'dropGoal';
-  }
-  return null;
-}
-
-const POINTS: Record<ScoringKind, number> = { try: 5, conversion: 2, penaltyGoal: 3, dropGoal: 3 };
+// Which tally each kind of score feeds, and what it is worth.
+const SCORING: Record<
+  ScoringKind,
+  { field: 'tries' | 'conversions' | 'penaltyGoals' | 'dropGoals'; points: number }
+> = {
+  try: { field: 'tries', points: 5 },
+  conversion: { field: 'conversions', points: 2 },
+  penaltyGoal: { field: 'penaltyGoals', points: 3 },
+  dropGoal: { field: 'dropGoals', points: 3 },
+};
 
 function record(line: PlayerLine, kind: ScoringKind): void {
-  if (kind === 'try') line.tries += 1;
-  if (kind === 'conversion') line.conversions += 1;
-  if (kind === 'penaltyGoal') line.penaltyGoals += 1;
-  if (kind === 'dropGoal') line.dropGoals += 1;
-  line.points += POINTS[kind];
+  line[SCORING[kind].field] += 1;
+  line.points += SCORING[kind].points;
 }
 
 export interface LeadersDivision {
@@ -152,10 +143,9 @@ export function tallyLeaders(
       const scoring = scoringKind(event.type);
       if (!scoring) continue;
       const wanted = normalizeName(scorerName(event.comment));
-      const sides = new Set(
-        roster.filter((entry) => normalizeName(entry.name) === wanted).map((entry) => entry.isHome)
-      );
-      const player = roster.find((entry) => normalizeName(entry.name) === wanted);
+      const named = roster.filter((entry) => normalizeName(entry.name) === wanted);
+      const sides = new Set(named.map((entry) => entry.isHome));
+      const player = named[0];
       if (!wanted || wanted === WITHHELD || !player || sides.size !== 1) {
         division.unattributed += 1;
         continue;
@@ -269,7 +259,7 @@ export async function buildLeadersSnapshot({
         failed += 1;
       }
       if (gapMs > 0) {
-        await new Promise((resolve) => setTimeout(resolve, gapMs));
+        await sleep(gapMs);
       }
     }
   });

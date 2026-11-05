@@ -24,7 +24,13 @@ describe('isScoreEventType', () => {
     }
   );
 
-  it.each(['Substitution - Tactical', 'Substitution - Injury', 'Penalty'])(
+  it.each([
+    'Substitution - Tactical',
+    'Substitution - Injury',
+    'Penalty',
+    'Conversion Unsuccessful',
+    'Penalty Goal Unsuccessful',
+  ])(
     'does not treat %s as a scoring event',
     (type) => {
       expect(isScoreEventType(type)).toBe(false);

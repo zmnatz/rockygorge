@@ -1,4 +1,5 @@
-import { postWithRetry } from '@/utils/api';
+import { postWithRetry, sleep } from '@/utils/api';
+import { scoringKind } from '@/utils/scoring';
 import type { FixtureItem, MatchPlayer } from '@/types/match';
 
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
@@ -100,12 +101,7 @@ export function playerKey(id: string): string {
 }
 
 export function isScoreEventType(type: string): boolean {
-  const normalized = type.toLowerCase();
-  return (
-    normalized.includes('try') ||
-    normalized.includes('conversion') ||
-    normalized.includes('goal')
-  );
+  return scoringKind(type) !== null;
 }
 
 export function aggregatePlayerHistory(
@@ -307,7 +303,7 @@ export async function buildPlayerHistories(
         if (data) {
           matches.push(data);
         }
-        await new Promise((resolve) => setTimeout(resolve, MATCH_CENTRE_GAP_MS));
+        await sleep(MATCH_CENTRE_GAP_MS);
       }
     });
   await Promise.all(workers);
@@ -358,7 +354,7 @@ async function fetchAllFixtures(): Promise<FixtureLookupItem[]> {
     if (page.length < PAGE_SIZE) {
       break;
     }
-    await new Promise((resolve) => setTimeout(resolve, FETCH_GAP_MS));
+    await sleep(FETCH_GAP_MS);
   }
   return all;
 }

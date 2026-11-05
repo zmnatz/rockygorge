@@ -52,7 +52,7 @@ function statusFromError(error: unknown): number | undefined {
   return match ? parseInt(match[1], 10) : undefined;
 }
 
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
