@@ -16,7 +16,8 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { ScoreCard } from '@/components/Scores/ScoreCard';
 import type { Score } from '@/components/Scores/types';
-import { StandingsTable, TeamSummary } from '@/components/Scoreboard';
+import { LeadersTable, StandingsTable, TeamSummary } from '@/components/Scoreboard';
+import { useLeadersSeason } from '@/api/leaders';
 import {
   ALL,
   compsOf,
@@ -39,16 +40,18 @@ import {
   type FixtureDateGroup,
   type LadderPool,
 } from '@/api/capital';
+import type { LeadersDivision } from '@/utils/leaders';
 
-type StandingsTab = 'standings' | 'scores' | 'fixtures';
+type StandingsTab = 'standings' | 'scores' | 'fixtures' | 'leaders';
 
 const STANDINGS_PATH = '/standings';
-const TAB_VALUES: StandingsTab[] = ['standings', 'scores', 'fixtures'];
+const TAB_VALUES: StandingsTab[] = ['standings', 'scores', 'fixtures', 'leaders'];
 
 const TAB_LABELS: Record<StandingsTab, string> = {
   standings: 'Standings',
   scores: 'Scores',
   fixtures: 'Fixtures',
+  leaders: 'Leaders',
 };
 
 // Scores keyed in before a game is played are dropped, matching isResult.
@@ -292,6 +295,12 @@ export default function StandingsPage() {
       ),
     [leagueFixtures, ladderSeason, ladderCompId]
   );
+  // Leaders load only while their tab is open, one season's file at a time.
+  const leaders = useLeadersSeason(season, tab === 'leaders');
+  const leadersDivision = leaders.data?.divisions.find(
+    (division) => division.compId === ladderCompId
+  );
+
   const visiblePools = useMemo(() => {
     const pools = ladder?.ladderPools ?? [];
     if (team === ALL) {
@@ -437,6 +446,7 @@ export default function StandingsPage() {
             <Tab label={TAB_LABELS.standings} value="standings" />
             <Tab label={`${TAB_LABELS.scores} (${results.length})`} value="scores" />
             <Tab label={`${TAB_LABELS.fixtures} (${upcoming.length})`} value="fixtures" />
+            <Tab label={TAB_LABELS.leaders} value="leaders" />
           </Tabs>
 
           {tab === 'standings' && (
@@ -451,6 +461,17 @@ export default function StandingsPage() {
               isPending={ladderPending}
               isError={!ladder && liveLadder && ladderQuery.isError}
               isEmpty={!ladder}
+              onSelectComp={handleCompChange}
+            />
+          )}
+
+          {tab === 'leaders' && (
+            <LeadersTabPanel
+              activeCompId={ladderCompId}
+              comps={comps}
+              teamNames={teamNames}
+              division={leadersDivision}
+              isPending={leaders.isPending}
               onSelectComp={handleCompChange}
             />
           )}
@@ -561,6 +582,61 @@ function StandingsTabPanel({
             bonus points, PTS = competition points, STRK = current streak.
           </Typography>
         </Box>
+      )}
+    </Box>
+  );
+}
+
+function LeadersTabPanel({
+  activeCompId,
+  comps,
+  teamNames,
+  division,
+  isPending,
+  onSelectComp,
+}: {
+  activeCompId: string;
+  comps: { compId: string; compName: string }[];
+  teamNames: string[];
+  division: LeadersDivision | undefined;
+  isPending: boolean;
+  onSelectComp: (compId: string) => void;
+}) {
+  if (comps.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+        No divisions found for this season.
+      </Typography>
+    );
+  }
+  return (
+    <Box>
+      {comps.length > 1 && (
+        <Tabs
+          value={activeCompId}
+          onChange={(_event, value: string) => onSelectComp(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="Divisions"
+          sx={{ mb: 3 }}
+        >
+          {comps.map((comp) => (
+            <Tab key={comp.compId} label={comp.compName} value={comp.compId} />
+          ))}
+        </Tabs>
+      )}
+      {isPending && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      )}
+      {!isPending && (!division || division.players.length === 0) && (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+          No scoring leaders are available for this division.
+        </Typography>
+      )}
+      {!isPending && division && division.players.length > 0 && (
+        <LeadersTable division={division} selectedTeamNames={teamNames} />
       )}
     </Box>
   );
