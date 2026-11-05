@@ -42,6 +42,16 @@ describe('tallyLeaders', () => {
     });
   });
 
+  it('counts games from every match squad the player is named in, scoring or not', () => {
+    const [season] = tallyLeaders([
+      match('m1', [['Try', 'Try - Riley Lopez']], {}, { home: ['Riley Lopez'] }),
+      match('m2', [], {}, { home: ['Riley Lopez'], homeSubs: ['Sam Kicker'] }),
+      match('m3', [['Try', 'Try - Riley Lopez']], {}, { home: ['Riley Lopez', 'Riley Lopez'] }),
+    ]);
+    expect(season.divisions[0].players).toHaveLength(1);
+    expect(season.divisions[0].players[0]).toMatchObject({ name: 'Riley Lopez', games: 3 });
+  });
+
   it('tallies kicks made and attempted, scoring conversions 2 and goals 3', () => {
     const [season] = tallyLeaders([
       match('m1', [

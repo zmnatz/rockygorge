@@ -38,6 +38,9 @@ export interface PlayerLine {
   penaltyGoalAttempts: number;
   dropGoals: number;
   points: number;
+  // Games the player was named in the match squad (starters and bench), in
+  // games with a match centre. The CMS doesn't say who actually took the field.
+  games: number;
 }
 
 type ScoringKind = 'try' | 'conversion' | 'penaltyGoal' | 'dropGoal';
@@ -127,9 +130,22 @@ export function tallyLeaders(
   for (const fixture of played) {
     divisionFor(fixture).games += 1;
   }
+  // Squad appearances per division, keyed by team + normalised name.
+  const appearances = new Map<LeadersDivision, Map<string, number>>();
   for (const { fixture, commentary, players, substitutes } of matches) {
     const division = divisionFor(fixture);
     const roster = [...players, ...substitutes];
+    const counts = appearances.get(division) ?? new Map<string, number>();
+    appearances.set(division, counts);
+    const named = new Set(
+      roster.map(
+        (entry) =>
+          `${entry.isHome ? fixture.homeTeam.name : fixture.awayTeam.name}|${normalizeName(entry.name)}`
+      )
+    );
+    for (const key of named) {
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
     if (commentary.some((event) => scoringKind(event.type))) {
       division.gamesWithScoring += 1;
     }
@@ -162,10 +178,16 @@ export function tallyLeaders(
           penaltyGoalAttempts: 0,
           dropGoals: 0,
           points: 0,
+          games: 0,
         };
         division.players.push(line);
       }
       record(line, scoring.kind, scoring.made);
+    }
+  }
+  for (const [division, counts] of appearances) {
+    for (const line of division.players) {
+      line.games = counts.get(`${line.team}|${normalizeName(line.name)}`) ?? 0;
     }
   }
   return [...seasons.entries()]

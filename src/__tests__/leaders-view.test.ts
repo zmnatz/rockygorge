@@ -13,6 +13,7 @@ function player(overrides: Partial<PlayerLine>): PlayerLine {
     penaltyGoalAttempts: 0,
     dropGoals: 0,
     points: 0,
+    games: 0,
     ...overrides,
   };
 }

@@ -51,6 +51,9 @@ export function LeadersTable({
               <TableCell sx={{ fontWeight: 'bold' }}>Rank</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Player</TableCell>
               <TableCell sx={{ fontWeight: 'bold', ...COLLAPSIBLE_SX }}>Team</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                Games
+              </TableCell>
               {SORTABLE.map(({ key, label, collapsible }) => (
                 <TableCell
                   key={key}
@@ -97,6 +100,7 @@ export function LeadersTable({
                     </Typography>
                   </TableCell>
                   <TableCell sx={COLLAPSIBLE_SX}>{player.team}</TableCell>
+                  <TableCell align="right">{player.games}</TableCell>
                   <TableCell align="right">{player.tries}</TableCell>
                   <TableCell align="right" sx={COLLAPSIBLE_SX}>
                     {formatMadeOf(player.conversions, player.conversionAttempts)}
@@ -121,7 +125,7 @@ export function LeadersTable({
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
         {coverageNote(division)} Conversions and penalty goals show made/attempted.
-        Points: try 5, conversion 2, penalty goal 3, drop goal 3. Players are
+        Games counts matches the player was named in the squad. Points: try 5, conversion 2, penalty goal 3, drop goal 3. Players are
         matched by team and name.
       </Typography>
     </Box>
