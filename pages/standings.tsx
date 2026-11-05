@@ -453,8 +453,8 @@ export default function StandingsPage() {
             sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
           >
             <Tab label={TAB_LABELS.standings} value="standings" />
-            <Tab label={`${TAB_LABELS.scores} (${results.length})`} value="scores" />
-            <Tab label={`${TAB_LABELS.fixtures} (${upcoming.length})`} value="fixtures" />
+            <Tab label={TAB_LABELS.scores} value="scores" />
+            <Tab label={TAB_LABELS.fixtures} value="fixtures" />
             <Tab label={TAB_LABELS.leaders} value="leaders" />
           </Tabs>
 
