@@ -1,0 +1,6 @@
+# Site-wide feature switches.
+# playerLinks: roster names link to /player pages, which read the per-player
+# snapshot written by generate:players. Set to false if a build ships without
+# that snapshot (e.g. the first build fails against the throttled CMS) so
+# names render as plain text instead of linking to "No history found".
+playerLinks: true

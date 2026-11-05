@@ -452,6 +452,35 @@ describe('seasonSnapshotFile', () => {
   });
 });
 
+describe('isResult', () => {
+  const now = new Date('2026-11-02T12:00:00Z').getTime();
+
+  it('counts a scored game that has been played', () => {
+    expect(isResult(fixture('a', { dateTime: '2026-10-31T17:00:00+00:00' }), now)).toBe(true);
+  });
+
+  it('ignores scores entered on a game that has not been played yet', () => {
+    // e.g. forfeits keyed in ahead of the scheduled date
+    const early = fixture('b', {
+      dateTime: '2026-11-14T17:00:00+00:00',
+      homeTeam: { name: 'Severn River MD3', score: '49', crest: '' },
+      awayTeam: { name: 'Loudoun MD3', score: '0', crest: '' },
+    });
+    expect(isResult(early, now)).toBe(false);
+    expect(upcomingOf([early], now).map((item) => item.id)).toEqual(['b']);
+    expect(resultsOf([early], now)).toEqual([]);
+  });
+
+  it('ignores an unscored game', () => {
+    const unscored = fixture('c', {
+      dateTime: '2026-10-31T17:00:00+00:00',
+      homeTeam: { name: 'A', score: '', crest: '' },
+      awayTeam: { name: 'B', score: '', crest: '' },
+    });
+    expect(isResult(unscored, now)).toBe(false);
+  });
+});
+
 describe('groupFixturesByDate', () => {
   it('groups by day then division, preserving fixture order', () => {
     const fixtures = [

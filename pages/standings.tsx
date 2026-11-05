@@ -25,6 +25,7 @@ import {
   findTeamIdentity,
   groupFixturesByDate,
   isLeagueComp,
+  isResult,
   ladderKeyFor,
   resultsOf,
   seasonsOf,
@@ -50,7 +51,9 @@ const TAB_LABELS: Record<StandingsTab, string> = {
   fixtures: 'Fixtures',
 };
 
+// Scores keyed in before a game is played are dropped, matching isResult.
 function toScore(fixture: CapitalFixture): Score {
+  const played = isResult(fixture);
   return {
     id: fixture.id,
     dateTime: fixture.dateTime,
@@ -59,14 +62,14 @@ function toScore(fixture: CapitalFixture): Score {
       id: '',
       name: fixture.homeTeam.name,
       teamId: '',
-      score: fixture.homeTeam.score,
+      score: played ? fixture.homeTeam.score : '',
       crest: fixture.homeTeam.crest,
     },
     awayTeam: {
       id: '',
       name: fixture.awayTeam.name,
       teamId: '',
-      score: fixture.awayTeam.score,
+      score: played ? fixture.awayTeam.score : '',
       crest: fixture.awayTeam.crest,
     },
   };

@@ -1,8 +1,10 @@
 import NextLink from 'next/link';
+import type { ComponentProps } from 'react';
 import { Link as MuiLink } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import features from '@config/features.yml';
 import { playerKey } from '@/utils/playerHistory';
 import type { MatchPlayer, Team } from '@/types/match';
 import { nameInSet } from './matchCentreUtils';
@@ -44,17 +46,13 @@ export function TeamPanel({ team, isHome, lineup, substitutes, coaches, substitu
         {coaches
           .filter((coach) => coach.isHome === isHome)
           .map((coach, index) => (
-            <MuiLink
+            <PlayerName
               // biome-ignore lint/suspicious/noArrayIndexKey: roster players have no stable id exposed by the API
               key={index}
-              component={NextLink}
-              href={`/player?id=${playerKey(coach.id)}`}
-              underline="hover"
+              player={coach}
               variant="body2"
               sx={{ display: 'block', mb: 0.5 }}
-            >
-              {coach.name}
-            </MuiLink>
+            />
           ))}
       </Paper>
     </>
@@ -78,14 +76,7 @@ function RosterList({ players, activeNames }: { players: MatchPlayer[]; activeNa
               color: dimmed ? 'text.disabled' : 'inherit',
             }}
           >
-            <MuiLink
-              component={NextLink}
-              href={`/player?id=${playerKey(player.id)}`}
-              underline="hover"
-              color="inherit"
-            >
-              {player.name}
-            </MuiLink>
+            <PlayerName player={player} color="inherit" />
             <Typography variant="caption" color="text.secondary">
               {player.position}
             </Typography>
@@ -93,6 +84,26 @@ function RosterList({ players, activeNames }: { players: MatchPlayer[]; activeNa
         );
       })}
     </>
+  );
+}
+
+// Links to the player's page unless the playerLinks feature is switched off.
+function PlayerName({
+  player,
+  ...linkProps
+}: { player: MatchPlayer } & Omit<ComponentProps<typeof MuiLink>, 'href' | 'component'>) {
+  if (!features.playerLinks) {
+    return <>{player.name}</>;
+  }
+  return (
+    <MuiLink
+      component={NextLink}
+      href={`/player?id=${playerKey(player.id)}`}
+      underline="hover"
+      {...linkProps}
+    >
+      {player.name}
+    </MuiLink>
   );
 }
 

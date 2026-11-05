@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   aggregatePlayerHistory,
   isScoreEventType,
+  loadPlayerHistory,
   playerKey,
 } from '@/utils/playerHistory';
 
@@ -145,5 +146,40 @@ describe('aggregatePlayerHistory', () => {
     expect(histories.get('luc-id')?.games.map((game) => game.fixtureId)).toEqual([
       'new',
     ]);
+  });
+});
+
+describe('loadPlayerHistory', () => {
+  const history = { id: 'abc', name: 'A Player', teamName: 'T', games: [], scoringEvents: [] };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubFetch(response: Response) {
+    const fetchMock = vi.fn().mockResolvedValue(response);
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+  }
+
+  it('fetches the per-player snapshot file', async () => {
+    const fetchMock = stubFetch(Response.json(history));
+    await expect(loadPlayerHistory('abc')).resolves.toEqual(history);
+    expect(fetchMock).toHaveBeenCalledWith('/data/players/abc.json');
+  });
+
+  it('treats a 404 as an unknown player', async () => {
+    stubFetch(new Response('', { status: 404 }));
+    await expect(loadPlayerHistory('abc')).resolves.toBeNull();
+  });
+
+  it('treats the catch-all HTML rewrite (200) as an unknown player', async () => {
+    stubFetch(new Response('<html></html>', { headers: { 'content-type': 'text/html' } }));
+    await expect(loadPlayerHistory('abc')).resolves.toBeNull();
+  });
+
+  it('throws on other failures', async () => {
+    stubFetch(new Response('', { status: 500 }));
+    await expect(loadPlayerHistory('abc')).rejects.toThrow();
   });
 });
