@@ -16,8 +16,7 @@ import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
-  preloadPlayerHistories,
-  type BuildProgress,
+  loadPlayerHistory,
   type PlayerHistory,
 } from '@/utils/playerHistory';
 
@@ -26,24 +25,18 @@ export default function PlayersPage() {
   const { id } = router.query;
   const playerId = typeof id === 'string' ? id : undefined;
 
-  const [progress, setProgress] = useState<BuildProgress | null>(null);
   const {
-    data: histories,
+    data: history,
     isPending,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['playerHistories'],
-    queryFn: () =>
-      preloadPlayerHistories({
-        concurrency: 3,
-        onProgress: (value) => setProgress(value),
-      }),
+    queryKey: ['playerHistory', playerId],
+    enabled: !!playerId,
+    queryFn: () => loadPlayerHistory(playerId as string),
     staleTime: 10 * 60 * 1000,
     retry: 1,
   });
-
-  const history = playerId ? histories?.get(playerId) : undefined;
 
   return (
     <Box sx={{ py: 4, px: 2, maxWidth: 900, mx: 'auto' }}>
@@ -66,14 +59,12 @@ export default function PlayersPage() {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
           <CircularProgress />
           <Typography variant="body2" color="text.secondary">
-            {progress
-              ? `Loading history… ${progress.done} of ${progress.total} games`
-              : 'Loading history…'}
+            Loading history…
           </Typography>
         </Box>
       )}
 
-      {playerId && !isPending && (isError || !histories) && (
+      {playerId && !isPending && isError && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
           <Typography variant="body2" color="text.secondary">
             Failed to load player history.
@@ -84,7 +75,7 @@ export default function PlayersPage() {
         </Box>
       )}
 
-      {playerId && !isPending && !isError && histories && !history && (
+      {playerId && !isPending && !isError && !history && (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
           No history found for this player.
         </Typography>
