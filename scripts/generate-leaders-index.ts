@@ -4,7 +4,7 @@ import {
   fetchAllCapitalFixtures,
   type StandingsSnapshotIndex,
 } from '../src/api/capital';
-import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
+import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
   buildLeadersSnapshot,
@@ -40,8 +40,7 @@ function loadCache(): MatchCache & { save(): void } {
       entries[id] = match;
     },
     save: () => {
-      fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
-      fs.writeFileSync(CACHE_PATH, JSON.stringify(entries));
+      writeFileIfChanged(CACHE_PATH, JSON.stringify(entries));
     },
   };
 }
@@ -78,8 +77,7 @@ async function generate() {
       defaultSeason: seasons[0] ?? '',
       seasons,
     };
-    writeSeasonSnapshot(outDir, index, snapshot.seasons);
-    markUpdated('leaders');
+    recordRun('leaders', writeSeasonSnapshot(outDir, index, snapshot.seasons));
     console.log(
       `Saved scoring leaders for ${snapshot.attempted - snapshot.failed} of ${snapshot.attempted} games across ${seasons.length} seasons to public/data/leaders/`
     );

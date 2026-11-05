@@ -35,7 +35,7 @@ jobs:
 
       - name: Commit changes to master
         run: |
-          git add public/data public/crests .cache/leaders
+          git add public/data public/crests .cache
           if git diff --cached --quiet; then
             echo "Snapshots unchanged"
             exit 0

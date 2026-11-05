@@ -1,26 +1,74 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Build-time snapshots (public/data/**, public/crests, .cache/leaders) are committed to the
-// repo and refreshed nightly by .github/workflows/update-snapshots.yml. Each
-// generate script records when it last succeeded in this manifest and skips
-// its CMS pulls while that is under MAX_AGE_MS old, unless forced.
+// Build-time snapshots (public/data/**, public/crests, .cache/leaders) are
+// committed to the repo and refreshed nightly by
+// .github/workflows/update-snapshots.yml. Two small files track them:
+//
+// - public/data/manifest.json: when each snapshot's content last CHANGED, and
+//   the FORMAT version it was generated with.
+// - .cache/snapshots-checked.json: when each snapshot was last CHECKED
+//   against the CMS (changed or not). Freshness is judged from this one.
+//
+// A run that finds nothing new rewrites only the checked file, so data files
+// (and git history) don't churn. Generate scripts skip their CMS pulls while
+// the checked time is under MAX_AGE_MS old, unless forced. Local builds (no
+// CI/NETLIFY env) never refresh because of age, so they don't dirty the tree;
+// they use the committed snapshot, or `generate:force`.
 export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests';
 
-export type SnapshotManifest = Partial<Record<SnapshotName, string>>;
+// Bump a snapshot's number whenever the shape of its output (or the
+// generator's logic) changes. A committed snapshot with a different format is
+// stale everywhere, local builds included, so the PR must regenerate and
+// commit it (`bun run generate:force`); src/__tests__/snapshot-freshness.test.ts
+// fails until it does.
+export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
+  scores: 1,
+  standings: 1,
+  leaders: 1,
+  players: 1,
+  crests: 1,
+};
+
+export type SnapshotStamps = Partial<Record<SnapshotName, string>>;
+export type SnapshotManifest = Partial<
+  Record<SnapshotName, { updatedAt: string; format: number }>
+>;
 
 export function manifestPath(root = process.cwd()): string {
   return path.join(root, 'public', 'data', 'manifest.json');
 }
 
-export function readManifest(root = process.cwd()): SnapshotManifest {
+export function checkedPath(root = process.cwd()): string {
+  return path.join(root, '.cache', 'snapshots-checked.json');
+}
+
+function readJson<T>(file: string): T {
   try {
-    return JSON.parse(fs.readFileSync(manifestPath(root), 'utf-8'));
+    return JSON.parse(fs.readFileSync(file, 'utf-8'));
   } catch {
-    return {};
+    return {} as T;
   }
+}
+
+function writeJson(file: string, value: unknown): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+export function readManifest(root = process.cwd()): SnapshotManifest {
+  return readJson(manifestPath(root));
+}
+
+export function readChecked(root = process.cwd()): SnapshotStamps {
+  return readJson(checkedPath(root));
+}
+
+// Netlify and GitHub Actions both set CI; their checkouts are throwaway.
+export function isLocal(env: Record<string, string | undefined> = process.env): boolean {
+  return !env.CI && !env.NETLIFY;
 }
 
 // `--force` on the command line or FORCE_SNAPSHOTS=1 in the environment
@@ -35,17 +83,29 @@ export function isForced(
 
 export function isFresh(
   name: SnapshotName,
-  options: { now?: number; manifest?: SnapshotManifest; forced?: boolean } = {}
+  options: {
+    now?: number;
+    checked?: SnapshotStamps;
+    manifest?: SnapshotManifest;
+    forced?: boolean;
+    local?: boolean;
+  } = {}
 ): boolean {
   if (options.forced ?? isForced()) {
     return false;
   }
-  const stamp = (options.manifest ?? readManifest())[name];
-  const updated = stamp ? Date.parse(stamp) : Number.NaN;
-  if (Number.isNaN(updated)) {
+  if ((options.manifest ?? readManifest())[name]?.format !== SNAPSHOT_FORMATS[name]) {
     return false;
   }
-  const age = (options.now ?? Date.now()) - updated;
+  if (options.local ?? isLocal()) {
+    return true;
+  }
+  const stamp = (options.checked ?? readChecked())[name];
+  const checked = stamp ? Date.parse(stamp) : Number.NaN;
+  if (Number.isNaN(checked)) {
+    return false;
+  }
+  const age = (options.now ?? Date.now()) - checked;
   // A timestamp from the future (clock skew) is not trusted.
   return age >= 0 && age < MAX_AGE_MS;
 }
@@ -55,16 +115,75 @@ export function skipIfFresh(name: SnapshotName, requiredPath: string): boolean {
   if (!fs.existsSync(requiredPath) || !isFresh(name)) {
     return false;
   }
-  const stamp = readManifest()[name];
   console.log(
-    `Skipping ${name} snapshot: updated ${stamp}, under a day old (use --force or FORCE_SNAPSHOTS=1 to refresh).`
+    `Skipping ${name} snapshot: using committed copy (checked ${readChecked()[name]}). Use --force or FORCE_SNAPSHOTS=1 to refresh.`
   );
   return true;
 }
 
+export function markChecked(name: SnapshotName, now = new Date(), root = process.cwd()): void {
+  writeJson(checkedPath(root), { ...readChecked(root), [name]: now.toISOString() });
+}
+
 export function markUpdated(name: SnapshotName, now = new Date(), root = process.cwd()): void {
-  const manifest = readManifest(root);
-  manifest[name] = now.toISOString();
-  fs.mkdirSync(path.dirname(manifestPath(root)), { recursive: true });
-  fs.writeFileSync(manifestPath(root), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeJson(manifestPath(root), {
+    ...readManifest(root),
+    [name]: { updatedAt: now.toISOString(), format: SNAPSHOT_FORMATS[name] },
+  });
+}
+
+// Call after a successful pull: always records the check, and records an
+// update only when the content actually changed.
+export function recordRun(name: SnapshotName, changed: boolean, now = new Date()): void {
+  markChecked(name, now);
+  // A format bump is recorded even if the regenerated content is identical.
+  if (changed || readManifest()[name]?.format !== SNAPSHOT_FORMATS[name]) {
+    markUpdated(name, now);
+  }
+}
+
+// `generatedAt` is a pull time, not content, so it never counts as a change.
+function normalize(text: string): string {
+  try {
+    const value = JSON.parse(text);
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      delete value.generatedAt;
+      return JSON.stringify(value);
+    }
+  } catch {
+    // Not JSON: compare as-is.
+  }
+  return text;
+}
+
+// Writes only when the content differs (ignoring generatedAt). Returns
+// whether it wrote.
+export function writeFileIfChanged(file: string, text: string): boolean {
+  try {
+    if (normalize(fs.readFileSync(file, 'utf-8')) === normalize(text)) {
+      return false;
+    }
+  } catch {
+    // Missing: write it.
+  }
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, text);
+  return true;
+}
+
+// Makes `dir` hold exactly `files` (name -> text), touching only files whose
+// content changed. Returns whether anything changed.
+export function syncDir(dir: string, files: Record<string, string>): boolean {
+  let changed = false;
+  fs.mkdirSync(dir, { recursive: true });
+  for (const name of fs.readdirSync(dir)) {
+    if (!(name in files)) {
+      fs.rmSync(path.join(dir, name), { recursive: true, force: true });
+      changed = true;
+    }
+  }
+  for (const [name, text] of Object.entries(files)) {
+    changed = writeFileIfChanged(path.join(dir, name), text) || changed;
+  }
+  return changed;
 }

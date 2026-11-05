@@ -1,7 +1,22 @@
 {
-  "scores": "2026-11-05T10:06:43.877Z",
-  "standings": "2026-11-05T10:07:16.558Z",
-  "leaders": "2026-11-05T10:07:27.276Z",
-  "players": "2026-11-05T10:08:44.075Z",
-  "crests": "2026-11-05T10:15:42.134Z"
+  "scores": {
+    "updatedAt": "2026-11-05T10:24:27.451Z",
+    "format": 1
+  },
+  "standings": {
+    "updatedAt": "2026-11-05T10:25:04.342Z",
+    "format": 1
+  },
+  "leaders": {
+    "updatedAt": "2026-11-05T10:25:12.696Z",
+    "format": 1
+  },
+  "players": {
+    "updatedAt": "2026-11-05T10:36:05.446Z",
+    "format": 1
+  },
+  "crests": {
+    "updatedAt": "2026-11-05T10:26:27.737Z",
+    "format": 1
+  }
 }

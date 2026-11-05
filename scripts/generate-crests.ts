@@ -3,7 +3,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { crestFileName, isPlaceholderCrest } from '../src/utils/crest';
 import { fetchAllCapitalFixtures } from '../src/api/capital';
-import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
+import { recordRun, skipIfFresh } from './lib/snapshot-freshness';
 
 interface SnapshotScore {
   homeTeam: { crest: string };
@@ -91,7 +91,7 @@ async function generate() {
   }
   // Only a complete pass counts as a refresh; otherwise the next build retries.
   if (complete) {
-    markUpdated('crests');
+    recordRun('crests', saved > 0);
   }
   console.log(`Saved ${saved} new crests (${skipped} already present) to public/crests/`);
 }
