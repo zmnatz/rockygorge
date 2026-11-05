@@ -12,8 +12,17 @@
   [plugins.inputs]
     # .next/cache speeds up page prerendering; public/crests persists the
     # snapshotted team logos so generate:crests only downloads new teams
-    # (it skips files that already exist).
-    paths = [".next/cache", "public/crests"]
+    # (it skips files that already exist). .cache/leaders keeps fetched match
+    # centres so generate:leaders only asks the CMS for new or recent games.
+    # The standings and leaders snapshots are cached so a throttled build
+    # keeps the previous snapshot instead of shipping none.
+    paths = [
+      ".next/cache",
+      "public/crests",
+      ".cache/leaders",
+      "public/data/standings",
+      "public/data/leaders",
+    ]
 
 [[redirects]]
   from = "/api/calendar"

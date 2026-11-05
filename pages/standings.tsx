@@ -16,7 +16,8 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { ScoreCard } from '@/components/Scores/ScoreCard';
 import type { Score } from '@/components/Scores/types';
-import { StandingsTable, TeamSummary } from '@/components/Scoreboard';
+import { LeadersTable, StandingsTable, TeamSummary } from '@/components/Scoreboard';
+import { useLeadersSeason } from '@/api/leaders';
 import {
   ALL,
   compsOf,
@@ -39,16 +40,18 @@ import {
   type FixtureDateGroup,
   type LadderPool,
 } from '@/api/capital';
+import type { LeadersDivision } from '@/utils/leaders';
 
-type StandingsTab = 'standings' | 'scores' | 'fixtures';
+type StandingsTab = 'standings' | 'scores' | 'fixtures' | 'leaders';
 
 const STANDINGS_PATH = '/standings';
-const TAB_VALUES: StandingsTab[] = ['standings', 'scores', 'fixtures'];
+const TAB_VALUES: StandingsTab[] = ['standings', 'scores', 'fixtures', 'leaders'];
 
 const TAB_LABELS: Record<StandingsTab, string> = {
   standings: 'Standings',
   scores: 'Scores',
   fixtures: 'Fixtures',
+  leaders: 'Leaders',
 };
 
 // Scores keyed in before a game is played are dropped, matching isResult.
@@ -198,32 +201,79 @@ export default function StandingsPage() {
     }
   }, [leagueFixtures, season]);
 
-  // Keep the URL in sync so filtered views are shareable. Only replace when
-  // the filters actually differ from the URL: the router object changes when
-  // a link is clicked, and an unconditional replace here would cancel that
-  // navigation and bounce the visitor back to the standings page.
+  // Keep the URL and the filters in step, in both directions, so filtered
+  // views are shareable and the browser's back/forward buttons walk through
+  // the filters the visitor picked. A filter change pushes a history entry;
+  // back/forward changes the URL, which is applied to the filters here.
+  // `pendingKey` is a push still on its way to the router, `applyingUrl` a
+  // URL still on its way into state, so neither side reverts the other.
+  const stateKey = `${tab}|${season}|${compId}|${team}`;
+  const prevStateKey = useRef('');
+  const pendingKey = useRef<string | null>(null);
+  const applyingUrl = useRef(false);
+  // A cancelled or failed navigation never reaches the URL, so don't wait on it.
+  useEffect(() => {
+    const reset = () => {
+      pendingKey.current = null;
+      applyingUrl.current = false;
+    };
+    router.events.on('routeChangeError', reset);
+    return () => router.events.off('routeChangeError', reset);
+  }, [router.events]);
   useEffect(() => {
     if (!router.isReady || !initializedFromUrl.current || !season) {
       return;
     }
-    if (
-      router.pathname !== STANDINGS_PATH ||
-      (queryParam(router.query.tab) === tab &&
-        queryParam(router.query.season) === season &&
-        queryParam(router.query.comp) === compId &&
-        queryParam(router.query.team) === team)
-    ) {
+    const stateChanged = prevStateKey.current !== stateKey;
+    const firstSync = prevStateKey.current === '';
+    prevStateKey.current = stateKey;
+    if (router.pathname !== STANDINGS_PATH) {
       return;
     }
-    router.replace(
-      {
-        pathname: router.pathname,
-        query: { tab, season, comp: compId, team },
-      },
-      undefined,
-      { shallow: true }
-    );
-  }, [tab, season, compId, team, router]);
+    const urlSeason = queryParam(router.query.season);
+    const urlTabParam = queryParam(router.query.tab);
+    const urlTab =
+      urlTabParam === 'results'
+        ? 'scores'
+        : urlTabParam && (TAB_VALUES as string[]).includes(urlTabParam)
+          ? (urlTabParam as StandingsTab)
+          : 'standings';
+    const urlComp = queryParam(router.query.comp) ?? ALL;
+    const urlTeam = queryParam(router.query.team) ?? ALL;
+    const urlKey = `${urlTab}|${urlSeason}|${urlComp}|${urlTeam}`;
+    if (urlKey === stateKey) {
+      pendingKey.current = null;
+      applyingUrl.current = false;
+      return;
+    }
+    if (stateChanged) {
+      // A filter changed: reflect it in the URL. The first sync only
+      // completes the URL (e.g. a bare /standings), so it doesn't add history.
+      // A correction right after applying a URL (an unknown team or division
+      // dropped) replaces the entry, or back would land on the bad URL again.
+      const correcting = applyingUrl.current;
+      applyingUrl.current = false;
+      pendingKey.current = stateKey;
+      const navigate = firstSync || correcting || !urlSeason ? router.replace : router.push;
+      navigate.call(
+        router,
+        { pathname: router.pathname, query: { tab, season, comp: compId, team } },
+        undefined,
+        { shallow: true }
+      );
+      return;
+    }
+    // Only the URL changed (back/forward): apply it. An unknown team or
+    // division is dropped by the checks that follow a season load.
+    if (pendingKey.current !== null || applyingUrl.current || !urlSeason) {
+      return;
+    }
+    applyingUrl.current = true;
+    setTab(urlTab);
+    setSeason(urlSeason);
+    setCompId(urlComp);
+    setTeam(urlTeam);
+  }, [stateKey, tab, season, compId, team, router]);
 
   const filtered = useMemo(
     () => filterFixtures(leagueFixtures, { season: season || ALL, compId, team: teamNames }),
@@ -292,6 +342,12 @@ export default function StandingsPage() {
       ),
     [leagueFixtures, ladderSeason, ladderCompId]
   );
+  // Leaders load only while their tab is open, one season's file at a time.
+  const leaders = useLeadersSeason(season, tab === 'leaders');
+  const leadersDivision = leaders.data?.divisions.find(
+    (division) => division.compId === ladderCompId
+  );
+
   const visiblePools = useMemo(() => {
     const pools = ladder?.ladderPools ?? [];
     if (team === ALL) {
@@ -307,6 +363,15 @@ export default function StandingsPage() {
   const handleSeasonChange = (value: string) => {
     setSeason(value);
     setCompId(ALL);
+  };
+
+  // A team link in the Leaders table: show that team's standings in the
+  // division it was listed under.
+  const handleSelectTeamFromLeaders = (name: string) => {
+    const found = findTeamIdentity(teamIdentities(leagueFixtures, season, ladderCompId), name);
+    setCompId(ladderCompId);
+    setTeam(found?.display ?? name);
+    setTab('standings');
   };
 
   const handleCompChange = (value: string) => {
@@ -435,8 +500,9 @@ export default function StandingsPage() {
             sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
           >
             <Tab label={TAB_LABELS.standings} value="standings" />
-            <Tab label={`${TAB_LABELS.scores} (${results.length})`} value="scores" />
-            <Tab label={`${TAB_LABELS.fixtures} (${upcoming.length})`} value="fixtures" />
+            <Tab label={TAB_LABELS.scores} value="scores" />
+            <Tab label={TAB_LABELS.fixtures} value="fixtures" />
+            <Tab label={TAB_LABELS.leaders} value="leaders" />
           </Tabs>
 
           {tab === 'standings' && (
@@ -451,6 +517,20 @@ export default function StandingsPage() {
               isPending={ladderPending}
               isError={!ladder && liveLadder && ladderQuery.isError}
               isEmpty={!ladder}
+              onSelectComp={handleCompChange}
+            />
+          )}
+
+          {tab === 'leaders' && (
+            <LeadersTabPanel
+              activeCompId={ladderCompId}
+              comps={comps}
+              teamNames={teamNames}
+              season={season}
+              fixtures={compResults}
+              onSelectTeam={handleSelectTeamFromLeaders}
+              division={leadersDivision}
+              isPending={leaders.isPending}
               onSelectComp={handleCompChange}
             />
           )}
@@ -561,6 +641,73 @@ function StandingsTabPanel({
             bonus points, PTS = competition points, STRK = current streak.
           </Typography>
         </Box>
+      )}
+    </Box>
+  );
+}
+
+function LeadersTabPanel({
+  activeCompId,
+  comps,
+  season,
+  fixtures,
+  onSelectTeam,
+  teamNames,
+  division,
+  isPending,
+  onSelectComp,
+}: {
+  fixtures: CapitalFixture[];
+  onSelectTeam: (team: string) => void;
+  activeCompId: string;
+  comps: { compId: string; compName: string }[];
+  season: string;
+  teamNames: string[];
+  division: LeadersDivision | undefined;
+  isPending: boolean;
+  onSelectComp: (compId: string) => void;
+}) {
+  if (comps.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+        No divisions found for this season.
+      </Typography>
+    );
+  }
+  return (
+    <Box>
+      {comps.length > 1 && (
+        <Tabs
+          value={activeCompId}
+          onChange={(_event, value: string) => onSelectComp(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="Divisions"
+          sx={{ mb: 3 }}
+        >
+          {comps.map((comp) => (
+            <Tab key={comp.compId} label={comp.compName} value={comp.compId} />
+          ))}
+        </Tabs>
+      )}
+      {isPending && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      )}
+      {!isPending && (!division || division.players.length === 0) && (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+          No scoring leaders are available for this division.
+        </Typography>
+      )}
+      {!isPending && division && division.players.length > 0 && (
+        <LeadersTable
+          division={division}
+          season={season}
+          selectedTeamNames={teamNames}
+          fixtures={fixtures}
+          onSelectTeam={onSelectTeam}
+        />
       )}
     </Box>
   );
