@@ -22,10 +22,10 @@ const PAGE_SIZE = 25;
 const COLLAPSIBLE_SX = { display: { xs: 'none', md: 'table-cell' } };
 
 const SORTABLE: { key: LeaderSortKey; label: string; collapsible?: boolean }[] = [
-  { key: 'tries', label: 'T' },
-  { key: 'conversions', label: 'C', collapsible: true },
-  { key: 'penaltyGoals', label: 'PG', collapsible: true },
-  { key: 'points', label: 'PTS' },
+  { key: 'tries', label: 'Tries' },
+  { key: 'conversions', label: 'Conversions', collapsible: true },
+  { key: 'penaltyGoals', label: 'Penalty goals', collapsible: true },
+  { key: 'points', label: 'Points' },
 ];
 
 // Player scoring leaders for one division. Players are team + name only (the
@@ -48,7 +48,7 @@ export function LeadersTable({
         <Table size="small" aria-label={`${division.compName} scoring leaders`}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Rank</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Player</TableCell>
               <TableCell sx={{ fontWeight: 'bold', ...COLLAPSIBLE_SX }}>Team</TableCell>
               {SORTABLE.map(({ key, label, collapsible }) => (
@@ -68,7 +68,7 @@ export function LeadersTable({
                 </TableCell>
               ))}
               <TableCell align="right" sx={{ fontWeight: 'bold', ...COLLAPSIBLE_SX }}>
-                DG
+                Drop goals
               </TableCell>
             </TableRow>
           </TableHead>
@@ -120,9 +120,9 @@ export function LeadersTable({
         </Button>
       )}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        {coverageNote(division)} T = tries, C = conversions made/attempted, PG =
-        penalty goals made/attempted, DG = drop goals, PTS = points (5/2/3/3).
-        Players are matched by team and name.
+        {coverageNote(division)} Conversions and penalty goals show made/attempted.
+        Points: try 5, conversion 2, penalty goal 3, drop goal 3. Players are
+        matched by team and name.
       </Typography>
     </Box>
   );
