@@ -1,19 +1,19 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { seasonSnapshotFile } from '../../src/api/capital';
+import { syncDir } from './snapshot-freshness';
 
-// Replaces a snapshot directory with one file per season plus index.json.
+// Makes a snapshot directory hold one file per season plus index.json,
+// rewriting only files whose content changed. Returns whether anything did.
 // Call it only after a successful pull, so a throttled CMS leaves the
 // previous snapshot untouched.
 export function writeSeasonSnapshot(
   outDir: string,
   index: { seasons: string[] },
   seasons: { season: string }[]
-): void {
-  fs.rmSync(outDir, { recursive: true, force: true });
-  fs.mkdirSync(outDir, { recursive: true });
+): boolean {
+  const files: Record<string, string> = {};
   for (const season of seasons) {
-    fs.writeFileSync(path.join(outDir, seasonSnapshotFile(season.season)), JSON.stringify(season));
+    files[seasonSnapshotFile(season.season)] = JSON.stringify(season);
   }
-  fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(index));
+  files['index.json'] = JSON.stringify(index);
+  return syncDir(outDir, files);
 }

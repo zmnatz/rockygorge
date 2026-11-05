@@ -4,6 +4,7 @@ import {
   fetchAllCapitalFixtures,
   type StandingsSnapshotIndex,
 } from '../src/api/capital';
+import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
   buildLeadersSnapshot,
@@ -16,8 +17,8 @@ import {
 // leaderboard would undercount, so the previous snapshot is kept instead.
 const MAX_FAILED_SHARE = 0.05;
 
-// Match centres persist between builds (Netlify caches .cache/, see
-// netlify.toml), so only new or recent games hit the CMS.
+// Match centres persist between runs (.cache/leaders is committed and
+// refreshed nightly), so only new or recent games hit the CMS.
 const CACHE_PATH = path.join(process.cwd(), '.cache', 'leaders', 'matches.json');
 
 function loadCache(): MatchCache & { save(): void } {
@@ -39,18 +40,19 @@ function loadCache(): MatchCache & { save(): void } {
       entries[id] = match;
     },
     save: () => {
-      fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
-      fs.writeFileSync(CACHE_PATH, JSON.stringify(entries));
+      writeFileIfChanged(CACHE_PATH, JSON.stringify(entries));
     },
   };
 }
 
 // Best-effort like the other snapshots: a throttled CMS must never fail the
-// build. On failure the previous snapshot is kept; Netlify caches
-// public/data/leaders between builds so there is one to keep.
+// build. On failure the previous (committed) snapshot is kept.
 async function generate() {
   console.log('Building scoring leaderboard snapshot for static export...');
   const outDir = path.join(process.cwd(), 'public', 'data', 'leaders');
+  if (skipIfFresh('leaders', path.join(outDir, 'index.json'))) {
+    return;
+  }
   const cache = loadCache();
   try {
     const snapshot = await buildLeadersSnapshot({
@@ -75,7 +77,7 @@ async function generate() {
       defaultSeason: seasons[0] ?? '',
       seasons,
     };
-    writeSeasonSnapshot(outDir, index, snapshot.seasons);
+    recordRun('leaders', writeSeasonSnapshot(outDir, index, snapshot.seasons));
     console.log(
       `Saved scoring leaders for ${snapshot.attempted - snapshot.failed} of ${snapshot.attempted} games across ${seasons.length} seasons to public/data/leaders/`
     );

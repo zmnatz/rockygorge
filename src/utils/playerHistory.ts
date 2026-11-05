@@ -190,12 +190,8 @@ export function aggregatePlayerHistory(
   }
 
   for (const history of histories.values()) {
-    history.games.sort(
-      (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
-    );
-    history.scoringEvents.sort(
-      (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
-    );
+    history.games.sort(newestFirst);
+    history.scoringEvents.sort(newestFirst);
   }
 
   return histories;
@@ -279,6 +275,18 @@ interface MatchCentreResponse {
 
 interface BuildOptions {
   concurrency?: number;
+}
+
+// Newest first; same-time entries order by fixture id so the snapshot output
+// is identical between runs (fetch order is not).
+function newestFirst(
+  a: { dateTime: string; fixtureId: string },
+  b: { dateTime: string; fixtureId: string }
+): number {
+  return (
+    new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime() ||
+    a.fixtureId.localeCompare(b.fixtureId)
+  );
 }
 
 export async function buildPlayerHistories(
