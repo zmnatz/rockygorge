@@ -4,7 +4,7 @@ name: Update snapshots
 # .cache/leaders) so site builds can skip those CMS pulls. See docs/snapshots.md.
 on:
   schedule:
-    - cron: "0 6 * * *" # daily 06:00 UTC, an hour before the nightly Netlify build hook
+    - cron: "0 6 * * *" # daily 06:00 UTC
   workflow_dispatch: # manual run from the Actions tab
 
 permissions:

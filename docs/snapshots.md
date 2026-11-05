@@ -25,6 +25,8 @@ generated every build and cached by Netlify.)
   demand from the Actions tab). It runs `bun run generate:force` and commits
   `public/data` and `.cache/leaders` to `master`. The timestamps change every
   run, so expect one commit per night.
+  The push to `master` is what triggers the nightly Netlify build (there is no
+  separate build-hook workflow), so a failed update means no nightly build.
 
 ## Forcing an update
 
