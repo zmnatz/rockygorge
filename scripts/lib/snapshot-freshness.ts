@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Build-time snapshots (public/data/**, .cache/leaders) are committed to the
+// Build-time snapshots (public/data/**, public/crests, .cache/leaders) are committed to the
 // repo and refreshed nightly by .github/workflows/update-snapshots.yml. Each
 // generate script records when it last succeeded in this manifest and skips
 // its CMS pulls while that is under MAX_AGE_MS old, unless forced.
 export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players';
+export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests';
 
 export type SnapshotManifest = Partial<Record<SnapshotName, string>>;
 

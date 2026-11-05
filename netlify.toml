@@ -10,15 +10,11 @@
   package = "netlify-plugin-cache"
 
   [plugins.inputs]
-    # .next/cache speeds up page prerendering; public/crests persists the
-    # snapshotted team logos so generate:crests only downloads new teams
-    # (it skips files that already exist). The JSON snapshots (public/data,
-    # .cache/leaders) are committed to the repo, so they must NOT be cached
-    # here: a restored cache would overwrite the fresher committed copies.
-    paths = [
-      ".next/cache",
-      "public/crests",
-    ]
+    # .next/cache speeds up page prerendering. The generated snapshots
+    # (public/data, public/crests, .cache/leaders) are committed to the repo,
+    # so they must NOT be cached here: a restored cache would overwrite the
+    # fresher committed copies.
+    paths = [".next/cache"]
 
 [[redirects]]
   from = "/api/calendar"

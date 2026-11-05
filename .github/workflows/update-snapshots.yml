@@ -1,7 +1,7 @@
 name: Update snapshots
 
 # Refreshes the committed build-time JSON snapshots (public/data/**,
-# .cache/leaders) so site builds can skip those CMS pulls. See docs/snapshots.md.
+# public/crests, .cache/leaders) so site builds can skip those CMS pulls. See docs/snapshots.md.
 on:
   schedule:
     - cron: "0 6 * * *" # daily 06:00 UTC
@@ -33,7 +33,7 @@ jobs:
 
       - name: Commit changes to master
         run: |
-          git add public/data .cache/leaders
+          git add public/data public/crests .cache/leaders
           if git diff --cached --quiet; then
             echo "Snapshots unchanged"
             exit 0

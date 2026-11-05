@@ -3,6 +3,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { crestFileName, isPlaceholderCrest } from '../src/utils/crest';
 import { fetchAllCapitalFixtures } from '../src/api/capital';
+import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
 
 interface SnapshotScore {
   homeTeam: { crest: string };
@@ -17,7 +18,12 @@ interface SnapshotScore {
 // component falls back to the remote URL, then an initials avatar, at
 // runtime).
 async function generate() {
+  const outDir = path.join(process.cwd(), 'public', 'crests');
+  if (skipIfFresh('crests', outDir)) {
+    return;
+  }
   console.log('Snapshotting team crests for static export...');
+  let complete = true;
   const urls = new Set<string>();
   const snapshotPath = path.join(process.cwd(), 'public', 'data', 'scores.json');
   if (fs.existsSync(snapshotPath)) {
@@ -45,9 +51,9 @@ async function generate() {
     }
     console.log(`Found ${urls.size} unique team crests (scores + league feeds).`);
   } catch (err) {
+    complete = false;
     console.warn('Falling back to scores snapshot only:', (err as Error).message);
   }
-  const outDir = path.join(process.cwd(), 'public', 'crests');
   fs.mkdirSync(outDir, { recursive: true });
 
   let saved = 0;
@@ -79,8 +85,13 @@ async function generate() {
       console.log(`Saved ${file} (${(out.length / 1024).toFixed(1)} KiB)`);
       saved += 1;
     } catch (err) {
+      complete = false;
       console.warn(`Failed to snapshot ${url}:`, (err as Error).message);
     }
+  }
+  // Only a complete pass counts as a refresh; otherwise the next build retries.
+  if (complete) {
+    markUpdated('crests');
   }
   console.log(`Saved ${saved} new crests (${skipped} already present) to public/crests/`);
 }
