@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fetchLiveScores } from '../src/api/scores';
+import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
 
 // Snapshots are best-effort: the homepage falls back to live CMS data when
 // the snapshot is missing or stale, so a throttled CMS (HTTP 429) must never
@@ -9,10 +10,14 @@ async function generate() {
   console.log('Building scores snapshot for static export...');
   const outDir = path.join(process.cwd(), 'public', 'data');
   const outPath = path.join(outDir, 'scores.json');
+  if (skipIfFresh('scores', outPath)) {
+    return;
+  }
   try {
     const scores = await fetchLiveScores();
     fs.mkdirSync(outDir, { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(scores));
+    markUpdated('scores');
     console.log(`Saved ${scores.length} scores to public/data/scores.json`);
   } catch (err) {
     console.warn(

@@ -3,6 +3,7 @@ import {
   buildStandingsSnapshot,
   splitStandingsSnapshot,
 } from '../src/api/capital';
+import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 
 // Best-effort like the other snapshots: /standings falls back to live CMS
@@ -12,10 +13,14 @@ async function generate() {
   console.log('Building standings snapshot for static export...');
   // Split by season so /standings downloads only the seasons it shows.
   const outDir = path.join(process.cwd(), 'public', 'data', 'standings');
+  if (skipIfFresh('standings', path.join(outDir, 'index.json'))) {
+    return;
+  }
   try {
     const snapshot = await buildStandingsSnapshot({ gapMs: 300 });
     const { index, seasons } = splitStandingsSnapshot(snapshot);
     writeSeasonSnapshot(outDir, index, Object.values(seasons));
+    markUpdated('standings');
     console.log(
       `Saved ${snapshot.fixtures.length} fixtures and ${Object.keys(snapshot.ladders).length} ladders across ${index.seasons.length} seasons to public/data/standings/`
     );

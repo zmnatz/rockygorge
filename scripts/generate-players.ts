@@ -5,6 +5,7 @@ import {
   PLAYERS_SNAPSHOT_DIR,
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
+import { markUpdated, skipIfFresh } from './lib/snapshot-freshness';
 
 // Best-effort like the other snapshots: a throttled CMS (HTTP 429) must never
 // fail the build. On failure the previous snapshot is kept as-is.
@@ -12,6 +13,9 @@ async function generate() {
   console.log('Building player histories for static export...');
   const outDir = path.join(process.cwd(), 'public', PLAYERS_SNAPSHOT_DIR);
   const tmpDir = `${outDir}.tmp`;
+  if (skipIfFresh('players', outDir)) {
+    return;
+  }
   try {
     const histories = await buildPlayerHistories({ concurrency: 3 });
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -26,6 +30,7 @@ async function generate() {
     fs.rmSync(outDir, { recursive: true, force: true });
     fs.renameSync(tmpDir, outDir);
     fs.rmSync(path.join(path.dirname(outDir), 'players.json'), { force: true });
+    markUpdated('players');
     console.log(`Saved ${histories.size} player histories to public/${PLAYERS_SNAPSHOT_DIR}/`);
   } catch (err) {
     fs.rmSync(tmpDir, { recursive: true, force: true });
