@@ -9,7 +9,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 | scores    | `public/data/scores.json`   | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
 | leaders   | `public/data/leaders/`, plus the match-centre cache `.cache/leaders/matches.json` | `scripts/generate-leaders-index.ts` |
-| players   | `public/data/players/`      | `scripts/generate-players.ts` |
+| players   | `public/data/players/`, including the eligibility tool's `participation.json` | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
 
 ## How freshness works

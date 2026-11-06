@@ -5,6 +5,10 @@ import {
   PLAYERS_SNAPSHOT_DIR,
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
+import {
+  buildParticipationSnapshot,
+  PARTICIPATION_SNAPSHOT_FILE,
+} from '../src/utils/participation';
 import { recordRun, skipIfFresh, syncDir } from './lib/snapshot-freshness';
 
 // Best-effort like the other snapshots: a throttled CMS (HTTP 429) must never
@@ -18,11 +22,14 @@ async function generate() {
   try {
     // Every history is built in memory first, so a failed pull never leaves
     // a partial set on disk.
-    const histories = await buildPlayerHistories({ concurrency: 3 });
+    const { histories, results } = await buildPlayerHistories({ concurrency: 3 });
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
       files[playerSnapshotFile(id)] = JSON.stringify(history);
     }
+    files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify(
+      buildParticipationSnapshot(histories.values(), results)
+    );
     const changed = syncDir(outDir, files);
     fs.rmSync(path.join(path.dirname(outDir), 'players.json'), { force: true });
     recordRun('players', changed);

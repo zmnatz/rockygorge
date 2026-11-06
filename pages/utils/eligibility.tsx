@@ -1,4 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -30,13 +31,27 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { computeBreakdown, divisionLabel, parsePlayerRows } from '@/utils/eligibility';
+import {
+  clubConfig,
+  clubGaps,
+  listClubs,
+  loadParticipationSnapshot,
+  participationRows,
+  type ParticipationGap,
+} from '@/utils/participation';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
 
-import type { EligibilityBreakdown, PlayerEligibility, PlayerRow } from '@/types/eligibility';
+import type {
+  EligibilityBreakdown,
+  EligibilityConfig,
+  PlayerEligibility,
+  PlayerRow,
+} from '@/types/eligibility';
 
-const UPPER_LABEL = eligibility.upperDivision.label;
-const LOWER_LABEL = eligibility.lowerDivision.label;
+/** Where a report's rows came from. Only a CSV report carries USA IDs and
+ *  registration dates. */
+type ReportSource = 'record' | 'csv';
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
@@ -54,9 +69,12 @@ type SortKey =
   | 'status'
   | 'reasons';
 
-const getColumns = (otherLabel: string): { key: SortKey; title: string; numeric?: boolean }[] => [
+const getColumns = (
+  otherLabel: string,
+  source: ReportSource,
+): { key: SortKey; title: string; numeric?: boolean }[] => [
   { key: 'name', title: 'Player' },
-  { key: 'lastRegistered', title: 'Last Registered' },
+  ...(source === 'csv' ? [{ key: 'lastRegistered' as const, title: 'Last Registered' }] : []),
   { key: 'played', title: 'Played', numeric: true },
   { key: 'sub', title: 'Sub', numeric: true },
   { key: 'participation', title: 'Participation', numeric: true },
@@ -88,6 +106,8 @@ function sortValue(player: PlayerEligibility, key: SortKey): string | number {
 
 interface DivisionTableProps {
   title: string;
+  source: ReportSource;
+  ownLabel: string;
   otherLabel: string;
   summary: { total: number; eligible: number };
   visibleCount: number;
@@ -99,7 +119,7 @@ interface DivisionTableProps {
   players: PlayerEligibility[];
 }
 
-function renderCell(player: PlayerEligibility, key: SortKey) {
+function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSource) {
   switch (key) {
     case 'name':
       return (
@@ -107,9 +127,11 @@ function renderCell(player: PlayerEligibility, key: SortKey) {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             {player.name}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            USA ID {player.usaId}
-          </Typography>
+          {source === 'csv' && (
+            <Typography variant="caption" color="text.secondary">
+              USA ID {player.playerId}
+            </Typography>
+          )}
         </>
       );
     case 'lastRegistered':
@@ -139,6 +161,8 @@ function renderCell(player: PlayerEligibility, key: SortKey) {
 
 function DivisionTable({
   title,
+  source,
+  ownLabel,
   otherLabel,
   summary,
   visibleCount,
@@ -155,7 +179,7 @@ function DivisionTable({
   });
   const [detail, setDetail] = useState<PlayerEligibility | null>(null);
 
-  const columns = getColumns(otherLabel);
+  const columns = getColumns(otherLabel, source);
   const visibleColumns = columns.filter((col) => !hiddenColumns.includes(col.key));
 
   const handleSort = (key: SortKey) => {
@@ -262,7 +286,7 @@ function DivisionTable({
           <TableBody>
             {rows.map((player) => (
               <TableRow
-                key={player.usaId}
+                key={player.playerId}
                 hover
                 onClick={() => setDetail(player)}
                 sx={{ cursor: 'pointer' }}
@@ -273,7 +297,7 @@ function DivisionTable({
                     align={col.numeric ? 'right' : 'left'}
                     sx={col.key === 'participation' ? { fontWeight: 'bold' } : undefined}
                   >
-                    {renderCell(player, col.key)}
+                    {renderCell(player, col.key, source)}
                   </TableCell>
                 ))}
               </TableRow>
@@ -290,7 +314,12 @@ function DivisionTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <PlayerDetailsDialog player={detail} onClose={() => setDetail(null)} />
+      <PlayerDetailsDialog
+        player={detail}
+        source={source}
+        ownLabel={ownLabel}
+        onClose={() => setDetail(null)}
+      />
     </Paper>
   );
 }
@@ -331,7 +360,7 @@ function RoundsMatrix({ rows }: { rows: PlayerRow[] }) {
   if (roundNames.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
-        No round data in the CSV.
+        No round data.
       </Typography>
     );
   }
@@ -373,12 +402,16 @@ function RoundsMatrix({ rows }: { rows: PlayerRow[] }) {
   );
 }
 
-/** Full CSV detail for one player, opened by clicking a table row. */
+/** Full report detail for one player, opened by clicking a table row. */
 function PlayerDetailsDialog({
   player,
+  source,
+  ownLabel,
   onClose,
 }: {
   player: PlayerEligibility | null;
+  source: ReportSource;
+  ownLabel: string;
   onClose: () => void;
 }) {
   return (
@@ -390,9 +423,11 @@ function PlayerDetailsDialog({
               <Typography variant="h6" component="span">
                 {player.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary" component="span">
-                USA ID {player.usaId}
-              </Typography>
+              {source === 'csv' && (
+                <Typography variant="body2" color="text.secondary" component="span">
+                  USA ID {player.playerId}
+                </Typography>
+              )}
               {statusChip(player.eligible)}
             </Box>
           </DialogTitle>
@@ -403,11 +438,8 @@ function PlayerDetailsDialog({
               </Typography>
             )}
             <Box>
-              <Fact label="Last registered" value={player.lastRegistered} />
-              <Fact
-                label="Side"
-                value={player.role === 'upper' ? `${UPPER_LABEL} side` : `${LOWER_LABEL} side`}
-              />
+              {source === 'csv' && <Fact label="Last registered" value={player.lastRegistered} />}
+              <Fact label="Side" value={`${ownLabel} side`} />
               <Fact label="Played" value={player.played} />
               <Fact label="Substitute" value={player.substitute} />
               <Fact label="Participation" value={player.participation} />
@@ -435,32 +467,59 @@ function PlayerDetailsDialog({
   );
 }
 
-function reportPlayerLine(player: PlayerEligibility, otherLabel: string): string {
+function reportPlayerLine(player: PlayerEligibility, otherLabel: string, source: ReportSource): string {
   return (
-    `${player.name} (#${player.usaId}): ` +
+    `${source === 'csv' ? `${player.name} (#${player.playerId})` : player.name}: ` +
     `played ${player.played} / sub ${player.substitute} ` +
     `(participation ${player.participation}), ${otherLabel} participation ${player.otherDivisionParticipation}`
   );
 }
 
-function buildReport(breakdown: EligibilityBreakdown): string {
+/** A gap in the match record, in the words shown on the page and in the export. */
+function gapText(gap: ParticipationGap): string {
+  const date = new Date(gap.dateTime).toLocaleDateString(undefined, { timeZone: 'UTC' });
+  const problem = gap.kind === 'no-lineup' ? 'no lineup recorded' : 'no substitutions recorded';
+  return `${gap.teamName} v ${gap.opponent} (${date}): ${problem}`;
+}
+
+interface ReportMeta {
+  /** Who the report is for, e.g. "Rocky Gorge". */
+  title: string;
+  source: ReportSource;
+  season?: string;
+  gaps: ParticipationGap[];
+}
+
+function buildReport(
+  breakdown: EligibilityBreakdown,
+  config: EligibilityConfig,
+  { title, source, season, gaps }: ReportMeta,
+): string {
   const sections = [
     {
-      heading: divisionLabel(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary),
-      otherLabel: LOWER_LABEL,
+      heading: divisionLabel(config.upperDivision.label, config.upperDivision.teamName, breakdown.upperSummary),
+      otherLabel: config.lowerDivision.label,
       players: breakdown.upper,
     },
     {
-      heading: divisionLabel(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary),
-      otherLabel: UPPER_LABEL,
+      heading: divisionLabel(config.lowerDivision.label, config.lowerDivision.teamName, breakdown.lowerSummary),
+      otherLabel: config.upperDivision.label,
       players: breakdown.lower,
     },
   ];
 
   const lines: string[] = [];
-  lines.push('ROCKY GORGE ELIGIBILITY REPORT');
+  lines.push(`${title.toUpperCase()} ELIGIBILITY REPORT`);
   lines.push(`Generated: ${new Date().toLocaleString()}`);
+  if (season) lines.push(`Source: match record, ${season} season`);
   lines.push('');
+  if (gaps.length > 0) {
+    lines.push('RECORD GAPS (counts may be low; check these matches)');
+    for (const gap of gaps) {
+      lines.push(`  ${gapText(gap)}`);
+    }
+    lines.push('');
+  }
 
   for (const section of sections) {
     const eligible = section.players.filter((p) => p.eligible);
@@ -475,7 +534,7 @@ function buildReport(breakdown: EligibilityBreakdown): string {
       lines.push('  (none)');
     } else {
       for (const player of eligible) {
-        lines.push(`  ${reportPlayerLine(player, section.otherLabel)}`);
+        lines.push(`  ${reportPlayerLine(player, section.otherLabel, source)}`);
       }
     }
     lines.push('');
@@ -484,7 +543,7 @@ function buildReport(breakdown: EligibilityBreakdown): string {
       lines.push('  (none)');
     } else {
       for (const player of ineligible) {
-        lines.push(`  ${reportPlayerLine(player, section.otherLabel)}`);
+        lines.push(`  ${reportPlayerLine(player, section.otherLabel, source)}`);
         for (const reason of player.reasons) {
           lines.push(`    • ${reason}`);
         }
@@ -542,14 +601,45 @@ function CsvForm({ csvText, fileName, canClear, onFile, onTextChange, onRun, onC
 }
 
 export default function EligibilityPage() {
+  const [source, setSource] = useState<ReportSource>('record');
+  const [clubName, setClubName] = useState('');
   const [fileName, setFileName] = useState('');
   const [csvText, setCsvText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [breakdown, setBreakdown] = useState<EligibilityBreakdown | null>(null);
+  const [csvBreakdown, setCsvBreakdown] = useState<EligibilityBreakdown | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered', 'played', 'sub']);
+
+  const record = useQuery({
+    queryKey: ['participation-snapshot'],
+    queryFn: loadParticipationSnapshot,
+    enabled: source === 'record',
+  });
+  const snapshot = record.data ?? null;
+  const clubs = useMemo(() => (snapshot ? listClubs(snapshot, eligibility) : []), [snapshot]);
+  // Defaults to the configured club, this site's own.
+  const club =
+    clubs.find((candidate) => candidate.name === clubName) ??
+    clubs.find((candidate) => candidate.upperTeam === eligibility.upperDivision.teamName) ??
+    clubs[0] ??
+    null;
+  const recordReport = useMemo(() => {
+    if (!snapshot || !club) return null;
+    const config = clubConfig(club, eligibility);
+    return {
+      config,
+      breakdown: computeBreakdown(participationRows(snapshot, club, config), config),
+      gaps: clubGaps(snapshot, club, config),
+    };
+  }, [snapshot, club]);
+
+  const breakdown = source === 'record' ? (recordReport?.breakdown ?? null) : csvBreakdown;
+  const config = source === 'record' ? (recordReport?.config ?? eligibility) : eligibility;
+  const gaps = source === 'record' ? (recordReport?.gaps ?? []) : [];
+  const upperLabel = config.upperDivision.label;
+  const lowerLabel = config.lowerDivision.label;
 
   const matchesFilters = (player: PlayerEligibility) => {
     if (statusFilter === 'eligible' && !player.eligible) return false;
@@ -578,10 +668,10 @@ export default function EligibilityPage() {
     setError(null);
     try {
       const rows = parsePlayerRows(csvText);
-      setBreakdown(computeBreakdown(rows, eligibility));
+      setCsvBreakdown(computeBreakdown(rows, eligibility));
       setDialogOpen(false);
     } catch (err) {
-      setBreakdown(null);
+      setCsvBreakdown(null);
       setError(err instanceof Error ? err.message : 'Could not read the CSV.');
       setDialogOpen(false);
     }
@@ -591,7 +681,7 @@ export default function EligibilityPage() {
     setCsvText('');
     setFileName('');
     setError(null);
-    setBreakdown(null);
+    setCsvBreakdown(null);
     setStatusFilter('all');
     setHiddenColumns(['lastRegistered', 'played', 'sub']);
     setDialogOpen(false);
@@ -599,7 +689,11 @@ export default function EligibilityPage() {
 
   const handleExport = () => {
     if (!breakdown) return;
-    const blob = new Blob([buildReport(breakdown)], { type: 'text/plain;charset=utf-8' });
+    const meta: ReportMeta =
+      source === 'record' && club && snapshot
+        ? { title: club.name, source, season: snapshot.season, gaps }
+        : { title: 'Rocky Gorge', source, gaps };
+    const blob = new Blob([buildReport(breakdown, config, meta)], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -615,15 +709,85 @@ export default function EligibilityPage() {
       <Typography variant="h4" component="h1" gutterBottom>
         Eligibility Breakdown
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 800 }}>
-        Paste or upload the Rugby Xplorer matches-played report to see which
-        players are NCS-eligible for the {UPPER_LABEL} and {LOWER_LABEL} sides.
-        Participation counts as Played + Substitute; per-round attendance codes
-        do not count. Players are assumed registered — the report only lists
-        registered players — and the registration date is shown for reference.
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 2, maxWidth: 800 }}>
+        {source === 'record'
+          ? `Pick a club to see which players are NCS-eligible, from the league and
+             local playoff lineups in the match record. Participation counts starts and
+             substitute appearances. The record has no registration data, so check
+             registration separately.`
+          : `Paste or upload the Rugby Xplorer matches-played report to see which
+             players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.
+             Participation counts as Played + Substitute; per-round attendance codes
+             do not count. Players are assumed registered — the report only lists
+             registered players — and the registration date is shown for reference.`}
       </Typography>
 
-      {!breakdown && (
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 3 }}>
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={source}
+          onChange={(_, next) => {
+            if (next) setSource(next as ReportSource);
+          }}
+          aria-label="Report source"
+        >
+          <ToggleButton value="record">Match record</ToggleButton>
+          <ToggleButton value="csv">CSV report</ToggleButton>
+        </ToggleButtonGroup>
+        {source === 'record' && club && (
+          <>
+            <FormControl size="small" sx={{ minWidth: 220 }}>
+              <InputLabel id="eligibility-club-label">Club</InputLabel>
+              <Select
+                labelId="eligibility-club-label"
+                label="Club"
+                value={club.name}
+                onChange={(event) => setClubName(event.target.value)}
+              >
+                {clubs.map((candidate) => (
+                  <MenuItem key={candidate.name} value={candidate.name}>
+                    {candidate.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Typography variant="body2" color="text.secondary">
+              {snapshot?.season} season
+            </Typography>
+          </>
+        )}
+      </Box>
+
+      {source === 'record' && record.isPending && (
+        <Typography color="text.secondary">Loading the match record…</Typography>
+      )}
+
+      {source === 'record' && record.isError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Could not load the match record. Try again, or use a CSV report.
+        </Alert>
+      )}
+
+      {source === 'record' && record.isSuccess && !club && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          The match record has no clubs with two sides yet. Use a CSV report instead.
+        </Alert>
+      )}
+
+      {gaps.length > 0 && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          These matches have gaps in the record, so some counts may be low. Check them
+          before relying on a verdict:
+          <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+            {gaps.map((gap) => (
+              <li key={`${gap.fixtureId}-${gap.teamName}`}>{gapText(gap)}</li>
+            ))}
+          </Box>
+        </Alert>
+      )}
+
+      {source === 'csv' && !breakdown && (
         <Paper sx={{ p: 3, mb: 4 }}>
           <CsvForm
             csvText={csvText}
@@ -640,7 +804,7 @@ export default function EligibilityPage() {
         </Paper>
       )}
 
-      {error && (
+      {source === 'csv' && error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
@@ -653,7 +817,7 @@ export default function EligibilityPage() {
         </Alert>
       )}
 
-      {!breakdown && !error && (
+      {source === 'csv' && !breakdown && !error && (
         <Typography color="text.secondary">
           Upload a report and run the breakdown to see player eligibility.
         </Typography>
@@ -675,13 +839,15 @@ export default function EligibilityPage() {
               onChange={(_, newValue) => setActiveTab(newValue)}
               aria-label="Eligibility by division"
             >
-              <Tab label={`${UPPER_LABEL} side`} />
-              <Tab label={`${LOWER_LABEL} side`} />
+              <Tab label={`${upperLabel} side`} />
+              <Tab label={`${lowerLabel} side`} />
             </Tabs>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
-                Edit Report Data
-              </Button>
+              {source === 'csv' && (
+                <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
+                  Edit Report Data
+                </Button>
+              )}
               <Button variant="outlined" size="small" onClick={handleExport}>
                 Export Report
               </Button>
@@ -689,8 +855,10 @@ export default function EligibilityPage() {
           </Box>
           {activeTab === 0 && (
             <DivisionTable
-              title={divisionLabel(UPPER_LABEL, eligibility.upperDivision.teamName, breakdown.upperSummary)}
-              otherLabel={LOWER_LABEL}
+              title={divisionLabel(upperLabel, config.upperDivision.teamName, breakdown.upperSummary)}
+              source={source}
+              ownLabel={upperLabel}
+              otherLabel={lowerLabel}
               summary={breakdown.upperSummary}
               visibleCount={upperPlayers.length}
               filtered={filtersActive}
@@ -703,8 +871,10 @@ export default function EligibilityPage() {
           )}
           {activeTab === 1 && (
             <DivisionTable
-              title={divisionLabel(LOWER_LABEL, eligibility.lowerDivision.teamName, breakdown.lowerSummary)}
-              otherLabel={UPPER_LABEL}
+              title={divisionLabel(lowerLabel, config.lowerDivision.teamName, breakdown.lowerSummary)}
+              source={source}
+              ownLabel={lowerLabel}
+              otherLabel={upperLabel}
               summary={breakdown.lowerSummary}
               visibleCount={lowerPlayers.length}
               filtered={filtersActive}
@@ -729,7 +899,7 @@ export default function EligibilityPage() {
           <CsvForm
             csvText={csvText}
             fileName={fileName}
-            canClear={Boolean(csvText) || Boolean(breakdown)}
+            canClear={Boolean(csvText) || Boolean(csvBreakdown)}
             onFile={handleFile}
             onTextChange={(value) => {
               setCsvText(value);

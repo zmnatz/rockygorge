@@ -53,7 +53,7 @@ export function parsePlayerRows(csvText: string): PlayerRow[] {
     .slice(1)
     .filter((row) => row.some((cell) => cell.trim() !== ''))
     .map((row) => ({
-      usaId: row[col['USA ID']].trim(),
+      playerId: row[col['USA ID']].trim(),
       firstName: row[col['First Name']].trim(),
       lastName: row[col['Last Name']].trim(),
       lastRegistered: row[col['Player Last Registered']].trim(),
@@ -123,7 +123,7 @@ function evaluate(
   }
 
   return {
-    usaId: row.usaId,
+    playerId: row.playerId,
     firstName: row.firstName,
     lastName: row.lastName,
     name: [row.firstName, row.lastName].filter(Boolean).join(' '),
@@ -185,7 +185,7 @@ export function computeBreakdown(
     const competitions = new Set<string>();
     for (const row of rows) {
       if (row.teamName !== teamName) continue;
-      const key = row.usaId.trim();
+      const key = row.playerId.trim();
       if (!key) continue;
       if (row.competition.trim() !== '') competitions.add(row.competition);
       const previous = map.get(key);
@@ -201,8 +201,8 @@ export function computeBreakdown(
   /** All of a player's CSV rows across every team, so the detail modal shows
    *  no matter which division table opened it. The player's own team first. */
   const sourcesFor = (row: PlayerRow): PlayerRow[] => {
-    const upper = upperTeam.sources.get(row.usaId) ?? [];
-    const lower = lowerTeam.sources.get(row.usaId) ?? [];
+    const upper = upperTeam.sources.get(row.playerId) ?? [];
+    const lower = lowerTeam.sources.get(row.playerId) ?? [];
     return teamRole(row.teamName, config) === 'upper' ? [...upper, ...lower] : [...lower, ...upper];
   };
 
@@ -210,7 +210,7 @@ export function computeBreakdown(
     evaluate(
       row,
       participation(row),
-      participation(lowerTeam.map.get(row.usaId.trim())),
+      participation(lowerTeam.map.get(row.playerId.trim())),
       config,
       sourcesFor(row),
     ),
@@ -219,7 +219,7 @@ export function computeBreakdown(
     evaluate(
       row,
       participation(row),
-      participation(upperTeam.map.get(row.usaId.trim())),
+      participation(upperTeam.map.get(row.playerId.trim())),
       config,
       sourcesFor(row),
     ),

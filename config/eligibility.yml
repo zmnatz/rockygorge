@@ -17,3 +17,10 @@ lowerDivision:
   upperMatchLimit: 4
   # Reg 3.5(d)(ii)(a) + Figure 1: lower-division participation must be at least the upper-division count.
   lowerAtLeastUpper: true
+
+# Competitions that aren't NCS Qualifying Matches (league and local playoffs are).
+# Case-insensitive name fragments, applied when reports run from the match record.
+nonQualifyingCompetitions:
+  - "National Championships"
+  - "Super Regional"
+  - "7s"

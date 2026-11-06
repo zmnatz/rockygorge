@@ -47,12 +47,17 @@ export interface PlayerGameLog {
   season: string;
   dateTime: string;
   compName: string;
+  // The side the player was listed for in this game. A player can appear for
+  // more than one side of a club, so PlayerHistory.teamName can't answer this.
+  teamName: string;
   opponent: string;
   scoreFor: string;
   scoreAgainst: string;
   result: 'W' | 'L' | 'D';
   starter: boolean;
   played: boolean;
+  // Listed only as a coach for this game, so not a playing appearance.
+  coach: boolean;
 }
 
 export interface PlayerScoringEvent {
@@ -81,6 +86,7 @@ interface FixtureLookupItem {
   compName: string;
   dateTime: string;
   season: string;
+  round?: string;
   sourceType: string;
   homeTeam: { name: string; score: string };
   awayTeam: { name: string; score: string };
@@ -123,8 +129,17 @@ export function aggregatePlayerHistory(
       })
     );
 
+    // Roster order puts playing roles first, so a player-coach listed twice
+    // gets one game, recorded as the player.
+    const seenInFixture = new Set<string>();
+
     for (const player of roster) {
       const key = playerKey(player.id);
+      if (seenInFixture.has(key)) {
+        continue;
+      }
+      seenInFixture.add(key);
+
       let history = histories.get(key);
       if (!history) {
         history = {
@@ -138,6 +153,7 @@ export function aggregatePlayerHistory(
       }
 
       const isHome = player.isHome;
+      const ownTeam = isHome ? fixture.homeTeam.name : fixture.awayTeam.name;
       const ownScore = isHome ? fixture.homeTeam.score : fixture.awayTeam.score;
       const otherScore = isHome ? fixture.awayTeam.score : fixture.homeTeam.score;
       const isStarter = starterIds.has(key);
@@ -145,25 +161,28 @@ export function aggregatePlayerHistory(
         (sub) => playerKey(sub.id) === key || sub.name.toLowerCase() === player.name.toLowerCase()
       );
       const subName = player.name.toLowerCase();
+      const isCoach = !isStarter && !isSub;
       const cameOn =
         isStarter ||
-        !isSub ||
-        cameOnNames.has(subName) ||
-        [...cameOnNames].some(
-          (name) => name.split(/\s+/).pop() === subName.split(/\s+/).pop()
-        );
+        (isSub &&
+          (cameOnNames.has(subName) ||
+            [...cameOnNames].some(
+              (name) => name.split(/\s+/).pop() === subName.split(/\s+/).pop()
+            )));
 
       history.games.push({
         fixtureId: fixture.id,
         season: fixture.season,
         dateTime: fixture.dateTime,
         compName: fixture.compName,
+        teamName: ownTeam,
         opponent: isHome ? fixture.awayTeam.name : fixture.homeTeam.name,
         scoreFor: ownScore,
         scoreAgainst: otherScore,
         result: matchResult(ownScore, otherScore),
         starter: isStarter,
         played: cameOn,
+        coach: isCoach,
       });
 
       const name = player.name.toLowerCase();
@@ -221,6 +240,7 @@ const FIXTURE_LOOKUP_QUERY = `query PlayerHistoryFixtureLookupQuery($entityId: I
     compName
     dateTime
     season
+    round
     sourceType
     homeTeam { name score __typename }
     awayTeam { name score __typename }
@@ -289,14 +309,16 @@ function newestFirst(
   );
 }
 
-export async function buildPlayerHistories(
-  options?: BuildOptions
-): Promise<Map<string, PlayerHistory>> {
-  const fixtures = (await fetchAllFixtures()).filter(
+export async function buildPlayerHistories(options?: BuildOptions): Promise<{
+  histories: Map<string, PlayerHistory>;
+  results: FixtureLookupItem[];
+}> {
+  const results = (await fetchAllFixtures()).filter(
     (fixture) =>
       fixture.homeTeam.score.length > 0 &&
       fixture.awayTeam.score.length > 0
   );
+  const fixtures = [...results];
 
   const matches: MatchCentreData[] = [];
   const workers = new Array(Math.max(1, options?.concurrency ?? 1))
@@ -316,7 +338,7 @@ export async function buildPlayerHistories(
     });
   await Promise.all(workers);
 
-  return aggregatePlayerHistory(matches);
+  return { histories: aggregatePlayerHistory(matches), results };
 }
 
 async function fetchFixturePage(skip: number): Promise<FixtureLookupItem[]> {

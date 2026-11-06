@@ -28,7 +28,7 @@ export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   scores: 2,
   standings: 1,
   leaders: 1,
-  players: 1,
+  players: 2,
   crests: 1,
 };
 

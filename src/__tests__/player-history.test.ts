@@ -124,6 +124,87 @@ describe('aggregatePlayerHistory', () => {
     expect(joe?.scoringEvents).toHaveLength(0);
   });
 
+  it("records each game against the player's own side, including a side change", () => {
+    const player = (isHome: boolean) => ({
+      id: 'sam-id__10',
+      name: 'Sam Hooker',
+      position: '10',
+      shirtNumber: '10',
+      isHome,
+    });
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: {
+          ...fixture('upper', '10', '5'),
+          dateTime: '2026-10-02T17:00:00+00:00',
+        },
+        commentary: [],
+        players: [player(true)],
+        substitutes: [],
+        coaches: [],
+      },
+      {
+        fixture: {
+          ...fixture('lower', '10', '5'),
+          dateTime: '2026-10-01T17:00:00+00:00',
+          awayTeam: { ...fixture('lower', '10', '5').awayTeam, name: 'Rocky Gorge MD3' },
+        },
+        commentary: [],
+        players: [player(false)],
+        substitutes: [],
+        coaches: [],
+      },
+    ]);
+
+    expect(histories.get('sam-id')?.games.map((game) => game.teamName)).toEqual([
+      'Rocky Gorge MD1',
+      'Rocky Gorge MD3',
+    ]);
+  });
+
+  it('does not count a coach as having played', () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [],
+        players: [],
+        substitutes: [],
+        coaches: [
+          { id: 'coach-id', name: 'Pat Coach', position: 'Coach', shirtNumber: '', isHome: true },
+        ],
+      },
+    ]);
+
+    expect(histories.get('coach-id')?.games[0]).toMatchObject({
+      coach: true,
+      starter: false,
+      played: false,
+    });
+  });
+
+  it('records one game for a player-coach, as the player', () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [],
+        players: [
+          { id: 'pat-id__8', name: 'Pat Coach', position: '8', shirtNumber: '8', isHome: true },
+        ],
+        substitutes: [],
+        coaches: [
+          { id: 'pat-id', name: 'Pat Coach', position: 'Coach', shirtNumber: '', isHome: true },
+        ],
+      },
+    ]);
+
+    expect(histories.get('pat-id')?.games).toHaveLength(1);
+    expect(histories.get('pat-id')?.games[0]).toMatchObject({
+      coach: false,
+      starter: true,
+      played: true,
+    });
+  });
+
   it('merges the same player across games sorted newest first', () => {
     const oldFixture = {
       ...fixture('old', '45', '21'),

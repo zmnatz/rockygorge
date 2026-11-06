@@ -169,8 +169,12 @@ Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5
 The Rugby Xplorer CSV export the eligibility tool consumes — one row per player per team and competition, carrying `Appearances` / `Played` / `Reserve` / `Substitute` totals alongside per-round attendance codes.
 _Avoid_: Roster dump, match report
 
+**Match Record**:
+The lineups and substitutions the CMS holds for each result, snapshotted for the latest season so the eligibility tool can run for any club with two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
+_Avoid_: Roster dump, participation export
+
 **Match Participation**:
-The number of NCS Qualifying Matches a player entered as a starter or substitute, taken from the `Played` and `Substitute` columns of the Match Participation Report. It is the value every eligibility threshold checks.
+The number of NCS Qualifying Matches a player entered as a starter or substitute, taken from the `Played` and `Substitute` columns of the Match Participation Report or counted from the Match Record. It is the value every eligibility threshold checks.
 _Avoid_: Appearances, games played
 
 **NCS Qualifying Match**:

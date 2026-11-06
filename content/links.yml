@@ -40,7 +40,7 @@
 - slug: '/utils/eligibility'
   href: '/utils/eligibility'
   title: 'Eligibility'
-  summary: 'NCS player eligibility breakdown from the matches-played report'
+  summary: 'NCS player eligibility breakdown from the match record or a matches-played report'
   menu: true
 - slug: '/admin'
   href: '/admin'
