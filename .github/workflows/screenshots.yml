@@ -13,7 +13,7 @@ name: Deploy preview screenshots
 # included.
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
       preview_url:
@@ -57,10 +57,14 @@ jobs:
           url="${INPUT_URL%/}"
           if [ -z "$url" ]; then
             # Wait for Netlify to report the preview for this exact commit.
-            for _ in $(seq 1 60); do
+            for attempt in $(seq 1 60); do
               status=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/status" \
-                --jq '[.statuses[] | select(.context == "deploy/netlify")][0] | "\(.state) \(.target_url)"')
+                --jq '[.statuses[] | select(.context == "deploy/netlify")][0] // empty | "\(.state) \(.target_url)"')
               state="${status%% *}"
+              if [ -z "$status" ] && [ "$attempt" -ge 12 ]; then
+                echo "No deploy/netlify status after 4 minutes. Netlify only builds previews for PRs that target the production branch (master); a stacked PR has none." >&2
+                exit 1
+              fi
               if [ "$state" = "success" ]; then
                 url="${status#* }"
                 url="${url%/}"
