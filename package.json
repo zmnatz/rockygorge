@@ -43,6 +43,7 @@
     "generate:leaders": "bun scripts/generate-leaders-index.ts",
     "generate:crests": "bun scripts/generate-crests.ts",
     "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepare": "husky"
   },

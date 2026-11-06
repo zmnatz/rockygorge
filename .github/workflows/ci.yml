@@ -35,5 +35,6 @@ jobs:
       - name: Run tests
         run: bun run test
 
-      - name: Run build
-        run: bun run build
+      # Netlify builds every PR's deploy preview, so CI only type-checks.
+      - name: Type-check
+        run: bun run typecheck
