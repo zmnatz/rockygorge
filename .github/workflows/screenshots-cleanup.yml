@@ -1,0 +1,41 @@
+name: Clean up deploy preview screenshots
+
+# Deletes a PR's folder from the orphan `pr-screenshots` branch when the PR
+# closes or merges, so the branch does not grow forever. A PR that never had
+# screenshots (or a repo with no such branch yet) is a no-op.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Remove PR screenshots
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove pr-${{ github.event.pull_request.number }}/ from pr-screenshots
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone --quiet --depth 1 --branch pr-screenshots \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" shots 2>/dev/null || {
+            echo "No pr-screenshots branch; nothing to clean."
+            exit 0
+          }
+          cd shots
+          if [ ! -d "pr-$PR" ]; then
+            echo "No screenshots for PR $PR; nothing to clean."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -rq "pr-$PR"
+          git commit -q -m "Remove screenshots for closed PR $PR"
+          git push --quiet origin pr-screenshots
