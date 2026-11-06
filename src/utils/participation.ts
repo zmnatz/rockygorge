@@ -206,17 +206,38 @@ export function clubConfig(club: Club, base: EligibilityConfig): EligibilityConf
   };
 }
 
-/** The club's rows that count towards Match Participation. */
+/** The club's rows that count towards Match Participation. As in a Match
+ *  Participation Report, every player has a row on both sides, so a player only
+ *  ever listed on one side still gets a verdict for the other. */
 export function participationRows(
   snapshot: ParticipationSnapshot,
   club: Club,
   config: EligibilityConfig,
 ): PlayerRow[] {
-  return snapshot.rows.filter(
+  const rows = snapshot.rows.filter(
     (row) =>
       (row.teamName === club.upperTeam || row.teamName === club.lowerTeam) &&
       isQualifying(row.competition, config),
   );
+  const onSide = new Set(rows.map((row) => `${row.teamName}\0${row.playerId}`));
+  const emptyRows = rows.flatMap((row) => {
+    const otherTeam = row.teamName === club.upperTeam ? club.lowerTeam : club.upperTeam;
+    const key = `${otherTeam}\0${row.playerId}`;
+    if (onSide.has(key)) return [];
+    onSide.add(key);
+    return [
+      {
+        ...row,
+        teamName: otherTeam,
+        competition: '',
+        appearances: 0,
+        played: 0,
+        substitute: 0,
+        rounds: {},
+      },
+    ];
+  });
+  return [...rows, ...emptyRows];
 }
 
 /** Gaps that could change the club's verdicts. */

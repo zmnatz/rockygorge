@@ -297,6 +297,31 @@ describe('record-based eligibility', () => {
     expect(breakdown.ignoredTeamNames).toEqual([]);
   });
 
+  it('evaluates a player listed on one side for the other side too', () => {
+    const config = clubConfig(club, baseConfig);
+    const snapshot = snapshotOf([
+      row({ playerId: 'lower-only', teamName: 'NOVA MD3', competition: 'Capital Men D3', played: 2 }),
+      row({ playerId: 'upper-only', teamName: 'NOVA MD1', played: 2 }),
+    ]);
+
+    const breakdown = computeBreakdown(participationRows(snapshot, club, config), config);
+    const verdict = (players: typeof breakdown.upper, id: string) =>
+      players.find((player) => player.playerId === id);
+
+    expect(verdict(breakdown.upper, 'lower-only')).toMatchObject({
+      participation: 0,
+      otherDivisionParticipation: 2,
+      eligible: true,
+    });
+    expect(verdict(breakdown.lower, 'upper-only')).toMatchObject({
+      participation: 0,
+      otherDivisionParticipation: 2,
+      eligible: false,
+    });
+    expect(breakdown.upperSummary.competitions).toEqual(['MAC Men D1']);
+    expect(breakdown.lowerSummary.competitions).toEqual(['Capital Men D3']);
+  });
+
   it('does not count non-qualifying competitions towards participation', () => {
     const config = clubConfig(club, baseConfig);
     const snapshot = snapshotOf([

@@ -318,6 +318,7 @@ export async function buildPlayerHistories(options?: BuildOptions): Promise<{
       fixture.homeTeam.score.length > 0 &&
       fixture.awayTeam.score.length > 0
   );
+  // The workers below drain this copy; results stays whole for the caller.
   const fixtures = [...results];
 
   const matches: MatchCentreData[] = [];
