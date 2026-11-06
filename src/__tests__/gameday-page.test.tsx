@@ -15,6 +15,7 @@ vi.mock('next/head', () => ({
 }));
 
 vi.mock('@/api/scores', () => ({
+  scoreToClubFixture: () => null,
   useGamedayFixtures: () => ({
     data: mocks.fixtures,
     isPending: false,
@@ -115,6 +116,37 @@ beforeEach(() => {
   mocks.fixtures = [];
   mocks.calendar = [];
   mocks.centreById = {};
+});
+
+describe('GamedayPage scaffold', () => {
+  it('renders the snapshot match info while the Match Centre is still loading', () => {
+    mocks.fixtures = [
+      clubFixture('d1', 'Rocky Gorge MD1', 'Washington MD1', atDaysOffset(3, 13), {
+        homeTeam: { name: 'Rocky Gorge MD1', crest: '/crests/rg.png' },
+        awayTeam: { name: 'Washington MD1', crest: '/crests/wash.png' },
+      }),
+    ];
+    // No centre data yet: the Match Centre query is pending.
+    mocks.centreById = {};
+
+    const html = render();
+
+    expect(html).toContain('data-testid="gameday-scaffold"');
+    expect(html).toContain('Rocky Gorge MD1');
+    expect(html).toContain('Washington MD1');
+    expect(html).toContain('wash.png');
+    expect(html).toContain('Loading lineups and events');
+    expect(html).not.toContain('Loading match details');
+    expect(html).not.toContain('Loading gameday');
+  });
+
+  it('is replaced by the Match Centre once it loads', () => {
+    mocks.fixtures = [clubFixture('d1', 'Rocky Gorge MD1', 'Washington MD1', atDaysOffset(3, 13))];
+    mocks.centreById = { d1: { home: 'Rocky Gorge MD1', away: 'Washington MD1' } };
+    const html = render();
+    expect(html).not.toContain('gameday-scaffold');
+    expect(html).toContain('data-centre="Rocky Gorge MD1 vs Washington MD1"');
+  });
 });
 
 describe('GamedayPage', () => {
