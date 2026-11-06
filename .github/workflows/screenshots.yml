@@ -48,9 +48,9 @@ jobs:
       # system libraries preinstalled. The repo does not pin a version for it.
       image: mcr.microsoft.com/playwright:noble
     steps:
-      # The image lacks the GitHub CLI, git and unzip (setup-bun needs it).
+      # The image lacks the GitHub CLI and git.
       - name: Install the GitHub CLI and git
-        run: apt-get update -qq && apt-get install -y -qq gh git unzip
+        run: apt-get update -qq && apt-get install -y -qq gh git
 
       - name: Resolve preview and PR
         id: ctx
@@ -81,28 +81,16 @@ jobs:
         with:
           ref: ${{ steps.ctx.outputs.sha }}
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: 1.3.14
-
-      - name: Cache Bun packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: bun-playwright-${{ runner.os }}-${{ hashFiles('playwright/bun.lock') }}
-          restore-keys: bun-playwright-${{ runner.os }}-
-
       # Only the screenshot tooling's own dependencies, not the site's.
       - name: Install dependencies
         working-directory: playwright
-        run: bun install --frozen-lockfile
+        run: npm ci --no-audit --no-fund
 
       # A no-op when the image's browser build matches the Playwright version
       # resolved above; otherwise it fetches just the matching Chromium.
       - name: Ensure the matching Chromium
         working-directory: playwright
-        run: bunx playwright install chromium
+        run: npx playwright install chromium
 
       - name: Read the PR description and changed files
         env:
@@ -114,7 +102,7 @@ jobs:
       - name: Take screenshots
         env:
           PREVIEW_URL: ${{ steps.ctx.outputs.url }}
-        run: bun playwright/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
+        run: node playwright/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
 
       - name: Upload artifacts
         if: always()
@@ -153,7 +141,7 @@ jobs:
           PR: ${{ steps.ctx.outputs.pr }}
           SHA: ${{ steps.ctx.outputs.sha }}
         run: |
-          bun playwright/screenshot-comment.ts \
+          node playwright/screenshot-comment.ts \
             --report screenshots/report.json \
             --image-base-url "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/pr-screenshots/pr-$PR/$SHA" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \

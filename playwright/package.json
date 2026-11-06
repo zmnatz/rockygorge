@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Deploy-preview screenshot tooling, isolated from the site's dependencies so its CI job installs only these.",
   "scripts": {
-    "screenshots": "bun screenshots.ts"
+    "screenshots": "node screenshots.ts"
   },
   "dependencies": {
     "@playwright/test": "^1.65.0",

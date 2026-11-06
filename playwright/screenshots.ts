@@ -13,10 +13,10 @@ import {
   type NoiseRule,
   type PageSpec,
   type RouteRule,
-} from './lib/plan';
+} from './lib/plan.ts';
 
 // Screenshots deploy-preview pages for a PR. Usage:
-//   bun playwright/screenshots.ts --base-url https://deploy-preview-1--rockygorge.netlify.app \
+//   node playwright/screenshots.ts --base-url https://deploy-preview-1--rockygorge.netlify.app \
 //     [--out screenshots] [--base-ref origin/master | --changed-files list.txt] \
 //     [--pr-body body.md] [--page "/gameday wait: [data-testid=x]"]...
 // Writes <out>/<page>-<viewport>.png and <out>/report.json. Exits non-zero

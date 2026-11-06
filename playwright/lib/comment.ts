@@ -1,4 +1,4 @@
-import type { Finding } from './plan';
+import type { Finding } from './plan.ts';
 
 // Hidden marker: the workflow finds its own comment by this and updates it
 // in place instead of adding a new one per run.
