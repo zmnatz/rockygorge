@@ -1,0 +1,107 @@
+name: Deploy preview screenshots
+
+# Screenshots a PR's Netlify deploy preview with Playwright, stores the images
+# on the orphan `pr-screenshots` branch (so they can be embedded inline), and
+# keeps one sticky comment on the PR up to date. Run by hand with a preview URL
+# and PR number; see scripts/screenshots.ts for what is captured.
+on:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: Deploy preview URL (e.g. https://deploy-preview-12--rockygorge.netlify.app)
+        required: true
+      pr_number:
+        description: Pull request number
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: screenshots-${{ inputs.pr_number }}
+  cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  screenshots:
+    name: Screenshot preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Look up the PR
+        id: pr
+        run: |
+          sha=$(gh pr view "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: List changed files
+        run: gh pr diff "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --name-only > changed-files.txt
+
+      - name: Take screenshots
+        run: bun scripts/screenshots.ts --base-url "${{ inputs.preview_url }}" --changed-files changed-files.txt --out screenshots
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+
+      - name: Publish images to the pr-screenshots branch
+        if: always() && hashFiles('screenshots/report.json') != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin pr-screenshots >/dev/null; then
+            git fetch origin pr-screenshots
+            git worktree add shots-branch origin/pr-screenshots --detach
+          else
+            git worktree add --orphan -b pr-screenshots shots-branch
+          fi
+          dir="shots-branch/pr-${{ inputs.pr_number }}/${{ steps.pr.outputs.sha }}"
+          mkdir -p "$dir"
+          cp screenshots/*.png "$dir/"
+          cd shots-branch
+          git add -A
+          git commit -m "Screenshots for PR ${{ inputs.pr_number }} at ${{ steps.pr.outputs.sha }}" || true
+          git push origin HEAD:pr-screenshots
+
+      - name: Build the comment
+        if: always() && hashFiles('screenshots/report.json') != ''
+        run: |
+          bun scripts/screenshot-comment.ts \
+            --report screenshots/report.json \
+            --image-base-url "https://raw.githubusercontent.com/${{ github.repository }}/pr-screenshots/pr-${{ inputs.pr_number }}/${{ steps.pr.outputs.sha }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --sha "${{ steps.pr.outputs.sha }}" \
+            --out comment.md
+
+      - name: Create or update the PR comment
+        if: always() && hashFiles('comment.md') != ''
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/${{ inputs.pr_number }}/comments" --paginate \
+            --jq '[.[] | select(.body | startswith("<!-- deploy-preview-screenshots -->"))][0].id // empty')
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@comment.md >/dev/null
+          else
+            gh pr comment "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --body-file comment.md
+          fi
