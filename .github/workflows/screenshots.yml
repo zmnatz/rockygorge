@@ -91,7 +91,7 @@ jobs:
       # installed above (npm can publish a release before the image catches up); otherwise it fetches just the matching Chromium.
       - name: Ensure the matching Chromium
         working-directory: playwright
-        run: npx playwright install chromium
+        run: npx playwright-core install chromium
 
       - name: Read the PR description and changed files
         env:

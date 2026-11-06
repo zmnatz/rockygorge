@@ -7,7 +7,7 @@
     "screenshots": "node screenshots.ts"
   },
   "dependencies": {
-    "@playwright/test": "latest",
+    "playwright-core": "latest",
     "js-yaml": "latest"
   }
 }

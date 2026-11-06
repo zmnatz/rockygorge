@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { load } from 'js-yaml';
-import { chromium } from '@playwright/test';
+import { chromium } from 'playwright-core';
 import {
   filterFindings,
   parsePageSpec,
