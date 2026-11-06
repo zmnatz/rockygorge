@@ -85,10 +85,10 @@ jobs:
       # Only the screenshot tooling's own dependencies, not the site's.
       - name: Install dependencies
         working-directory: playwright
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund --no-package-lock
 
       # A no-op when the image's browser build matches the Playwright version
-      # resolved above; otherwise it fetches just the matching Chromium.
+      # installed above (npm can publish a release before the image catches up); otherwise it fetches just the matching Chromium.
       - name: Ensure the matching Chromium
         working-directory: playwright
         run: npx playwright install chromium
