@@ -5,10 +5,15 @@ import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
+import { visuallyHidden } from '@mui/utils';
 import { useCalendarSourceItems } from '@/api/calendar';
 import { scoreToClubFixture, useGamedayFixtures, type ClubFixture } from '@/api/scores';
 import { MatchCentre } from '@/components/MatchCentre';
@@ -315,25 +320,72 @@ function Scaffold({
       crest: clubFixture?.awayTeam.crest ?? '',
     },
   };
+  // Mirrors the Match Centre's grid (score card, two roster panels, events
+  // column) so the live view replaces it in place with no layout jump.
   return (
-    <Box sx={{ ...PAGE_WIDTH, py: 2 }} data-testid="gameday-scaffold">
-      <ScoreCard
-        score={score}
-        large
-        kickoff={kickoff}
-        // The feed time is a placeholder: show the day alone until the
-        // calendar supplies the real kickoff.
-        hideTime={!kickoff}
-        location={location}
-      />
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ textAlign: 'center', mt: 2 }}
-      >
-        Loading lineups and events…
+    <Box
+      sx={{
+        py: { xs: 2, md: 4 },
+        px: { xs: 2, md: 3 },
+        maxWidth: { xs: '100%', lg: 1400, xl: 1800 },
+        mx: 'auto',
+      }}
+      data-testid="gameday-scaffold"
+      aria-busy="true"
+    >
+      <Typography role="status" sx={visuallyHidden}>
+        Loading lineups and events
       </Typography>
+      <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Box sx={{ mb: 2, width: '100%' }}>
+            <ScoreCard
+              score={score}
+              large
+              kickoff={kickoff}
+              // The feed time is a placeholder: show the day alone until
+              // the calendar supplies the real kickoff.
+              hideTime={!kickoff}
+              location={location}
+            />
+          </Box>
+          <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <PanelSkeleton rows={23} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <PanelSkeleton rows={23} />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <PanelSkeleton rows={8} centredTitle />
+        </Grid>
+      </Grid>
     </Box>
+  );
+}
+
+// A roster or events panel's outline: a title, a divider, then rows the
+// height of the real lines (body2 plus its bottom margin).
+function PanelSkeleton({ rows, centredTitle }: { rows: number; centredTitle?: boolean }) {
+  return (
+    <Paper sx={{ p: 2 }}>
+      <Skeleton
+        variant="text"
+        width="45%"
+        sx={{ fontSize: '1.25rem', mx: centredTitle ? 'auto' : 0 }}
+      />
+      <Divider sx={{ my: 1.5 }} />
+      {Array.from({ length: rows }, (_, index) => (
+        <Skeleton
+          // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder rows have no identity
+          key={index}
+          variant="text"
+          sx={{ fontSize: '0.875rem', mb: 0.5, width: index % 3 === 0 ? '90%' : '100%' }}
+        />
+      ))}
+    </Paper>
   );
 }
 

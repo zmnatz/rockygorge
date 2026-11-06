@@ -135,6 +135,8 @@ describe('GamedayPage scaffold', () => {
     expect(html).toContain('Rocky Gorge MD1');
     expect(html).toContain('Washington MD1');
     expect(html).toContain('wash.png');
+    // Skeleton panels hold the lineups/events space, announced for screen readers.
+    expect(html).toContain('MuiSkeleton-root');
     expect(html).toContain('Loading lineups and events');
     expect(html).not.toContain('Loading match details');
     expect(html).not.toContain('Loading gameday');
