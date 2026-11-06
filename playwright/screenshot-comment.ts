@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
-import { buildComment, type ReportPage } from './lib/screenshot-comment';
+import { buildComment, type ReportPage } from './lib/comment.ts';
 
 // Turns screenshots/report.json into the sticky PR comment body.
-//   bun scripts/screenshot-comment.ts --report screenshots/report.json \
+//   node playwright/screenshot-comment.ts --report screenshots/report.json \
 //     --image-base-url <raw url folder> --run-url <url> --sha <sha> --out comment.md
 const { values } = parseArgs({
   options: {

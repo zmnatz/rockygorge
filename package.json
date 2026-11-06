@@ -43,9 +43,9 @@
     "generate:leaders": "bun scripts/generate-leaders-index.ts",
     "generate:crests": "bun scripts/generate-crests.ts",
     "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prepare": "husky",
-    "screenshots": "bun scripts/screenshots.ts"
+    "prepare": "husky"
   },
   "browserslist": [
     ">0.5%",
@@ -57,7 +57,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.7",
     "@next/mdx": "^16.3.0",
-    "@playwright/test": "^1.65.0",
     "@rollup/plugin-yaml": "^5.0.0",
     "@types/netlify-identity-widget": "^1.9.7",
     "@types/qrcode": "^1.5.6",
