@@ -9,7 +9,7 @@ name: Deploy preview screenshots
 # the deploy. Such workflows run from the default branch's copy of this file:
 # changes here take effect once merged. Can also be run by hand with a preview
 # URL and PR number. Pages come from the PR description's `## Screenshots`
-# section plus routes mapped from changed files (config/screenshots.yml); `/`
+# section plus routes mapped from changed files (playwright/config/screenshots.yml); `/`
 # is always included.
 on:
   deployment_status:
@@ -90,15 +90,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          restore-keys: bun-${{ runner.os }}-
+          key: bun-playwright-${{ runner.os }}-${{ hashFiles('playwright/bun.lock') }}
+          restore-keys: bun-playwright-${{ runner.os }}-
 
+      # Only the screenshot tooling's own dependencies, not the site's.
       - name: Install dependencies
+        working-directory: playwright
         run: bun install --frozen-lockfile
 
-      # A no-op when the image's browser build matches the repo's Playwright;
-      # otherwise it fetches just the matching Chromium.
+      # A no-op when the image's browser build matches the Playwright version
+      # resolved above; otherwise it fetches just the matching Chromium.
       - name: Ensure the matching Chromium
+        working-directory: playwright
         run: bunx playwright install chromium
 
       - name: Read the PR description and changed files
@@ -111,7 +114,7 @@ jobs:
       - name: Take screenshots
         env:
           PREVIEW_URL: ${{ steps.ctx.outputs.url }}
-        run: bun scripts/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
+        run: bun playwright/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
 
       - name: Upload artifacts
         if: always()
@@ -150,7 +153,7 @@ jobs:
           PR: ${{ steps.ctx.outputs.pr }}
           SHA: ${{ steps.ctx.outputs.sha }}
         run: |
-          bun scripts/screenshot-comment.ts \
+          bun playwright/screenshot-comment.ts \
             --report screenshots/report.json \
             --image-base-url "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/pr-screenshots/pr-$PR/$SHA" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \

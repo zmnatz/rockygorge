@@ -13,10 +13,10 @@ import {
   type NoiseRule,
   type PageSpec,
   type RouteRule,
-} from './lib/screenshot-plan';
+} from './lib/plan';
 
 // Screenshots deploy-preview pages for a PR. Usage:
-//   bun scripts/screenshots.ts --base-url https://deploy-preview-1--rockygorge.netlify.app \
+//   bun playwright/screenshots.ts --base-url https://deploy-preview-1--rockygorge.netlify.app \
 //     [--out screenshots] [--base-ref origin/master | --changed-files list.txt] \
 //     [--pr-body body.md] [--page "/gameday wait: [data-testid=x]"]...
 // Writes <out>/<page>-<viewport>.png and <out>/report.json. Exits non-zero
@@ -41,7 +41,7 @@ interface PageReport {
 }
 
 function readYaml<T>(file: string): T {
-  return load(fs.readFileSync(path.join(process.cwd(), 'config', file), 'utf-8')) as T;
+  return load(fs.readFileSync(path.join(import.meta.dirname, 'config', file), 'utf-8')) as T;
 }
 
 function changedFiles(baseRef?: string, listFile?: string): string[] {
@@ -80,7 +80,7 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
 
   const rules = readYaml<{ rules: RouteRule[] }>('screenshots.yml').rules;
-  const noise = readYaml<{ noise: NoiseRule[] }>('screenshot-noise.yml').noise ?? [];
+  const noise = readYaml<{ noise: NoiseRule[] }>('noise.yml').noise ?? [];
   const fromBody = values['pr-body']
     ? parseScreenshotsSection(fs.readFileSync(values['pr-body'], 'utf-8'))
     : [];

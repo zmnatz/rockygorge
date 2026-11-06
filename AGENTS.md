@@ -34,7 +34,7 @@
 ## Pull Requests
 - For PRs that change UI, add a `## Screenshots` section to the description listing the pages to capture, one path per line (e.g. `/gameday`). The deploy-preview run screenshots them at desktop and mobile widths and posts the images in a PR comment. The `.github/pull_request_template.md` has the format.
 - Add `wait: <selector>` or `delay: <ms>` after a path for pages that fill in after load (e.g. `/gameday wait: [data-testid=match-centre]`).
-- The section is encouraged, not required. Without it the run captures only `/` (plus routes mapped from changed files in `config/screenshots.yml`) and says so in its comment. Do your best to list the pages your change touches.
+- The section is encouraged, not required. Without it the run captures only `/` (plus routes mapped from changed files in `playwright/config/screenshots.yml`) and says so in its comment. Do your best to list the pages your change touches.
 - Commit messages are unchanged.
 
 ## Agent skills

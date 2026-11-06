@@ -6,7 +6,7 @@ import {
   parseScreenshotsSection,
   planPages,
   type Finding,
-} from '../../scripts/lib/screenshot-plan';
+} from '../lib/plan';
 
 describe('globToRegExp', () => {
   it('matches ** across directories and * within one', () => {

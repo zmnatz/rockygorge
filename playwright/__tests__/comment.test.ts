@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildComment, COMMENT_MARKER } from '../../scripts/lib/screenshot-comment';
+import { buildComment, COMMENT_MARKER } from '../lib/comment';
 
 const base = {
   imageBaseUrl: 'https://raw.githubusercontent.com/o/r/pr-screenshots/pr-7/abc123',

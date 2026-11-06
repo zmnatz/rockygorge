@@ -1,4 +1,4 @@
-// Pure helpers for scripts/screenshots.ts: which pages to capture and which
+// Pure helpers for playwright/screenshots.ts: which pages to capture and which
 // findings are worth reporting. Kept free of Playwright so they unit test.
 
 export interface PageSpec {
