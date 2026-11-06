@@ -1,0 +1,31 @@
+# Deploy-preview screenshots (scripts/screenshots.ts). The home page is always
+# captured. When a PR changes a file matching `files`, the listed routes are
+# captured too. A route may add `waitFor` (selector) or `delayMs` for pages
+# that fill in after load; the default is network idle plus a short settle.
+rules:
+  - files:
+      - pages/gameday.tsx
+      - src/components/MatchCentre/**
+      - src/utils/gameday.ts
+    routes:
+      - path: /gameday
+  - files:
+      - src/components/Scores/**
+      - src/api/scores.ts
+    routes:
+      - path: /gameday
+  - files:
+      - pages/standings.tsx
+      - src/api/capital.ts
+    routes:
+      - path: /standings
+  - files:
+      - pages/calendar.mdx
+      - src/components/CalendarCard/**
+    routes:
+      - path: /calendar
+  - files:
+      - content/links.yml
+      - src/components/Toolbar.tsx
+    routes:
+      - path: /
