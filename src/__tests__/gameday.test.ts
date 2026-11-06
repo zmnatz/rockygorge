@@ -12,6 +12,7 @@ import {
   defaultSideIndex,
   findSideMatches,
   fixturesPollInterval,
+  gamedaySeedScores,
   matchCalendarItem,
   matchStatus,
   nextGamedayMatch,
@@ -555,5 +556,36 @@ describe('homePageScores', () => {
 
   it('ignores unplayed fixtures already in the past', () => {
     expect(homePageScores([row('x', '2026-11-01T00:00:00Z', false)], 4, 2, NOW)).toEqual([]);
+  });
+});
+
+describe('gamedaySeedScores', () => {
+  const score = (id: string, days: number, home = 'Rocky Gorge MD1', away = 'Washington MD1') => ({
+    id,
+    dateTime: atDaysOffset(days),
+    homeTeam: { name: home, score: '' },
+    awayTeam: { name: away, score: '' },
+  });
+  const builtAt = new Date();
+
+  it('keeps club fixtures from the recap window onward, for the first three Gamedays', () => {
+    const seed = gamedaySeedScores(
+      [
+        score('old', -20),
+        score('recap', -2),
+        score('next', 4),
+        score('next-d3', 4, 'Rocky Gorge MD3', 'Washington MD3'),
+        score('later', 11),
+        score('later2', 18),
+        score('later3', 25),
+      ],
+      sides,
+      builtAt
+    );
+    expect(seed.map((s) => s.id)).toEqual(['recap', 'next', 'next-d3', 'later']);
+  });
+
+  it('drops fixtures involving neither Side', () => {
+    expect(gamedaySeedScores([score('x', 3, 'A', 'B')], sides, builtAt)).toEqual([]);
   });
 });

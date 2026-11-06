@@ -149,6 +149,31 @@ export function homePageScores<
   return [...results, ...upcoming];
 }
 
+// What /gameday inlines from the season snapshot: the club's fixtures from
+// just before the recap window onward, for the first few Gamedays. That
+// covers the resolved day plus the neighbours a clock drift since build
+// time could resolve to, without shipping the whole season.
+const SEED_LOOKBACK_DAYS = RECENT_DAY_WINDOW + 2;
+const SEED_GAMEDAYS = 3;
+
+export function gamedaySeedScores<
+  T extends { dateTime: string; homeTeam: { name: string }; awayTeam: { name: string } },
+>(scores: T[], sides: GamedaySide[], builtAt: Date = new Date()): T[] {
+  const names = new Set(sides.map((side) => side.teamName));
+  const from = new Date(builtAt);
+  from.setDate(from.getDate() - SEED_LOOKBACK_DAYS);
+  const fromKey = toLocalDayKey(from);
+  const club = scores
+    .filter((score) => names.has(score.homeTeam.name) || names.has(score.awayTeam.name))
+    .filter((score) => toLocalDayKey(score.dateTime) >= fromKey)
+    .sort((a, b) => a.dateTime.localeCompare(b.dateTime));
+  const days = [...new Set(club.map((score) => toLocalDayKey(score.dateTime)))].slice(
+    0,
+    SEED_GAMEDAYS
+  );
+  return club.filter((score) => days.includes(toLocalDayKey(score.dateTime)));
+}
+
 // Default toggle pick for the day: the live Match, else the earlier
 // kickoff, else the first Side in config order. -1 when there is nothing.
 export function defaultSideIndex(matches: SideMatch[]): number {
