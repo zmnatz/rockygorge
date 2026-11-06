@@ -1,20 +1,31 @@
-import { useMemo, useState } from 'react';
+import fs from 'node:fs';
+import path from 'node:path';
+import { useEffect, useMemo, useState } from 'react';
+import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
+import { visuallyHidden } from '@mui/utils';
 import { useCalendarSourceItems } from '@/api/calendar';
-import { useGamedayFixtures, type ClubFixture } from '@/api/scores';
+import { scoreToClubFixture, useGamedayFixtures, type ClubFixture } from '@/api/scores';
 import { MatchCentre } from '@/components/MatchCentre';
+import { ScoreCard } from '@/components/Scores/ScoreCard';
+import type { Score } from '@/components/Scores/types';
 import { useMatch } from '@/components/Scores/useMatch';
 import matchesConfig from '@config/matches.yml';
 import type { ResolvedGameday, SideMatch } from '@/types/gameday';
 import {
   assignMatchWindows,
   defaultSideIndex,
+  gamedaySeedScores,
   matchStatus,
   resolveGameday,
   resolveMatchLocation,
@@ -39,12 +50,54 @@ const HEAD = (
   </Head>
 );
 
-export default function GamedayPage() {
-  const fixturesQuery = useGamedayFixtures();
+interface GamedayPageProps {
+  // Build-time snapshot of the club's fixtures around the resolved Gameday.
+  // Renders the page's scaffold (teams, crests, date) with the static HTML;
+  // the live reads only fill in kickoff, venue, lineups and events.
+  initialScores: Score[];
+  builtAt: string;
+}
+
+// Missing snapshot (e.g. local dev before first generate) leaves the seed
+// empty and the page falls back to the live fixtures read.
+export const getStaticProps: GetStaticProps<GamedayPageProps> = async () => {
+  const builtAt = new Date();
+  let initialScores: Score[] = [];
+  try {
+    const raw = fs.readFileSync(
+      path.join(process.cwd(), 'public', 'data', 'scores.json'),
+      'utf-8'
+    );
+    const json = JSON.parse(raw);
+    if (Array.isArray(json)) {
+      initialScores = gamedaySeedScores(json as Score[], sides, builtAt);
+    }
+  } catch {
+    // Fall back to the live read.
+  }
+  return { props: { initialScores, builtAt: builtAt.toISOString() } };
+};
+
+export default function GamedayPage({ initialScores = [], builtAt }: Partial<GamedayPageProps>) {
+  const seed = useMemo(
+    () =>
+      initialScores
+        .map(scoreToClubFixture)
+        .filter((fixture): fixture is ClubFixture => fixture !== null),
+    [initialScores]
+  );
+  const fixturesQuery = useGamedayFixtures(seed.length > 0 ? seed : undefined);
+
+  // The first render judges "today" against build time so the client
+  // hydrates to exactly the static markup; the real clock takes over after.
+  const [now, setNow] = useState(() => (builtAt ? new Date(builtAt) : new Date()));
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
 
   const resolved = useMemo(
-    () => resolveGameday(fixturesQuery.data ?? [], sides),
-    [fixturesQuery.data]
+    () => resolveGameday(fixturesQuery.data ?? [], sides, now),
+    [fixturesQuery.data, now]
   );
 
   return (
@@ -78,6 +131,7 @@ export default function GamedayPage() {
           key={resolved.date}
           fixtures={fixturesQuery.data}
           resolved={resolved}
+          snapshot={initialScores}
         />
       )}
     </>
@@ -90,9 +144,11 @@ export default function GamedayPage() {
 function GamedayDay({
   fixtures,
   resolved,
+  snapshot,
 }: {
   fixtures: ClubFixture[];
   resolved: ResolvedGameday;
+  snapshot: Score[];
 }) {
   const calendarQuery = useCalendarSourceItems();
 
@@ -203,12 +259,13 @@ function GamedayDay({
         )}
       </Box>
       {centreQuery.isPending && (
-        <Centered>
-          <CircularProgress />
-          <Typography variant="body2" color="text.secondary">
-            Loading match details…
-          </Typography>
-        </Centered>
+        <Scaffold
+          match={match}
+          clubFixture={clubFixture}
+          snapshot={snapshot.find((score) => score.id === match.fixture.id)}
+          kickoff={kickoff}
+          location={location}
+        />
       )}
       {centreQuery.isError && (
         <Centered>
@@ -225,6 +282,110 @@ function GamedayDay({
         />
       )}
     </>
+  );
+}
+
+// Basic match info from the snapshot while the live Match Centre loads: the
+// same score card the Match Centre opens with, so the page is whole on
+// first paint. A played fixture keeps its snapshot score and crests.
+function Scaffold({
+  match,
+  clubFixture,
+  snapshot,
+  kickoff,
+  location,
+}: {
+  match: SideMatch;
+  clubFixture: ClubFixture | undefined;
+  snapshot: Score | undefined;
+  kickoff: string | undefined;
+  location: string | undefined;
+}) {
+  const score: Score = snapshot ?? {
+    id: match.fixture.id,
+    dateTime: match.fixture.dateTime,
+    compName: clubFixture?.compName ?? match.side.compName,
+    homeTeam: {
+      id: '',
+      teamId: '',
+      name: match.fixture.homeTeam.name,
+      score: '',
+      crest: clubFixture?.homeTeam.crest ?? '',
+    },
+    awayTeam: {
+      id: '',
+      teamId: '',
+      name: match.fixture.awayTeam.name,
+      score: '',
+      crest: clubFixture?.awayTeam.crest ?? '',
+    },
+  };
+  // Mirrors the Match Centre's grid (score card, two roster panels, events
+  // column) so the live view replaces it in place with no layout jump.
+  return (
+    <Box
+      sx={{
+        py: { xs: 2, md: 4 },
+        px: { xs: 2, md: 3 },
+        maxWidth: { xs: '100%', lg: 1400, xl: 1800 },
+        mx: 'auto',
+      }}
+      data-testid="gameday-scaffold"
+      aria-busy="true"
+    >
+      <Typography role="status" sx={visuallyHidden}>
+        Loading lineups and events
+      </Typography>
+      <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Box sx={{ mb: 2, width: '100%' }}>
+            <ScoreCard
+              score={score}
+              large
+              kickoff={kickoff}
+              // The feed time is a placeholder: show the day alone until
+              // the calendar supplies the real kickoff.
+              hideTime={!kickoff}
+              location={location}
+            />
+          </Box>
+          <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <PanelSkeleton rows={23} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <PanelSkeleton rows={23} />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <PanelSkeleton rows={8} centredTitle />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
+
+// A roster or events panel's outline: a title, a divider, then rows the
+// height of the real lines (body2 plus its bottom margin).
+function PanelSkeleton({ rows, centredTitle }: { rows: number; centredTitle?: boolean }) {
+  return (
+    <Paper sx={{ p: 2 }}>
+      <Skeleton
+        variant="text"
+        width="45%"
+        sx={{ fontSize: '1.25rem', mx: centredTitle ? 'auto' : 0 }}
+      />
+      <Divider sx={{ my: 1.5 }} />
+      {Array.from({ length: rows }, (_, index) => (
+        <Skeleton
+          // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder rows have no identity
+          key={index}
+          variant="text"
+          sx={{ fontSize: '0.875rem', mb: 0.5, width: index % 3 === 0 ? '90%' : '100%' }}
+        />
+      ))}
+    </Paper>
   );
 }
 
