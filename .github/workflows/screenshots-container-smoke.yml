@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
-      image: mcr.microsoft.com/playwright:v1.65.0-noble
+      image: mcr.microsoft.com/playwright:noble
     steps:
       - name: Install the GitHub CLI and git
         run: apt-get update -qq && apt-get install -y -qq gh git unzip && gh --version | head -1 && git --version
@@ -45,11 +45,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check Playwright matches the image
-        run: |
-          rev=$(node -p "require('playwright-core/browsers.json').browsers.find((b) => b.name === 'chromium-headless-shell').revision")
-          echo "expects chromium-headless-shell $rev; image has:"; ls "$PLAYWRIGHT_BROWSERS_PATH"
-          [ -d "$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-$rev" ]
+      - name: Ensure the matching Chromium
+        run: bunx playwright install chromium
 
       - name: gh and git work in the container
         env:
