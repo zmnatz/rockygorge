@@ -13,6 +13,7 @@ import { visuallyHidden } from '@mui/utils';
 import { ProductCard } from '@/components/ProductCard';
 import { CalendarCard } from '@/components/CalendarCard';
 import { Scores } from '@/components/Scores';
+import { NextGameCard } from '@/components/Scores/NextGameCard';
 import type { Score } from '@/components/Scores/types';
 import { crestSrc } from '@/utils/crest';
 import { markdownToReact } from '@/utils/markdown';
@@ -92,6 +93,9 @@ export default function Home({ initialScores }: HomeProps) {
         ))}
       </Head>
       <Scores initialScores={initialScores} />
+      <Grid size={{ xs: 12 }}>
+        <NextGameCard />
+      </Grid>
 
       <Grid size={{ xs: 12 }} sx={{ textAlign: 'center' }}>
         {markdownToReact(home.hero.markdown)}

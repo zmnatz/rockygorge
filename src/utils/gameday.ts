@@ -121,6 +121,14 @@ export function resolveGameday(
   return { kind: 'none', date: '', matches: [] };
 }
 
+// The Match the home page previews once the results window has passed:
+// the first Side playing on the next Gameday (matches are already in
+// Sides config order). Null for any other kind, so the home page shows
+// the card only when the Gameday page itself would show "next".
+export function nextGamedayMatch(resolved: ResolvedGameday): SideMatch | null {
+  return resolved.kind === 'next' ? (resolved.matches[0] ?? null) : null;
+}
+
 // Default toggle pick for the day: the live Match, else the earlier
 // kickoff, else the first Side in config order. -1 when there is nothing.
 export function defaultSideIndex(matches: SideMatch[]): number {

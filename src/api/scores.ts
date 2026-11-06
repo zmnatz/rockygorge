@@ -128,8 +128,8 @@ export interface ClubFixture {
   venue: string;
   sourceType: string;
   isLive: boolean;
-  homeTeam: Pick<Team, 'name'>;
-  awayTeam: Pick<Team, 'name'>;
+  homeTeam: Pick<Team, 'name'> & { crest?: string };
+  awayTeam: Pick<Team, 'name'> & { crest?: string };
 }
 
 const FIXTURES_QUERY = `query GamedayFixturesQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
@@ -151,10 +151,12 @@ const FIXTURES_QUERY = `query GamedayFixturesQuery($entityId: Int, $entityType: 
     isLive
     homeTeam {
       name
+      crest
       __typename
     }
     awayTeam {
       name
+      crest
       __typename
     }
     __typename

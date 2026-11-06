@@ -13,6 +13,7 @@ import {
   fixturesPollInterval,
   matchCalendarItem,
   matchStatus,
+  nextGamedayMatch,
   resolveGameday,
   resolveMatchLocation,
   toLocalDayKey,
@@ -480,5 +481,52 @@ describe('matchCalendarItem', () => {
         calendarItem('RG vs Schuylkill', kickoff),
       ])
     ).toBeUndefined();
+  });
+});
+
+describe('nextGamedayMatch', () => {
+  it('returns the first Side playing when the resolved Gameday is next', () => {
+    const resolved = resolveGameday(
+      [
+        fixture({
+          id: 'd3',
+          dateTime: atDaysOffset(5, 14),
+          homeTeam: { name: 'Rocky Gorge MD3' },
+        }),
+        fixture({ id: 'd1', dateTime: atDaysOffset(5, 12) }),
+      ],
+      sides
+    );
+    expect(resolved.kind).toBe('next');
+    expect(nextGamedayMatch(resolved)?.fixture.id).toBe('d1');
+  });
+
+  it('falls to D3 when only D3 plays that day', () => {
+    const resolved = resolveGameday(
+      [
+        fixture({
+          id: 'd3',
+          dateTime: atDaysOffset(5),
+          homeTeam: { name: 'Rocky Gorge MD3' },
+        }),
+      ],
+      sides
+    );
+    expect(nextGamedayMatch(resolved)?.side.label).toBe(sides[1].label);
+  });
+
+  it.each([
+    ['today', 0],
+    ['recap', -1],
+  ])('is null for a %s Gameday', (_kind, offset) => {
+    const resolved = resolveGameday(
+      [fixture({ id: 'x', dateTime: atDaysOffset(offset) })],
+      sides
+    );
+    expect(nextGamedayMatch(resolved)).toBeNull();
+  });
+
+  it('is null when there is no Gameday', () => {
+    expect(nextGamedayMatch(resolveGameday([], sides))).toBeNull();
   });
 });
