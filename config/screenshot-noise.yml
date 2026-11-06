@@ -1,0 +1,5 @@
+# Known noise for the deploy-preview screenshot report. Findings whose text
+# matches `pattern` (a regular expression) are left out of the PR comment.
+# `kind` is optional: console, pageerror or request; omit it to match all.
+# Add an entry with a reason rather than silencing a finding silently.
+noise: []
