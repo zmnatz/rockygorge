@@ -3,7 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { ClubFixture } from '@/api/scores';
 
 const mocks = vi.hoisted(() => ({
-  calendar: { data: [], isPending: false } as { data: unknown[]; isPending: boolean },
+  calendar: { data: [], isPending: false, isPlaceholderData: false } as {
+    data: unknown[];
+    isPending: boolean;
+    isPlaceholderData: boolean;
+  },
   seed: undefined as ClubFixture[] | undefined,
   query: { data: undefined, isPending: true, isError: false } as {
     data: ClubFixture[] | undefined;
@@ -60,7 +64,7 @@ const render = () => renderToStaticMarkup(<HomeGames />);
 describe('HomeGames', () => {
   beforeEach(() => {
     mocks.query = { data: undefined, isPending: true, isError: false };
-    mocks.calendar = { data: [], isPending: false };
+    mocks.calendar = { data: [], isPending: false, isPlaceholderData: false };
   });
 
   it('renders the next game card, linked to Gameday, once the window has passed', () => {
@@ -74,15 +78,25 @@ describe('HomeGames', () => {
 
   it('renders the card while the calendar loads, holding back the time of day', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
-    mocks.calendar = { data: [], isPending: true };
+    mocks.calendar = { data: [], isPending: false, isPlaceholderData: true };
     const loading = render();
     expect(loading).toContain('Washington MD1');
     expect(loading).toContain('MAC Men D1');
-    mocks.calendar = { data: [], isPending: false };
+    const start = at(6).replace('T12:', 'T15:');
+    const item = { summary: 'MD1 vs Washington', start, end: start, location: '' };
+    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: true };
+    expect(render()).not.toMatch(/\d:\d\d/);
+    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: false };
     const loaded = render();
     expect(loaded.length).toBeGreaterThan(loading.length);
     expect(loaded).toMatch(/\d:\d\d/);
     expect(loading).not.toMatch(/\d:\d\d/);
+  });
+
+  it('never falls back to the feed time when the calendar has no kickoff', () => {
+    mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
+    mocks.calendar = { data: [], isPending: false, isPlaceholderData: false };
+    expect(render()).not.toMatch(/\d:\d\d/);
   });
 
   it('seeds the live fixtures query from the snapshot scores', () => {

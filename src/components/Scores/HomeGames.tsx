@@ -49,6 +49,9 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
   );
   const fixturesQuery = useGamedayFixtures(seed);
   const calendarQuery = useCalendarSourceItems();
+  // The calendar query serves an empty placeholder until the real read
+  // lands, so isPending alone is never true: check the placeholder too.
+  const calendarLoading = calendarQuery.isPending || calendarQuery.isPlaceholderData;
 
   const [now, setNow] = useState(() => (builtAt ? new Date(builtAt) : new Date()));
   useEffect(() => {
@@ -105,13 +108,12 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
       <ScoreCard
         score={score}
         kickoff={assignment?.kickoff}
-        // The feed stamps placeholder times, so until the calendar has the
-        // real kickoff the header shows the day alone rather than flash a
-        // wrong time.
+        // The feed's date is right but its time is always a placeholder, so
+        // the time comes from the calendar kickoff only; with none (still
+        // loading, or no matching item) the header shows the day alone.
         header={`Next game · ${formatStartDate(
-          calendarQuery.isPending
-            ? toLocalDayKey(match.fixture.dateTime)
-            : (assignment?.kickoff ?? match.fixture.dateTime)
+          (!calendarLoading && assignment?.kickoff) ||
+            toLocalDayKey(match.fixture.dateTime)
         )}`}
         location={resolveMatchLocation(assignment?.item?.location, clubFixture?.venue)}
       />
