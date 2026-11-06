@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test';
 import {
   filterFindings,
   parsePageSpec,
+  parseScreenshotsSection,
   planPages,
   type Finding,
   type NoiseRule,
@@ -17,7 +18,7 @@ import {
 // Screenshots deploy-preview pages for a PR. Usage:
 //   bun scripts/screenshots.ts --base-url https://deploy-preview-1--rockygorge.netlify.app \
 //     [--out screenshots] [--base-ref origin/master | --changed-files list.txt] \
-//     [--page "/gameday wait: [data-testid=x]"]...
+//     [--pr-body body.md] [--page "/gameday wait: [data-testid=x]"]...
 // Writes <out>/<page>-<viewport>.png and <out>/report.json. Exits non-zero
 // when a page cannot be loaded or answers with a non-200 status.
 
@@ -67,6 +68,7 @@ async function main() {
       out: { type: 'string', default: 'screenshots' },
       'base-ref': { type: 'string' },
       'changed-files': { type: 'string' },
+      'pr-body': { type: 'string' },
       page: { type: 'string', multiple: true, default: [] },
     },
   });
@@ -79,9 +81,15 @@ async function main() {
 
   const rules = readYaml<{ rules: RouteRule[] }>('screenshots.yml').rules;
   const noise = readYaml<{ noise: NoiseRule[] }>('screenshot-noise.yml').noise ?? [];
-  const requested = (values.page as string[])
-    .map(parsePageSpec)
-    .filter((spec): spec is PageSpec => spec !== null);
+  const fromBody = values['pr-body']
+    ? parseScreenshotsSection(fs.readFileSync(values['pr-body'], 'utf-8'))
+    : [];
+  const requested = [
+    ...fromBody,
+    ...(values.page as string[])
+      .map(parsePageSpec)
+      .filter((spec): spec is PageSpec => spec !== null),
+  ];
   const pages = planPages({
     changedFiles: changedFiles(values['base-ref'], values['changed-files']),
     rules,

@@ -56,6 +56,29 @@ export function parsePageSpec(line: string): PageSpec | null {
   return spec;
 }
 
+// Reads the `## Screenshots` section of a PR description (any heading level,
+// case-insensitive) up to the next heading. HTML comments are ignored, as is
+// anything that is not a path line.
+export function parseScreenshotsSection(body: string): PageSpec[] {
+  const withoutComments = body.replace(/<!--[\s\S]*?-->/g, '');
+  const pages: PageSpec[] = [];
+  let inSection = false;
+  for (const line of withoutComments.split(/\r?\n/)) {
+    const heading = line.match(/^#{1,6}\s+(.*)$/);
+    if (heading) {
+      inSection = heading[1].trim().toLowerCase() === 'screenshots';
+      continue;
+    }
+    if (inSection) {
+      const spec = parsePageSpec(line);
+      if (spec) {
+        pages.push(spec);
+      }
+    }
+  }
+  return pages;
+}
+
 // The home page always comes first, then routes for changed files, then
 // explicit requests. Deduped by path; an explicit request wins over a rule.
 export function planPages({

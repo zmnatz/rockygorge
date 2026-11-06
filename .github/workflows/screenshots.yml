@@ -2,9 +2,16 @@ name: Deploy preview screenshots
 
 # Screenshots a PR's Netlify deploy preview with Playwright, stores the images
 # on the orphan `pr-screenshots` branch (so they can be embedded inline), and
-# keeps one sticky comment on the PR up to date. Run by hand with a preview URL
-# and PR number; see scripts/screenshots.ts for what is captured.
+# keeps one sticky comment on the PR up to date.
+#
+# Runs automatically when Netlify reports a successful deploy preview (host
+# `deploy-preview-<PR>--...`), or by hand with a preview URL and PR number.
+# Pages come from the PR description's `## Screenshots` section plus routes
+# mapped from changed files (config/screenshots.yml); `/` is always included.
+# Note: `deployment_status` workflows run from the default branch's copy of
+# this file.
 on:
+  deployment_status:
   workflow_dispatch:
     inputs:
       preview_url:
@@ -19,7 +26,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: screenshots-${{ inputs.pr_number }}
+  group: screenshots-${{ inputs.pr_number || github.event.deployment_status.environment_url }}
   cancel-in-progress: true
 
 env:
@@ -28,18 +35,41 @@ env:
 jobs:
   screenshots:
     name: Screenshot preview
+    # Ignore production and branch deploys: only successful deploy previews.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment_status.environment_url, 'https://deploy-preview-'))
     runs-on: ubuntu-latest
     steps:
-      - name: Look up the PR
-        id: pr
+      - name: Resolve preview and PR
+        id: ctx
+        env:
+          INPUT_URL: ${{ inputs.preview_url }}
+          INPUT_PR: ${{ inputs.pr_number }}
+          EVENT_URL: ${{ github.event.deployment_status.environment_url }}
         run: |
-          sha=$(gh pr view "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          url="${INPUT_URL:-$EVENT_URL}"
+          url="${url%/}"
+          pr="$INPUT_PR"
+          if [ -z "$pr" ]; then
+            pr=$(echo "$url" | sed -n 's#^https://deploy-preview-\([0-9]\+\)--.*#\1#p')
+          fi
+          if [ -z "$pr" ]; then
+            echo "Could not work out the PR number from $url" >&2
+            exit 1
+          fi
+          sha=$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
+          {
+            echo "url=$url"
+            echo "pr=$pr"
+            echo "sha=$sha"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Checkout PR head
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr.outputs.sha }}
+          ref: ${{ steps.ctx.outputs.sha }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -52,11 +82,17 @@ jobs:
       - name: Install Chromium
         run: bunx playwright install --with-deps chromium
 
-      - name: List changed files
-        run: gh pr diff "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --name-only > changed-files.txt
+      - name: Read the PR description and changed files
+        env:
+          PR: ${{ steps.ctx.outputs.pr }}
+        run: |
+          gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json body -q .body > pr-body.md
+          gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only > changed-files.txt
 
       - name: Take screenshots
-        run: bun scripts/screenshots.ts --base-url "${{ inputs.preview_url }}" --changed-files changed-files.txt --out screenshots
+        env:
+          PREVIEW_URL: ${{ steps.ctx.outputs.url }}
+        run: bun scripts/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
 
       - name: Upload artifacts
         if: always()
@@ -68,6 +104,9 @@ jobs:
 
       - name: Publish images to the pr-screenshots branch
         if: always() && hashFiles('screenshots/report.json') != ''
+        env:
+          PR: ${{ steps.ctx.outputs.pr }}
+          SHA: ${{ steps.ctx.outputs.sha }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -77,31 +116,36 @@ jobs:
           else
             git worktree add --orphan -b pr-screenshots shots-branch
           fi
-          dir="shots-branch/pr-${{ inputs.pr_number }}/${{ steps.pr.outputs.sha }}"
+          dir="shots-branch/pr-$PR/$SHA"
           mkdir -p "$dir"
           cp screenshots/*.png "$dir/"
           cd shots-branch
           git add -A
-          git commit -m "Screenshots for PR ${{ inputs.pr_number }} at ${{ steps.pr.outputs.sha }}" || true
+          git commit -m "Screenshots for PR $PR at $SHA" || true
           git push origin HEAD:pr-screenshots
 
       - name: Build the comment
         if: always() && hashFiles('screenshots/report.json') != ''
+        env:
+          PR: ${{ steps.ctx.outputs.pr }}
+          SHA: ${{ steps.ctx.outputs.sha }}
         run: |
           bun scripts/screenshot-comment.ts \
             --report screenshots/report.json \
-            --image-base-url "https://raw.githubusercontent.com/${{ github.repository }}/pr-screenshots/pr-${{ inputs.pr_number }}/${{ steps.pr.outputs.sha }}" \
-            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --sha "${{ steps.pr.outputs.sha }}" \
+            --image-base-url "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/pr-screenshots/pr-$PR/$SHA" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --sha "$SHA" \
             --out comment.md
 
       - name: Create or update the PR comment
         if: always() && hashFiles('comment.md') != ''
+        env:
+          PR: ${{ steps.ctx.outputs.pr }}
         run: |
-          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/${{ inputs.pr_number }}/comments" --paginate \
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
             --jq '[.[] | select(.body | startswith("<!-- deploy-preview-screenshots -->"))][0].id // empty')
           if [ -n "$id" ]; then
             gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@comment.md >/dev/null
           else
-            gh pr comment "${{ inputs.pr_number }}" --repo "$GITHUB_REPOSITORY" --body-file comment.md
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file comment.md
           fi

@@ -3,6 +3,7 @@ import {
   filterFindings,
   globToRegExp,
   parsePageSpec,
+  parseScreenshotsSection,
   planPages,
   type Finding,
 } from '../../scripts/lib/screenshot-plan';
@@ -70,5 +71,37 @@ describe('filterFindings', () => {
   it('treats a pattern without a kind as matching every kind', () => {
     const kept = filterFindings([finding('request', 'GET favicon.ico 404')], [{ pattern: 'favicon', reason: 'no icon' }]);
     expect(kept).toEqual([]);
+  });
+});
+
+describe('parseScreenshotsSection', () => {
+  it('reads page lines from the Screenshots section only', () => {
+    const body = [
+      '## What',
+      '- /not-this',
+      '## Screenshots',
+      '<!-- instructions',
+      '- /commented-out',
+      '-->',
+      '- /',
+      '- /gameday  wait: [data-testid=x]',
+      'free text is ignored',
+      '',
+      '## Test plan',
+      '- /also-not-this',
+    ].join('\n');
+    expect(parseScreenshotsSection(body)).toEqual([
+      { path: '/' },
+      { path: '/gameday', waitFor: '[data-testid=x]' },
+    ]);
+  });
+
+  it('is empty when the section is missing or the body is empty', () => {
+    expect(parseScreenshotsSection('## What\nstuff')).toEqual([]);
+    expect(parseScreenshotsSection('')).toEqual([]);
+  });
+
+  it('accepts CRLF line endings and any heading level', () => {
+    expect(parseScreenshotsSection('### screenshots\r\n- /x\r\n')).toEqual([{ path: '/x' }]);
   });
 });
