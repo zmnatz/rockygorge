@@ -3,6 +3,7 @@ import matchesConfig from '@config/matches.yml';
 import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 import type { GamedayFixture, GamedaySide } from '@/types/gameday';
 import {
+  homePageScores,
   CENTRE_IDLE_POLL_MS,
   FIXTURES_IDLE_POLL_MS,
   LIVE_POLL_MS,
@@ -13,6 +14,7 @@ import {
   fixturesPollInterval,
   matchCalendarItem,
   matchStatus,
+  nextGamedayMatch,
   resolveGameday,
   resolveMatchLocation,
   toLocalDayKey,
@@ -480,5 +482,78 @@ describe('matchCalendarItem', () => {
         calendarItem('RG vs Schuylkill', kickoff),
       ])
     ).toBeUndefined();
+  });
+});
+
+describe('nextGamedayMatch', () => {
+  it('returns the first Side playing when the resolved Gameday is next', () => {
+    const resolved = resolveGameday(
+      [
+        fixture({
+          id: 'd3',
+          dateTime: atDaysOffset(5, 14),
+          homeTeam: { name: 'Rocky Gorge MD3' },
+        }),
+        fixture({ id: 'd1', dateTime: atDaysOffset(5, 12) }),
+      ],
+      sides
+    );
+    expect(resolved.kind).toBe('next');
+    expect(nextGamedayMatch(resolved)?.fixture.id).toBe('d1');
+  });
+
+  it('falls to D3 when only D3 plays that day', () => {
+    const resolved = resolveGameday(
+      [
+        fixture({
+          id: 'd3',
+          dateTime: atDaysOffset(5),
+          homeTeam: { name: 'Rocky Gorge MD3' },
+        }),
+      ],
+      sides
+    );
+    expect(nextGamedayMatch(resolved)?.side.label).toBe(sides[1].label);
+  });
+
+  it.each([
+    ['today', 0],
+    ['recap', -1],
+  ])('is null for a %s Gameday', (_kind, offset) => {
+    const resolved = resolveGameday(
+      [fixture({ id: 'x', dateTime: atDaysOffset(offset) })],
+      sides
+    );
+    expect(nextGamedayMatch(resolved)).toBeNull();
+  });
+
+  it('is null when there is no Gameday', () => {
+    expect(nextGamedayMatch(resolveGameday([], sides))).toBeNull();
+  });
+});
+
+describe('homePageScores', () => {
+  const NOW = new Date('2026-11-06T12:00:00Z');
+  const row = (id: string, dateTime: string, played: boolean) => ({
+    id,
+    dateTime,
+    homeTeam: { score: played ? '10' : '' },
+    awayTeam: { score: played ? '5' : '' },
+  });
+
+  it('keeps the newest results and the next upcoming fixtures only', () => {
+    const rows = [
+      row('r1', '2026-10-01T00:00:00Z', true),
+      row('r2', '2026-10-08T00:00:00Z', true),
+      row('r3', '2026-10-15T00:00:00Z', true),
+      row('u3', '2026-11-20T00:00:00Z', false),
+      row('u1', '2026-11-07T00:00:00Z', false),
+      row('u2', '2026-11-07T02:00:00Z', false),
+    ];
+    expect(homePageScores(rows, 2, 2, NOW).map((r) => r.id)).toEqual(['r3', 'r2', 'u1', 'u2']);
+  });
+
+  it('ignores unplayed fixtures already in the past', () => {
+    expect(homePageScores([row('x', '2026-11-01T00:00:00Z', false)], 4, 2, NOW)).toEqual([]);
   });
 });

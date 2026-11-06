@@ -16,7 +16,7 @@ async function generate() {
   try {
     const scores = await fetchLiveScores();
     recordRun('scores', writeFileIfChanged(outPath, JSON.stringify(scores)));
-    console.log(`Saved ${scores.length} scores to public/data/scores.json`);
+    console.log(`Saved ${scores.length} fixtures to public/data/scores.json`);
   } catch (err) {
     console.warn(
       'Live scores unavailable, keeping previous snapshot:',

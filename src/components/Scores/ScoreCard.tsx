@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -21,9 +22,17 @@ interface ScoreCardProps {
   kickoff?: string;
   /** Hides the competition/date footer (used where the list already labels it). */
   hideFooter?: boolean;
+  /** Drops the time of day from the footer while the real kickoff is still loading. */
+  hideTime?: boolean;
+  /**
+   * Highlighted strip across the top of the card (e.g. "Next game · date").
+   * It carries the date on the left and the venue button on the right (an
+   * icon alone on mobile), so the footer then shows only the competition.
+   */
+  header?: ReactNode;
 }
 
-export function ScoreCard({ score, compact, large, location, kickoff, hideFooter }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location, kickoff, hideFooter, hideTime, header }: ScoreCardProps) {
   const [mapOpen, setMapOpen] = useState(false);
   const when = kickoff ?? score.dateTime;
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
@@ -156,6 +165,68 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
         mx: '0 !important',
       }}
     >
+      {header && (
+        <Box
+          sx={{
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            px: 2,
+            // Fixed height: the venue arrives later than the rest of the
+            // header, and the card must not resize when it does.
+            minHeight: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Typography
+            variant={large ? 'subtitle1' : 'subtitle2'}
+            component="div"
+            sx={{ flexShrink: 0 }}
+          >
+            {header}
+          </Typography>
+          {location && (
+            <>
+              {/* Mobile (xs): icon only; the map dialog names the venue. */}
+              <IconButton
+                aria-label={`Map: ${location}`}
+                color="inherit"
+                size="small"
+                // Stays clickable when a stretched link covers the card.
+                sx={{ display: { xs: 'inline-flex', sm: 'none' }, position: 'relative', zIndex: 2 }}
+                onClick={() => setMapOpen(true)}
+              >
+                <PlaceIcon fontSize="small" />
+              </IconButton>
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<PlaceIcon fontSize="small" />}
+                sx={{
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  position: 'relative',
+                  zIndex: 2,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                }}
+                onClick={() => setMapOpen(true)}
+              >
+                <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {location}
+                </Box>
+              </Button>
+              <VenueDialog
+                location={location}
+                start={when}
+                open={mapOpen}
+                onClose={() => setMapOpen(false)}
+              />
+            </>
+          )}
+        </Box>
+      )}
       {/* Mobile (xs): stacked rows with winner highlight */}
       <CardContent
         sx={{
@@ -335,20 +406,25 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
         </Box>
       </CardContent>
       {!hideFooter && (
-      <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
-        <Typography variant="caption" color="text.secondary">
-          {score.compName} • {new Date(when).toLocaleDateString()} •{' '}
-          {new Date(when).toLocaleTimeString(undefined, {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}
+      <Box sx={{ textAlign: 'center', pb: location && !header ? 0 : 2 }}>
+        <Typography variant={large ? 'body1' : 'caption'} color="text.secondary">
+          {score.compName}
+          {!header && ` • ${new Date(when).toLocaleDateString()}`}
+          {!header &&
+            !hideTime &&
+            ` • ${new Date(when).toLocaleTimeString(undefined, {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}`}
         </Typography>
       </Box>
       )}
-      {location && (
+      {location && !header && (
         <Box sx={{ textAlign: 'center', pb: 2 }}>
           <Button
-            size="small"
+            size={large ? 'medium' : 'small'}
+            // Stays clickable when a stretched link covers the card.
+            sx={{ position: 'relative', zIndex: 2 }}
             startIcon={<PlaceIcon fontSize="small" />}
             onClick={() => setMapOpen(true)}
           >

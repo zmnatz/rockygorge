@@ -121,6 +121,34 @@ export function resolveGameday(
   return { kind: 'none', date: '', matches: [] };
 }
 
+// The Match the home page previews once the results window has passed:
+// the first Side playing on the next Gameday (matches are already in
+// Sides config order). Null for any other kind, so the home page shows
+// the card only when the Gameday page itself would show "next".
+export function nextGamedayMatch(resolved: ResolvedGameday): SideMatch | null {
+  return resolved.kind === 'next' ? (resolved.matches[0] ?? null) : null;
+}
+
+// What the home page inlines from the full season snapshot: the newest
+// results (the ticker, plus the recap window the next-game card checks
+// against) and the next upcoming fixtures, one per Side so a doubleheader
+// day is whole. Everything else stays out of the page payload.
+export function homePageScores<
+  T extends { dateTime: string; homeTeam: { score: string }; awayTeam: { score: string } },
+>(scores: T[], resultCount: number, sideCount: number, now: Date = new Date()): T[] {
+  const played = (score: T) => score.homeTeam.score !== '' && score.awayTeam.score !== '';
+  const time = (score: T) => new Date(score.dateTime).getTime();
+  const results = scores
+    .filter(played)
+    .sort((a, b) => time(b) - time(a))
+    .slice(0, resultCount);
+  const upcoming = scores
+    .filter((score) => !played(score) && time(score) >= now.getTime())
+    .sort((a, b) => time(a) - time(b))
+    .slice(0, sideCount);
+  return [...results, ...upcoming];
+}
+
 // Default toggle pick for the day: the live Match, else the earlier
 // kickoff, else the first Side in config order. -1 when there is nothing.
 export function defaultSideIndex(matches: SideMatch[]): number {

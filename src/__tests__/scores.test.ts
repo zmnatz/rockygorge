@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { mergeScores } from '@/api/scores';
+import { mergeScores, scoreToClubFixture } from '@/api/scores';
+import { hasScore } from '@/components/Scores/types';
 import type { Score } from '@/components/Scores/types';
 
 function score(id: string, dateTime: string, homeScore = '20'): Score {
@@ -36,5 +37,31 @@ describe('mergeScores', () => {
     const merged = mergeScores(live, stat);
     expect(merged).toHaveLength(1);
     expect(merged[0].homeTeam.score).toBe('30');
+  });
+});
+
+describe('hasScore', () => {
+  it('is true for played games and false for upcoming fixtures', () => {
+    expect(hasScore(score('1', '2026-01-01T00:00:00Z'))).toBe(true);
+    expect(hasScore(score('2', '2026-01-01T00:00:00Z', ''))).toBe(false);
+  });
+});
+
+describe('scoreToClubFixture', () => {
+  it('projects a snapshot fixture, crests included', () => {
+    const base = score('1', '2026-01-01T00:00:00Z', '');
+    const fixture = scoreToClubFixture({
+      ...base,
+      compId: 'c',
+      season: '2026/2027',
+      status: 'Fixture',
+      venue: 'Field',
+    });
+    expect(fixture).toMatchObject({ id: '1', compId: 'c', status: 'Fixture', isLive: false });
+    expect(fixture?.homeTeam).toEqual({ name: 'Rocky Gorge', crest: '' });
+  });
+
+  it('skips old snapshot entries that lack feed fields', () => {
+    expect(scoreToClubFixture(score('1', '2026-01-01T00:00:00Z'))).toBeNull();
   });
 });

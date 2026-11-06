@@ -2,6 +2,11 @@
   href: '/banquet'
   title: 2025 Banquet
   summary: Buy your tickets for the 2025 banquet.
+- slug: '/gameday'
+  href: '/gameday'
+  title: 'Gameday'
+  summary: 'Scores, lineups and kickoff times'
+  header: true
 - slug: '/contacts'
   href: '/contacts'
   title: Contacts
