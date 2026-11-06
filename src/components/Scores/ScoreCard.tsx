@@ -352,6 +352,8 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
         <Box sx={{ textAlign: 'center', pb: 2 }}>
           <Button
             size="small"
+            // Stays clickable when a stretched link covers the card.
+            sx={{ position: 'relative', zIndex: 2 }}
             startIcon={<PlaceIcon fontSize="small" />}
             onClick={() => setMapOpen(true)}
           >

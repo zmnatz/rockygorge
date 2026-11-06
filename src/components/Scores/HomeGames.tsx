@@ -9,7 +9,9 @@ import {
   resolveGameday,
   resolveMatchLocation,
 } from '@/utils/gameday';
+import { NextLinkComposed } from '@/utils/nextLink';
 import { ScoreCard } from './ScoreCard';
+import { Scores } from './Scores';
 import type { Team } from '@/types/match';
 import type { Score } from './types';
 
@@ -19,7 +21,7 @@ function preMatchTeam(name: string, crest = ''): Team {
   return { id: '', teamId: '', name, score: '', crest };
 }
 
-interface NextGameCardProps {
+interface HomeGamesProps {
   // Build-time snapshot of club fixtures (results and upcoming). Seeds the
   // card so it renders with the page instead of waiting on the network.
   initialScores?: Score[];
@@ -29,13 +31,13 @@ interface NextGameCardProps {
   builtAt?: string;
 }
 
-// Post-Gameday home preview: once the results window has passed, the next
-// Gameday's first Side. Renders nothing when the Gameday page would not
-// show a "next" day, so the home page is unchanged in that case. The
+// Home games section. Once the results window has passed, the next
+// Gameday's first Side replaces the results ticker; otherwise (and when
+// the Gameday page would not show a "next" day) the ticker shows. The
 // fixture comes from the cached snapshot, so the card and the results
 // ticker appear and swap together with no flicker; only the kickoff time
 // waits on the calendar.
-export function NextGameCard({ initialScores, builtAt }: NextGameCardProps) {
+export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
   const seed = useMemo(
     () =>
       initialScores
@@ -63,8 +65,10 @@ export function NextGameCard({ initialScores, builtAt }: NextGameCardProps) {
     [match, calendarQuery.data]
   );
 
+  // Either/or: the next game replaces the results ticker. Both decide from
+  // the same cached fixtures, so the swap never flickers.
   if (!match) {
-    return null;
+    return <Scores initialScores={initialScores} />;
   }
 
   const clubFixture = fixturesQuery.data?.find(
@@ -80,7 +84,22 @@ export function NextGameCard({ initialScores, builtAt }: NextGameCardProps) {
   };
 
   return (
-    <Box sx={{ width: '100%' }} data-testid="next-game-card">
+    // The whole card opens Gameday: a stretched link covers it, and the
+    // venue button inside the card sits above the link so it still works.
+    <Box
+      sx={{
+        position: 'relative',
+        width: '100%',
+        '&:hover .score-card': { boxShadow: 4 },
+      }}
+      data-testid="next-game-card"
+    >
+      <Box
+        component={NextLinkComposed}
+        href="/gameday"
+        aria-label="Open Gameday"
+        sx={{ position: 'absolute', inset: 0, zIndex: 1, borderRadius: 1 }}
+      />
       <ScoreCard
         score={score}
         kickoff={assignment?.kickoff}

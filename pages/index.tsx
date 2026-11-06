@@ -12,8 +12,7 @@ import { Grid, Typography } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { ProductCard } from '@/components/ProductCard';
 import { CalendarCard } from '@/components/CalendarCard';
-import { Scores } from '@/components/Scores';
-import { NextGameCard } from '@/components/Scores/NextGameCard';
+import { HomeGames } from '@/components/Scores/HomeGames';
 import type { Score } from '@/components/Scores/types';
 import { crestSrc } from '@/utils/crest';
 import { markdownToReact } from '@/utils/markdown';
@@ -100,9 +99,8 @@ export default function Home({ initialScores, builtAt }: HomeProps) {
           <link key={crest} rel="preload" as="image" href={crest} />
         ))}
       </Head>
-      <Scores initialScores={initialScores} />
       <Grid size={{ xs: 12 }}>
-        <NextGameCard initialScores={initialScores} builtAt={builtAt} />
+        <HomeGames initialScores={initialScores} builtAt={builtAt} />
       </Grid>
 
       <Grid size={{ xs: 12 }} sx={{ textAlign: 'center' }}>
