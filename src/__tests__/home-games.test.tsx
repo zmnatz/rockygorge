@@ -99,6 +99,18 @@ describe('HomeGames', () => {
     expect(render()).not.toMatch(/\d:\d\d/);
   });
 
+  it('puts the venue in the header as an icon button plus text, once known', () => {
+    mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
+    const start = at(6).replace('T12:', 'T15:');
+    const item = { summary: 'MD1 vs Washington', start, end: start, location: 'Field 3, Rockville' };
+    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: false };
+    const html = render();
+    expect(html).toContain('aria-label="Map: Field 3, Rockville"');
+    expect(html).toContain('Field 3, Rockville</span>');
+    mocks.calendar = { data: [], isPending: false, isPlaceholderData: true };
+    expect(render()).not.toContain('aria-label="Map:');
+  });
+
   it('seeds the live fixtures query from the snapshot scores', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
     const upcoming = {
