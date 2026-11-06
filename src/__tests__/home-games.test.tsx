@@ -67,7 +67,7 @@ describe('HomeGames', () => {
     mocks.query = { data: [fx('a', -5), fx('b', 6)], isPending: false, isError: false };
     const html = render();
     expect(html).toContain('Washington MD1');
-    expect(html).not.toContain('Next game');
+    expect(html).toContain('Next game');
     expect(html).not.toContain('data-testid="ticker"');
     expect(html).toContain('href="/gameday"');
   });

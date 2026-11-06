@@ -8,7 +8,9 @@ import {
   nextGamedayMatch,
   resolveGameday,
   resolveMatchLocation,
+  toLocalDayKey,
 } from '@/utils/gameday';
+import { formatStartDate } from '@/utils/calendar';
 import { NextLinkComposed } from '@/utils/nextLink';
 import { ScoreCard } from './ScoreCard';
 import { Scores } from './Scores';
@@ -103,9 +105,14 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
       <ScoreCard
         score={score}
         kickoff={assignment?.kickoff}
-        // The feed stamps placeholder times; hold the time back until the
-        // calendar has the real kickoff rather than flash a wrong one.
-        hideTime={calendarQuery.isPending}
+        // The feed stamps placeholder times, so until the calendar has the
+        // real kickoff the header shows the day alone rather than flash a
+        // wrong time.
+        header={`Next game · ${formatStartDate(
+          calendarQuery.isPending
+            ? toLocalDayKey(match.fixture.dateTime)
+            : (assignment?.kickoff ?? match.fixture.dateTime)
+        )}`}
         location={resolveMatchLocation(assignment?.item?.location, clubFixture?.venue)}
       />
     </Box>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -23,9 +23,14 @@ interface ScoreCardProps {
   hideFooter?: boolean;
   /** Drops the time of day from the footer while the real kickoff is still loading. */
   hideTime?: boolean;
+  /**
+   * Highlighted strip across the top of the card (e.g. "Next game · date").
+   * It carries the date, so the footer then shows only the competition.
+   */
+  header?: ReactNode;
 }
 
-export function ScoreCard({ score, compact, large, location, kickoff, hideFooter, hideTime }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location, kickoff, hideFooter, hideTime, header }: ScoreCardProps) {
   const [mapOpen, setMapOpen] = useState(false);
   const when = kickoff ?? score.dateTime;
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
@@ -158,6 +163,21 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
         mx: '0 !important',
       }}
     >
+      {header && (
+        <Box
+          sx={{
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            px: 2,
+            py: 0.75,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant={large ? 'subtitle1' : 'subtitle2'} component="div">
+            {header}
+          </Typography>
+        </Box>
+      )}
       {/* Mobile (xs): stacked rows with winner highlight */}
       <CardContent
         sx={{
@@ -338,9 +358,11 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
       </CardContent>
       {!hideFooter && (
       <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
-        <Typography variant="caption" color="text.secondary">
-          {score.compName} • {new Date(when).toLocaleDateString()}
-          {!hideTime &&
+        <Typography variant={large ? 'body1' : 'caption'} color="text.secondary">
+          {score.compName}
+          {!header && ` • ${new Date(when).toLocaleDateString()}`}
+          {!header &&
+            !hideTime &&
             ` • ${new Date(when).toLocaleTimeString(undefined, {
               hour: 'numeric',
               minute: '2-digit',
@@ -351,7 +373,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
       {location && (
         <Box sx={{ textAlign: 'center', pb: 2 }}>
           <Button
-            size="small"
+            size={large ? 'medium' : 'small'}
             // Stays clickable when a stretched link covers the card.
             sx={{ position: 'relative', zIndex: 2 }}
             startIcon={<PlaceIcon fontSize="small" />}
