@@ -80,6 +80,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.ctx.outputs.sha }}
+          sparse-checkout: playwright
 
       # Only the screenshot tooling's own dependencies, not the site's.
       - name: Install dependencies
@@ -103,14 +104,6 @@ jobs:
         env:
           PREVIEW_URL: ${{ steps.ctx.outputs.url }}
         run: node playwright/screenshots.ts --base-url "$PREVIEW_URL" --changed-files changed-files.txt --pr-body pr-body.md --out screenshots
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: screenshots/
-          if-no-files-found: ignore
 
       - name: Publish images to the pr-screenshots branch
         if: always() && hashFiles('screenshots/report.json') != ''
