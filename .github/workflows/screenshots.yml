@@ -4,16 +4,15 @@ name: Deploy preview screenshots
 # on the orphan `pr-screenshots` branch (so they can be embedded inline), and
 # keeps one sticky comment on the PR up to date.
 #
-# Runs on every PR push: it waits for Netlify's `deploy/netlify` commit status
-# to succeed and takes the preview URL from it. A `pull_request` workflow runs
-# the file from the PR's own branch, so changes to this workflow can be tested
-# on the PR that makes them. Can also be run by hand with a preview URL and PR
-# number. Pages come from the PR description's `## Screenshots` section plus
-# routes mapped from changed files (config/screenshots.yml); `/` is always
-# included.
+# Runs when Netlify reports a successful deploy preview (a `deployment_status`
+# event whose URL starts with https://deploy-preview-), so it never waits on
+# the deploy. Such workflows run from the default branch's copy of this file:
+# changes here take effect once merged. Can also be run by hand with a preview
+# URL and PR number. Pages come from the PR description's `## Screenshots`
+# section plus routes mapped from changed files (config/screenshots.yml); `/`
+# is always included.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
+  deployment_status:
   workflow_dispatch:
     inputs:
       preview_url:
@@ -28,7 +27,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: screenshots-${{ inputs.pr_number || github.event.pull_request.number }}
+  group: screenshots-${{ inputs.pr_number || github.event.deployment_status.environment_url }}
   cancel-in-progress: true
 
 env:
@@ -37,21 +36,53 @@ env:
 jobs:
   screenshots:
     name: Screenshot preview
-    # Same-repo PRs only: fork and Dependabot PRs get a read-only token.
+    # Ignore production and branch deploys: only successful deploy previews.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]')
-    timeout-minutes: 30
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment_status.environment_url, 'https://deploy-preview-'))
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      # Chromium and its system libraries come preinstalled, so there is no
+      # browser download. The tag is the source of truth for the Playwright
+      # version: the "Check Playwright matches the image" step fails the job
+      # if @playwright/test in package.json expects a different browser build.
+      # Upgrading Playwright means changing this tag and package.json together.
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
     steps:
-      # Setup runs before the wait for Netlify below, so installing overlaps
-      # with the deploy build instead of adding to the job's length.
+      # The image has neither the GitHub CLI nor a guaranteed git.
+      - name: Install the GitHub CLI and git
+        run: apt-get update -qq && apt-get install -y -qq gh git
+
+      - name: Resolve preview and PR
+        id: ctx
+        env:
+          INPUT_URL: ${{ inputs.preview_url }}
+          INPUT_PR: ${{ inputs.pr_number }}
+          EVENT_URL: ${{ github.event.deployment_status.environment_url }}
+        run: |
+          url="${INPUT_URL:-$EVENT_URL}"
+          url="${url%/}"
+          pr="$INPUT_PR"
+          if [ -z "$pr" ]; then
+            pr=$(echo "$url" | sed -n 's#^https://deploy-preview-\([0-9]\+\)--.*#\1#p')
+          fi
+          if [ -z "$pr" ]; then
+            echo "Could not work out the PR number from $url" >&2
+            exit 1
+          fi
+          sha=$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
+          {
+            echo "url=$url"
+            echo "pr=$pr"
+            echo "sha=$sha"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Checkout PR head
         uses: actions/checkout@v4
         with:
-          # Empty on manual dispatch, which then uses the default branch.
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ steps.ctx.outputs.sha }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -68,67 +99,15 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Playwright version
-        id: pw
-        run: echo "version=$(bunx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        id: pw-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
-
-      # The browser download is cached; the system libraries it needs are not.
-      - name: Install Chromium
-        if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps chromium
-
-      - name: Install Chromium system libraries
-        if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: bunx playwright install-deps chromium
-
-      - name: Resolve preview and PR
-        id: ctx
-        env:
-          INPUT_URL: ${{ inputs.preview_url }}
-          INPUT_PR: ${{ inputs.pr_number }}
-          EVENT_PR: ${{ github.event.pull_request.number }}
+      - name: Check Playwright matches the image
         run: |
-          pr="${INPUT_PR:-$EVENT_PR}"
-          sha=$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
-          url="${INPUT_URL%/}"
-          if [ -z "$url" ]; then
-            # Wait for Netlify to report the preview for this exact commit.
-            for attempt in $(seq 1 60); do
-              status=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/status" \
-                --jq '[.statuses[] | select(.context == "deploy/netlify")][0] // empty | "\(.state) \(.target_url)"')
-              state="${status%% *}"
-              if [ -z "$status" ] && [ "$attempt" -ge 12 ]; then
-                echo "No deploy/netlify status after 4 minutes. Netlify only builds previews for PRs that target the production branch (master); a stacked PR has none." >&2
-                exit 1
-              fi
-              if [ "$state" = "success" ]; then
-                url="${status#* }"
-                url="${url%/}"
-                break
-              fi
-              if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
-                echo "Netlify deploy preview $state for $sha" >&2
-                exit 1
-              fi
-              sleep 20
-            done
-          fi
-          if [ -z "$url" ]; then
-            echo "Timed out waiting for the Netlify deploy preview of $sha" >&2
+          rev=$(node -p "require('playwright-core/browsers.json').browsers.find((b) => b.name === 'chromium-headless-shell').revision")
+          if [ ! -d "$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-$rev" ]; then
+            echo "@playwright/test expects chromium-headless-shell $rev, which this image does not have." >&2
+            echo "Set the container image tag in .github/workflows/screenshots.yml to the installed Playwright version." >&2
+            ls "$PLAYWRIGHT_BROWSERS_PATH" >&2
             exit 1
           fi
-          {
-            echo "url=$url"
-            echo "pr=$pr"
-            echo "sha=$sha"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Read the PR description and changed files
         env:
@@ -156,6 +135,7 @@ jobs:
           PR: ${{ steps.ctx.outputs.pr }}
           SHA: ${{ steps.ctx.outputs.sha }}
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git ls-remote --exit-code --heads origin pr-screenshots >/dev/null; then

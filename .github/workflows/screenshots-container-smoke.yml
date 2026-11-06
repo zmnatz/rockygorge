@@ -1,0 +1,73 @@
+name: Screenshots container smoke (temporary)
+
+# Temporary: exercises the screenshots job's container steps on a pull_request,
+# which (unlike deployment_status) runs this branch's copy. Delete before merge.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/screenshots-container-smoke.yml
+      - .github/workflows/screenshots.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
+    steps:
+      - name: Install the GitHub CLI and git
+        run: apt-get update -qq && apt-get install -y -qq gh git && gh --version | head -1 && git --version
+
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.14
+
+      - name: Cache Bun packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check Playwright matches the image
+        run: |
+          rev=$(node -p "require('playwright-core/browsers.json').browsers.find((b) => b.name === 'chromium-headless-shell').revision")
+          echo "expects chromium-headless-shell $rev; image has:"; ls "$PLAYWRIGHT_BROWSERS_PATH"
+          [ -d "$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-$rev" ]
+
+      - name: gh and git work in the container
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid
+          gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only | head -3
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git worktree add --orphan -b smoke-orphan "$RUNNER_TEMP/orphan" && echo "orphan worktree ok"
+
+      - name: Screenshot the preview
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          url="https://deploy-preview-$PR--rockygorge.netlify.app"
+          for _ in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' "$url")" = "200" ] && break
+            sleep 10
+          done
+          bun scripts/screenshots.ts --base-url "$url" --out screenshots
+          ls screenshots
