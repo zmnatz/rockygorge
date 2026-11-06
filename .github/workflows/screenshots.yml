@@ -4,14 +4,16 @@ name: Deploy preview screenshots
 # on the orphan `pr-screenshots` branch (so they can be embedded inline), and
 # keeps one sticky comment on the PR up to date.
 #
-# Runs automatically when Netlify reports a successful deploy preview (host
-# `deploy-preview-<PR>--...`), or by hand with a preview URL and PR number.
-# Pages come from the PR description's `## Screenshots` section plus routes
-# mapped from changed files (config/screenshots.yml); `/` is always included.
-# Note: `deployment_status` workflows run from the default branch's copy of
-# this file.
+# Runs on every PR push: it waits for Netlify's `deploy/netlify` commit status
+# to succeed and takes the preview URL from it. A `pull_request` workflow runs
+# the file from the PR's own branch, so changes to this workflow can be tested
+# on the PR that makes them. Can also be run by hand with a preview URL and PR
+# number. Pages come from the PR description's `## Screenshots` section plus
+# routes mapped from changed files (config/screenshots.yml); `/` is always
+# included.
 on:
-  deployment_status:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       preview_url:
@@ -26,7 +28,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: screenshots-${{ inputs.pr_number || github.event.deployment_status.environment_url }}
+  group: screenshots-${{ inputs.pr_number || github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
@@ -35,11 +37,12 @@ env:
 jobs:
   screenshots:
     name: Screenshot preview
-    # Ignore production and branch deploys: only successful deploy previews.
+    # Same-repo PRs only: fork and Dependabot PRs get a read-only token.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       startsWith(github.event.deployment_status.environment_url, 'https://deploy-preview-'))
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - name: Resolve preview and PR
@@ -47,19 +50,33 @@ jobs:
         env:
           INPUT_URL: ${{ inputs.preview_url }}
           INPUT_PR: ${{ inputs.pr_number }}
-          EVENT_URL: ${{ github.event.deployment_status.environment_url }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
         run: |
-          url="${INPUT_URL:-$EVENT_URL}"
-          url="${url%/}"
-          pr="$INPUT_PR"
-          if [ -z "$pr" ]; then
-            pr=$(echo "$url" | sed -n 's#^https://deploy-preview-\([0-9]\+\)--.*#\1#p')
+          pr="${INPUT_PR:-$EVENT_PR}"
+          sha=$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
+          url="${INPUT_URL%/}"
+          if [ -z "$url" ]; then
+            # Wait for Netlify to report the preview for this exact commit.
+            for _ in $(seq 1 60); do
+              status=$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/status" \
+                --jq '[.statuses[] | select(.context == "deploy/netlify")][0] | "\(.state) \(.target_url)"')
+              state="${status%% *}"
+              if [ "$state" = "success" ]; then
+                url="${status#* }"
+                url="${url%/}"
+                break
+              fi
+              if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+                echo "Netlify deploy preview $state for $sha" >&2
+                exit 1
+              fi
+              sleep 20
+            done
           fi
-          if [ -z "$pr" ]; then
-            echo "Could not work out the PR number from $url" >&2
+          if [ -z "$url" ]; then
+            echo "Timed out waiting for the Netlify deploy preview of $sha" >&2
             exit 1
           fi
-          sha=$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)
           {
             echo "url=$url"
             echo "pr=$pr"
