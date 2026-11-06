@@ -23,7 +23,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.65.0-noble
     steps:
       - name: Install the GitHub CLI and git
-        run: apt-get update -qq && apt-get install -y -qq gh git && gh --version | head -1 && git --version
+        run: apt-get update -qq && apt-get install -y -qq gh git unzip && gh --version | head -1 && git --version
 
       - name: Checkout PR head
         uses: actions/checkout@v4

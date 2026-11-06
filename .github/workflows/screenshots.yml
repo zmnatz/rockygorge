@@ -51,9 +51,9 @@ jobs:
       # Upgrading Playwright means changing this tag and package.json together.
       image: mcr.microsoft.com/playwright:v1.65.0-noble
     steps:
-      # The image has neither the GitHub CLI nor a guaranteed git.
+      # The image lacks the GitHub CLI, git and unzip (setup-bun needs it).
       - name: Install the GitHub CLI and git
-        run: apt-get update -qq && apt-get install -y -qq gh git
+        run: apt-get update -qq && apt-get install -y -qq gh git unzip
 
       - name: Resolve preview and PR
         id: ctx
