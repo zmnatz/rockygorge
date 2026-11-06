@@ -21,9 +21,11 @@ interface ScoreCardProps {
   kickoff?: string;
   /** Hides the competition/date footer (used where the list already labels it). */
   hideFooter?: boolean;
+  /** Drops the time of day from the footer while the real kickoff is still loading. */
+  hideTime?: boolean;
 }
 
-export function ScoreCard({ score, compact, large, location, kickoff, hideFooter }: ScoreCardProps) {
+export function ScoreCard({ score, compact, large, location, kickoff, hideFooter, hideTime }: ScoreCardProps) {
   const [mapOpen, setMapOpen] = useState(false);
   const when = kickoff ?? score.dateTime;
   const homeScore = parseInt(score.homeTeam.score || '0', 10);
@@ -337,11 +339,12 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
       {!hideFooter && (
       <Box sx={{ textAlign: 'center', pb: location ? 0 : 2 }}>
         <Typography variant="caption" color="text.secondary">
-          {score.compName} • {new Date(when).toLocaleDateString()} •{' '}
-          {new Date(when).toLocaleTimeString(undefined, {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}
+          {score.compName} • {new Date(when).toLocaleDateString()}
+          {!hideTime &&
+            ` • ${new Date(when).toLocaleTimeString(undefined, {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}`}
         </Typography>
       </Box>
       )}

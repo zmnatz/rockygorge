@@ -17,10 +17,16 @@ import { NextGameCard } from '@/components/Scores/NextGameCard';
 import type { Score } from '@/components/Scores/types';
 import { crestSrc } from '@/utils/crest';
 import { markdownToReact } from '@/utils/markdown';
+import matchesConfig from '@config/matches.yml';
+import { homePageScores } from '@/utils/gameday';
 import { showOnHome, toSectionCard } from '@/utils/sections';
+
+// Ticker size (see Scores.tsx MAX_GAMES).
+const MAX_RESULTS = 4;
 
 interface HomeProps {
   initialScores: Score[];
+  builtAt: string;
 }
 
 // Snapshot baked at build time (scripts/generate-scores-index.ts runs just
@@ -35,12 +41,14 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
     );
     const json = JSON.parse(raw);
     if (Array.isArray(json)) {
-      initialScores = json as Score[];
+      // The snapshot spans the season; the page needs only the ticker's
+      // results and the next game, so inline just those.
+      initialScores = homePageScores(json as Score[], MAX_RESULTS, matchesConfig.sides.length);
     }
   } catch {
     // Fall back to client-side live fetch
   }
-  return { props: { initialScores } };
+  return { props: { initialScores, builtAt: new Date().toISOString() } };
 };
 
 export const itemsBySource = {
@@ -73,7 +81,7 @@ function HomeSections() {
   );
 }
 
-export default function Home({ initialScores }: HomeProps) {
+export default function Home({ initialScores, builtAt }: HomeProps) {
   const crests = [
     ...new Set(
       initialScores
@@ -94,7 +102,7 @@ export default function Home({ initialScores }: HomeProps) {
       </Head>
       <Scores initialScores={initialScores} />
       <Grid size={{ xs: 12 }}>
-        <NextGameCard />
+        <NextGameCard initialScores={initialScores} builtAt={builtAt} />
       </Grid>
 
       <Grid size={{ xs: 12 }} sx={{ textAlign: 'center' }}>

@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
 import { useScores } from '@/api/scores';
-import type { Score } from './types';
+import { hasScore, type Score } from './types';
 import { ScoreCard } from './ScoreCard';
 
 // Latest games in a static grid — no carousel. Counts per breakpoint:
@@ -22,7 +22,11 @@ export function Scores({ initialScores }: { initialScores?: Score[] }) {
     return null;
   }
 
-  const visible = scores.slice(0, MAX_GAMES);
+  const visible = scores.filter(hasScore).slice(0, MAX_GAMES);
+
+  if (visible.length === 0) {
+    return null;
+  }
 
   return (
     <Box component="section" aria-label="Recent results" sx={{ mt: 2, maxWidth: '100%' }}>

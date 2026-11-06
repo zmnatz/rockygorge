@@ -25,7 +25,7 @@ export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'cre
 // commit it (`bun run generate:force`); src/__tests__/snapshot-freshness.test.ts
 // fails until it does.
 export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
-  scores: 1,
+  scores: 2,
   standings: 1,
   leaders: 1,
   players: 1,

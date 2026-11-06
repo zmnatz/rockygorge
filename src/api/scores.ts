@@ -9,6 +9,8 @@ const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 
 const CLUB_NAME = 'Rocky Gorge';
 
+const FIXTURE_LIMIT = 500;
+
 const SCORES_QUERY = `query MatchCardsEntityPollQuery($entityId: Int, $entityType: String, $type: String, $skip: Int, $limit: Int) {
   getEntityFixturesAndResults(
     type: $type
@@ -88,6 +90,11 @@ fragment Fixtures_broadcastPartners on BroadcastPartner {
   __typename
 }`;
 
+// Every club fixture, results and upcoming alike, newest first. The
+// snapshot keeps the upcoming ones so the home page knows about the next
+// game in the same cached read as the results; the ticker filters to
+// scored games with hasScore. The limit covers the whole season, since a
+// small page would miss games still to be played.
 export async function fetchLiveScores(): Promise<Score[]> {
   const data = await postWithRetry<{ data: { getEntityFixturesAndResults: Score[] } }>(SCORES_URL, {
     operationName: "MatchCardsEntityPollQuery",
@@ -96,22 +103,44 @@ export async function fetchLiveScores(): Promise<Score[]> {
       entityType: "club",
       type: "all",
       skip: 0,
-      limit: 50,
+      limit: FIXTURE_LIMIT,
     },
     query: SCORES_QUERY,
   });
   return data.data.getEntityFixturesAndResults
     .filter(
       (score) =>
-        (score.homeTeam.name.includes(CLUB_NAME) ||
-          score.awayTeam.name.includes(CLUB_NAME)) &&
-        score.homeTeam.score.length > 0 &&
-        score.awayTeam.score.length > 0
+        score.homeTeam.name.includes(CLUB_NAME) ||
+        score.awayTeam.name.includes(CLUB_NAME)
     )
+    .map(slimScore)
     .sort(
       (a, b) =>
         new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
     );
+}
+
+// Keeps only what the ticker and next-game card read, so the snapshot
+// (inlined into the home page) stays small now that it spans the season.
+function slimTeam(team: Team): Team {
+  const { id, name, teamId, score, crest } = team;
+  return { id, name, teamId, score, crest };
+}
+
+function slimScore(score: Score): Score {
+  return {
+    id: score.id,
+    dateTime: score.dateTime,
+    compName: score.compName,
+    compId: score.compId,
+    season: score.season,
+    status: score.status,
+    venue: score.venue,
+    sourceType: score.sourceType,
+    isLive: score.isLive,
+    homeTeam: slimTeam(score.homeTeam),
+    awayTeam: slimTeam(score.awayTeam),
+  };
 }
 
 // Slim fixture projection for Gameday resolution: everything the
@@ -163,8 +192,6 @@ const FIXTURES_QUERY = `query GamedayFixturesQuery($entityId: Int, $entityType: 
   }
 }`;
 
-const FIXTURE_LIMIT = 500;
-
 export async function fetchClubFixtures(): Promise<ClubFixture[]> {
   const data = await postWithRetry<{ data: { getEntityFixturesAndResults: ClubFixture[] } }>(SCORES_URL, {
     operationName: "GamedayFixturesQuery",
@@ -190,11 +217,36 @@ export async function fetchClubFixtures(): Promise<ClubFixture[]> {
     );
 }
 
-export function useGamedayFixtures() {
+// Projects a snapshot Score down to the slim fixture Gameday works with.
+// Scores from before the snapshot carried feed fields are skipped.
+export function scoreToClubFixture(score: Score): ClubFixture | null {
+  if (!score.compId || !score.season || !score.status) {
+    return null;
+  }
+  return {
+    id: score.id,
+    compId: score.compId,
+    compName: score.compName,
+    dateTime: score.dateTime,
+    season: score.season,
+    status: score.status,
+    venue: score.venue ?? '',
+    sourceType: score.sourceType ?? '2',
+    isLive: score.isLive ?? false,
+    homeTeam: { name: score.homeTeam.name, crest: score.homeTeam.crest },
+    awayTeam: { name: score.awayTeam.name, crest: score.awayTeam.crest },
+  };
+}
+
+// `seed` shows cached fixtures (the build-time snapshot) on the first
+// render while the live read runs, so consumers never wait on the network
+// to know what is coming up.
+export function useGamedayFixtures(seed?: ClubFixture[]) {
   const sides = matchesConfig.sides;
   return useQuery({
     queryKey: ['gameday', 'fixtures'],
     queryFn: fetchClubFixtures,
+    placeholderData: seed,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     // Brisk while the resolved day is current or in-window, calm otherwise.

@@ -4,6 +4,7 @@ import type { ClubFixture } from '@/api/scores';
 
 const mocks = vi.hoisted(() => ({
   calendar: { data: [], isPending: false } as { data: unknown[]; isPending: boolean },
+  seed: undefined as ClubFixture[] | undefined,
   query: { data: undefined, isPending: true, isError: false } as {
     data: ClubFixture[] | undefined;
     isPending: boolean;
@@ -11,14 +12,15 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@/api/scores', () => ({ useGamedayFixtures: () => mocks.query }));
+vi.mock('@/api/scores', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/scores')>()),
+  useGamedayFixtures: (seed?: ClubFixture[]) => {
+    mocks.seed = seed;
+    return mocks.query;
+  },
+}));
 vi.mock('@/api/calendar', () => ({
   useCalendarSourceItems: () => mocks.calendar,
-}));
-vi.mock('@/utils/nextLink', () => ({
-  NextLinkComposed: ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
 }));
 
 import { NextGameCard } from '@/components/Scores/NextGameCard';
@@ -54,17 +56,44 @@ describe('NextGameCard', () => {
     mocks.calendar = { data: [], isPending: false };
   });
 
-  it('renders the next game with a Gameday link once the window has passed', () => {
+  it('renders the next game card, without a link header, once the window has passed', () => {
     mocks.query = { data: [fx('a', -5), fx('b', 6)], isPending: false, isError: false };
     const html = render();
-    expect(html).toContain('Next game');
-    expect(html).toContain('href="/gameday"');
     expect(html).toContain('Washington MD1');
+    expect(html).not.toContain('Next game');
+    expect(html).not.toContain('href="/gameday"');
   });
 
-  it('waits for the calendar so the kickoff never flashes a placeholder', () => {
+  it('renders the card while the calendar loads, holding back the time of day', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
     mocks.calendar = { data: [], isPending: true };
+    const loading = render();
+    expect(loading).toContain('Washington MD1');
+    expect(loading).toContain('MAC Men D1');
+    mocks.calendar = { data: [], isPending: false };
+    const loaded = render();
+    expect(loaded.length).toBeGreaterThan(loading.length);
+    expect(loaded).toMatch(/\d:\d\d/);
+    expect(loading).not.toMatch(/\d:\d\d/);
+  });
+
+  it('seeds the live fixtures query from the snapshot scores', () => {
+    mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
+    const upcoming = {
+      ...fx('b', 6),
+      homeTeam: { name: 'Rocky Gorge MD1', score: '', crest: '' },
+      awayTeam: { name: 'Washington MD1', score: '', crest: '' },
+    };
+    renderToStaticMarkup(<NextGameCard initialScores={[upcoming as never]} />);
+    expect(mocks.seed?.map((fixture) => fixture.id)).toEqual(['b']);
+  });
+
+  it('judges today against the snapshot build time on first render', () => {
+    const fixture = fx('b', 0);
+    mocks.query = { data: [fixture], isPending: false, isError: false };
+    // Built long before the fixture's day: it is still "next" then.
+    const builtAt = new Date(Date.now() - 10 * 86400000).toISOString();
+    expect(renderToStaticMarkup(<NextGameCard builtAt={builtAt} />)).toContain('Washington MD1');
     expect(render()).toBe('');
   });
 
