@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import eligibilityConfig from '@config/eligibility.yml';
 import { computeBreakdown } from '@/utils/eligibility';
 import {
   buildParticipationSnapshot,
@@ -201,7 +202,7 @@ const baseConfig: EligibilityConfig = {
     upperMatchLimit: 4,
     lowerAtLeastUpper: true,
   },
-  nonQualifyingCompetitions: ['National Championships', 'Super Regional', '7s'],
+  nonQualifyingCompetitions: eligibilityConfig.nonQualifyingCompetitions,
 };
 
 const row = (overrides: Partial<PlayerRow>): PlayerRow => ({
@@ -337,19 +338,27 @@ describe('record-based eligibility', () => {
     expect(breakdown.lowerSummary.competitions).toEqual(['Capital Men D3']);
   });
 
-  it('does not count non-qualifying competitions towards participation', () => {
+  it("counts league and playoff matches but not 7s", () => {
     const config = clubConfig(club, baseConfig);
     const snapshot = snapshotOf([
       row({ teamName: 'NOVA MD1', played: 1 }),
-      row({ teamName: 'NOVA MD1', competition: '2027 National Championships', played: 1 }),
+      row({ teamName: 'NOVA MD1', competition: 'Capital Men D3 Playoffs', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: '2027 Super Regional Atlantic', played: 1 }),
+      row({ teamName: 'NOVA MD1', competition: '2027 National Championships', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: 'MAC 7s - Rites of Summer', played: 1 }),
+      row({ teamName: 'NOVA MD1', competition: "S'kill 7's", played: 1 }),
+      row({ teamName: 'NOVA MD1', competition: 'Beltway Sevens', played: 1 }),
     ]);
 
     const breakdown = computeBreakdown(participationRows(snapshot, club, config), config);
 
-    expect(breakdown.upper[0].participation).toBe(1);
-    expect(breakdown.upper[0].eligible).toBe(false);
+    expect(breakdown.upper[0].participation).toBe(4);
+    expect(breakdown.upperSummary.competitions).toEqual([
+      '2027 National Championships',
+      '2027 Super Regional Atlantic',
+      'Capital Men D3 Playoffs',
+      'MAC Men D1',
+    ]);
   });
 
   it("reports gaps only for the club's own sides in qualifying competitions", () => {
@@ -368,7 +377,7 @@ describe('record-based eligibility', () => {
       gaps: [
         gap('NOVA MD1', 'MAC Men D1'),
         gap('Rocky Gorge MD1', 'MAC Men D1'),
-        gap('NOVA MD3', '2027 National Championships'),
+        gap('NOVA MD3', 'MAC 7s - Rites of Summer'),
       ],
     };
 
