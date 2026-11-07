@@ -207,11 +207,13 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
                 color="text.secondary"
                 sx={{ whiteSpace: 'nowrap' }}
               >
-                {game.starter
-                  ? 'Started'
-                  : game.played
-                    ? 'Sub (Played)'
-                    : 'Sub (DNP)'}
+                {game.coach
+                  ? 'Coach'
+                  : game.starter
+                    ? 'Started'
+                    : game.played
+                      ? 'Sub (Played)'
+                      : 'Sub (DNP)'}
               </Typography>
             </Paper>
           </MuiLink>

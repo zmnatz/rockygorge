@@ -5,13 +5,16 @@
  * (§3.4.2, §3.5) for clubs fielding two sides — see docs/adr/008-eligibility-rules.md.
  */
 
-/** One row of the Rugby Xplorer "matches played" CSV export. */
+/** One player's totals for a team and competition: a row of the Rugby Xplorer
+ *  "matches played" CSV export, or the same shape built from the match record. */
 export interface PlayerRow {
-  /** The player's USA Rugby registration number; the join key across team rows. */
-  usaId: string;
+  /** The join key across team rows: the USA Rugby registration number in a CSV
+   *  report, the CMS player id in the match record. */
+  playerId: string;
   firstName: string;
   lastName: string;
-  /** `Player Last Registered` value — a date or "NA". Shown, never enforced. */
+  /** `Player Last Registered` value — a date or "NA", empty in the match record.
+   *  Shown, never enforced. */
   lastRegistered: string;
   /** Team this row belongs to (e.g. "Rocky Gorge MD1"), used to assign the
    *  row to the Upper or Lower Division. */
@@ -31,7 +34,7 @@ export type DivisionRole = 'upper' | 'lower';
 
 /** A player's eligibility verdict for one division, ready for display. */
 export interface PlayerEligibility {
-  usaId: string;
+  playerId: string;
   firstName: string;
   lastName: string;
   /** Display name, "First Last". */
@@ -55,6 +58,9 @@ export interface PlayerEligibility {
   eligible: boolean;
   /** Human-readable failure reasons; empty when eligible. */
   reasons: string[];
+  /** Matches an eligible player still needs by Super Regionals; empty when the
+   *  minimum is already met. These players are "on track". */
+  pending: string[];
 }
 
 /** Per-division results plus summaries, i.e. the tool's output. */
@@ -70,6 +76,8 @@ export interface EligibilityBreakdown {
 export interface DivisionSummary {
   total: number;
   eligible: number;
+  /** How many of the eligible players still need matches to reach a minimum. */
+  onTrack: number;
   /** Distinct competitions this division's roster spans, sorted. */
   competitions: string[];
 }
@@ -96,4 +104,13 @@ export interface LowerDivisionConfig {
 export interface EligibilityConfig {
   upperDivision: UpperDivisionConfig;
   lowerDivision: LowerDivisionConfig;
+  /** Competition-name fragments (case-insensitive) that are not NCS Qualifying
+   *  Matches. Applied to the match record; a CSV report is taken as given. */
+  nonQualifyingCompetitions: string[];
+}
+
+/** Each side's fixtures still to play before the Super Regionals deadline. */
+export interface RemainingMatches {
+  upper: number;
+  lower: number;
 }

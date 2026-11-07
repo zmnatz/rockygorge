@@ -9,7 +9,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 | scores    | `public/data/scores.json`   | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
 | leaders   | `public/data/leaders/`, plus the match-centre cache `.cache/leaders/matches.json` | `scripts/generate-leaders-index.ts` |
-| players   | `public/data/players/`      | `scripts/generate-players.ts` |
+| players   | `public/data/players/`, including the eligibility tool's `participation.json` (reads the standings snapshot for every side's fixtures) | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
 
 ## How freshness works
@@ -51,6 +51,17 @@ If a PR changes what a generator writes (shape of the JSON, filtering logic):
 
 A test (`snapshot-freshness.test.ts`) fails until the committed manifest
 matches the code's format versions, so CI catches a forgotten regeneration.
+
+## Player histories pull the current season only
+
+Past seasons don't change, so `generate-players.ts` fetches the current season's
+matches and keeps older seasons from the committed files. It pulls every season
+when the saved files are missing or the `players` format changed. To pick up a
+correction to a past season, run:
+
+```bash
+bun scripts/generate-players.ts --force --full-history
+```
 
 ## Forcing an update
 

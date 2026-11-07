@@ -6,6 +6,7 @@ import type {
   EligibilityConfig,
   PlayerEligibility,
   PlayerRow,
+  RemainingMatches,
 } from '@/types/eligibility';
 
 const HEADER_COLUMNS = [
@@ -53,7 +54,7 @@ export function parsePlayerRows(csvText: string): PlayerRow[] {
     .slice(1)
     .filter((row) => row.some((cell) => cell.trim() !== ''))
     .map((row) => ({
-      usaId: row[col['USA ID']].trim(),
+      playerId: row[col['USA ID']].trim(),
       firstName: row[col['First Name']].trim(),
       lastName: row[col['Last Name']].trim(),
       lastRegistered: row[col['Player Last Registered']].trim(),
@@ -88,25 +89,47 @@ function evaluate(
   otherParticipation: number,
   config: EligibilityConfig,
   sourceRows: PlayerRow[],
+  remaining: RemainingMatches,
 ): PlayerEligibility {
   const role = teamRole(row.teamName, config);
   if (!role) throw new Error(`No division configured for team "${row.teamName}"`);
 
   const reasons: string[] = [];
+  const pending: string[] = [];
+
+  // A two-match minimum is met if the player can still reach it by Super
+  // Regionals; see docs/adr/008-eligibility-rules.md.
+  const checkMinimum = (
+    count: number,
+    minimum: number,
+    fixturesLeft: number,
+    matchLabel: string,
+  ) => {
+    if (count >= minimum) return;
+    const short = minimum - count;
+    if (short <= fixturesLeft) {
+      pending.push(
+        `Needs ${short} more ${matchLabel} match${short === 1 ? '' : 'es'} (${fixturesLeft} fixture${fixturesLeft === 1 ? '' : 's'} left)`,
+      );
+    } else {
+      reasons.push(`Needs ${minimum} ${matchLabel} matches (has ${count})`);
+    }
+  };
 
   if (role === 'upper') {
-    const total = ownParticipation + otherParticipation;
-    if (total < config.upperDivision.minimumTotalMatches) {
-      reasons.push(
-        `Needs ${config.upperDivision.minimumTotalMatches} qualifying matches (has ${total})`,
-      );
-    }
+    checkMinimum(
+      ownParticipation + otherParticipation,
+      config.upperDivision.minimumTotalMatches,
+      remaining.upper + remaining.lower,
+      'qualifying',
+    );
   } else {
-    if (ownParticipation < config.lowerDivision.minimumMatches) {
-      reasons.push(
-        `Needs ${config.lowerDivision.minimumMatches} ${config.lowerDivision.label} matches (has ${ownParticipation})`,
-      );
-    }
+    checkMinimum(
+      ownParticipation,
+      config.lowerDivision.minimumMatches,
+      remaining.lower,
+      config.lowerDivision.label,
+    );
     if (otherParticipation >= config.lowerDivision.upperMatchLimit) {
       reasons.push(
         `Played ${otherParticipation} upper-division matches — playing ${config.lowerDivision.upperMatchLimit} forfeits lower-division eligibility`,
@@ -123,7 +146,7 @@ function evaluate(
   }
 
   return {
-    usaId: row.usaId,
+    playerId: row.playerId,
     firstName: row.firstName,
     lastName: row.lastName,
     name: [row.firstName, row.lastName].filter(Boolean).join(' '),
@@ -137,6 +160,7 @@ function evaluate(
     rows: sourceRows,
     eligible: reasons.length === 0,
     reasons,
+    pending,
   };
 }
 
@@ -175,6 +199,7 @@ function combineRows(previous: PlayerRow, next: PlayerRow): PlayerRow {
 export function computeBreakdown(
   rows: PlayerRow[],
   config: EligibilityConfig,
+  remaining: RemainingMatches = { upper: 0, lower: 0 },
 ): EligibilityBreakdown {
   /** A division's joined roster: players keyed by USA ID (rows across
    *  competitions combined), each player's raw CSV rows, and the
@@ -185,7 +210,7 @@ export function computeBreakdown(
     const competitions = new Set<string>();
     for (const row of rows) {
       if (row.teamName !== teamName) continue;
-      const key = row.usaId.trim();
+      const key = row.playerId.trim();
       if (!key) continue;
       if (row.competition.trim() !== '') competitions.add(row.competition);
       const previous = map.get(key);
@@ -201,8 +226,8 @@ export function computeBreakdown(
   /** All of a player's CSV rows across every team, so the detail modal shows
    *  no matter which division table opened it. The player's own team first. */
   const sourcesFor = (row: PlayerRow): PlayerRow[] => {
-    const upper = upperTeam.sources.get(row.usaId) ?? [];
-    const lower = lowerTeam.sources.get(row.usaId) ?? [];
+    const upper = upperTeam.sources.get(row.playerId) ?? [];
+    const lower = lowerTeam.sources.get(row.playerId) ?? [];
     return teamRole(row.teamName, config) === 'upper' ? [...upper, ...lower] : [...lower, ...upper];
   };
 
@@ -210,18 +235,20 @@ export function computeBreakdown(
     evaluate(
       row,
       participation(row),
-      participation(lowerTeam.map.get(row.usaId.trim())),
+      participation(lowerTeam.map.get(row.playerId.trim())),
       config,
       sourcesFor(row),
+      remaining,
     ),
   );
   const lower = [...lowerTeam.map.values()].map((row) =>
     evaluate(
       row,
       participation(row),
-      participation(upperTeam.map.get(row.usaId.trim())),
+      participation(upperTeam.map.get(row.playerId.trim())),
       config,
       sourcesFor(row),
+      remaining,
     ),
   );
 
@@ -231,6 +258,7 @@ export function computeBreakdown(
   const summarize = (players: PlayerEligibility[], competitions: Set<string>): DivisionSummary => ({
     total: players.length,
     eligible: players.filter((player) => player.eligible).length,
+    onTrack: players.filter((player) => player.eligible && player.pending.length > 0).length,
     competitions: [...competitions].sort(),
   });
 
