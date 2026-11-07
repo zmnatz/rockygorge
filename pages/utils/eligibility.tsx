@@ -39,6 +39,7 @@ import {
   loadClubRecord,
   loadParticipationSnapshot,
   participationRows,
+  remainingMatches,
   type ParticipationGap,
 } from '@/utils/participation';
 import { fetchMatchCentre } from '@/utils/playerHistory';
@@ -63,8 +64,13 @@ const LIVE_RECORD_STALE_MS = 10 * 60 * 1000;
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
-function statusChip(eligible: boolean) {
-  return <Chip size="small" color={eligible ? 'success' : 'error'} label={eligible ? 'ELIGIBLE' : 'INELIGIBLE'} />;
+function statusChip(player: PlayerEligibility) {
+  if (!player.eligible) return <Chip size="small" color="error" label="INELIGIBLE" />;
+  return player.pending.length > 0 ? (
+    <Chip size="small" color="warning" label="ON TRACK" />
+  ) : (
+    <Chip size="small" color="success" label="ELIGIBLE" />
+  );
 }
 
 type SortKey =
@@ -106,9 +112,9 @@ function sortValue(player: PlayerEligibility, key: SortKey): string | number {
     case 'otherDivision':
       return player.otherDivisionParticipation;
     case 'status':
-      return player.eligible ? 1 : 0;
+      return player.eligible ? (player.pending.length > 0 ? 1 : 2) : 0;
     case 'reasons':
-      return player.reasons.length;
+      return player.reasons.length + player.pending.length;
   }
 }
 
@@ -117,7 +123,7 @@ interface DivisionTableProps {
   source: ReportSource;
   ownLabel: string;
   otherLabel: string;
-  summary: { total: number; eligible: number };
+  summary: { total: number; eligible: number; onTrack: number };
   visibleCount: number;
   filtered: boolean;
   hiddenColumns: string[];
@@ -153,11 +159,11 @@ function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSourc
     case 'otherDivision':
       return player.otherDivisionParticipation;
     case 'status':
-      return statusChip(player.eligible);
+      return statusChip(player);
     case 'reasons':
-      return player.eligible ? (
+      return player.reasons.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          —
+          {player.pending.join(' · ') || '—'}
         </Typography>
       ) : (
         <Typography variant="body2">
@@ -245,7 +251,7 @@ function DivisionTable({
           <Chip
             size="small"
             color={summary.eligible === summary.total ? 'success' : summary.total === 0 ? 'default' : 'warning'}
-            label={`${summary.eligible} of ${summary.total} eligible`}
+            label={`${summary.eligible} of ${summary.total} eligible${summary.onTrack > 0 ? `, ${summary.onTrack} on track` : ''}`}
           />
           <FormControl size="small" sx={{ minWidth: 170 }}>
             <InputLabel>Columns</InputLabel>
@@ -436,13 +442,18 @@ function PlayerDetailsDialog({
                   USA ID {player.playerId}
                 </Typography>
               )}
-              {statusChip(player.eligible)}
+              {statusChip(player)}
             </Box>
           </DialogTitle>
           <DialogContent dividers>
             {player.reasons.length > 0 && (
               <Typography variant="body2" color="error" sx={{ mb: 2 }}>
                 {player.reasons.join(' · ')}
+              </Typography>
+            )}
+            {player.pending.length > 0 && (
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                {player.pending.join(' · ')}
               </Typography>
             )}
             <Box>
@@ -543,6 +554,9 @@ function buildReport(
     } else {
       for (const player of eligible) {
         lines.push(`  ${reportPlayerLine(player, section.otherLabel, source)}`);
+        for (const note of player.pending) {
+          lines.push(`    • On track: ${note}`);
+        }
       }
     }
     lines.push('');
@@ -614,7 +628,7 @@ export default function EligibilityPage() {
   const [fileName, setFileName] = useState('');
   const [csvText, setCsvText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [csvBreakdown, setCsvBreakdown] = useState<EligibilityBreakdown | null>(null);
+  const [csvRows, setCsvRows] = useState<PlayerRow[] | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -623,7 +637,6 @@ export default function EligibilityPage() {
   const schedule = useQuery({
     queryKey: ['eligibility-fixtures'],
     queryFn: loadCurrentSeasonFixtures,
-    enabled: source === 'record',
   });
   const fixtures = schedule.data;
   const clubs = useMemo(() => (fixtures ? listClubs(fixtures, eligibility) : []), [fixtures]);
@@ -653,10 +666,32 @@ export default function EligibilityPage() {
     const config = clubConfig(club, eligibility);
     return {
       config,
-      breakdown: computeBreakdown(participationRows(snapshot, club, config), config),
+      breakdown: computeBreakdown(
+        participationRows(snapshot, club, config),
+        config,
+        remainingMatches(fixtures ?? [], club, config),
+      ),
       gaps: clubGaps(snapshot, club, config),
     };
-  }, [snapshot, club]);
+  }, [snapshot, club, fixtures]);
+
+  const csvBreakdown = useMemo(
+    () =>
+      csvRows &&
+      computeBreakdown(
+        csvRows,
+        eligibility,
+        remainingMatches(
+          fixtures ?? [],
+          {
+            upperTeam: eligibility.upperDivision.teamName,
+            lowerTeam: eligibility.lowerDivision.teamName,
+          },
+          eligibility,
+        ),
+      ),
+    [csvRows, fixtures],
+  );
 
   const breakdown = source === 'record' ? (recordReport?.breakdown ?? null) : csvBreakdown;
   const config = source === 'record' ? (recordReport?.config ?? eligibility) : eligibility;
@@ -690,11 +725,10 @@ export default function EligibilityPage() {
   const handleRun = () => {
     setError(null);
     try {
-      const rows = parsePlayerRows(csvText);
-      setCsvBreakdown(computeBreakdown(rows, eligibility));
+      setCsvRows(parsePlayerRows(csvText));
       setDialogOpen(false);
     } catch (err) {
-      setCsvBreakdown(null);
+      setCsvRows(null);
       setError(err instanceof Error ? err.message : 'Could not read the CSV.');
       setDialogOpen(false);
     }
@@ -704,7 +738,7 @@ export default function EligibilityPage() {
     setCsvText('');
     setFileName('');
     setError(null);
-    setCsvBreakdown(null);
+    setCsvRows(null);
     setStatusFilter('all');
     setHiddenColumns(['lastRegistered', 'played', 'sub']);
     setDialogOpen(false);
@@ -737,12 +771,14 @@ export default function EligibilityPage() {
           ? `Pick a club to see which players are NCS-eligible, from the league and
              playoff lineups in the match record; 7s don't count. Participation counts starts and
              substitute appearances; a listed player who never enters the game doesn't
-             count. Lists clubs with two sides. This is a guide: the Rugby Xplorer report is the official count,
+             count. Fixtures still to play before Super Regionals count towards the
+             two-match minimums, shown as on track. Lists clubs with two sides. This is a guide: the Rugby Xplorer report is the official count,
              and the record has no registration data, so check registration separately.`
           : `Paste or upload the Rugby Xplorer matches-played report to see which
              players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.
              Participation counts as Played + Substitute; per-round attendance codes
-             do not count. Players are assumed registered — the report only lists
+             do not count. Fixtures still to play before Super Regionals count towards
+             the two-match minimums, shown as on track. Players are assumed registered — the report only lists
              registered players — and the registration date is shown for reference.`}
       </Typography>
 
@@ -934,7 +970,7 @@ export default function EligibilityPage() {
           <CsvForm
             csvText={csvText}
             fileName={fileName}
-            canClear={Boolean(csvText) || Boolean(csvBreakdown)}
+            canClear={Boolean(csvText) || Boolean(csvRows)}
             onFile={handleFile}
             onTextChange={(value) => {
               setCsvText(value);

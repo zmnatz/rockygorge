@@ -58,6 +58,9 @@ export interface PlayerEligibility {
   eligible: boolean;
   /** Human-readable failure reasons; empty when eligible. */
   reasons: string[];
+  /** Matches an eligible player still needs by Super Regionals; empty when the
+   *  minimum is already met. These players are "on track". */
+  pending: string[];
 }
 
 /** Per-division results plus summaries, i.e. the tool's output. */
@@ -73,6 +76,8 @@ export interface EligibilityBreakdown {
 export interface DivisionSummary {
   total: number;
   eligible: number;
+  /** How many of the eligible players still need matches to reach a minimum. */
+  onTrack: number;
   /** Distinct competitions this division's roster spans, sorted. */
   competitions: string[];
 }
@@ -102,4 +107,13 @@ export interface EligibilityConfig {
   /** Competition-name fragments (case-insensitive) that are not NCS Qualifying
    *  Matches. Applied to the match record; a CSV report is taken as given. */
   nonQualifyingCompetitions: string[];
+  /** Competition-name fragments at or after the Super Regionals deadline, whose
+   *  fixtures can't count towards the two-match minimums. */
+  deadlineCompetitions: string[];
+}
+
+/** Each side's fixtures still to play before the Super Regionals deadline. */
+export interface RemainingMatches {
+  upper: number;
+  lower: number;
 }

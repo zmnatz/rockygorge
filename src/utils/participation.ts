@@ -1,4 +1,4 @@
-import type { EligibilityConfig, PlayerRow } from '@/types/eligibility';
+import type { EligibilityConfig, PlayerRow, RemainingMatches } from '@/types/eligibility';
 import {
   aggregatePlayerHistory,
   fetchMatches,
@@ -217,6 +217,37 @@ export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): 
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Each side's fixtures still to play before the Super Regionals deadline, which
+ *  count towards the two-match minimums. A postponed fixture has no date to
+ *  count on, and a forfeit won't be played. */
+export function remainingMatches(
+  fixtures: (FixtureSides & {
+    dateTime: string;
+    status?: string;
+    homeTeam: { name: string; score: string };
+    awayTeam: { name: string; score: string };
+  })[],
+  sides: Pick<Club, 'upperTeam' | 'lowerTeam'>,
+  config: EligibilityConfig,
+  now: Date = new Date(),
+): RemainingMatches {
+  const upcoming = fixtures.filter((fixture) => {
+    const competition = fixture.compName.toLowerCase();
+    return (
+      new Date(fixture.dateTime) > now &&
+      fixture.status !== 'Forfeit' &&
+      fixture.status !== 'Postponed' &&
+      fixture.homeTeam.score === '' &&
+      fixture.awayTeam.score === '' &&
+      isQualifying(fixture.compName, config) &&
+      !config.deadlineCompetitions.some((term) => competition.includes(term.toLowerCase()))
+    );
+  });
+  const count = (team: string) =>
+    upcoming.filter((fixture) => fixture.homeTeam.name === team || fixture.awayTeam.name === team).length;
+  return { upper: count(sides.upperTeam), lower: count(sides.lowerTeam) };
 }
 
 /** The regulation thresholds, applied to this club's two sides. */

@@ -18,6 +18,7 @@ const config: EligibilityConfig = {
     lowerAtLeastUpper: true,
   },
   nonQualifyingCompetitions: [],
+  deadlineCompetitions: [],
 };
 
 const SAMPLE_CSV = [
@@ -84,8 +85,8 @@ describe('parsePlayerRows', () => {
 describe('computeBreakdown', () => {
   it('marks 0-appearance players ineligible with the participation reason', () => {
     const breakdown = computeBreakdown(parsePlayerRows(SAMPLE_CSV), config);
-    expect(breakdown.upperSummary).toEqual({ total: 2, eligible: 0, competitions: ['MAC Men D1'] });
-    expect(breakdown.lowerSummary).toEqual({ total: 2, eligible: 0, competitions: ['Capital Men D3'] });
+    expect(breakdown.upperSummary).toEqual({ total: 2, eligible: 0, onTrack: 0, competitions: ['MAC Men D1'] });
+    expect(breakdown.lowerSummary).toEqual({ total: 2, eligible: 0, onTrack: 0, competitions: ['Capital Men D3'] });
 
     const burns = breakdown.upper[0];
     expect(burns.name).toBe('Matthew Burns');
@@ -241,5 +242,72 @@ describe('computeBreakdown', () => {
     expect(breakdown.lower).toHaveLength(1);
     expect(breakdown.lower[0].playerId).toBe('100');
     expect(breakdown.lowerSummary.total).toBe(1);
+  });
+});
+
+describe('computeBreakdown with fixtures still to play', () => {
+  const players = [
+    row({ playerId: 'one-lower', teamName: 'Rocky Gorge MD3', played: 1 }),
+    row({ playerId: 'one-upper', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 1 }),
+  ];
+  const verdict = (list: { playerId: string }[], id: string) =>
+    list.find((player) => player.playerId === id);
+
+  it('keeps a player eligible and on track when remaining fixtures can reach the upper minimum', () => {
+    const { upper } = computeBreakdown(players, config, { upper: 1, lower: 0 });
+
+    expect(verdict(upper, 'one-upper')).toMatchObject({
+      eligible: true,
+      reasons: [],
+      pending: ['Needs 1 more qualifying match (1 fixture left)'],
+    });
+  });
+
+  it('counts fixtures on either side towards the upper minimum', () => {
+    const { upper } = computeBreakdown(players, config, { upper: 0, lower: 1 });
+
+    expect(verdict(upper, 'one-upper')).toMatchObject({ eligible: true });
+  });
+
+  it('counts only lower-division fixtures towards the lower minimum', () => {
+    const { lower: upperOnly } = computeBreakdown(players, config, { upper: 5, lower: 0 });
+    const { lower: withLower } = computeBreakdown(players, config, { upper: 0, lower: 1 });
+
+    expect(verdict(upperOnly, 'one-lower')).toMatchObject({
+      eligible: false,
+      reasons: ['Needs 2 D3 matches (has 1)'],
+      pending: [],
+    });
+    expect(verdict(withLower, 'one-lower')).toMatchObject({
+      eligible: true,
+      pending: ['Needs 1 more D3 match (1 fixture left)'],
+    });
+  });
+
+  it('fails a player when too few fixtures remain to reach the minimum', () => {
+    const noMatches = [row({ playerId: 'none', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1' })];
+    const { upper } = computeBreakdown(noMatches, config, { upper: 1, lower: 0 });
+
+    expect(verdict(upper, 'none')).toMatchObject({
+      eligible: false,
+      reasons: ['Needs 2 qualifying matches (has 0)'],
+    });
+  });
+
+  it('does not let remaining fixtures excuse the other lower-division checks', () => {
+    const overUpper = [
+      row({ playerId: 'p', teamName: 'Rocky Gorge MD3', played: 1 }),
+      row({ playerId: 'p', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 3 }),
+    ];
+    const { lower } = computeBreakdown(overUpper, config, { upper: 0, lower: 5 });
+
+    expect(lower[0].eligible).toBe(false);
+    expect(lower[0].reasons).toEqual(['Upper-division participation (3) exceeds D3 participation (1)']);
+  });
+
+  it('counts on-track players in the summary', () => {
+    const { upperSummary } = computeBreakdown(players, config, { upper: 1, lower: 0 });
+
+    expect(upperSummary).toMatchObject({ total: 1, eligible: 1, onTrack: 1 });
   });
 });

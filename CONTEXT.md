@@ -181,6 +181,10 @@ _Avoid_: Appearances, games played
 A league or playoff match that counts toward a player's Match Participation; 7s don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
 _Avoid_: Game, friendly
 
+**On Track**:
+A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's fixtures remain before Super Regionals. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the Lower Division comparison.
+_Avoid_: Provisionally eligible, pending
+
 **Registration**:
 A player's USA Rugby membership state, read from the report's `Player Rego Active` and `Player Last Registered` fields. Registration is assumed — the report only lists registered players — so the breakdown shows the last-registered date for reference and does not gate eligibility on it.
 _Avoid_: Signup, CIPP

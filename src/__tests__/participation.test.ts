@@ -8,6 +8,7 @@ import {
   listClubs,
   loadClubRecord,
   participationRows,
+  remainingMatches,
   scheduledResults,
   type ParticipationSnapshot,
   type ResultFixture,
@@ -204,6 +205,7 @@ const baseConfig: EligibilityConfig = {
     lowerAtLeastUpper: true,
   },
   nonQualifyingCompetitions: eligibilityConfig.nonQualifyingCompetitions,
+  deadlineCompetitions: eligibilityConfig.deadlineCompetitions,
 };
 
 const row = (overrides: Partial<PlayerRow>): PlayerRow => ({
@@ -648,5 +650,54 @@ describe('scheduledResults', () => {
       ['f2', 'James River MD2', 'no-lineup'],
       ['f2', 'Raleigh MD2', 'no-lineup'],
     ]);
+  });
+});
+
+describe('remainingMatches', () => {
+  const NOW = new Date('2026-11-06T12:00:00Z');
+  const sides = { upperTeam: 'Rocky Gorge MD1', lowerTeam: 'Rocky Gorge MD3' };
+  const upcoming = (overrides: Record<string, unknown> = {}) => ({
+    compName: 'MAC Men D1',
+    dateTime: '2026-11-14T17:00:00Z',
+    status: 'Fixture',
+    homeTeam: { name: 'Rocky Gorge MD1', score: '' },
+    awayTeam: { name: 'NOVA MD1', score: '' },
+    ...overrides,
+  });
+
+  it("counts each side's fixtures still to play, home or away", () => {
+    expect(
+      remainingMatches(
+        [
+          upcoming(),
+          upcoming({ homeTeam: { name: 'NOVA MD1', score: '' }, awayTeam: { name: 'Rocky Gorge MD1', score: '' } }),
+          upcoming({ compName: 'Capital Men D3', homeTeam: { name: 'Rocky Gorge MD3', score: '' } }),
+        ],
+        sides,
+        baseConfig,
+        NOW,
+      ),
+    ).toEqual({ upper: 2, lower: 1 });
+  });
+
+  it("counts local playoffs, but not other clubs', played, forfeited or postponed fixtures, 7s, or anything from Super Regionals on", () => {
+    expect(
+      remainingMatches(
+        [
+          upcoming({ compName: 'Capital Men D3 Playoffs' }),
+          upcoming({ homeTeam: { name: 'Washington MD1', score: '' } }),
+          upcoming({ dateTime: '2026-10-01T17:00:00Z' }),
+          upcoming({ homeTeam: { name: 'Rocky Gorge MD1', score: '20' } }),
+          upcoming({ status: 'Forfeit' }),
+          upcoming({ status: 'Postponed' }),
+          upcoming({ compName: 'MAC 7s - Rites of Summer' }),
+          upcoming({ compName: '2027 Super Regional Atlantic' }),
+          upcoming({ compName: '2027 National Championships' }),
+        ],
+        sides,
+        baseConfig,
+        NOW,
+      ),
+    ).toEqual({ upper: 1, lower: 0 });
   });
 });
