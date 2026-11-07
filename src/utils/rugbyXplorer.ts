@@ -91,6 +91,20 @@ export function clubPageCandidates(
 export interface ClubPage {
   slug: string | null;
   crest: string | null;
+  /** When the CMS was last asked. */
+  checkedAt?: string;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** A confirmed page rarely moves; an unconfirmed club may have since got one. */
+const CONFIRMED_RECHECK_MS = 30 * DAY_MS;
+const UNCONFIRMED_RECHECK_MS = 7 * DAY_MS;
+
+/** Whether to ask the CMS about a playing club again. */
+export function clubPageIsDue(saved: ClubPage | undefined, now: Date = new Date()): boolean {
+  if (!saved?.checkedAt) return true;
+  const age = now.getTime() - new Date(saved.checkedAt).getTime();
+  return age >= (saved.slug ? CONFIRMED_RECHECK_MS : UNCONFIRMED_RECHECK_MS);
 }
 
 /** The first candidate the CMS confirms is this club: by id from its crest when

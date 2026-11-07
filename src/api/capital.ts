@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { crestEntityId } from '@/utils/rugbyXplorer';
 import { parseTeamSide } from '@/utils/teamSide';
 import { useMemo } from 'react';
-import { postWithRetry, sleep } from '@/utils/api';
+import { mapConcurrent, postWithRetry, sleep } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
 
 export const CAPITAL_UNION_ID = 90067;
@@ -18,6 +18,7 @@ export const CLUB_ENTITY_TYPE = 'club';
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 const PAGE_SIZE = 100;
 const MAX_FIXTURES = 1500;
+const CLUB_FEED_CONCURRENCY = 3;
 const FETCH_GAP_MS = 300;
 
 export interface CapitalTeam {
@@ -285,11 +286,9 @@ export async function fetchLeagueFixtures(
     await fetchFeed(CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE, refreshFrom),
     await fetchFeed(CLUB_ENTITY_ID, CLUB_ENTITY_TYPE, refreshFrom)
   );
-  const clubFeeds: CapitalFixture[][] = [];
-  for (const id of leagueClubIds(base, savedClubs, refreshFrom)) {
-    await sleep(FETCH_GAP_MS);
-    clubFeeds.push(await fetchFeed(id, CLUB_ENTITY_TYPE, refreshFrom));
-  }
+  const clubFeeds = await mapConcurrent(leagueClubIds(base, savedClubs, refreshFrom), CLUB_FEED_CONCURRENCY, (id) =>
+    fetchFeed(id, CLUB_ENTITY_TYPE, refreshFrom)
+  );
   return backfillCrests(mergeLeagueFeeds(base, clubFeeds));
 }
 

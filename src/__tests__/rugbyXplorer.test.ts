@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   clubPageCandidates,
+  clubPageIsDue,
   crestEntityId,
   fixturesUrl,
   matchUrl,
@@ -117,5 +118,28 @@ describe('resolveClubPage', () => {
     await expect(resolveClubPage(['x'], null, 'Pax River', other)).resolves.toBeNull();
     await expect(resolveClubPage(['x'], null, 'Pax River', union)).resolves.toBeNull();
     await expect(resolveClubPage(['x'], null, 'Pax River', missing)).resolves.toBeNull();
+  });
+});
+
+describe('clubPageIsDue', () => {
+  const NOW = new Date('2026-11-10T06:00:00Z');
+  const daysAgo = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  it('looks up a club it has never seen', () => {
+    expect(clubPageIsDue(undefined, NOW)).toBe(true);
+  });
+
+  it('keeps a confirmed page for a month', () => {
+    expect(clubPageIsDue({ slug: 'nova', crest: null, checkedAt: daysAgo(29) }, NOW)).toBe(false);
+    expect(clubPageIsDue({ slug: 'nova', crest: null, checkedAt: daysAgo(30) }, NOW)).toBe(true);
+  });
+
+  it('tries an unconfirmed club again after a week', () => {
+    expect(clubPageIsDue({ slug: null, crest: null, checkedAt: daysAgo(6) }, NOW)).toBe(false);
+    expect(clubPageIsDue({ slug: null, crest: null, checkedAt: daysAgo(7) }, NOW)).toBe(true);
+  });
+
+  it('looks up an entry with no check date', () => {
+    expect(clubPageIsDue({ slug: 'nova', crest: null }, NOW)).toBe(true);
   });
 });

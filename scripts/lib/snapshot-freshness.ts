@@ -30,7 +30,7 @@ export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   leaders: 1,
   players: 6,
   crests: 1,
-  clubPages: 2,
+  clubPages: 3,
 };
 
 export type SnapshotStamps = Partial<Record<SnapshotName, string>>;

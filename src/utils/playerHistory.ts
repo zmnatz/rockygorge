@@ -374,14 +374,16 @@ export async function buildPlayerHistories(
     ? allResults
     : allResults.filter((fixture) => fixture.season === season);
 
-  const { matches, failed } = await fetchMatches(results, fetchMatchCentre, {
+  // A forfeit wasn't played, so it has nothing to count.
+  const toFetch = results.filter((fixture) => fixture.status !== 'Forfeit');
+  const { matches, failed } = await fetchMatches(toFetch, fetchMatchCentre, {
     concurrency: options?.concurrency,
   });
   // A partial pull would drop games and delete player files, so the caller
   // keeps the previous snapshot instead.
   if (failed.length > 0) {
     throw new Error(
-      `${failed.length} of ${results.length} fixtures failed: ${failed.map((fixture) => fixture.id).join(', ')}`
+      `${failed.length} of ${toFetch.length} fixtures failed: ${failed.map((fixture) => fixture.id).join(', ')}`
     );
   }
 

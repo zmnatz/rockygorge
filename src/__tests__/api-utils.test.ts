@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { get, post, postWithRetry, requestStats, resetRequestStats } from '@/utils/api';
+import { get, mapConcurrent, post, postWithRetry, requestStats, resetRequestStats } from '@/utils/api';
 
 function mockFetch(status: number, body?: unknown) {
   const response = {
@@ -172,5 +172,37 @@ describe('requestStats', () => {
 
     expect(requestStats).toMatchObject({ requests: 2, retries: 1 });
     expect(requestStats.waitMs).toBeGreaterThan(0);
+  });
+});
+
+describe('mapConcurrent', () => {
+  it('returns results in the order given, however they finish', async () => {
+    const result = await mapConcurrent([30, 1, 10], 3, async (ms) => {
+      await new Promise((resolve) => setTimeout(resolve, ms));
+      return ms * 2;
+    });
+
+    expect(result).toEqual([60, 2, 20]);
+  });
+
+  it('never runs more than the limit at once', async () => {
+    let running = 0;
+    let peak = 0;
+    await mapConcurrent([1, 2, 3, 4, 5, 6], 2, async () => {
+      running += 1;
+      peak = Math.max(peak, running);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      running -= 1;
+    });
+
+    expect(peak).toBe(2);
+  });
+
+  it('fails if any item fails', async () => {
+    await expect(
+      mapConcurrent([1, 2], 2, async (item) => {
+        if (item === 2) throw new Error('no feed');
+      }),
+    ).rejects.toThrow('no feed');
   });
 });

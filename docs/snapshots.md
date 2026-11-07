@@ -63,7 +63,9 @@ bun scripts/generate-players.ts --force --full-history
 bun scripts/generate-club-pages.ts --force --full-history
 ```
 
-Fixture lists are in `public/data/standings/`. The other snapshots read them rather than asking the CMS again, so standings must run first. Only the standings job reads every playing club's feed, because the union's feed misses some of its own fixtures. It stops reading a feed at the first page with nothing from the current season. Each job logs its CMS requests, retries and waiting time.
+Fixture lists are in `public/data/standings/`. The other snapshots read them rather than asking the CMS again, so standings must run first. Only the standings job reads every playing club's feed, because the union's feed misses some of its own fixtures. It stops reading a feed at the first page with nothing from the current season. It reads three club feeds at a time.
+
+The club pages job asks the CMS about a playing club only when it's new, every 30 days once its page is confirmed, or every 7 days until then. The player job doesn't fetch forfeits, which aren't counted. Forfeits already saved in locked seasons stay as they are until a format change. Each job logs its CMS requests, retries and waiting time.
 
 ## Forcing an update
 

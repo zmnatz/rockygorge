@@ -5,6 +5,7 @@ import { parseTeamSide, type TeamSide } from '../src/utils/teamSide';
 import {
   CLUB_PAGES_FILE,
   clubPageCandidates,
+  clubPageIsDue,
   crestEntityId,
   resolveClubPage,
   type ClubPage,
@@ -52,7 +53,6 @@ async function generate() {
   }
   console.log('Confirming Rugby Xplorer club pages through the CMS...');
   try {
-    const { sites } = await cms<{ sites: CmsSite[] }>('{sites{name slug}}');
     const fixtures = readLeagueFixtures();
     // Only clubs playing this season are looked up again; a past club keeps its entry.
     const season = currentSeason();
@@ -78,12 +78,15 @@ async function generate() {
     }
 
     const clubs: Record<string, ClubPage> = {};
+    let sites: CmsSite[] | undefined;
     for (const [name, club] of known) {
       const kept = saved[name];
-      if (kept && !playing.has(name)) {
+      if (kept && (!playing.has(name) || !clubPageIsDue(kept))) {
         clubs[name] = kept;
         continue;
       }
+      // The site list is large, so it's only fetched on a night something is due.
+      sites ??= (await cms<{ sites: CmsSite[] }>('{sites{name slug}}')).sites;
       const entityId = club.crest ? crestEntityId(club.crest) : null;
       const page = await resolveClubPage(
         clubPageCandidates(club.baseName, club.gender, sites, entityId),
@@ -91,7 +94,11 @@ async function generate() {
         club.baseName,
         lookupEntity,
       );
-      clubs[name] = { slug: page?.slug ?? null, crest: page?.crest ?? club.crest };
+      clubs[name] = {
+        slug: page?.slug ?? null,
+        crest: page?.crest ?? club.crest,
+        checkedAt: new Date().toISOString(),
+      };
     }
 
     const changed = writeFileIfChanged(

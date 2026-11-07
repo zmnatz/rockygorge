@@ -63,6 +63,25 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Maps over items with at most `limit` running at once, keeping the order given so
+// the output doesn't depend on which finishes first.
+export async function mapConcurrent<Item, Result>(
+  items: Item[],
+  limit: number,
+  run: (item: Item) => Promise<Result>
+): Promise<Result[]> {
+  const results = new Array<Result>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const index = next++;
+      results[index] = await run(items[index]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 // POST with exponential backoff for transient failures (429 rate limits,
 // 5xx, network errors). Other 4xx errors throw immediately.
 export async function postWithRetry<T>(
