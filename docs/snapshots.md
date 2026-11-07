@@ -6,7 +6,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 
 | Snapshot  | Output                      | Script                         |
 | --------- | --------------------------- | ------------------------------ |
-| scores    | `public/data/scores.json`   | `scripts/generate-scores-index.ts` |
+| scores    | `public/data/scores.json`, plus `first-paint.json` | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
 | leaders   | `public/data/leaders/`, plus the match-centre cache `.cache/leaders/matches.json` | `scripts/generate-leaders-index.ts` |
 | players   | `public/data/players/`, including the eligibility tool's `participation.json` (built from the standings snapshot's fixtures, for every side and season) | `scripts/generate-players.ts` |
@@ -21,7 +21,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 
 Run by hand, `bun run generate` skips a snapshot whose format is current. `bun run generate:force` refreshes everything.
 
-`.github/workflows/update-snapshots.yml` runs daily at 06:00 UTC (and on demand). It runs `bun run generate:force` and commits `public/data`, `public/crests` and `.cache` to `master` if anything changed. That push is what triggers the Netlify build, so a quiet night makes no commit and no build. To see whether a night ran, check the workflow's runs in GitHub Actions. A failed update also makes no commit, so the two look the same on the site.
+`.github/workflows/update-snapshots.yml` runs daily at 06:00 UTC (and on demand). It runs `bun run generate:force` and commits `public/data`, `public/crests` and `.cache` to `master` if anything changed. That push is what triggers the Netlify build, so a quiet night makes no commit and no build. `public/data/first-paint.json` records what the home and Gameday pages' static HTML would show, so a night that changes it, such as a match day arriving, still gets a build. Nothing reads that file. To see whether a night ran, check the workflow's runs in GitHub Actions. A failed update also makes no commit, so the two look the same on the site.
 
 ## Changing a snapshot's format
 
