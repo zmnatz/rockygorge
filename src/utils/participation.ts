@@ -219,9 +219,15 @@ export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): 
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Each side's fixtures still to play before the Super Regionals deadline, which
- *  count towards the two-match minimums. A postponed fixture has no date to
- *  count on, and a forfeit won't be played. */
+/** A competition's division: playoffs can be a separate competition from the
+ *  league they belong to. */
+const divisionOf = (compName: string) => compName.replace(/\s+playoffs?$/i, '').toLowerCase();
+
+/** Each side's possible matches before the Super Regionals deadline, which count
+ *  towards the two-match minimums. A postponed fixture has no date to count on,
+ *  and a forfeit won't be played. Future playoff fixtures have no teams assigned,
+ *  so any side in that division could play in them: each such date is one possible
+ *  match, since a side plays once on a date however many fixtures are on it. */
 export function remainingMatches(
   fixtures: (FixtureSides & {
     dateTime: string;
@@ -245,8 +251,28 @@ export function remainingMatches(
       !config.deadlineCompetitions.some((term) => competition.includes(term.toLowerCase()))
     );
   });
-  const count = (team: string) =>
-    upcoming.filter((fixture) => fixture.homeTeam.name === team || fixture.awayTeam.name === team).length;
+  const plays = (fixture: FixtureSides, team: string) =>
+    fixture.homeTeam.name === team || fixture.awayTeam.name === team;
+  const dateOf = (fixture: { dateTime: string }) => fixture.dateTime.slice(0, 10);
+
+  const count = (team: string) => {
+    const divisions = new Set(
+      fixtures.filter((fixture) => plays(fixture, team)).map((fixture) => divisionOf(fixture.compName)),
+    );
+    const own = upcoming.filter((fixture) => plays(fixture, team));
+    const ownDates = new Set(own.map(dateOf));
+    const openDates = new Set(
+      upcoming
+        .filter(
+          (fixture) =>
+            (fixture.homeTeam.name === '' || fixture.awayTeam.name === '') &&
+            divisions.has(divisionOf(fixture.compName)),
+        )
+        .map(dateOf)
+        .filter((date) => !ownDates.has(date)),
+    );
+    return own.length + openDates.size;
+  };
   return { upper: count(sides.upperTeam), lower: count(sides.lowerTeam) };
 }
 

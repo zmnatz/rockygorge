@@ -680,6 +680,110 @@ describe('remainingMatches', () => {
     ).toEqual({ upper: 2, lower: 1 });
   });
 
+  describe('playoff fixtures with no teams assigned', () => {
+    const unassigned = (overrides: Record<string, unknown> = {}) =>
+      upcoming({
+        dateTime: '2027-04-10T17:00:00Z',
+        homeTeam: { name: '', score: '' },
+        awayTeam: { name: '', score: '' },
+        ...overrides,
+      });
+    const played = upcoming({
+      dateTime: '2026-10-01T17:00:00Z',
+      status: 'Result',
+      homeTeam: { name: 'Rocky Gorge MD1', score: '20' },
+      awayTeam: { name: 'NOVA MD1', score: '5' },
+    });
+    const lowerPlayed = {
+      ...played,
+      compName: 'Capital Men D3',
+      homeTeam: { name: 'Rocky Gorge MD3', score: '20' },
+      awayTeam: { name: 'NOVA MD3', score: '5' },
+    };
+
+    it("count for each side in that division, as one possible game per date", () => {
+      expect(
+        remainingMatches(
+          [
+            played,
+            lowerPlayed,
+            unassigned(),
+            unassigned(),
+            unassigned({ dateTime: '2027-04-17T17:00:00Z' }),
+            unassigned({ compName: 'Capital Men D3', dateTime: '2027-04-03T17:00:00Z' }),
+            unassigned({ compName: 'Capital Men D3', dateTime: '2027-04-03T17:00:00Z' }),
+          ],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 2, lower: 1 });
+    });
+
+    it("don't count for a side that doesn't play in that division", () => {
+      expect(
+        remainingMatches(
+          [played, unassigned({ compName: 'Capital Men D2' })],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 0, lower: 0 });
+    });
+
+    it('count from a separate playoff competition for the same division', () => {
+      expect(
+        remainingMatches(
+          [lowerPlayed, unassigned({ compName: 'Capital Men D3 Playoffs' })],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 0, lower: 1 });
+    });
+
+    it('count when only one team has been assigned', () => {
+      expect(
+        remainingMatches(
+          [played, unassigned({ homeTeam: { name: 'NOVA MD1', score: '' } })],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 1, lower: 0 });
+    });
+
+    it("don't add a game on a date the side already has a fixture", () => {
+      expect(
+        remainingMatches(
+          [
+            played,
+            upcoming({ dateTime: '2027-04-10T17:00:00Z' }),
+            unassigned(),
+          ],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 1, lower: 0 });
+    });
+
+    it("don't count once past, or at Super Regionals", () => {
+      expect(
+        remainingMatches(
+          [
+            played,
+            unassigned({ dateTime: '2026-10-02T17:00:00Z' }),
+            unassigned({ compName: '2027 Super Regional Atlantic' }),
+          ],
+          sides,
+          baseConfig,
+          NOW,
+        ),
+      ).toEqual({ upper: 0, lower: 0 });
+    });
+  });
+
   it("counts local playoffs, but not other clubs', played, forfeited or postponed fixtures, 7s, or anything from Super Regionals on", () => {
     expect(
       remainingMatches(

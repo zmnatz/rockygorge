@@ -182,7 +182,7 @@ A league or playoff match that counts toward a player's Match Participation; 7s 
 _Avoid_: Game, friendly
 
 **On Track**:
-A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's fixtures remain before Super Regionals. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the Lower Division comparison.
+A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's possible matches remain before Super Regionals, including playoff fixtures with no teams assigned yet. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the Lower Division comparison.
 _Avoid_: Provisionally eligible, pending
 
 **Registration**:
