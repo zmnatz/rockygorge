@@ -1,5 +1,6 @@
 import { useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { loadCurrentSeasonFixtures } from '@/api/capital';
 import {
   Alert,
   Box,
@@ -35,10 +36,12 @@ import {
   clubConfig,
   clubGaps,
   listClubs,
+  loadClubRecord,
   loadParticipationSnapshot,
   participationRows,
   type ParticipationGap,
 } from '@/utils/participation';
+import { fetchMatchCentre } from '@/utils/playerHistory';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
 
@@ -52,6 +55,11 @@ import type {
 /** Where a report's rows came from. Only a CSV report carries USA IDs and
  *  registration dates. */
 type ReportSource = 'record' | 'csv';
+
+// Deployed pages pull live; dev uses the saved snapshot so working on the page
+// doesn't hit the CMS.
+const LIVE_RECORD = process.env.NODE_ENV === 'production';
+const LIVE_RECORD_STALE_MS = 10 * 60 * 1000;
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
@@ -612,19 +620,34 @@ export default function EligibilityPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(['lastRegistered', 'played', 'sub']);
 
-  const record = useQuery({
-    queryKey: ['participation-snapshot'],
-    queryFn: loadParticipationSnapshot,
+  const schedule = useQuery({
+    queryKey: ['eligibility-fixtures'],
+    queryFn: loadCurrentSeasonFixtures,
     enabled: source === 'record',
   });
-  const snapshot = record.data ?? null;
-  const clubs = useMemo(() => (snapshot ? listClubs(snapshot, eligibility) : []), [snapshot]);
+  const fixtures = schedule.data;
+  const clubs = useMemo(() => (fixtures ? listClubs(fixtures, eligibility) : []), [fixtures]);
   // Defaults to the configured club, this site's own.
   const club =
     clubs.find((candidate) => candidate.name === clubName) ??
     clubs.find((candidate) => candidate.upperTeam === eligibility.upperDivision.teamName) ??
     clubs[0] ??
     null;
+  const record = useQuery({
+    queryKey: ['eligibility-record', club?.name],
+    queryFn: () =>
+      loadClubRecord(club as NonNullable<typeof club>, {
+        live: LIVE_RECORD,
+        fixtures: fixtures ?? [],
+        fetchMatch: fetchMatchCentre,
+        loadSaved: loadParticipationSnapshot,
+      }),
+    enabled: source === 'record' && club !== null,
+    staleTime: LIVE_RECORD_STALE_MS,
+    retry: false,
+  });
+  const clubRecord = record.data ?? null;
+  const snapshot = clubRecord?.snapshot ?? null;
   const recordReport = useMemo(() => {
     if (!snapshot || !club) return null;
     const config = clubConfig(club, eligibility);
@@ -713,8 +736,9 @@ export default function EligibilityPage() {
         {source === 'record'
           ? `Pick a club to see which players are NCS-eligible, from the league and
              local playoff lineups in the match record. Participation counts starts and
-             substitute appearances. The record has no registration data, so check
-             registration separately.`
+             substitute appearances. Lists clubs with exactly two sides, the case these
+             rules cover. This is a guide: the Rugby Xplorer report is the official count,
+             and the record has no registration data, so check registration separately.`
           : `Paste or upload the Rugby Xplorer matches-played report to see which
              players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.
              Participation counts as Played + Substitute; per-round attendance codes
@@ -752,26 +776,37 @@ export default function EligibilityPage() {
                 ))}
               </Select>
             </FormControl>
-            <Typography variant="body2" color="text.secondary">
-              {snapshot?.season} season
-            </Typography>
+            {clubRecord && (
+              <Typography variant="body2" color="text.secondary">
+                {clubRecord.snapshot.season} season ·{' '}
+                {clubRecord.source === 'live' ? 'Live data' : 'Saved data'}
+                {clubRecord.asOf && ` from ${new Date(clubRecord.asOf).toLocaleString()}`}
+              </Typography>
+            )}
           </>
         )}
       </Box>
 
-      {source === 'record' && record.isPending && (
+      {source === 'record' && (schedule.isPending || (club && record.isPending)) && (
         <Typography color="text.secondary">Loading the match record…</Typography>
       )}
 
-      {source === 'record' && record.isError && (
+      {source === 'record' && (schedule.isError || record.isError) && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          Could not load the match record. Try again, or use a CSV report.
+          Could not load the match record
+          {record.error ? `: ${record.error.message}` : '.'} Try again, or use a CSV report.
         </Alert>
       )}
 
-      {source === 'record' && record.isSuccess && !club && (
+      {source === 'record' && clubRecord?.liveFailed && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          The live pull failed, so this report uses saved data and may miss recent matches.
+        </Alert>
+      )}
+
+      {source === 'record' && schedule.isSuccess && !club && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          The match record has no clubs with two sides yet. Use a CSV report instead.
+          The fixture list has no clubs with two sides yet. Use a CSV report instead.
         </Alert>
       )}
 

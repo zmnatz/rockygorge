@@ -170,7 +170,7 @@ The Rugby Xplorer CSV export the eligibility tool consumes — one row per playe
 _Avoid_: Roster dump, match report
 
 **Match Record**:
-The lineups and substitutions the CMS holds for each result, snapshotted for the latest season so the eligibility tool can run for any club with two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
+The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club with two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
 _Avoid_: Roster dump, participation export
 
 **Match Participation**:

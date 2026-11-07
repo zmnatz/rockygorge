@@ -302,6 +302,19 @@ async function fetchSnapshotFile<T>(file: string): Promise<T | null> {
   }
 }
 
+// The current season's fixtures from the nightly snapshot: every side's
+// schedule, without paging through both live feeds.
+export async function loadCurrentSeasonFixtures(): Promise<CapitalFixture[]> {
+  const index = await fetchSnapshotFile<{ defaultSeason: string }>('index.json');
+  const snapshot = index
+    ? await fetchSnapshotFile<StandingsSnapshot>(seasonSnapshotFile(index.defaultSeason))
+    : null;
+  if (!snapshot) {
+    throw new Error('The fixture list is unavailable.');
+  }
+  return snapshot.fixtures;
+}
+
 // Loads the snapshot for one season (the wanted one, else the index's
 // default). Pass null to hold off until the wanted season is known (e.g.
 // before the router is ready).

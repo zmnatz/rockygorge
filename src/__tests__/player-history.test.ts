@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   aggregatePlayerHistory,
+  fetchMatches,
   isScoreEventType,
   loadPlayerHistory,
   playerKey,
@@ -268,5 +269,102 @@ describe('loadPlayerHistory', () => {
   it('throws on other failures', async () => {
     stubFetch(new Response('', { status: 500 }));
     await expect(loadPlayerHistory('abc')).rejects.toThrow();
+  });
+});
+
+describe('aggregatePlayerHistory substitute matching', () => {
+  const sub = (id: string, name: string, isHome: boolean) => ({
+    id: `${id}__17`,
+    name,
+    position: '17',
+    shirtNumber: '17',
+    isHome,
+  });
+  const on = (name: string) => ({
+    id: name,
+    minute: '50',
+    type: 'Substitution - Tactical',
+    comment: `Substitution - Tactical Off: Someone Else, On: ${name}`,
+  });
+  const cameOn = (substitutes: ReturnType<typeof sub>[], names: string[]) => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: names.map(on),
+        players: [],
+        substitutes,
+        coaches: [],
+      },
+    ]);
+    return substitutes.map((player) => histories.get(player.id.split('__')[0])?.games[0].played);
+  };
+
+  it('does not credit a substitute who only shares a surname with one who came on', () => {
+    expect(
+      cameOn([sub('kyle', 'Kyle Henry', true), sub('sidney', 'Sidney Henry', false)], ['Kyle Henry']),
+    ).toEqual([true, false]);
+  });
+
+  it('credits one substitute for each event when several share a name', () => {
+    expect(
+      cameOn([sub('a', 'Name Withheld', true), sub('b', 'Name Withheld', true)], ['Name Withheld']),
+    ).toEqual([true, false]);
+  });
+
+  it('accepts a differently spelled first name when the surname points at one substitute', () => {
+    expect(cameOn([sub('joe', 'Joseph Midwig', true)], ['Joe Midwig'])).toEqual([true]);
+  });
+
+  it('credits nobody when a differently spelled name could be either of two substitutes', () => {
+    expect(
+      cameOn([sub('kyle', 'Kyle Henry', true), sub('sidney', 'Sidney Henry', false)], ['K Henry']),
+    ).toEqual([false, false]);
+  });
+});
+
+describe('fetchMatches', () => {
+  const noWait = { gapMs: 0, retryDelayMs: 0 };
+
+  it('retries a failed fixture and returns it once it succeeds', async () => {
+    let calls = 0;
+    const result = await fetchMatches(
+      ['a'],
+      async (id) => {
+        calls += 1;
+        if (calls === 1) throw new Error('Request failed: 429');
+        return `match-${id}`;
+      },
+      noWait,
+    );
+
+    expect(result).toEqual({ matches: ['match-a'], failed: [] });
+  });
+
+  it('reports fixtures that keep failing', async () => {
+    const result = await fetchMatches(
+      ['good', 'bad'],
+      async (id) => {
+        if (id === 'bad') throw new Error('Request failed: 429');
+        return id;
+      },
+      noWait,
+    );
+
+    expect(result).toEqual({ matches: ['good'], failed: ['bad'] });
+  });
+
+  it('treats a fixture with no data as answered, not failed', async () => {
+    const fetched: string[] = [];
+    const result = await fetchMatches(
+      ['empty'],
+      async (id) => {
+        fetched.push(id);
+        return null;
+      },
+      noWait,
+    );
+
+    expect(result).toEqual({ matches: [], failed: [] });
+    expect(fetched).toEqual(['empty']);
   });
 });

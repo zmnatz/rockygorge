@@ -28,7 +28,10 @@ async function generate() {
       files[playerSnapshotFile(id)] = JSON.stringify(history);
     }
     files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify(
-      buildParticipationSnapshot(histories.values(), results)
+      {
+        generatedAt: new Date().toISOString(),
+        ...buildParticipationSnapshot(histories.values(), results),
+      }
     );
     const changed = syncDir(outDir, files);
     fs.rmSync(path.join(path.dirname(outDir), 'players.json'), { force: true });

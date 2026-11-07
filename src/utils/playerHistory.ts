@@ -12,6 +12,7 @@ const FETCH_GAP_MS = 500;
 // Breathing room between match-centre requests so snapshot builds don't trip
 // the CMS rate limit (HTTP 429).
 const MATCH_CENTRE_GAP_MS = 300;
+const RETRY_PASS_DELAY_MS = 15_000;
 
 // Under public/; the script writes it, the page fetches it from the site root.
 export const PLAYERS_SNAPSHOT_DIR = 'data/players';
@@ -87,12 +88,13 @@ interface FixtureLookupItem {
   dateTime: string;
   season: string;
   round?: string;
+  status?: string;
   sourceType: string;
   homeTeam: { name: string; score: string };
   awayTeam: { name: string; score: string };
 }
 
-interface MatchCentreData {
+export interface MatchCentreData {
   fixture: FixtureItem & { season: string };
   commentary: { id: string; minute: string; type: string; comment: string }[];
   players: MatchPlayer[];
@@ -110,6 +112,51 @@ export function isScoreEventType(type: string): boolean {
   return scoringKind(type) !== null;
 }
 
+const surname = (name: string) => name.split(/\s+/).pop();
+
+// Which listed substitutes the commentary shows coming on. Events name a player
+// but not a side, and each event accounts for one substitute. A name with no
+// exact match falls back to its surname only when that identifies one player,
+// since a surname can be shared within a side or with the opposition.
+function substitutesWhoCameOn(
+  substitutes: MatchPlayer[],
+  commentary: MatchCentreData['commentary']
+): Set<string> {
+  const onNames = commentary.flatMap((event) => {
+    if (!event.type.toLowerCase().includes('substitut')) {
+      return [];
+    }
+    const onMatch = event.comment.match(/on:\s*(.+?)\s*$/i);
+    return onMatch ? [onMatch[1].trim().toLowerCase()] : [];
+  });
+
+  const available = new Map(
+    substitutes.map((sub) => [playerKey(sub.id), sub.name.toLowerCase()])
+  );
+  const cameOn = new Set<string>();
+  const claim = (key: string) => {
+    cameOn.add(key);
+    available.delete(key);
+  };
+
+  const unmatched = onNames.filter((name) => {
+    const exact = [...available].find(([, subName]) => subName === name);
+    if (exact) {
+      claim(exact[0]);
+    }
+    return !exact;
+  });
+  for (const name of unmatched) {
+    const sameSurname = [...available].filter(
+      ([, subName]) => surname(subName) === surname(name)
+    );
+    if (sameSurname.length === 1) {
+      claim(sameSurname[0][0]);
+    }
+  }
+  return cameOn;
+}
+
 export function aggregatePlayerHistory(
   matches: MatchCentreData[]
 ): Map<string, PlayerHistory> {
@@ -119,15 +166,7 @@ export function aggregatePlayerHistory(
     const { fixture, commentary, players, substitutes, coaches } = match;
     const roster = [...players, ...substitutes, ...coaches];
     const starterIds = new Set(players.map((player) => playerKey(player.id)));
-    const cameOnNames = new Set(
-      commentary.flatMap((event) => {
-        if (!event.type.toLowerCase().includes('substitut')) {
-          return [];
-        }
-        const onMatch = event.comment.match(/on:\s*(.+?)\s*$/i);
-        return onMatch ? [onMatch[1].trim().toLowerCase()] : [];
-      })
-    );
+    const cameOnIds = substitutesWhoCameOn(substitutes, commentary);
 
     // Roster order puts playing roles first, so a player-coach listed twice
     // gets one game, recorded as the player.
@@ -157,18 +196,9 @@ export function aggregatePlayerHistory(
       const ownScore = isHome ? fixture.homeTeam.score : fixture.awayTeam.score;
       const otherScore = isHome ? fixture.awayTeam.score : fixture.homeTeam.score;
       const isStarter = starterIds.has(key);
-      const isSub = substitutes.some(
-        (sub) => playerKey(sub.id) === key || sub.name.toLowerCase() === player.name.toLowerCase()
-      );
-      const subName = player.name.toLowerCase();
+      const isSub = substitutes.some((sub) => playerKey(sub.id) === key);
       const isCoach = !isStarter && !isSub;
-      const cameOn =
-        isStarter ||
-        (isSub &&
-          (cameOnNames.has(subName) ||
-            [...cameOnNames].some(
-              (name) => name.split(/\s+/).pop() === subName.split(/\s+/).pop()
-            )));
+      const cameOn = isStarter || cameOnIds.has(key);
 
       history.games.push({
         fixtureId: fixture.id,
@@ -241,6 +271,7 @@ const FIXTURE_LOOKUP_QUERY = `query PlayerHistoryFixtureLookupQuery($entityId: I
     dateTime
     season
     round
+    status
     sourceType
     homeTeam { name score __typename }
     awayTeam { name score __typename }
@@ -318,28 +349,70 @@ export async function buildPlayerHistories(options?: BuildOptions): Promise<{
       fixture.homeTeam.score.length > 0 &&
       fixture.awayTeam.score.length > 0
   );
-  // The workers below drain this copy; results stays whole for the caller.
-  const fixtures = [...results];
 
-  const matches: MatchCentreData[] = [];
-  const workers = new Array(Math.max(1, options?.concurrency ?? 1))
-    .fill(null)
-    .map(async () => {
-      while (fixtures.length > 0) {
-        const fixture = fixtures.shift();
-        if (!fixture) {
-          return;
-        }
-        const data = await fetchMatchCentre(fixture).catch(() => null);
-        if (data) {
-          matches.push(data);
-        }
-        await sleep(MATCH_CENTRE_GAP_MS);
-      }
-    });
-  await Promise.all(workers);
+  const { matches, failed } = await fetchMatches(results, fetchMatchCentre, {
+    concurrency: options?.concurrency,
+  });
+  // A partial pull would drop games and delete player files, so the caller
+  // keeps the previous snapshot instead.
+  if (failed.length > 0) {
+    throw new Error(
+      `${failed.length} of ${results.length} fixtures failed: ${failed.map((fixture) => fixture.id).join(', ')}`
+    );
+  }
 
   return { histories: aggregatePlayerHistory(matches), results };
+}
+
+export interface FetchMatchesOptions {
+  concurrency?: number;
+  gapMs?: number;
+  retryPasses?: number;
+  retryDelayMs?: number;
+}
+
+// Fetches each fixture's match, then retries failures one at a time after a
+// pause, which gives a rate limit time to clear. A fixture that answers with
+// null has no data, which is different from one that failed and ends up in
+// `failed`.
+export async function fetchMatches<Fixture, Match>(
+  fixtures: Fixture[],
+  fetchOne: (fixture: Fixture) => Promise<Match | null>,
+  {
+    concurrency = 1,
+    gapMs = MATCH_CENTRE_GAP_MS,
+    retryPasses = 2,
+    retryDelayMs = RETRY_PASS_DELAY_MS,
+  }: FetchMatchesOptions = {}
+): Promise<{ matches: Match[]; failed: Fixture[] }> {
+  const matches: Match[] = [];
+  const runPass = async (pending: Fixture[], workers: number) => {
+    const queue = [...pending];
+    const failed: Fixture[] = [];
+    await Promise.all(
+      new Array(Math.max(1, workers)).fill(null).map(async () => {
+        for (let fixture = queue.shift(); fixture !== undefined; fixture = queue.shift()) {
+          try {
+            const match = await fetchOne(fixture);
+            if (match !== null) {
+              matches.push(match);
+            }
+          } catch {
+            failed.push(fixture);
+          }
+          await sleep(gapMs);
+        }
+      })
+    );
+    return failed;
+  };
+
+  let failed = await runPass(fixtures, concurrency);
+  for (let pass = 0; pass < retryPasses && failed.length > 0; pass++) {
+    await sleep(retryDelayMs);
+    failed = await runPass(failed, 1);
+  }
+  return { matches, failed };
 }
 
 async function fetchFixturePage(skip: number): Promise<FixtureLookupItem[]> {
@@ -393,7 +466,10 @@ async function fetchAllFixtures(): Promise<FixtureLookupItem[]> {
 export async function fetchMatchCentre(
   fixture: Pick<FixtureLookupItem, 'id' | 'compId' | 'season' | 'sourceType'>
 ): Promise<MatchCentreData | null> {
-  const response = await postWithRetry<{ data: MatchCentreResponse }>(SCORES_URL, {
+  const response = await postWithRetry<{
+    data: MatchCentreResponse;
+    errors?: { message: string }[];
+  }>(SCORES_URL, {
     operationName: 'PlayerHistoryMatchCentreQuery',
     variables: {
       comp: {
@@ -405,6 +481,12 @@ export async function fetchMatchCentre(
     },
     query: MATCH_CENTRE_QUERY,
   });
+
+  // A throttled or failed query can still answer 200, so it mustn't read as a
+  // fixture with no data.
+  if (response.errors?.length) {
+    throw new Error(`Match centre query failed: ${response.errors[0].message}`);
+  }
 
   const { getFixtureItem, allMatchCommentary, allMatchStatsSummary } =
     response.data;

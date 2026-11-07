@@ -1,5 +1,12 @@
 import type { EligibilityConfig, PlayerRow } from '@/types/eligibility';
-import type { PlayerGameLog, PlayerHistory } from '@/utils/playerHistory';
+import {
+  aggregatePlayerHistory,
+  fetchMatches,
+  type FetchMatchesOptions,
+  type MatchCentreData,
+  type PlayerGameLog,
+  type PlayerHistory,
+} from '@/utils/playerHistory';
 
 /** A fixture with a final score, as the player-history feed reports it. */
 export interface ResultFixture {
@@ -8,6 +15,7 @@ export interface ResultFixture {
   compName: string;
   dateTime: string;
   round?: string;
+  status?: string;
   homeTeam: { name: string };
   awayTeam: { name: string };
 }
@@ -29,6 +37,8 @@ export interface ParticipationGap {
  *  Report rows, with the CMS player id as the join key and no registration data. */
 export interface ParticipationSnapshot {
   season: string;
+  /** When the nightly job wrote this file; absent on a live pull. */
+  generatedAt?: string;
   rows: PlayerRow[];
   gaps: ParticipationGap[];
 }
@@ -107,6 +117,8 @@ export function buildParticipationSnapshot(
 
   const gaps: ParticipationGap[] = [];
   for (const fixture of seasonResults.values()) {
+    // A forfeit was never played, so it has no lineup to miss.
+    if (fixture.status === 'Forfeit') continue;
     const sides = [
       { teamName: fixture.homeTeam.name, opponent: fixture.awayTeam.name },
       { teamName: fixture.awayTeam.name, opponent: fixture.homeTeam.name },
@@ -166,18 +178,28 @@ function isQualifying(competition: string, config: EligibilityConfig): boolean {
   return !config.nonQualifyingCompetitions.some((term) => name.includes(term.toLowerCase()));
 }
 
-/** Clubs with exactly two sides with qualifying matches this season, by name.
- *  A team name that doesn't end in a division can't be ranked and is skipped. */
-export function listClubs(snapshot: ParticipationSnapshot, config: EligibilityConfig): Club[] {
+/** The name fields listClubs needs from a fixture. */
+interface FixtureSides {
+  compName: string;
+  homeTeam: { name: string };
+  awayTeam: { name: string };
+}
+
+/** Clubs with exactly two sides in qualifying competitions, by name. A team name
+ *  that doesn't end in a division can't be ranked and is skipped. */
+export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): Club[] {
   const clubs = new Map<string, { name: string; sides: Map<string, number> }>();
-  for (const row of snapshot.rows) {
-    const match = isQualifying(row.competition, config) ? row.teamName.match(SIDE_NAME) : null;
-    if (!match) continue;
-    const [, clubName, gender, level] = match;
-    const name = gender === 'W' ? `${clubName} Women` : clubName;
-    const club = clubs.get(name) ?? { name, sides: new Map<string, number>() };
-    club.sides.set(row.teamName, Number(level));
-    clubs.set(name, club);
+  for (const fixture of fixtures) {
+    if (!isQualifying(fixture.compName, config)) continue;
+    for (const { name: teamName } of [fixture.homeTeam, fixture.awayTeam]) {
+      const match = teamName.match(SIDE_NAME);
+      if (!match) continue;
+      const [, clubName, gender, level] = match;
+      const name = gender === 'W' ? `${clubName} Women` : clubName;
+      const club = clubs.get(name) ?? { name, sides: new Map<string, number>() };
+      club.sides.set(teamName, Number(level));
+      clubs.set(name, club);
+    }
   }
 
   return [...clubs.values()]
@@ -251,4 +273,109 @@ export function clubGaps(
       (gap.teamName === club.upperTeam || gap.teamName === club.lowerTeam) &&
       isQualifying(gap.competition, config),
   );
+}
+
+/** A scheduled fixture with what a match-centre request needs. */
+export interface ScheduledFixture {
+  id: string;
+  compId: string;
+  compName: string;
+  season: string;
+  dateTime: string;
+  round?: string;
+  status?: string;
+  sourceType: string;
+  homeTeam: { name: string; score: string };
+  awayTeam: { name: string; score: string };
+}
+
+const isScored = (fixture: { homeTeam: { score: string }; awayTeam: { score: string } }) =>
+  fixture.homeTeam.score !== '' && fixture.awayTeam.score !== '';
+
+/** Pulls one club's latest-season participation live. The schedule comes from the
+ *  nightly fixture list, and each played match's score and lineup from the CMS.
+ *  Throws if any match can't be fetched, since a partial count could wrongly pass
+ *  or fail a player. */
+async function pullClubParticipation(
+  club: Club,
+  fixtures: ScheduledFixture[],
+  fetchMatch: (fixture: ScheduledFixture) => Promise<MatchCentreData | null>,
+  now: Date,
+  pullOptions: FetchMatchesOptions,
+): Promise<ParticipationSnapshot> {
+  const season = fixtures.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
+  const isClubSide = (name: string) => name === club.upperTeam || name === club.lowerTeam;
+  const own = fixtures.filter(
+    (fixture) =>
+      fixture.season === season &&
+      new Date(fixture.dateTime) <= now &&
+      (isClubSide(fixture.homeTeam.name) || isClubSide(fixture.awayTeam.name)),
+  );
+  const toFetch = own.filter((fixture) => fixture.status !== 'Forfeit');
+
+  const { matches, failed } = await fetchMatches(toFetch, fetchMatch, {
+    concurrency: 2,
+    ...pullOptions,
+  });
+  if (failed.length > 0) {
+    throw new Error(`${failed.length} of ${toFetch.length} matches could not be fetched`);
+  }
+
+  // A lineup can be posted before kickoff, so only scored matches count.
+  const played = matches.filter((match) => isScored(match.fixture));
+  const playedIds = new Set(played.map((match) => match.fixture.id));
+  const results = own.filter((fixture) => playedIds.has(fixture.id) || isScored(fixture));
+
+  return {
+    ...buildParticipationSnapshot(aggregatePlayerHistory(played).values(), results, now),
+    season,
+  };
+}
+
+/** A club's participation and where it came from. */
+export interface ClubRecord {
+  snapshot: ParticipationSnapshot;
+  source: 'live' | 'saved';
+  /** When the data was read or written, if known. */
+  asOf?: string;
+  /** True when this is the saved snapshot because a live pull failed. */
+  liveFailed: boolean;
+}
+
+interface ClubRecordDeps {
+  /** Pull from the CMS; otherwise use only the saved snapshot (dev and tests). */
+  live: boolean;
+  fixtures: ScheduledFixture[];
+  fetchMatch: (fixture: ScheduledFixture) => Promise<MatchCentreData | null>;
+  loadSaved: () => Promise<ParticipationSnapshot | null>;
+  now?: Date;
+  pullOptions?: FetchMatchesOptions;
+}
+
+export async function loadClubRecord(
+  club: Club,
+  { live, fixtures, fetchMatch, loadSaved, now = new Date(), pullOptions = {} }: ClubRecordDeps,
+): Promise<ClubRecord> {
+  let liveFailed = false;
+  if (live) {
+    try {
+      return {
+        snapshot: await pullClubParticipation(club, fixtures, fetchMatch, now, pullOptions),
+        source: 'live',
+        asOf: now.toISOString(),
+        liveFailed: false,
+      };
+    } catch {
+      liveFailed = true;
+    }
+  }
+
+  const saved = await loadSaved();
+  const hasClub = saved?.rows.some(
+    (row) => row.teamName === club.upperTeam || row.teamName === club.lowerTeam,
+  );
+  if (!saved || !hasClub) {
+    throw new Error(`No saved match data for ${club.name}.`);
+  }
+  return { snapshot: saved, source: 'saved', asOf: saved.generatedAt, liveFailed };
 }

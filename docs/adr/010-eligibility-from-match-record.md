@@ -1,6 +1,6 @@
 # Eligibility can run from the match record
 
-The eligibility tool can run for any club with exactly two sides from a snapshot of CMS lineups (`public/data/players/participation.json`), without a Rugby Xplorer CSV. Rows take the existing `PlayerRow` shape, so the rules in `computeBreakdown` and ADR 008 apply unchanged. The CSV path stays, because only the report carries USA IDs and registration dates and it is the union's official count.
+The eligibility tool can run for any club with exactly two sides from CMS lineups, without a Rugby Xplorer CSV. Deployed pages pull the selected club's matches live, falling back to the nightly snapshot (`public/data/players/participation.json`) and saying so if the pull fails; `next dev` and tests use only the snapshot, so development doesn't hit the CMS. A partial live pull counts as failed, since a partial count could wrongly pass or fail a player. Rows take the existing `PlayerRow` shape, so the rules in `computeBreakdown` and ADR 008 apply unchanged. The CSV path stays, because only the report carries USA IDs and registration dates and it is the union's official count.
 
 Decisions that differ from the CSV path, so they are not "fixed" later:
 
@@ -8,6 +8,7 @@ Decisions that differ from the CSV path, so they are not "fixed" later:
 - **Qualifying matches**: the CSV is taken as given, but the record includes everything the feed reports, so `nonQualifyingCompetitions` in `config/eligibility.yml` removes the National Championships, Super Regionals and 7s.
 - **Coaches**: lineups list coaches, who are not playing appearances and are left out of the rows.
 - **Both sides**: as in the CSV, every player gets a row on both sides, so a player only listed on one side still gets a verdict for the other.
-- **Substitutes**: a substitute counts only if a substitution event names them coming on (the existing match also accepts a shared surname, which can overcount). Where a side lists substitutes and none came on, the substitutions probably weren't entered, so counts may be low. That match and any result with no lineup are shown as gaps beside the verdicts rather than guessed at.
-- **Which clubs**: only clubs with two ranked sides with qualifying matches in the record. The feed only covers competitions Rocky Gorge plays in, so a club's other side in another competition (e.g. James River MD2) leaves it unlisted. Clubs with three sides are left out because the rules encoded here are for two.
+- **Substitutes**: a substitute counts only if a substitution event names them coming on (a different spelling is accepted only when the surname points to exactly one listed substitute, because events don't name a side and surnames repeat). Where a side lists substitutes and none came on, the substitutions probably weren't entered, so counts may be low. That match and any result with no lineup are shown as gaps beside the verdicts rather than guessed at.
+- **Which clubs**: clubs with exactly two ranked sides in the qualifying competitions of the nightly fixture list, which covers the Capital union and Rocky Gorge's competitions. Men's and women's sides are separate clubs. Clubs with three sides are left out because the regulation clauses encoded here are for two. The nightly snapshot still only covers Rocky Gorge's competitions, so other clubs may have no saved fallback.
+- **Forfeits**: not played, so they neither count as participation nor flag as a missing lineup.
 - **Season**: the latest season with results only.

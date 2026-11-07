@@ -5,6 +5,7 @@ import {
   clubConfig,
   clubGaps,
   listClubs,
+  loadClubRecord,
   participationRows,
   type ParticipationSnapshot,
   type ResultFixture,
@@ -168,6 +169,12 @@ describe('buildParticipationSnapshot', () => {
     expect(snapshot.gaps).toEqual([]);
   });
 
+  it('does not flag a forfeit, which has no lineup to record', () => {
+    const snapshot = buildParticipationSnapshot([], [result('f1', { status: 'Forfeit' })]);
+
+    expect(snapshot.gaps).toEqual([]);
+  });
+
   it('gives identical output whatever order the histories arrive in', () => {
     const histories = [
       history('b', 'B Player', [game('f1')]),
@@ -209,15 +216,20 @@ const row = (overrides: Partial<PlayerRow>): PlayerRow => ({
 
 const snapshotOf = (rows: PlayerRow[]): ParticipationSnapshot => ({ season: SEASON, rows, gaps: [] });
 
+const fixtureOf = (home: string, away: string, compName = 'Capital Men D3') => ({
+  compName,
+  homeTeam: { name: home },
+  awayTeam: { name: away },
+});
+
 describe('listClubs', () => {
   it('lists clubs with two sides, ranked upper then lower, sorted by name', () => {
     const clubs = listClubs(
-      snapshotOf([
-        row({ teamName: 'Rocky Gorge MD3' }),
-        row({ teamName: 'Rocky Gorge MD1' }),
-        row({ teamName: 'James River MD2' }),
-        row({ teamName: 'James River MD3' }),
-      ]),
+      [
+        fixtureOf('Rocky Gorge MD3', 'James River MD3'),
+        fixtureOf('Rocky Gorge MD1', 'NOVA MD1', 'MAC Men D1'),
+        fixtureOf('James River MD2', 'Raleigh MD2', 'Capital Men D2'),
+      ],
       baseConfig,
     );
 
@@ -241,45 +253,50 @@ describe('listClubs', () => {
 
   it('leaves out clubs with one side, and clubs with three that the two-side rules do not cover', () => {
     const clubs = listClubs(
-      snapshotOf([
-        row({ teamName: 'Frederick MD3' }),
-        row({ teamName: 'Severn River MD1' }),
-        row({ teamName: 'Severn River MD3' }),
-        row({ teamName: 'Severn River MD4' }),
-      ]),
+      [
+        fixtureOf('Frederick MD3', 'Severn River MD3'),
+        fixtureOf('Severn River MD1', 'Severn River MD4'),
+      ],
       baseConfig,
     );
 
     expect(clubs).toEqual([]);
   });
 
-  it('keeps a club\'s men\'s and women\'s sides apart', () => {
+  it("lists a club's women's sides separately from its men's", () => {
     const clubs = listClubs(
-      snapshotOf([row({ teamName: 'NOVA MD1' }), row({ teamName: 'NOVA WD3' })]),
+      [
+        fixtureOf('NOVA WD1', 'Boston WD1', 'Atlantic Women D1'),
+        fixtureOf('NOVA WD3', 'Stingers WD3', 'Capital Women D3'),
+        fixtureOf('NOVA MD1', 'Washington MD1', 'MAC Men D1'),
+      ],
+      baseConfig,
+    );
+
+    expect(clubs.map((club) => [club.name, club.upperTeam, club.lowerTeam])).toEqual([
+      ['NOVA Women', 'NOVA WD1', 'NOVA WD3'],
+    ]);
+  });
+
+  it('only counts sides in qualifying competitions', () => {
+    const clubs = listClubs(
+      [
+        fixtureOf('Rocky Gorge MD1', 'NOVA MD1', 'MAC Men D1'),
+        fixtureOf('Rocky Gorge MD3', 'NOVA MD2', 'MAC 7s - Rites of Summer'),
+      ],
       baseConfig,
     );
 
     expect(clubs).toEqual([]);
   });
 
-  it('only counts sides that have qualifying matches', () => {
-    const clubs = listClubs(
-      snapshotOf([
-        row({ teamName: 'Rocky Gorge MD1' }),
-        row({ teamName: 'Rocky Gorge MD3', competition: 'Rocky Gorge 7s' }),
-      ]),
-      baseConfig,
-    );
-
-    expect(clubs).toEqual([]);
+  it('ignores unnamed sides', () => {
+    expect(listClubs([fixtureOf('', '')], baseConfig)).toEqual([]);
   });
 });
 
 describe('record-based eligibility', () => {
-  const [club] = listClubs(
-    snapshotOf([row({ teamName: 'NOVA MD1' }), row({ teamName: 'NOVA MD3' })]),
-    baseConfig,
-  );
+  const [club] = listClubs([fixtureOf('NOVA MD1', 'NOVA MD3')], baseConfig);
 
   it("evaluates another club's sides under the regulation thresholds", () => {
     const config = clubConfig(club, baseConfig);
@@ -358,5 +375,172 @@ describe('record-based eligibility', () => {
     };
 
     expect(clubGaps(snapshot, club, config).map((item) => item.teamName)).toEqual(['NOVA MD1']);
+  });
+});
+
+describe('loadClubRecord', () => {
+  const NOW = new Date('2026-11-06T12:00:00Z');
+  const [club] = listClubs([fixtureOf('NOVA MD1', 'NOVA MD3')], baseConfig);
+
+  const scheduled = (id: string, overrides: Record<string, unknown> = {}) => ({
+    id,
+    compId: 'comp',
+    compName: 'MAC Men D1',
+    season: SEASON,
+    dateTime: '2026-10-17T17:00:00Z',
+    round: 'Round 4',
+    status: 'Result',
+    sourceType: '2',
+    homeTeam: { name: 'NOVA MD1', score: '' },
+    awayTeam: { name: 'Rocky Gorge MD1', score: '' },
+    ...overrides,
+  });
+
+  const matchFor = (id: string, score = '10') => ({
+    fixture: {
+      id,
+      compId: 'comp',
+      compName: 'MAC Men D1',
+      season: SEASON,
+      dateTime: '2026-10-17T17:00:00Z',
+      venue: '',
+      homeTeam: { id: 'h', name: 'NOVA MD1', teamId: 'h', score, crest: '' },
+      awayTeam: { id: 'a', name: 'Rocky Gorge MD1', teamId: 'a', score, crest: '' },
+    },
+    commentary: [],
+    players: [{ id: 'sam__1', name: 'Sam Hooker', position: '1', shirtNumber: '1', isHome: true }],
+    substitutes: [],
+    coaches: [],
+  });
+
+  const saved: ParticipationSnapshot = {
+    season: SEASON,
+    generatedAt: '2026-11-06T06:00:00.000Z',
+    rows: [row({ teamName: 'NOVA MD1', played: 3 })],
+    gaps: [],
+  };
+
+  const deps = (overrides = {}) => ({
+    live: true,
+    now: NOW,
+    fixtures: [scheduled('f1')],
+    fetchMatch: async (fixture: { id: string }) => matchFor(fixture.id),
+    loadSaved: async () => saved,
+    pullOptions: { gapMs: 0, retryDelayMs: 0 },
+    ...overrides,
+  });
+
+  it("pulls the club's played fixtures live, using the results it finds", async () => {
+    const fetched: string[] = [];
+    const record = await loadClubRecord(
+      club,
+      deps({
+        fixtures: [
+          scheduled('mine'),
+          scheduled('other-club', { homeTeam: { name: 'Washington MD1', score: '' } }),
+          scheduled('upcoming', { dateTime: '2026-11-14T17:00:00Z' }),
+          scheduled('last-season', { season: '2025/2026' }),
+        ],
+        fetchMatch: async (fixture: { id: string }) => {
+          fetched.push(fixture.id);
+          return matchFor(fixture.id);
+        },
+      }),
+    );
+
+    expect(fetched).toEqual(['mine']);
+    expect(record.source).toBe('live');
+    expect(record.asOf).toBe(NOW.toISOString());
+    expect(record.snapshot.season).toBe(SEASON);
+    expect(record.snapshot.rows).toMatchObject([
+      { playerId: 'sam', teamName: 'NOVA MD1', played: 1, rounds: { 'Round 4': 'Start' } },
+    ]);
+  });
+
+  it('does not count a lineup posted for a match with no score yet', async () => {
+    const record = await loadClubRecord(
+      club,
+      deps({ fetchMatch: async (fixture: { id: string }) => matchFor(fixture.id, '') }),
+    );
+
+    expect(record.snapshot.rows).toEqual([]);
+    expect(record.snapshot.gaps).toEqual([]);
+  });
+
+  it('flags a scored fixture when the live pull finds no lineup', async () => {
+    const record = await loadClubRecord(
+      club,
+      deps({
+        fixtures: [scheduled('f1', {
+          homeTeam: { name: 'NOVA MD1', score: '10' },
+          awayTeam: { name: 'Rocky Gorge MD1', score: '5' },
+        })],
+        fetchMatch: async () => null,
+      }),
+    );
+
+    expect(record.snapshot.gaps.filter((gap) => gap.teamName === 'NOVA MD1')).toMatchObject([
+      { kind: 'no-lineup', fixtureId: 'f1' },
+    ]);
+  });
+
+  it('does not fetch a forfeit', async () => {
+    const fetched: string[] = [];
+    await loadClubRecord(
+      club,
+      deps({
+        fixtures: [scheduled('f1', { status: 'Forfeit' })],
+        fetchMatch: async (fixture: { id: string }) => {
+          fetched.push(fixture.id);
+          return null;
+        },
+      }),
+    );
+
+    expect(fetched).toEqual([]);
+  });
+
+  it('falls back to the saved snapshot when the live pull fails, and says so', async () => {
+    const record = await loadClubRecord(
+      club,
+      deps({
+        fetchMatch: async () => {
+          throw new Error('Request failed: 429');
+        },
+      }),
+    );
+
+    expect(record.source).toBe('saved');
+    expect(record.liveFailed).toBe(true);
+    expect(record.asOf).toBe(saved.generatedAt);
+    expect(record.snapshot).toBe(saved);
+  });
+
+  it('fails when the live pull fails and the saved snapshot lacks the club', async () => {
+    await expect(
+      loadClubRecord(
+        club,
+        deps({
+          fetchMatch: async () => {
+            throw new Error('Request failed: 429');
+          },
+          loadSaved: async () => ({ ...saved, rows: [row({ teamName: 'Other MD1' })] }),
+        }),
+      ),
+    ).rejects.toThrow(/NOVA/);
+  });
+
+  it('uses only the saved snapshot outside live mode', async () => {
+    const record = await loadClubRecord(
+      club,
+      deps({
+        live: false,
+        fetchMatch: async () => {
+          throw new Error('should not fetch');
+        },
+      }),
+    );
+
+    expect(record).toMatchObject({ source: 'saved', liveFailed: false });
   });
 });
