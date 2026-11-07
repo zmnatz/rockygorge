@@ -134,7 +134,8 @@ jobs:
           mkdir -p "$dir"
           cp screenshots/*.png "$dir/"
           cd shots-branch
-          git add -A
+          # The worktree inherits the sparse checkout above, which excludes these paths.
+          git add -A --sparse
           git commit -m "Screenshots for PR $PR at $SHA" || true
           git push origin HEAD:pr-screenshots
 
