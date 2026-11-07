@@ -169,10 +169,14 @@ describe('buildParticipationSnapshot', () => {
     expect(snapshot.gaps).toEqual([]);
   });
 
-  it('does not flag a forfeit, which has no lineup to record', () => {
-    const snapshot = buildParticipationSnapshot([], [result('f1', { status: 'Forfeit' })]);
+  it('does not flag or count a forfeit, even with a lineup posted', () => {
+    const snapshot = buildParticipationSnapshot(
+      [history('sam', 'Sam Hooker', [game('f1')])],
+      [result('f1', { status: 'Forfeit' })],
+    );
 
     expect(snapshot.gaps).toEqual([]);
+    expect(snapshot.rows).toEqual([]);
   });
 
   it('gives identical output whatever order the histories arrive in', () => {
@@ -498,6 +502,39 @@ describe('loadClubRecord', () => {
     );
 
     expect(fetched).toEqual([]);
+  });
+
+  it('stops pulling at the first failure so the fallback is quick', async () => {
+    const fetched: string[] = [];
+    const record = await loadClubRecord(
+      club,
+      deps({
+        fixtures: [scheduled('first'), scheduled('second'), scheduled('third')],
+        pullOptions: { gapMs: 0, retryDelayMs: 0, concurrency: 1 },
+        fetchMatch: async (fixture: { id: string }) => {
+          fetched.push(fixture.id);
+          throw new Error('Request failed: 429');
+        },
+      }),
+    );
+
+    expect(fetched).toEqual(['first']);
+    expect(record.liveFailed).toBe(true);
+  });
+
+  it("uses the latest season that has started, not one that's only scheduled", async () => {
+    const record = await loadClubRecord(
+      club,
+      deps({
+        fixtures: [
+          scheduled('current'),
+          scheduled('next-season', { season: '2027/2028', dateTime: '2027-09-01T17:00:00Z' }),
+        ],
+      }),
+    );
+
+    expect(record.snapshot.season).toBe(SEASON);
+    expect(record.snapshot.rows).toHaveLength(1);
   });
 
   it('falls back to the saved snapshot when the live pull fails, and says so', async () => {

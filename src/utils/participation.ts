@@ -85,7 +85,7 @@ export function buildParticipationSnapshot(
   for (const history of histories) {
     for (const game of history.games) {
       const fixture = seasonResults.get(game.fixtureId);
-      if (!fixture || game.coach) continue;
+      if (!fixture || game.coach || fixture.status === 'Forfeit') continue;
 
       const rowKey = `${game.teamName}\0${game.compName}\0${history.id}`;
       const row = rows.get(rowKey) ?? {
@@ -303,18 +303,21 @@ async function pullClubParticipation(
   now: Date,
   pullOptions: FetchMatchesOptions,
 ): Promise<ParticipationSnapshot> {
-  const season = fixtures.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
+  const started = fixtures.filter((fixture) => new Date(fixture.dateTime) <= now);
+  const season = started.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
   const isClubSide = (name: string) => name === club.upperTeam || name === club.lowerTeam;
-  const own = fixtures.filter(
+  const own = started.filter(
     (fixture) =>
       fixture.season === season &&
-      new Date(fixture.dateTime) <= now &&
       (isClubSide(fixture.homeTeam.name) || isClubSide(fixture.awayTeam.name)),
   );
   const toFetch = own.filter((fixture) => fixture.status !== 'Forfeit');
 
   const { matches, failed } = await fetchMatches(toFetch, fetchMatch, {
     concurrency: 2,
+    // Someone is waiting and the snapshot is the fallback, so don't sit out a
+    // rate limit here.
+    stopOnFailure: true,
     ...pullOptions,
   });
   if (failed.length > 0) {

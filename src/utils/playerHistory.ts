@@ -114,44 +114,54 @@ export function isScoreEventType(type: string): boolean {
 
 const surname = (name: string) => name.split(/\s+/).pop();
 
-// Which listed substitutes the commentary shows coming on. Events name a player
-// but not a side, and each event accounts for one substitute. A name with no
-// exact match falls back to its surname only when that identifies one player,
-// since a surname can be shared within a side or with the opposition.
+// Which listed substitutes the commentary shows coming on. Events don't name a
+// side, so the player coming off supplies it when that name is in the lineup.
+// Each event accounts for one substitute. A name with no exact match falls back
+// to its surname only when one listed substitute has that surname, since a
+// surname can be shared within a side or with the opposition.
 function substitutesWhoCameOn(
+  players: MatchPlayer[],
   substitutes: MatchPlayer[],
   commentary: MatchCentreData['commentary']
 ): Set<string> {
-  const onNames = commentary.flatMap((event) => {
+  const lineup = [...players, ...substitutes];
+  const events = commentary.flatMap((event) => {
     if (!event.type.toLowerCase().includes('substitut')) {
       return [];
     }
-    const onMatch = event.comment.match(/on:\s*(.+?)\s*$/i);
-    return onMatch ? [onMatch[1].trim().toLowerCase()] : [];
+    const match = event.comment.match(/(?:off:\s*(.+?),\s*)?on:\s*(.+?)\s*$/i);
+    if (!match) {
+      return [];
+    }
+    const off = match[1]?.trim().toLowerCase();
+    const sides = new Set(
+      lineup.filter((player) => player.name.toLowerCase() === off).map((player) => player.isHome)
+    );
+    return [{ name: match[2].trim().toLowerCase(), isHome: sides.size === 1 ? [...sides][0] : null }];
   });
 
-  const available = new Map(
-    substitutes.map((sub) => [playerKey(sub.id), sub.name.toLowerCase()])
-  );
+  const onSide = (sub: MatchPlayer, isHome: boolean | null) =>
+    isHome === null || sub.isHome === isHome;
   const cameOn = new Set<string>();
-  const claim = (key: string) => {
-    cameOn.add(key);
-    available.delete(key);
-  };
 
-  const unmatched = onNames.filter((name) => {
-    const exact = [...available].find(([, subName]) => subName === name);
+  const unmatched = events.filter(({ name, isHome }) => {
+    const exact = substitutes.find(
+      (sub) =>
+        !cameOn.has(playerKey(sub.id)) &&
+        sub.name.toLowerCase() === name &&
+        onSide(sub, isHome)
+    );
     if (exact) {
-      claim(exact[0]);
+      cameOn.add(playerKey(exact.id));
     }
     return !exact;
   });
-  for (const name of unmatched) {
-    const sameSurname = [...available].filter(
-      ([, subName]) => surname(subName) === surname(name)
+  for (const { name, isHome } of unmatched) {
+    const sameSurname = substitutes.filter(
+      (sub) => surname(sub.name.toLowerCase()) === surname(name) && onSide(sub, isHome)
     );
     if (sameSurname.length === 1) {
-      claim(sameSurname[0][0]);
+      cameOn.add(playerKey(sameSurname[0].id));
     }
   }
   return cameOn;
@@ -166,7 +176,7 @@ export function aggregatePlayerHistory(
     const { fixture, commentary, players, substitutes, coaches } = match;
     const roster = [...players, ...substitutes, ...coaches];
     const starterIds = new Set(players.map((player) => playerKey(player.id)));
-    const cameOnIds = substitutesWhoCameOn(substitutes, commentary);
+    const cameOnIds = substitutesWhoCameOn(players, substitutes, commentary);
 
     // Roster order puts playing roles first, so a player-coach listed twice
     // gets one game, recorded as the player.
@@ -369,6 +379,9 @@ export interface FetchMatchesOptions {
   gapMs?: number;
   retryPasses?: number;
   retryDelayMs?: number;
+  // Give up at the first failure, with no retry passes, for callers with
+  // someone waiting and a fallback to use.
+  stopOnFailure?: boolean;
 }
 
 // Fetches each fixture's match, then retries failures one at a time after a
@@ -383,6 +396,7 @@ export async function fetchMatches<Fixture, Match>(
     gapMs = MATCH_CENTRE_GAP_MS,
     retryPasses = 2,
     retryDelayMs = RETRY_PASS_DELAY_MS,
+    stopOnFailure = false,
   }: FetchMatchesOptions = {}
 ): Promise<{ matches: Match[]; failed: Fixture[] }> {
   const matches: Match[] = [];
@@ -399,6 +413,9 @@ export async function fetchMatches<Fixture, Match>(
             }
           } catch {
             failed.push(fixture);
+            if (stopOnFailure) {
+              queue.length = 0;
+            }
           }
           await sleep(gapMs);
         }
@@ -408,7 +425,7 @@ export async function fetchMatches<Fixture, Match>(
   };
 
   let failed = await runPass(fixtures, concurrency);
-  for (let pass = 0; pass < retryPasses && failed.length > 0; pass++) {
+  for (let pass = 0; !stopOnFailure && pass < retryPasses && failed.length > 0; pass++) {
     await sleep(retryDelayMs);
     failed = await runPass(failed, 1);
   }

@@ -305,6 +305,48 @@ describe('aggregatePlayerHistory substitute matching', () => {
     ).toEqual([true, false]);
   });
 
+  it('does not use a surname fallback once another substitute with that surname is accounted for', () => {
+    expect(
+      cameOn([sub('kyle', 'Kyle Henry', true), sub('sidney', 'Sidney Henry', false)], ['Kyle Henry', 'K Henry']),
+    ).toEqual([true, false]);
+  });
+
+  it("uses the player coming off to keep an event to that player's side", () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [
+          {
+            id: 'c1',
+            minute: '50',
+            type: 'Substitution - Tactical',
+            comment: 'Substitution - Tactical Off: Home Starter, On: Tom Henry',
+          },
+          {
+            id: 'c2',
+            minute: '55',
+            type: 'Substitution - Tactical',
+            comment: 'Substitution - Tactical Off: Away Starter, On: Sam Smith',
+          },
+        ],
+        players: [
+          { id: 'hs__1', name: 'Home Starter', position: '1', shirtNumber: '1', isHome: true },
+          { id: 'as__1', name: 'Away Starter', position: '1', shirtNumber: '1', isHome: false },
+        ],
+        substitutes: [
+          sub('sidney', 'Sidney Henry', false),
+          sub('home-sam', 'Sam Smith', true),
+          sub('away-sam', 'Sam Smith', false),
+        ],
+        coaches: [],
+      },
+    ]);
+
+    expect(histories.get('sidney')?.games[0].played).toBe(false);
+    expect(histories.get('home-sam')?.games[0].played).toBe(false);
+    expect(histories.get('away-sam')?.games[0].played).toBe(true);
+  });
+
   it('credits one substitute for each event when several share a name', () => {
     expect(
       cameOn([sub('a', 'Name Withheld', true), sub('b', 'Name Withheld', true)], ['Name Withheld']),
@@ -351,6 +393,21 @@ describe('fetchMatches', () => {
     );
 
     expect(result).toEqual({ matches: ['good'], failed: ['bad'] });
+  });
+
+  it('can stop at the first failure without retrying', async () => {
+    const fetched: string[] = [];
+    const result = await fetchMatches(
+      ['bad', 'later'],
+      async (id) => {
+        fetched.push(id);
+        throw new Error('Request failed: 429');
+      },
+      { ...noWait, stopOnFailure: true },
+    );
+
+    expect(fetched).toEqual(['bad']);
+    expect(result.failed).toEqual(['bad']);
   });
 
   it('treats a fixture with no data as answered, not failed', async () => {
