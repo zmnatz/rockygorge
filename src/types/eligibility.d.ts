@@ -24,8 +24,9 @@ export interface PlayerRow {
   appearances: number;
   played: number;
   substitute: number;
-  /** Per-round attendance codes, keyed by column name (e.g. "Round 1").
-   *  Carried for detail display; not used for eligibility. */
+  /** Per-round attendance codes, for detail display and not used for eligibility.
+   *  Keyed by column name (e.g. "Round 1") in a CSV report, and by fixture id in
+   *  the match record, because a team can have two fixtures with one round name. */
   rounds: Record<string, string>;
 }
 

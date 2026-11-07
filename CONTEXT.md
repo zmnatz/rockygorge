@@ -170,12 +170,16 @@ The Rugby Xplorer CSV export the eligibility tool consumes — one row per playe
 _Avoid_: Roster dump, match report
 
 **Match Record**:
-The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club with two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
+The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club with one or two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
 _Avoid_: Roster dump, participation export
 
 **Match Participation**:
 The number of NCS Qualifying Matches a player entered as a starter or substitute, taken from the `Played` and `Substitute` columns of the Match Participation Report or counted from the Match Record. It is the value every eligibility threshold checks.
 _Avoid_: Appearances, games played
+
+**One-Side Club**:
+A club with only one side in the fixture lists, which the eligibility tool assesses under the two-match minimum at any level. Its other sides, if any, play outside the lists and aren't counted.
+_Avoid_: single team, solo club
 
 **NCS Qualifying Match**:
 A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships and 7s don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.

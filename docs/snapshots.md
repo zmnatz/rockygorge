@@ -11,6 +11,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 | leaders   | `public/data/leaders/`, plus the match-centre cache `.cache/leaders/matches.json` | `scripts/generate-leaders-index.ts` |
 | players   | `public/data/players/`, including the eligibility tool's `participation.json` (reads the standings snapshot for every side's fixtures) | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
+| clubPages | `public/data/club-pages.json` (each club's Rugby Xplorer page, confirmed through the CMS) | `scripts/generate-club-pages.ts` |
 
 ## How freshness works
 

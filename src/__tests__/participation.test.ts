@@ -8,6 +8,8 @@ import {
   listClubs,
   loadClubRecord,
   participationRows,
+  playerRounds,
+  playerSeasonEligibility,
   remainingMatches,
   scheduledResults,
   type ParticipationSnapshot,
@@ -82,7 +84,7 @@ describe('buildParticipationSnapshot', () => {
         appearances: 2,
         played: 1,
         substitute: 1,
-        rounds: { 'Round 4': 'Start', 'Round 5': 'Sub', 'Round 6': 'R' },
+        rounds: { f1: 'Start', f2: 'Sub', f3: 'R' },
       },
     ]);
   });
@@ -243,8 +245,8 @@ describe('listClubs', () => {
     const clubs = listClubs(
       [
         fixtureOf('Rocky Gorge MD3', 'James River MD3'),
-        fixtureOf('Rocky Gorge MD1', 'NOVA MD1', 'MAC Men D1'),
-        fixtureOf('James River MD2', 'Raleigh MD2', 'Capital Men D2'),
+        fixtureOf('Rocky Gorge MD1', '', 'MAC Men D1'),
+        fixtureOf('James River MD2', '', 'Capital Men D2'),
       ],
       baseConfig,
     );
@@ -267,10 +269,29 @@ describe('listClubs', () => {
     ]);
   });
 
-  it('leaves out clubs with one side', () => {
-    const clubs = listClubs([fixtureOf('Frederick MD3', 'Loudoun MD3')], baseConfig);
+  it('lists a club with one side, with no lower side', () => {
+    const clubs = listClubs([fixtureOf('Frederick MD3', 'Rocky Gorge MD3')], baseConfig);
 
-    expect(clubs).toEqual([]);
+    expect(clubs).toContainEqual({
+      name: 'Frederick',
+      upperTeam: 'Frederick MD3',
+      lowerTeam: null,
+      upperLabel: 'D3',
+      lowerLabel: null,
+    });
+  });
+
+  it('leaves out a club fielding three sides, which the rules here do not cover', () => {
+    const clubs = listClubs(
+      [
+        fixtureOf('Tri MD1', 'NOVA MD1', 'MAC Men D1'),
+        fixtureOf('Tri MD2', 'Raleigh MD2', 'Capital Men D2'),
+        fixtureOf('Tri MD3', 'Loudoun MD3'),
+      ],
+      baseConfig,
+    );
+
+    expect(clubs.map((club) => club.name)).not.toContain('Tri');
   });
 
   it("lists a club's women's sides separately from its men's", () => {
@@ -283,9 +304,14 @@ describe('listClubs', () => {
       baseConfig,
     );
 
-    expect(clubs.map((club) => [club.name, club.upperTeam, club.lowerTeam])).toEqual([
-      ['NOVA Women', 'NOVA WD1', 'NOVA WD3'],
-    ]);
+    expect(clubs.find((club) => club.name === 'NOVA Women')).toMatchObject({
+      upperTeam: 'NOVA WD1',
+      lowerTeam: 'NOVA WD3',
+    });
+    expect(clubs.find((club) => club.name === 'NOVA')).toMatchObject({
+      upperTeam: 'NOVA MD1',
+      lowerTeam: null,
+    });
   });
 
   it('only counts sides in qualifying competitions', () => {
@@ -297,7 +323,7 @@ describe('listClubs', () => {
       baseConfig,
     );
 
-    expect(clubs).toEqual([]);
+    expect(clubs.find((club) => club.name === 'Rocky Gorge')?.lowerTeam).toBeNull();
   });
 
   it('ignores unnamed sides', () => {
@@ -306,6 +332,49 @@ describe('listClubs', () => {
 });
 
 describe('record-based eligibility', () => {
+  describe('a club with one side', () => {
+    const [club] = listClubs([{ ...fixtureOf('Loudoun MD3', ''), compName: 'Capital Men D3' }], baseConfig);
+    const config = clubConfig(club, baseConfig);
+    const verdicts = (rows: PlayerRow[], remaining = { upper: 0, lower: 0 }) =>
+      computeBreakdown(participationRows(snapshotOf(rows), club, config), config, remaining);
+
+    it('needs two qualifying matches, and has no other side to check', () => {
+      const breakdown = verdicts([
+        row({ playerId: 'two', teamName: 'Loudoun MD3', played: 1, substitute: 1, competition: 'Capital Men D3' }),
+        row({ playerId: 'one', teamName: 'Loudoun MD3', played: 1, competition: 'Capital Men D3' }),
+      ]);
+
+      const byId = Object.fromEntries(breakdown.upper.map((player) => [player.playerId, player]));
+      expect(byId.two.eligible).toBe(true);
+      expect(byId.two.otherDivisionParticipation).toBe(0);
+      expect(byId.one.eligible).toBe(false);
+      expect(byId.one.reasons).toEqual(['Needs 2 qualifying matches (has 1)']);
+      expect(breakdown.lower).toEqual([]);
+    });
+
+    it("marks a player on track when the side's remaining fixtures can reach the minimum", () => {
+      const [player] = verdicts(
+        [row({ playerId: 'one', teamName: 'Loudoun MD3', played: 1, competition: 'Capital Men D3' })],
+        { upper: 1, lower: 0 },
+      ).upper;
+
+      expect(player.eligible).toBe(true);
+      expect(player.pending).toEqual(['Needs 1 more qualifying match (1 fixture left)']);
+    });
+
+    it('does not treat open playoff slots, which have no team name, as a lower side', () => {
+      const open = {
+        compName: 'Capital Men D3 Playoffs',
+        dateTime: '2027-03-01T17:00:00Z',
+        homeTeam: { name: '', score: '' },
+        awayTeam: { name: '', score: '' },
+      };
+      const remaining = remainingMatches([open], club, config, new Date('2026-11-06T12:00:00Z'));
+
+      expect(remaining.lower).toBe(0);
+    });
+  });
+
   const [club] = listClubs([fixtureOf('NOVA MD1', 'NOVA MD3')], baseConfig);
 
   it("evaluates another club's sides under the regulation thresholds", () => {
@@ -470,7 +539,7 @@ describe('loadClubRecord', () => {
     expect(record.asOf).toBe(NOW.toISOString());
     expect(record.snapshot.season).toBe(SEASON);
     expect(record.snapshot.rows).toMatchObject([
-      { playerId: 'sam', teamName: 'NOVA MD1', played: 1, rounds: { 'Round 4': 'Start' } },
+      { playerId: 'sam', teamName: 'NOVA MD1', played: 1, rounds: { mine: 'Start' } },
     ]);
   });
 
@@ -588,7 +657,7 @@ describe('loadClubRecord', () => {
       generatedAt: '2026-10-20T06:00:00.000Z',
       resultIds: ['old'],
       rows: [
-        row({ playerId: 'sam', teamName: 'NOVA MD1', appearances: 2, played: 2, rounds: { 'Round 1': 'Start', 'Round 2': 'Start' } }),
+        row({ playerId: 'sam', teamName: 'NOVA MD1', appearances: 2, played: 2, rounds: { old: 'Start', older: 'Start' } }),
         row({ playerId: 'other', teamName: 'NOVA MD3', competition: 'Capital Men D3', played: 1 }),
       ],
       gaps: [],
@@ -645,7 +714,7 @@ describe('loadClubRecord', () => {
       expect(record.snapshot.rows.find((item) => item.playerId === 'sam')).toMatchObject({
         appearances: 3,
         played: 3,
-        rounds: { 'Round 1': 'Start', 'Round 2': 'Start', 'Round 4': 'Start' },
+        rounds: { old: 'Start', older: 'Start', new: 'Start' },
       });
       expect(record.snapshot.rows.find((item) => item.playerId === 'other')).toMatchObject({ played: 1 });
     });
@@ -950,5 +1019,232 @@ describe('remainingMatches', () => {
         NOW,
       ),
     ).toEqual({ upper: 1, lower: 0 });
+  });
+});
+
+describe('playerRounds', () => {
+  const NOW = new Date('2026-10-20T12:00:00Z');
+  const fixture = (id: string, round: string, date: string, overrides: Record<string, unknown> = {}) => ({
+    id,
+    compName: 'Capital Men D3',
+    season: SEASON,
+    dateTime: `${date}T17:00:00Z`,
+    round,
+    status: 'Result',
+    homeTeam: { name: 'Loudoun MD3', score: '20' },
+    awayTeam: { name: 'Frederick MD3', score: '10' },
+    ...overrides,
+  });
+  const rounds = (fixtures: ReturnType<typeof fixture>[], options: Partial<Parameters<typeof playerRounds>[0]> = {}) =>
+    playerRounds({
+      fixtures,
+      teamName: 'Loudoun MD3',
+      season: SEASON,
+      rows: [
+        row({
+          teamName: 'Loudoun MD3',
+          competition: 'Capital Men D3',
+          rounds: { f1: 'Start', f2: 'Sub', f3: 'R' },
+        }),
+      ],
+      gaps: [],
+      resultIds: fixtures.map((item) => item.id),
+      config: baseConfig,
+      now: NOW,
+      ...options,
+    });
+
+  it("gives every round of the team's season in date order, whether or not the player appeared", () => {
+    const result = rounds([
+      fixture('f4', 'Round 4', '2026-10-10'),
+      fixture('f1', 'Round 1', '2026-09-10'),
+      fixture('f3', 'Round 3', '2026-09-30'),
+      fixture('f2', 'Round 2', '2026-09-20'),
+    ]);
+
+    expect(result.map((item) => [item.round, item.status, item.counted])).toEqual([
+      ['Round 1', 'started', true],
+      ['Round 2', 'substitute', true],
+      ['Round 3', 'unused', false],
+      ['Round 4', 'not-listed', false],
+    ]);
+  });
+
+  it('gives the opponent and score from the team\'s side, home or away', () => {
+    const [home, away] = rounds([
+      fixture('f1', 'Round 1', '2026-09-10'),
+      fixture('f2', 'Round 2', '2026-09-20', {
+        homeTeam: { name: 'NOVA MD3', score: '30' },
+        awayTeam: { name: 'Loudoun MD3', score: '5' },
+      }),
+    ]);
+
+    expect(home).toMatchObject({ fixtureId: 'f1', opponent: 'Frederick MD3', scoreFor: '20', scoreAgainst: '10' });
+    expect(away).toMatchObject({ fixtureId: 'f2', opponent: 'NOVA MD3', scoreFor: '5', scoreAgainst: '30' });
+  });
+
+  it("leaves out other teams' fixtures and other seasons", () => {
+    const result = rounds([
+      fixture('other-team', 'Round 1', '2026-09-10', {
+        homeTeam: { name: 'NOVA MD3', score: '1' },
+        awayTeam: { name: 'Frederick MD3', score: '2' },
+      }),
+      fixture('last-season', 'Round 1', '2025-09-10', { season: '2025/2026' }),
+    ]);
+
+    expect(result).toEqual([]);
+  });
+
+  it('says why a round did not count', () => {
+    const result = rounds(
+      [
+        fixture('forfeit', 'Round 1', '2026-09-10', { status: 'Forfeit' }),
+        fixture('postponed', 'Round 2', '2026-09-20', { status: 'Postponed' }),
+        fixture('no-lineup', 'Round 4', '2026-09-30'),
+        fixture('awaiting', 'Round 5', '2026-10-10', {
+          status: 'Fixture',
+          homeTeam: { name: 'Loudoun MD3', score: '' },
+          awayTeam: { name: 'Frederick MD3', score: '' },
+        }),
+        fixture('upcoming', 'Round 6', '2026-11-10', {
+          status: 'Fixture',
+          homeTeam: { name: 'Loudoun MD3', score: '' },
+          awayTeam: { name: 'Frederick MD3', score: '' },
+        }),
+        fixture('sevens', 'Round 1', '2026-10-01', { compName: 'Capital 7s' }),
+      ],
+      {
+        resultIds: ['forfeit', 'postponed', 'no-lineup', 'sevens'],
+        gaps: [
+          {
+            kind: 'no-lineup',
+            fixtureId: 'no-lineup',
+            teamName: 'Loudoun MD3',
+            opponent: 'Frederick MD3',
+            competition: 'Capital Men D3',
+            dateTime: '2026-09-30T17:00:00Z',
+          },
+        ],
+      },
+    );
+
+    expect(Object.fromEntries(result.map((item) => [item.fixtureId, [item.status, item.counted]]))).toEqual({
+      forfeit: ['forfeit', false],
+      postponed: ['postponed', false],
+      'no-lineup': ['no-lineup', false],
+      sevens: ['not-qualifying', false],
+      awaiting: ['awaiting-result', false],
+      upcoming: ['upcoming', false],
+    });
+  });
+
+  it('flags a round whose substitutions were not entered, so a reserve may really have played', () => {
+    const [round] = rounds([fixture('f3', 'Round 3', '2026-09-30')], {
+      gaps: [
+        {
+          kind: 'no-substitutions',
+          fixtureId: 'f3',
+          teamName: 'Loudoun MD3',
+          opponent: 'Frederick MD3',
+          competition: 'Capital Men D3',
+          dateTime: '2026-09-30T17:00:00Z',
+        },
+      ],
+    });
+
+    expect(round).toMatchObject({ status: 'unused', substitutionsMissing: true });
+  });
+
+  it('labels a round with no name by its date', () => {
+    const [round] = rounds([fixture('f1', '', '2026-09-10')]);
+
+    expect(round.round).toBe('2026-09-10');
+  });
+
+  it('tells apart two fixtures with the same round name, using a real snapshot', () => {
+    const results = [
+      result('first', { dateTime: '2026-10-10T17:00:00Z', round: 'Round 4' }),
+      result('second', { dateTime: '2026-10-17T17:00:00Z', round: 'Round 4' }),
+    ];
+    const snapshot = buildParticipationSnapshot(
+      [history('sam', 'Sam Hooker', [game('first', { starter: false, played: false }), game('second')])],
+      results,
+      new Date('2026-10-20T12:00:00Z'),
+    );
+
+    const items = playerRounds({
+      fixtures: results.map((item) => ({
+        ...item,
+        homeTeam: { name: item.homeTeam.name, score: '10' },
+        awayTeam: { name: item.awayTeam.name, score: '5' },
+      })),
+      teamName: 'Rocky Gorge MD1',
+      season: SEASON,
+      rows: snapshot.rows,
+      gaps: snapshot.gaps,
+      resultIds: snapshot.resultIds ?? [],
+      config: baseConfig,
+      now: NOW,
+    });
+
+    expect(items.map((item) => [item.fixtureId, item.status, item.counted])).toEqual([
+      ['first', 'unused', false],
+      ['second', 'started', true],
+    ]);
+    expect(snapshot.rows[0].played).toBe(1);
+  });
+});
+
+describe('playerSeasonEligibility', () => {
+  const NOW = new Date('2026-11-06T12:00:00Z');
+  const schedule = (home: string, away: string, compName: string, date = '2026-10-10') => ({
+    compName,
+    dateTime: `${date}T17:00:00Z`,
+    homeTeam: { name: home, score: '' },
+    awayTeam: { name: away, score: '' },
+  });
+  const fixtures = [
+    schedule('NOVA MD1', 'Washington MD1', 'MAC Men D1'),
+    schedule('NOVA MD3', 'Loudoun MD3', 'Capital Men D3'),
+  ];
+
+  it('gives a verdict for each side of a two-side club, upper first', () => {
+    const snapshot = snapshotOf([
+      row({ playerId: 'sam', teamName: 'NOVA MD3', competition: 'Capital Men D3', played: 2 }),
+      row({ playerId: 'other', teamName: 'NOVA MD1', played: 5 }),
+    ]);
+
+    const [result, ...others] = playerSeasonEligibility(snapshot, fixtures, 'sam', baseConfig, NOW);
+
+    expect(others).toEqual([]);
+    expect(result.club.name).toBe('NOVA');
+    expect(result.verdicts.map((player) => [player.teamName, player.eligible, player.participation])).toEqual([
+      ['NOVA MD1', true, 0],
+      ['NOVA MD3', true, 2],
+    ]);
+  });
+
+  it('gives one verdict for a player at a one-side club, and counts its remaining fixtures', () => {
+    const snapshot = snapshotOf([
+      row({ playerId: 'lee', teamName: 'Loudoun MD3', competition: 'Capital Men D3', played: 1 }),
+    ]);
+    const withUpcoming = [...fixtures, schedule('Loudoun MD3', 'Frederick MD3', 'Capital Men D3', '2026-11-20')];
+
+    const [result] = playerSeasonEligibility(snapshot, withUpcoming, 'lee', baseConfig, NOW);
+
+    expect(result.verdicts).toHaveLength(1);
+    expect(result.verdicts[0]).toMatchObject({
+      eligible: true,
+      pending: ['Needs 1 more qualifying match (1 fixture left)'],
+    });
+  });
+
+  it('gives nothing for a player with no qualifying rows this season', () => {
+    const snapshot = snapshotOf([
+      row({ playerId: 'sevens', teamName: 'NOVA MD1', competition: 'MAC 7s', played: 3 }),
+    ]);
+
+    expect(playerSeasonEligibility(snapshot, fixtures, 'sevens', baseConfig, NOW)).toEqual([]);
+    expect(playerSeasonEligibility(snapshot, fixtures, 'nobody', baseConfig, NOW)).toEqual([]);
   });
 });

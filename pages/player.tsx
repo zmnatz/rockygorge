@@ -15,10 +15,14 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
+import { loadCurrentSeasonFixtures } from '@/api/capital';
+import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
 import {
   loadPlayerHistory,
   type PlayerHistory,
 } from '@/utils/playerHistory';
+import { clubGaps, loadParticipationSnapshot, playerSeasonEligibility } from '@/utils/participation';
+import eligibility from '@config/eligibility.yml';
 
 export default function PlayersPage() {
   const router = useRouter();
@@ -76,13 +80,105 @@ export default function PlayersPage() {
       )}
 
       {playerId && !isPending && !isError && !history && (
-        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-          No history found for this player.
-        </Typography>
+        <>
+          {/* History files cover Rocky Gorge's competitions; the record covers every club. */}
+          <SeasonEligibility playerId={playerId} showName />
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
+            No match history page for this player.
+          </Typography>
+        </>
       )}
 
       {playerId && history && <PlayerHistoryView history={history} />}
     </Box>
+  );
+}
+
+/** The player's current-season verdicts, from the nightly record. */
+function SeasonEligibility({ playerId, showName = false }: { playerId: string; showName?: boolean }) {
+  const { data, isPending, isError } = useQuery({
+    queryKey: ['playerEligibility', playerId],
+    queryFn: async () => {
+      const [snapshot, fixtures] = await Promise.all([
+        loadParticipationSnapshot(),
+        loadCurrentSeasonFixtures(),
+      ]);
+      if (!snapshot) return null;
+      return {
+        snapshot,
+        clubs: playerSeasonEligibility(snapshot, fixtures, playerId, eligibility),
+      };
+    },
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+
+  if (isPending) return null;
+  const name = showName ? data?.clubs[0]?.verdicts[0]?.name : undefined;
+  const gapCount = data
+    ? data.clubs.reduce((total, { club }) => total + clubGaps(data.snapshot, club, eligibility).length, 0)
+    : 0;
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2, mb: 4 }} data-testid="season-eligibility">
+      {name && (
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
+          {name}
+        </Typography>
+      )}
+      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+        {data ? `${data.snapshot.season} eligibility` : 'Eligibility'}
+      </Typography>
+      {(isError || !data) && (
+        <Typography variant="body2" color="text.secondary">
+          Eligibility is unavailable right now.
+        </Typography>
+      )}
+      {data?.clubs.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          No NCS Qualifying Matches recorded this season.
+        </Typography>
+      )}
+      {data?.clubs.flatMap(({ verdicts }) => verdicts).map((verdict) => (
+        <Box key={verdict.teamName} sx={{ mt: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+              {verdict.teamName}
+            </Typography>
+            <EligibilityStatusChip player={verdict} />
+            <Typography variant="caption" color="text.secondary">
+              {verdict.participation} {verdict.participation === 1 ? 'match' : 'matches'} for this side
+            </Typography>
+          </Box>
+          {[...verdict.reasons, ...verdict.pending].map((note) => (
+            <Typography key={note} variant="body2" color="text.secondary">
+              {note}
+            </Typography>
+          ))}
+        </Box>
+      ))}
+      {gapCount > 0 && (
+        <Typography variant="body2" color="warning.main" sx={{ mt: 1.5 }}>
+          {gapCount} {gapCount === 1 ? 'match has' : 'matches have'} gaps in this club&apos;s
+          record, so this count may be low. The eligibility report lists them.
+        </Typography>
+      )}
+      {data && (
+        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5, mb: 0 }}>
+          A guide from the match record
+          {data.snapshot.generatedAt &&
+            `, as of ${new Date(data.snapshot.generatedAt).toLocaleDateString()}`}
+          . The Rugby Xplorer report is the official count, and registration isn&apos;t checked.{' '}
+          <MuiLink component={Link} href="/utils/eligibility">
+            Eligibility report
+          </MuiLink>
+          {' · '}
+          <MuiLink component={Link} href="/utils/eligibility-methodology">
+            How it&apos;s worked out
+          </MuiLink>
+        </Typography>
+      )}
+    </Paper>
   );
 }
 
@@ -125,6 +221,8 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
           {history.scoringEvents.length === 1 ? 'score' : 'scores'}
         </Typography>
       </Box>
+
+      <SeasonEligibility playerId={history.id} />
 
       <Tabs
         value={season}

@@ -1,0 +1,11 @@
+# Eligibility covers one-side clubs, and links out through the CMS
+
+This replaces "exactly two sides" and the "Which clubs" decision in ADR 010; its other decisions stand. The eligibility tool now lists clubs with one or two sides. A one-side club has only an upper side, whatever its division, because the upper side's rule is the one that applies: two NCS Qualifying Matches at any level (Reg 3.4.2(d)), with fixtures still to play counted as on track. The two-side rules (lower-division minimum, four-game cap, `md3 >= md1`) don't apply, as there's no other side. This is our reading of the regulations, confirmed by the club but not yet by USA Rugby. "One side" means one side in the fixture lists, so a club whose other side plays outside them is treated as one-side and the page says so. A club fielding three sides is still left out; none does at present.
+
+Rugby Xplorer links exist so a verdict can be checked against the source, round by round. Decisions, so they are not "fixed" later:
+
+- **Match links**: CMS fixture ids are Rugby Xplorer's, and a report loads under any entity's path, so a match link never needs a lookup. It uses the team's club, or the Capital union if that club's page is unknown.
+- **Club links**: `xplorer.rugby` blocks automated clients, so slugs come from the CMS, never the site. Each candidate slug, from `sites` or built from the club's name, is confirmed with `entityDetails(slug)`: by the entity id in the club's crest URL when it has one, otherwise by club name. A club with no confirmed slug links to the union's club list and says so, since a wrong link is worse than a generic one.
+- **Separate snapshot**: slugs are `public/data/club-pages.json`, not part of `participation.json`, so adding them doesn't regenerate every player file.
+- **Round codes**: record rows key `rounds` by fixture id, not round name, because a team can have two fixtures named "Round 4", and then a player's rounds wouldn't add up to their total.
+- **Player page**: `/player` shows the verdict from the nightly snapshot with no live pull, so it can lag the eligibility page by a day. It shows even with no history file, because history files only cover Rocky Gorge's competitions and the record covers every club.

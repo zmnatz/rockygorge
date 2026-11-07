@@ -1,4 +1,10 @@
-import type { EligibilityConfig, PlayerRow, RemainingMatches } from '@/types/eligibility';
+import { computeBreakdown } from '@/utils/eligibility';
+import type {
+  EligibilityConfig,
+  PlayerEligibility,
+  PlayerRow,
+  RemainingMatches,
+} from '@/types/eligibility';
 import {
   aggregatePlayerHistory,
   fetchMatches,
@@ -104,7 +110,7 @@ export function buildParticipationSnapshot(
       if (game.played) row.appearances += 1;
       if (game.starter) row.played += 1;
       else if (game.played) row.substitute += 1;
-      row.rounds[fixture.round || game.dateTime.slice(0, 10)] = roundCode(game);
+      row.rounds[fixture.id] = roundCode(game);
       rows.set(rowKey, row);
 
       const sideKey = `${game.fixtureId}\0${game.teamName}`;
@@ -164,14 +170,16 @@ export function buildParticipationSnapshot(
   };
 }
 
-/** A club fielding two sides in the record, the shape the regulations' two-side
- *  rules apply to. */
+/** A club in the record. With two sides the regulations' two-side rules apply;
+ *  a club with one side has only `upperTeam`, whatever its division, because the
+ *  upper side's rule (two matches at any level) is the one that applies to it.
+ *  See docs/adr/011-eligibility-for-one-side-clubs.md. */
 export interface Club {
   name: string;
   upperTeam: string;
-  lowerTeam: string;
+  lowerTeam: string | null;
   upperLabel: string;
-  lowerLabel: string;
+  lowerLabel: string | null;
 }
 
 const SIDE_NAME = /^(.+) (M|W)?D(\d+)$/;
@@ -188,8 +196,14 @@ interface FixtureSides {
   awayTeam: { name: string };
 }
 
-/** Clubs with two sides in qualifying competitions, by name. A team name
- *  that doesn't end in a division can't be ranked and is skipped. */
+/** The sides a club fields. */
+export function clubSides(club: Pick<Club, 'upperTeam' | 'lowerTeam'>): string[] {
+  return club.lowerTeam === null ? [club.upperTeam] : [club.upperTeam, club.lowerTeam];
+}
+
+/** Clubs with one or two sides in qualifying competitions, by name. A team name
+ *  that doesn't end in a division can't be ranked and is skipped. The rules don't
+ *  cover a club fielding three sides, so one is left out. */
 export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): Club[] {
   const clubs = new Map<string, { name: string; sides: Map<string, number> }>();
   for (const fixture of fixtures) {
@@ -206,17 +220,15 @@ export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): 
   }
 
   return [...clubs.values()]
-    .filter((club) => club.sides.size === 2)
+    .filter((club) => club.sides.size <= 2)
     .map((club) => {
-      const [[upperTeam, upperLevel], [lowerTeam, lowerLevel]] = [...club.sides].sort(
-        (a, b) => a[1] - b[1],
-      );
+      const [[upperTeam, upperLevel], lower] = [...club.sides].sort((a, b) => a[1] - b[1]);
       return {
         name: club.name,
         upperTeam,
-        lowerTeam,
+        lowerTeam: lower?.[0] ?? null,
         upperLabel: `D${upperLevel}`,
-        lowerLabel: `D${lowerLevel}`,
+        lowerLabel: lower ? `D${lower[1]}` : null,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -274,7 +286,11 @@ export function remainingMatches(
     );
     return own.length + openDates.size;
   };
-  return { upper: count(sides.upperTeam), lower: count(sides.lowerTeam) };
+  return {
+    upper: count(sides.upperTeam),
+    // Open playoff slots have an empty team name, so a missing side can't be counted.
+    lower: sides.lowerTeam === null ? 0 : count(sides.lowerTeam),
+  };
 }
 
 /** The regulation thresholds, applied to this club's two sides. */
@@ -282,7 +298,11 @@ export function clubConfig(club: Club, base: EligibilityConfig): EligibilityConf
   return {
     ...base,
     upperDivision: { ...base.upperDivision, teamName: club.upperTeam, label: club.upperLabel },
-    lowerDivision: { ...base.lowerDivision, teamName: club.lowerTeam, label: club.lowerLabel },
+    lowerDivision: {
+      ...base.lowerDivision,
+      teamName: club.lowerTeam ?? '',
+      label: club.lowerLabel ?? '',
+    },
   };
 }
 
@@ -302,6 +322,7 @@ export function participationRows(
   const onSide = new Set(rows.map((row) => `${row.teamName}\0${row.playerId}`));
   const emptyRows = rows.flatMap((row) => {
     const otherTeam = row.teamName === club.upperTeam ? club.lowerTeam : club.upperTeam;
+    if (otherTeam === null) return [];
     const key = `${otherTeam}\0${row.playerId}`;
     if (onSide.has(key)) return [];
     onSide.add(key);
@@ -331,6 +352,139 @@ export function clubGaps(
       (gap.teamName === club.upperTeam || gap.teamName === club.lowerTeam) &&
       isQualifying(gap.competition, config),
   );
+}
+
+/** A player's verdicts at one club: one per side the club fields. */
+export interface PlayerClubEligibility {
+  club: Club;
+  verdicts: PlayerEligibility[];
+}
+
+/** One player's verdicts for the snapshot's season, from the saved record. */
+export function playerSeasonEligibility(
+  snapshot: ParticipationSnapshot,
+  fixtures: Parameters<typeof remainingMatches>[0],
+  playerId: string,
+  base: EligibilityConfig,
+  now: Date = new Date(),
+): PlayerClubEligibility[] {
+  const own = { ...snapshot, rows: snapshot.rows.filter((row) => row.playerId === playerId) };
+  const teams = new Set(own.rows.map((row) => row.teamName));
+  return listClubs(fixtures, base)
+    .filter((club) => clubSides(club).some((team) => teams.has(team)))
+    .flatMap((club) => {
+      const config = clubConfig(club, base);
+      const rows = participationRows(own, club, config);
+      if (rows.length === 0) return [];
+      const { upper, lower } = computeBreakdown(rows, config, remainingMatches(fixtures, club, config, now));
+      return [{ club, verdicts: [...upper, ...lower] }];
+    });
+}
+
+/** How one of a team's fixtures stands for one player. Only `started` and
+ *  `substitute` count towards Match Participation. */
+export type PlayerRoundStatus =
+  | 'started'
+  | 'substitute'
+  | 'unused'
+  | 'not-listed'
+  | 'no-lineup'
+  | 'forfeit'
+  | 'postponed'
+  | 'not-qualifying'
+  | 'awaiting-result'
+  | 'upcoming';
+
+export interface PlayerRound {
+  fixtureId: string;
+  round: string;
+  competition: string;
+  dateTime: string;
+  opponent: string;
+  scoreFor: string;
+  scoreAgainst: string;
+  status: PlayerRoundStatus;
+  counted: boolean;
+  /** The side listed substitutes but none came on, so a reserve may have played. */
+  substitutionsMissing: boolean;
+}
+
+interface PlayerRoundsInput {
+  fixtures: (FixtureSides & {
+    id: string;
+    season: string;
+    dateTime: string;
+    round?: string;
+    status?: string;
+    homeTeam: { name: string; score: string };
+    awayTeam: { name: string; score: string };
+  })[];
+  teamName: string;
+  season: string;
+  /** The player's rows, whatever side they are for. */
+  rows: PlayerRow[];
+  gaps: ParticipationGap[];
+  resultIds: string[];
+  config: EligibilityConfig;
+  now?: Date;
+}
+
+/** Every fixture of a team's season and how it stands for one player, so a
+ *  verdict can be checked match by match against the Rugby Xplorer reports. */
+export function playerRounds({
+  fixtures,
+  teamName,
+  season,
+  rows,
+  gaps,
+  resultIds,
+  config,
+  now = new Date(),
+}: PlayerRoundsInput): PlayerRound[] {
+  const results = new Set(resultIds);
+  const hasGap = (fixtureId: string, kind: ParticipationGap['kind']) =>
+    gaps.some((gap) => gap.kind === kind && gap.fixtureId === fixtureId && gap.teamName === teamName);
+
+  const statusOf = (fixture: PlayerRoundsInput['fixtures'][number]): PlayerRoundStatus => {
+    if (!isQualifying(fixture.compName, config)) return 'not-qualifying';
+    if (fixture.status === 'Forfeit') return 'forfeit';
+    if (fixture.status === 'Postponed') return 'postponed';
+    const code = rows.find((row) => row.teamName === teamName && row.competition === fixture.compName)
+      ?.rounds[fixture.id];
+    if (code === 'Start') return 'started';
+    if (code === 'Sub') return 'substitute';
+    if (code === 'R') return 'unused';
+    if (hasGap(fixture.id, 'no-lineup')) return 'no-lineup';
+    if (new Date(fixture.dateTime) > now) return 'upcoming';
+    return results.has(fixture.id) ? 'not-listed' : 'awaiting-result';
+  };
+
+  return fixtures
+    .filter(
+      (fixture) =>
+        fixture.season === season &&
+        (fixture.homeTeam.name === teamName || fixture.awayTeam.name === teamName),
+    )
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+    .map((fixture) => {
+      const isHome = fixture.homeTeam.name === teamName;
+      const [own, other] = isHome
+        ? [fixture.homeTeam, fixture.awayTeam]
+        : [fixture.awayTeam, fixture.homeTeam];
+      const status = statusOf(fixture);
+      return {
+        fixtureId: fixture.id,
+        round: fixture.round || fixture.dateTime.slice(0, 10),
+        competition: fixture.compName,
+        dateTime: fixture.dateTime,
+        opponent: other.name,
+        scoreFor: own.score,
+        scoreAgainst: other.score,
+        status,
+        counted: status === 'started' || status === 'substitute',
+        substitutionsMissing: hasGap(fixture.id, 'no-substitutions'),
+      };
+    });
 }
 
 /** A scheduled fixture with what a match-centre request needs. */
@@ -382,7 +536,7 @@ async function pullClubParticipation(
   const base =
     saved?.resultIds &&
     saved.season === season &&
-    [club.upperTeam, club.lowerTeam].every((team) => saved.rows.some((row) => row.teamName === team))
+    clubSides(club).every((team) => saved.rows.some((row) => row.teamName === team))
       ? saved
       : null;
   const known = new Set(base?.resultIds);

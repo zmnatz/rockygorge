@@ -1,4 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { loadCurrentSeasonFixtures } from '@/api/capital';
 import {
@@ -10,6 +11,7 @@ import {
   Container,
   FormControl,
   InputLabel,
+  Link as MuiLink,
   ListItemText,
   MenuItem,
   Paper,
@@ -31,17 +33,25 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
+import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
 import { computeBreakdown, divisionLabel, parsePlayerRows } from '@/utils/eligibility';
 import {
   clubConfig,
   clubGaps,
+  clubSides,
   listClubs,
   loadClubRecord,
   loadParticipationSnapshot,
   participationRows,
+  playerRounds,
   remainingMatches,
   type ParticipationGap,
+  type ParticipationSnapshot,
+  type PlayerRound,
+  type PlayerRoundStatus,
+  type ScheduledFixture,
 } from '@/utils/participation';
+import { fixturesUrl, loadClubPages, matchUrl, UNION_CLUBS_URL } from '@/utils/rugbyXplorer';
 import { fetchMatchCentre } from '@/utils/playerHistory';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
@@ -64,15 +74,6 @@ const LIVE_RECORD_STALE_MS = 10 * 60 * 1000;
 
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
-function statusChip(player: PlayerEligibility) {
-  if (!player.eligible) return <Chip size="small" color="error" label="INELIGIBLE" />;
-  return player.pending.length > 0 ? (
-    <Chip size="small" color="warning" label="ON TRACK" />
-  ) : (
-    <Chip size="small" color="success" label="ELIGIBLE" />
-  );
-}
-
 type SortKey =
   | 'name'
   | 'lastRegistered'
@@ -84,7 +85,7 @@ type SortKey =
   | 'reasons';
 
 const getColumns = (
-  otherLabel: string,
+  otherLabel: string | null,
   source: ReportSource,
 ): { key: SortKey; title: string; numeric?: boolean }[] => [
   { key: 'name', title: 'Player' },
@@ -92,7 +93,9 @@ const getColumns = (
   { key: 'played', title: 'Played', numeric: true },
   { key: 'sub', title: 'Sub', numeric: true },
   { key: 'participation', title: 'Participation', numeric: true },
-  { key: 'otherDivision', title: `${otherLabel} Participation`, numeric: true },
+  ...(otherLabel
+    ? [{ key: 'otherDivision' as const, title: `${otherLabel} Participation`, numeric: true }]
+    : []),
   { key: 'status', title: 'Status' },
   { key: 'reasons', title: 'Reason' },
 ];
@@ -122,7 +125,10 @@ interface DivisionTableProps {
   title: string;
   source: ReportSource;
   ownLabel: string;
-  otherLabel: string;
+  /** The club's other side, null for a club with one side. */
+  otherLabel: string | null;
+  /** What the player detail needs to account for each round; absent for a CSV report. */
+  accounting: RoundAccounting | null;
   summary: { total: number; eligible: number; onTrack: number };
   visibleCount: number;
   filtered: boolean;
@@ -159,7 +165,7 @@ function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSourc
     case 'otherDivision':
       return player.otherDivisionParticipation;
     case 'status':
-      return statusChip(player);
+      return <EligibilityStatusChip player={player} />;
     case 'reasons':
       return player.reasons.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
@@ -178,6 +184,7 @@ function DivisionTable({
   source,
   ownLabel,
   otherLabel,
+  accounting,
   summary,
   visibleCount,
   filtered,
@@ -332,6 +339,8 @@ function DivisionTable({
         player={detail}
         source={source}
         ownLabel={ownLabel}
+        hasOtherSide={otherLabel !== null}
+        accounting={accounting}
         onClose={() => setDetail(null)}
       />
     </Paper>
@@ -416,16 +425,114 @@ function RoundsMatrix({ rows }: { rows: PlayerRow[] }) {
   );
 }
 
+/** What's needed to set a player's verdict against the team's fixtures. */
+interface RoundAccounting {
+  snapshot: ParticipationSnapshot;
+  fixtures: ScheduledFixture[];
+  clubSlug: string | null;
+  /** The club's sides, upper first. */
+  sides: string[];
+}
+
+const ROUND_STATUS: Record<PlayerRoundStatus, string> = {
+  started: 'Started',
+  substitute: 'Came on as a substitute',
+  unused: "Listed as a substitute, didn't come on",
+  'not-listed': 'Not in the lineup',
+  'no-lineup': 'No lineup recorded',
+  forfeit: 'Forfeit, not played',
+  postponed: 'Postponed',
+  'not-qualifying': 'Not an NCS Qualifying Match',
+  'awaiting-result': 'No result yet',
+  upcoming: 'Still to play',
+};
+
+function roundDate(dateTime: string): string {
+  return new Date(dateTime).toLocaleDateString(undefined, { timeZone: 'UTC' });
+}
+
+/** One team's fixtures for one player, each linked to its Rugby Xplorer report. */
+function TeamRounds({
+  teamName,
+  rounds,
+  clubSlug,
+}: {
+  teamName: string;
+  rounds: PlayerRound[];
+  clubSlug: string | null;
+}) {
+  const counted = rounds.filter((round) => round.counted).length;
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="subtitle2">
+        {teamName}: {counted} counted {counted === 1 ? 'match' : 'matches'}
+      </Typography>
+      <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Round</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Opponent</TableCell>
+              <TableCell>Score</TableCell>
+              <TableCell>This player</TableCell>
+              <TableCell align="center">Counted</TableCell>
+              <TableCell>Report</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rounds.map((round) => (
+              <TableRow key={round.fixtureId}>
+                <TableCell>{round.round}</TableCell>
+                <TableCell>{roundDate(round.dateTime)}</TableCell>
+                <TableCell>{round.opponent || 'To be decided'}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  {round.scoreFor || round.scoreAgainst ? `${round.scoreFor} - ${round.scoreAgainst}` : '—'}
+                </TableCell>
+                <TableCell>
+                  {ROUND_STATUS[round.status]}
+                  {round.substitutionsMissing && (
+                    <Typography variant="caption" color="warning.main" component="div">
+                      No substitutions recorded for this match
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="center">{round.counted ? 'Yes' : 'No'}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  <MuiLink href={matchUrl(round.fixtureId, clubSlug)} target="_blank" rel="noopener noreferrer">
+                    Rugby Xplorer
+                  </MuiLink>
+                </TableCell>
+              </TableRow>
+            ))}
+            {rounds.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary' }}>
+                  No fixtures this season.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+}
+
 /** Full report detail for one player, opened by clicking a table row. */
 function PlayerDetailsDialog({
   player,
   source,
   ownLabel,
+  hasOtherSide,
+  accounting,
   onClose,
 }: {
   player: PlayerEligibility | null;
   source: ReportSource;
   ownLabel: string;
+  hasOtherSide: boolean;
+  accounting: RoundAccounting | null;
   onClose: () => void;
 }) {
   return (
@@ -442,7 +549,7 @@ function PlayerDetailsDialog({
                   USA ID {player.playerId}
                 </Typography>
               )}
-              {statusChip(player)}
+              <EligibilityStatusChip player={player} />
             </Box>
           </DialogTitle>
           <DialogContent dividers>
@@ -462,23 +569,55 @@ function PlayerDetailsDialog({
               <Fact label="Played" value={player.played} />
               <Fact label="Substitute" value={player.substitute} />
               <Fact label="Participation" value={player.participation} />
-              <Fact label="Other-division participation" value={player.otherDivisionParticipation} />
+              {hasOtherSide && (
+                <Fact label="Other-division participation" value={player.otherDivisionParticipation} />
+              )}
             </Box>
-            {player.rows.map((source) => (
-              <Box key={source.competition || 'report row'} sx={{ mt: 2 }}>
-                <Typography variant="subtitle2">
-                  {source.competition || 'Report row'} — {source.teamName}
+            {accounting ? (
+              <>
+                {/* The player's own side first; both sides feed a two-side verdict. */}
+                {[player.teamName, ...accounting.sides.filter((side) => side !== player.teamName)].map((side) => (
+                  <TeamRounds
+                    key={side}
+                    teamName={side}
+                    clubSlug={accounting.clubSlug}
+                    rounds={playerRounds({
+                      fixtures: accounting.fixtures,
+                      teamName: side,
+                      season: accounting.snapshot.season,
+                      rows: player.rows,
+                      gaps: accounting.snapshot.gaps,
+                      resultIds: accounting.snapshot.resultIds ?? [],
+                      config: eligibility,
+                    })}
+                  />
+                ))}
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  Open a report to check a line against Rugby Xplorer.{' '}
+                  <MuiLink component={Link} href={`/player?id=${encodeURIComponent(player.playerId)}`}>
+                    Player history
+                  </MuiLink>
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Appearances {source.appearances} · Played {source.played} · Substitute{' '}
-                  {source.substitute}
-                </Typography>
-              </Box>
-            ))}
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2">Rounds by competition</Typography>
-              <RoundsMatrix rows={player.rows} />
-            </Box>
+              </>
+            ) : (
+              <>
+                {player.rows.map((source) => (
+                  <Box key={source.competition || 'report row'} sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2">
+                      {source.competition || 'Report row'} — {source.teamName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Appearances {source.appearances} · Played {source.played} · Substitute{' '}
+                      {source.substitute}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">Rounds by competition</Typography>
+                  <RoundsMatrix rows={player.rows} />
+                </Box>
+              </>
+            )}
           </DialogContent>
         </>
       )}
@@ -486,17 +625,18 @@ function PlayerDetailsDialog({
   );
 }
 
-function reportPlayerLine(player: PlayerEligibility, otherLabel: string, source: ReportSource): string {
+function reportPlayerLine(player: PlayerEligibility, otherLabel: string | null, source: ReportSource): string {
   return (
     `${source === 'csv' ? `${player.name} (#${player.playerId})` : player.name}: ` +
     `played ${player.played} / sub ${player.substitute} ` +
-    `(participation ${player.participation}), ${otherLabel} participation ${player.otherDivisionParticipation}`
+    `(participation ${player.participation})` +
+    (otherLabel ? `, ${otherLabel} participation ${player.otherDivisionParticipation}` : '')
   );
 }
 
 /** A gap in the match record, in the words shown on the page and in the export. */
 function gapText(gap: ParticipationGap): string {
-  const date = new Date(gap.dateTime).toLocaleDateString(undefined, { timeZone: 'UTC' });
+  const date = roundDate(gap.dateTime);
   const problem = gap.kind === 'no-lineup' ? 'no lineup recorded' : 'no substitutions recorded';
   return `${gap.teamName} v ${gap.opponent} (${date}): ${problem}`;
 }
@@ -507,24 +647,30 @@ interface ReportMeta {
   source: ReportSource;
   season?: string;
   gaps: ParticipationGap[];
+  /** A club with one side reports only that side. */
+  oneSide: boolean;
 }
 
 function buildReport(
   breakdown: EligibilityBreakdown,
   config: EligibilityConfig,
-  { title, source, season, gaps }: ReportMeta,
+  { title, source, season, gaps, oneSide }: ReportMeta,
 ): string {
   const sections = [
     {
       heading: divisionLabel(config.upperDivision.label, config.upperDivision.teamName, breakdown.upperSummary),
-      otherLabel: config.lowerDivision.label,
+      otherLabel: oneSide ? null : config.lowerDivision.label,
       players: breakdown.upper,
     },
-    {
-      heading: divisionLabel(config.lowerDivision.label, config.lowerDivision.teamName, breakdown.lowerSummary),
-      otherLabel: config.upperDivision.label,
-      players: breakdown.lower,
-    },
+    ...(oneSide
+      ? []
+      : [
+          {
+            heading: divisionLabel(config.lowerDivision.label, config.lowerDivision.teamName, breakdown.lowerSummary),
+            otherLabel: config.upperDivision.label,
+            players: breakdown.lower,
+          },
+        ]),
   ];
 
   const lines: string[] = [];
@@ -660,6 +806,12 @@ export default function EligibilityPage() {
     retry: false,
   });
   const clubRecord = record.data ?? null;
+  const clubPages = useQuery({
+    queryKey: ['eligibility-club-pages'],
+    queryFn: loadClubPages,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+  const clubSlug = (club && clubPages.data?.[club.name]) || null;
   const snapshot = clubRecord?.snapshot ?? null;
   const recordReport = useMemo(() => {
     if (!snapshot || !club) return null;
@@ -698,6 +850,12 @@ export default function EligibilityPage() {
   const gaps = source === 'record' ? (recordReport?.gaps ?? []) : [];
   const upperLabel = config.upperDivision.label;
   const lowerLabel = config.lowerDivision.label;
+  const oneSide = source === 'record' && club?.lowerTeam === null;
+  const accounting: RoundAccounting | null =
+    source === 'record' && snapshot && club
+      ? { snapshot, fixtures: fixtures ?? [], clubSlug, sides: clubSides(club) }
+      : null;
+  const clubFixturesUrl = fixturesUrl(clubSlug);
 
   const matchesFilters = (player: PlayerEligibility) => {
     if (statusFilter === 'eligible' && !player.eligible) return false;
@@ -748,8 +906,8 @@ export default function EligibilityPage() {
     if (!breakdown) return;
     const meta: ReportMeta =
       source === 'record' && club && snapshot
-        ? { title: club.name, source, season: snapshot.season, gaps }
-        : { title: 'Rocky Gorge', source, gaps };
+        ? { title: club.name, source, season: snapshot.season, gaps, oneSide }
+        : { title: 'Rocky Gorge', source, gaps, oneSide };
     const blob = new Blob([buildReport(breakdown, config, meta)], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -773,14 +931,18 @@ export default function EligibilityPage() {
              Championships and 7s don't count. Participation counts starts and
              substitute appearances; a listed player who never enters the game doesn't
              count. Fixtures still to play before Super Regionals count towards the
-             two-match minimums, shown as on track. Lists clubs with two sides. This is a guide: the Rugby Xplorer report is the official count,
-             and the record has no registration data, so check registration separately.`
+             two-match minimums, shown as on track. Lists clubs with one or two sides. Click a player to check their
+             count round by round against the Rugby Xplorer match reports. This is a guide: the Rugby Xplorer report is
+             the official count, and the record has no registration data, so check registration separately.`
           : `Paste or upload the Rugby Xplorer matches-played report to see which
              players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.
              Participation counts as Played + Substitute; per-round attendance codes
              do not count. Fixtures still to play before Super Regionals count towards
              the two-match minimums, shown as on track. Players are assumed registered — the report only lists
-             registered players — and the registration date is shown for reference.`}
+             registered players — and the registration date is shown for reference.`}{' '}
+        <MuiLink component={Link} href="/utils/eligibility-methodology">
+          How this report is worked out
+        </MuiLink>
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 3 }}>
@@ -820,6 +982,18 @@ export default function EligibilityPage() {
                 {clubRecord.asOf && ` from ${new Date(clubRecord.asOf).toLocaleString()}`}
               </Typography>
             )}
+            {clubPages.isSuccess && (
+              <MuiLink
+                variant="body2"
+                href={clubFixturesUrl ?? UNION_CLUBS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {clubFixturesUrl
+                  ? `${club.name} fixtures on Rugby Xplorer`
+                  : 'Find this club on Rugby Xplorer'}
+              </MuiLink>
+            )}
           </>
         )}
       </Box>
@@ -843,8 +1017,15 @@ export default function EligibilityPage() {
 
       {source === 'record' && schedule.isSuccess && !club && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          The fixture list has no clubs with two sides yet. Use a CSV report instead.
+          The fixture list has no clubs yet. Use a CSV report instead.
         </Alert>
+      )}
+
+      {oneSide && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Only one of this club&apos;s sides is in the fixture lists, so it is assessed as a
+          one-side club: two qualifying matches, and no other side to compare.
+        </Typography>
       )}
 
       {gaps.length > 0 && (
@@ -906,14 +1087,18 @@ export default function EligibilityPage() {
               mb: 2,
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, newValue) => setActiveTab(newValue)}
-              aria-label="Eligibility by division"
-            >
-              <Tab label={`${upperLabel} side`} />
-              <Tab label={`${lowerLabel} side`} />
-            </Tabs>
+            {oneSide ? (
+              <Box />
+            ) : (
+              <Tabs
+                value={activeTab}
+                onChange={(_, newValue) => setActiveTab(newValue)}
+                aria-label="Eligibility by division"
+              >
+                <Tab label={`${upperLabel} side`} />
+                <Tab label={`${lowerLabel} side`} />
+              </Tabs>
+            )}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               {source === 'csv' && (
                 <Button variant="outlined" size="small" onClick={() => setDialogOpen(true)}>
@@ -925,12 +1110,13 @@ export default function EligibilityPage() {
               </Button>
             </Box>
           </Box>
-          {activeTab === 0 && (
+          {(oneSide || activeTab === 0) && (
             <DivisionTable
               title={divisionLabel(upperLabel, config.upperDivision.teamName, breakdown.upperSummary)}
               source={source}
               ownLabel={upperLabel}
-              otherLabel={lowerLabel}
+              otherLabel={oneSide ? null : lowerLabel}
+              accounting={accounting}
               summary={breakdown.upperSummary}
               visibleCount={upperPlayers.length}
               filtered={filtersActive}
@@ -941,12 +1127,13 @@ export default function EligibilityPage() {
               players={upperPlayers}
             />
           )}
-          {activeTab === 1 && (
+          {!oneSide && activeTab === 1 && (
             <DivisionTable
               title={divisionLabel(lowerLabel, config.lowerDivision.teamName, breakdown.lowerSummary)}
               source={source}
               ownLabel={lowerLabel}
               otherLabel={upperLabel}
+              accounting={accounting}
               summary={breakdown.lowerSummary}
               visibleCount={lowerPlayers.length}
               filtered={filtersActive}

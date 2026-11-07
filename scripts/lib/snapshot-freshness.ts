@@ -17,7 +17,7 @@ import path from 'node:path';
 // they use the committed snapshot, or `generate:force`.
 export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests';
+export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests' | 'clubPages';
 
 // Bump a snapshot's number whenever the shape of its output (or the
 // generator's logic) changes. A committed snapshot with a different format is
@@ -28,8 +28,9 @@ export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   scores: 2,
   standings: 1,
   leaders: 1,
-  players: 3,
+  players: 4,
   crests: 1,
+  clubPages: 1,
 };
 
 export type SnapshotStamps = Partial<Record<SnapshotName, string>>;
