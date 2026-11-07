@@ -18,7 +18,6 @@ const config: EligibilityConfig = {
     lowerAtLeastUpper: true,
   },
   nonQualifyingCompetitions: [],
-  deadlineCompetitions: [],
 };
 
 const SAMPLE_CSV = [

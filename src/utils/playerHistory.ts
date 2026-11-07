@@ -336,6 +336,8 @@ interface MatchCentreResponse {
 
 interface BuildOptions {
   concurrency?: number;
+  // Fetch every season's matches, not just the current one's.
+  fullHistory?: boolean;
 }
 
 // Newest first; same-time entries order by fixture id so the snapshot output
@@ -354,12 +356,20 @@ export async function buildPlayerHistories(options?: BuildOptions): Promise<{
   histories: Map<string, PlayerHistory>;
   results: FixtureLookupItem[];
   matches: MatchCentreData[];
+  season: string;
 }> {
-  const results = (await fetchAllFixtures()).filter(
+  const allResults = (await fetchAllFixtures()).filter(
     (fixture) =>
       fixture.homeTeam.score.length > 0 &&
       fixture.awayTeam.score.length > 0
   );
+  const season = allResults.reduce(
+    (latest, fixture) => (fixture.season > latest ? fixture.season : latest),
+    ''
+  );
+  const results = options?.fullHistory
+    ? allResults
+    : allResults.filter((fixture) => fixture.season === season);
 
   const { matches, failed } = await fetchMatches(results, fetchMatchCentre, {
     concurrency: options?.concurrency,
@@ -372,7 +382,39 @@ export async function buildPlayerHistories(options?: BuildOptions): Promise<{
     );
   }
 
-  return { histories: aggregatePlayerHistory(matches), results, matches };
+  return { histories: aggregatePlayerHistory(matches), results, matches, season };
+}
+
+// Past seasons don't change, so the saved histories keep them and only the
+// current season comes from the fresh pull. A saved player whose only games were
+// in the current season, and no longer are, is dropped.
+export function mergeSavedHistories(
+  saved: PlayerHistory[],
+  current: Map<string, PlayerHistory>,
+  season: string
+): Map<string, PlayerHistory> {
+  const merged = new Map(current);
+  for (const history of saved) {
+    const fresh = current.get(history.id);
+    const games = [
+      ...(fresh?.games ?? []),
+      ...history.games.filter((game) => game.season !== season),
+    ].sort(newestFirst);
+    if (games.length === 0) {
+      continue;
+    }
+    merged.set(history.id, {
+      id: history.id,
+      name: history.name,
+      teamName: history.teamName,
+      games,
+      scoringEvents: [
+        ...(fresh?.scoringEvents ?? []),
+        ...history.scoringEvents.filter((event) => event.season !== season),
+      ].sort(newestFirst),
+    });
+  }
+  return merged;
 }
 
 export interface FetchMatchesOptions {

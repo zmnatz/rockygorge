@@ -52,6 +52,17 @@ If a PR changes what a generator writes (shape of the JSON, filtering logic):
 A test (`snapshot-freshness.test.ts`) fails until the committed manifest
 matches the code's format versions, so CI catches a forgotten regeneration.
 
+## Player histories pull the current season only
+
+Past seasons don't change, so `generate-players.ts` fetches the current season's
+matches and keeps older seasons from the committed files. It pulls every season
+when the saved files are missing or the `players` format changed. To pick up a
+correction to a past season, run:
+
+```bash
+bun scripts/generate-players.ts --force --full-history
+```
+
 ## Forcing an update
 
 ```bash

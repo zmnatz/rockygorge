@@ -4,6 +4,7 @@ import {
   fetchMatches,
   isScoreEventType,
   loadPlayerHistory,
+  mergeSavedHistories,
   playerKey,
 } from '@/utils/playerHistory';
 
@@ -423,5 +424,81 @@ describe('fetchMatches', () => {
 
     expect(result).toEqual({ matches: [], failed: [] });
     expect(fetched).toEqual(['empty']);
+  });
+});
+
+describe('mergeSavedHistories', () => {
+  const CURRENT = '2026/2027';
+  const logged = (fixtureId: string, season: string, dateTime: string) => ({
+    fixtureId,
+    season,
+    dateTime,
+    compName: 'MAC Men D1',
+    teamName: 'Rocky Gorge MD1',
+    opponent: 'NOVA MD1',
+    scoreFor: '10',
+    scoreAgainst: '5',
+    result: 'W' as const,
+    starter: true,
+    played: true,
+    coach: false,
+  });
+  const scored = (fixtureId: string, season: string, dateTime: string) => ({
+    id: `${fixtureId}-try`,
+    fixtureId,
+    season,
+    dateTime,
+    compName: 'MAC Men D1',
+    opponent: 'NOVA MD1',
+    minute: '10',
+    type: 'Try',
+    comment: 'Try - Sam Hooker',
+  });
+  const old = logged('old', '2025/2026', '2025-10-01T17:00:00Z');
+  const stale = logged('stale', CURRENT, '2026-09-01T17:00:00Z');
+  const fresh = logged('fresh', CURRENT, '2026-10-01T17:00:00Z');
+  const history = (id: string, games: typeof old[], scoringEvents: ReturnType<typeof scored>[] = []) => ({
+    id,
+    name: 'Sam Hooker',
+    teamName: 'Rocky Gorge MD1',
+    games,
+    scoringEvents,
+  });
+
+  it("keeps saved past seasons and replaces the current season's games, newest first", () => {
+    const merged = mergeSavedHistories(
+      [history('sam', [old, stale], [scored('old', '2025/2026', old.dateTime), scored('stale', CURRENT, stale.dateTime)])],
+      new Map([['sam', history('sam', [fresh], [scored('fresh', CURRENT, fresh.dateTime)])]]),
+      CURRENT,
+    );
+
+    expect(merged.get('sam')?.games.map((game) => game.fixtureId)).toEqual(['fresh', 'old']);
+    expect(merged.get('sam')?.scoringEvents.map((event) => event.fixtureId)).toEqual(['fresh', 'old']);
+  });
+
+  it('keeps a player with only past seasons, and adds a new player', () => {
+    const merged = mergeSavedHistories(
+      [history('past', [old])],
+      new Map([['new', history('new', [fresh])]]),
+      CURRENT,
+    );
+
+    expect([...merged.keys()].sort()).toEqual(['new', 'past']);
+  });
+
+  it('drops a saved player whose only games left the current season', () => {
+    const merged = mergeSavedHistories([history('gone', [stale])], new Map(), CURRENT);
+
+    expect(merged.has('gone')).toBe(false);
+  });
+
+  it('keeps the saved name and team so they do not churn', () => {
+    const merged = mergeSavedHistories(
+      [{ ...history('sam', [old]), teamName: 'Rocky Gorge MD3' }],
+      new Map([['sam', history('sam', [fresh])]]),
+      CURRENT,
+    );
+
+    expect(merged.get('sam')?.teamName).toBe('Rocky Gorge MD3');
   });
 });

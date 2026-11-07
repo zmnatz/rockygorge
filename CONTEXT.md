@@ -178,7 +178,7 @@ The number of NCS Qualifying Matches a player entered as a starter or substitute
 _Avoid_: Appearances, games played
 
 **NCS Qualifying Match**:
-A league or playoff match that counts toward a player's Match Participation; 7s don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
+A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships and 7s don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
 _Avoid_: Game, friendly
 
 **On Track**:

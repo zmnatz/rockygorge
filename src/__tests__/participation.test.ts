@@ -182,6 +182,15 @@ describe('buildParticipationSnapshot', () => {
     expect(snapshot.rows).toEqual([]);
   });
 
+  it('records the fixtures it has results for, including ones with gaps', () => {
+    const snapshot = buildParticipationSnapshot(
+      [history('sam', 'Sam Hooker', [game('with-lineup')])],
+      [result('with-lineup'), result('no-lineup'), result('old', { season: '2025/2026' })],
+    );
+
+    expect(snapshot.resultIds).toEqual(['no-lineup', 'with-lineup']);
+  });
+
   it('gives identical output whatever order the histories arrive in', () => {
     const histories = [
       history('b', 'B Player', [game('f1')]),
@@ -205,7 +214,6 @@ const baseConfig: EligibilityConfig = {
     lowerAtLeastUpper: true,
   },
   nonQualifyingCompetitions: eligibilityConfig.nonQualifyingCompetitions,
-  deadlineCompetitions: eligibilityConfig.deadlineCompetitions,
 };
 
 const row = (overrides: Partial<PlayerRow>): PlayerRow => ({
@@ -341,12 +349,13 @@ describe('record-based eligibility', () => {
     expect(breakdown.lowerSummary.competitions).toEqual(['Capital Men D3']);
   });
 
-  it("counts league and playoff matches but not 7s", () => {
+  it('counts league and local playoff matches, but not Super Regionals, National Championships or 7s', () => {
     const config = clubConfig(club, baseConfig);
     const snapshot = snapshotOf([
       row({ teamName: 'NOVA MD1', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: 'Capital Men D3 Playoffs', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: '2027 Super Regional Atlantic', played: 1 }),
+      row({ teamName: 'NOVA MD1', competition: 'ASR Final 2027', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: '2027 National Championships', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: 'MAC 7s - Rites of Summer', played: 1 }),
       row({ teamName: 'NOVA MD1', competition: "S'kill 7's", played: 1 }),
@@ -355,10 +364,8 @@ describe('record-based eligibility', () => {
 
     const breakdown = computeBreakdown(participationRows(snapshot, club, config), config);
 
-    expect(breakdown.upper[0].participation).toBe(4);
+    expect(breakdown.upper[0].participation).toBe(2);
     expect(breakdown.upperSummary.competitions).toEqual([
-      '2027 National Championships',
-      '2027 Super Regional Atlantic',
       'Capital Men D3 Playoffs',
       'MAC Men D1',
     ]);
@@ -380,7 +387,7 @@ describe('record-based eligibility', () => {
       gaps: [
         gap('NOVA MD1', 'MAC Men D1'),
         gap('Rocky Gorge MD1', 'MAC Men D1'),
-        gap('NOVA MD3', 'MAC 7s - Rites of Summer'),
+        gap('NOVA MD3', '2027 National Championships'),
       ],
     };
 
@@ -425,7 +432,7 @@ describe('loadClubRecord', () => {
 
   const saved: ParticipationSnapshot = {
     season: SEASON,
-    generatedAt: '2026-11-06T06:00:00.000Z',
+    generatedAt: '2026-10-01T06:00:00.000Z',
     rows: [row({ teamName: 'NOVA MD1', played: 3 })],
     gaps: [],
   };
@@ -435,7 +442,7 @@ describe('loadClubRecord', () => {
     now: NOW,
     fixtures: [scheduled('f1')],
     fetchMatch: async (fixture: { id: string }) => matchFor(fixture.id),
-    loadSaved: async () => saved,
+    loadSaved: async () => null,
     pullOptions: { gapMs: 0, retryDelayMs: 0 },
     ...overrides,
   });
@@ -516,6 +523,7 @@ describe('loadClubRecord', () => {
       club,
       deps({
         fixtures: [scheduled('first'), scheduled('second'), scheduled('third')],
+        loadSaved: async () => saved,
         pullOptions: { gapMs: 0, retryDelayMs: 0, concurrency: 1 },
         fetchMatch: async (fixture: { id: string }) => {
           fetched.push(fixture.id);
@@ -547,6 +555,7 @@ describe('loadClubRecord', () => {
     const record = await loadClubRecord(
       club,
       deps({
+        loadSaved: async () => saved,
         fetchMatch: async () => {
           throw new Error('Request failed: 429');
         },
@@ -573,11 +582,149 @@ describe('loadClubRecord', () => {
     ).rejects.toThrow(/NOVA/);
   });
 
+  describe('with a saved snapshot covering both sides', () => {
+    const bothSides: ParticipationSnapshot = {
+      season: SEASON,
+      generatedAt: '2026-10-20T06:00:00.000Z',
+      resultIds: ['old'],
+      rows: [
+        row({ playerId: 'sam', teamName: 'NOVA MD1', appearances: 2, played: 2, rounds: { 'Round 1': 'Start', 'Round 2': 'Start' } }),
+        row({ playerId: 'other', teamName: 'NOVA MD3', competition: 'Capital Men D3', played: 1 }),
+      ],
+      gaps: [],
+    };
+    const pulling = (fetched: string[]) => async (fixture: { id: string }) => {
+      fetched.push(fixture.id);
+      return matchFor(fixture.id);
+    };
+
+    it('makes no requests when every played fixture already has a result', async () => {
+      const fetched: string[] = [];
+      const record = await loadClubRecord(
+        club,
+        deps({
+          fixtures: [scheduled('old', { dateTime: '2026-10-03T17:00:00Z' })],
+          loadSaved: async () => bothSides,
+          fetchMatch: pulling(fetched),
+        }),
+      );
+
+      expect(fetched).toEqual([]);
+      expect(record).toMatchObject({ source: 'saved', liveFailed: false, asOf: bothSides.generatedAt });
+      expect(record.snapshot).toBe(bothSides);
+    });
+
+    it('skips postponed fixtures, which have nothing to fetch', async () => {
+      const fetched: string[] = [];
+      await loadClubRecord(
+        club,
+        deps({
+          fixtures: [scheduled('moved', { status: 'Postponed' })],
+          loadSaved: async () => bothSides,
+          fetchMatch: pulling(fetched),
+        }),
+      );
+
+      expect(fetched).toEqual([]);
+    });
+
+    it('fetches only fixtures with no result yet, however old, and adds them to the saved totals', async () => {
+      const fetched: string[] = [];
+      const record = await loadClubRecord(
+        club,
+        deps({
+          // 'new' kicked off before the snapshot was written, but its result came later.
+          fixtures: [scheduled('old', { dateTime: '2026-10-03T17:00:00Z' }), scheduled('new')],
+          loadSaved: async () => bothSides,
+          fetchMatch: pulling(fetched),
+        }),
+      );
+
+      expect(fetched).toEqual(['new']);
+      expect(record).toMatchObject({ source: 'live', asOf: NOW.toISOString() });
+      expect(record.snapshot.rows.find((item) => item.playerId === 'sam')).toMatchObject({
+        appearances: 3,
+        played: 3,
+        rounds: { 'Round 1': 'Start', 'Round 2': 'Start', 'Round 4': 'Start' },
+      });
+      expect(record.snapshot.rows.find((item) => item.playerId === 'other')).toMatchObject({ played: 1 });
+    });
+
+    it('keeps saved gaps and adds new ones', async () => {
+      const savedGap = {
+        kind: 'no-lineup' as const,
+        fixtureId: 'old',
+        teamName: 'NOVA MD1',
+        opponent: 'X',
+        competition: 'MAC Men D1',
+        dateTime: '2026-10-03T17:00:00Z',
+      };
+      const record = await loadClubRecord(
+        club,
+        deps({
+          fixtures: [
+            scheduled('new', {
+              homeTeam: { name: 'NOVA MD1', score: '10' },
+              awayTeam: { name: 'Rocky Gorge MD1', score: '5' },
+            }),
+          ],
+          loadSaved: async () => ({ ...bothSides, gaps: [savedGap] }),
+          fetchMatch: async () => null,
+        }),
+      );
+
+      expect(record.snapshot.gaps.map((gap) => gap.fixtureId)).toContain('old');
+      expect(record.snapshot.gaps.map((gap) => gap.fixtureId)).toContain('new');
+    });
+
+    it('pulls everything when the snapshot is from another season', async () => {
+      const fetched: string[] = [];
+      await loadClubRecord(
+        club,
+        deps({
+          fixtures: [scheduled('old', { dateTime: '2026-10-03T17:00:00Z' })],
+          loadSaved: async () => ({ ...bothSides, season: '2025/2026' }),
+          fetchMatch: pulling(fetched),
+        }),
+      );
+
+      expect(fetched).toEqual(['old']);
+    });
+
+    it('pulls everything when the snapshot is missing a side', async () => {
+      const fetched: string[] = [];
+      await loadClubRecord(
+        club,
+        deps({
+          fixtures: [scheduled('old', { dateTime: '2026-10-03T17:00:00Z' })],
+          loadSaved: async () => ({ ...bothSides, rows: [bothSides.rows[0]] }),
+          fetchMatch: pulling(fetched),
+        }),
+      );
+
+      expect(fetched).toEqual(['old']);
+    });
+
+    it('still pulls live when the snapshot cannot be loaded', async () => {
+      const record = await loadClubRecord(
+        club,
+        deps({
+          loadSaved: async () => {
+            throw new Error('network');
+          },
+        }),
+      );
+
+      expect(record.source).toBe('live');
+    });
+  });
+
   it('uses only the saved snapshot outside live mode', async () => {
     const record = await loadClubRecord(
       club,
       deps({
         live: false,
+        loadSaved: async () => saved,
         fetchMatch: async () => {
           throw new Error('should not fetch');
         },

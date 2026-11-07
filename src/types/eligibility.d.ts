@@ -107,9 +107,6 @@ export interface EligibilityConfig {
   /** Competition-name fragments (case-insensitive) that are not NCS Qualifying
    *  Matches. Applied to the match record; a CSV report is taken as given. */
   nonQualifyingCompetitions: string[];
-  /** Competition-name fragments at or after the Super Regionals deadline, whose
-   *  fixtures can't count towards the two-match minimums. */
-  deadlineCompetitions: string[];
 }
 
 /** Each side's fixtures still to play before the Super Regionals deadline. */

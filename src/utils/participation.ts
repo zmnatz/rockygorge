@@ -39,6 +39,8 @@ export interface ParticipationSnapshot {
   season: string;
   /** When the nightly job wrote this file; absent on a live pull. */
   generatedAt?: string;
+  /** The fixtures already accounted for, so a live pull can skip them. */
+  resultIds?: string[];
   rows: PlayerRow[];
   gaps: ParticipationGap[];
 }
@@ -146,6 +148,7 @@ export function buildParticipationSnapshot(
   const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
   return {
     season,
+    resultIds: [...seasonResults.keys()].sort(compare),
     rows: [...rows.values()].sort(
       (a, b) =>
         compare(a.teamName, b.teamName) ||
@@ -240,15 +243,13 @@ export function remainingMatches(
   now: Date = new Date(),
 ): RemainingMatches {
   const upcoming = fixtures.filter((fixture) => {
-    const competition = fixture.compName.toLowerCase();
     return (
       new Date(fixture.dateTime) > now &&
       fixture.status !== 'Forfeit' &&
       fixture.status !== 'Postponed' &&
       fixture.homeTeam.score === '' &&
       fixture.awayTeam.score === '' &&
-      isQualifying(fixture.compName, config) &&
-      !config.deadlineCompetitions.some((term) => competition.includes(term.toLowerCase()))
+      isQualifying(fixture.compName, config)
     );
   });
   const plays = (fixture: FixtureSides, team: string) =>
@@ -372,15 +373,30 @@ async function pullClubParticipation(
   fetchMatch: (fixture: ScheduledFixture) => Promise<MatchCentreData | null>,
   now: Date,
   pullOptions: FetchMatchesOptions,
-): Promise<ParticipationSnapshot> {
+  saved: ParticipationSnapshot | null,
+): Promise<ParticipationSnapshot | null> {
   const started = fixtures.filter((fixture) => new Date(fixture.dateTime) <= now);
   const season = started.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
   const isClubSide = (name: string) => name === club.upperTeam || name === club.lowerTeam;
+  // Build on the snapshot when it covers this club and season; otherwise pull it all.
+  const base =
+    saved?.resultIds &&
+    saved.season === season &&
+    [club.upperTeam, club.lowerTeam].every((team) => saved.rows.some((row) => row.teamName === team))
+      ? saved
+      : null;
+  const known = new Set(base?.resultIds);
   const own = started.filter(
     (fixture) =>
       fixture.season === season &&
+      !known.has(fixture.id) &&
+      fixture.status !== 'Postponed' &&
       (isClubSide(fixture.homeTeam.name) || isClubSide(fixture.awayTeam.name)),
   );
+  // Every played fixture already has a result, so no requests are needed.
+  if (base && own.length === 0) {
+    return null;
+  }
   const toFetch = own.filter((fixture) => fixture.status !== 'Forfeit');
 
   const { matches, failed } = await fetchMatches(toFetch, fetchMatch, {
@@ -399,9 +415,40 @@ async function pullClubParticipation(
   const playedIds = new Set(played.map((match) => match.fixture.id));
   const results = own.filter((fixture) => playedIds.has(fixture.id) || isScored(fixture));
 
-  return {
+  const pulled: ParticipationSnapshot = {
     ...buildParticipationSnapshot(aggregatePlayerHistory(played).values(), results, now),
     season,
+  };
+  return base ? addParticipation(base, pulled) : pulled;
+}
+
+/** Adds newly pulled matches to a snapshot's totals. */
+function addParticipation(
+  base: ParticipationSnapshot,
+  pulled: ParticipationSnapshot,
+): ParticipationSnapshot {
+  const key = (row: PlayerRow) => `${row.teamName}\0${row.competition}\0${row.playerId}`;
+  const rows = new Map(base.rows.map((row) => [key(row), row]));
+  for (const row of pulled.rows) {
+    const existing = rows.get(key(row));
+    rows.set(
+      key(row),
+      existing
+        ? {
+            ...existing,
+            appearances: existing.appearances + row.appearances,
+            played: existing.played + row.played,
+            substitute: existing.substitute + row.substitute,
+            rounds: { ...existing.rounds, ...row.rounds },
+          }
+        : row,
+    );
+  }
+  return {
+    ...base,
+    resultIds: [...(base.resultIds ?? []), ...(pulled.resultIds ?? [])],
+    rows: [...rows.values()],
+    gaps: [...base.gaps, ...pulled.gaps],
   };
 }
 
@@ -430,20 +477,19 @@ export async function loadClubRecord(
   { live, fixtures, fetchMatch, loadSaved, now = new Date(), pullOptions = {} }: ClubRecordDeps,
 ): Promise<ClubRecord> {
   let liveFailed = false;
+  // A failed load only costs the head start when pulling live.
+  const saved = await (live ? loadSaved().catch(() => null) : loadSaved());
   if (live) {
     try {
-      return {
-        snapshot: await pullClubParticipation(club, fixtures, fetchMatch, now, pullOptions),
-        source: 'live',
-        asOf: now.toISOString(),
-        liveFailed: false,
-      };
+      const pulled = await pullClubParticipation(club, fixtures, fetchMatch, now, pullOptions, saved);
+      if (pulled) {
+        return { snapshot: pulled, source: 'live', asOf: now.toISOString(), liveFailed: false };
+      }
     } catch {
       liveFailed = true;
     }
   }
 
-  const saved = await loadSaved();
   const hasClub = saved?.rows.some(
     (row) => row.teamName === club.upperTeam || row.teamName === club.lowerTeam,
   );

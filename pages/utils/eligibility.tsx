@@ -769,7 +769,8 @@ export default function EligibilityPage() {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 2, maxWidth: 800 }}>
         {source === 'record'
           ? `Pick a club to see which players are NCS-eligible, from the league and
-             playoff lineups in the match record; 7s don't count. Participation counts starts and
+             local playoff lineups in the match record; Super Regionals, National
+             Championships and 7s don't count. Participation counts starts and
              substitute appearances; a listed player who never enters the game doesn't
              count. Fixtures still to play before Super Regionals count towards the
              two-match minimums, shown as on track. Lists clubs with two sides. This is a guide: the Rugby Xplorer report is the official count,
