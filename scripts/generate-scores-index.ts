@@ -27,6 +27,8 @@ async function generate() {
     recordRun('scores', writeFileIfChanged(outPath, JSON.stringify(scores)) || firstPaintChanged);
     console.log(`Saved ${scores.length} fixtures to public/data/scores.json`);
   } catch (err) {
+    // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+    process.exitCode = 1;
     console.warn(
       'Live scores unavailable, keeping previous snapshot:',
       (err as Error).message
@@ -39,6 +41,8 @@ async function generate() {
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   console.warn(
     'Failed to generate scores snapshot, keeping previous snapshot:',
     (err as Error).message

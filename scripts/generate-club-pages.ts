@@ -119,10 +119,14 @@ async function generate() {
     );
     logRequestStats('club pages');
   } catch (err) {
+    // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+    process.exitCode = 1;
     console.warn('Club pages unavailable, keeping previous list:', (err as Error).message);
   }
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   console.warn('Failed to generate club pages, keeping previous list:', (err as Error).message);
 });

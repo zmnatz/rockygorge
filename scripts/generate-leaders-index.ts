@@ -43,6 +43,8 @@ async function generate() {
       cache: noCache,
     });
     if (snapshot.failed > snapshot.attempted * MAX_FAILED_SHARE) {
+      // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+      process.exitCode = 1;
       console.warn(
         `Leaderboard: ${snapshot.failed} of ${snapshot.attempted} games failed to load, keeping previous snapshot`
       );
@@ -62,11 +64,15 @@ async function generate() {
     );
     logRequestStats('leaders');
   } catch (err) {
+    // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+    process.exitCode = 1;
     console.warn('Leaderboard unavailable, keeping previous snapshot:', (err as Error).message);
   }
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   console.warn(
     'Failed to generate leaderboard snapshot, keeping previous snapshot:',
     (err as Error).message

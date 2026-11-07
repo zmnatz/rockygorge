@@ -30,8 +30,17 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Each job keeps its previous snapshot if it fails, so the others still run
+      # and their updates are committed. A failed job fails the run at the end,
+      # which is what makes GitHub send its failure notification.
       - name: Regenerate snapshots (forced)
-        run: bun run generate:force
+        id: regenerate
+        run: |
+          failed=""
+          for job in scores standings players leaders club-pages crests; do
+            FORCE_SNAPSHOTS=1 bun run "generate:$job" || failed="$failed $job"
+          done
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
 
       - name: Commit changes to master
         run: |
@@ -43,6 +52,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: nightly snapshot update"
-          # master may have moved during the ~2 min regeneration
+          # master may have moved during the regeneration
           git pull --rebase origin master
           git push origin HEAD:master
+
+      - name: Fail if a snapshot job failed
+        if: steps.regenerate.outputs.failed != ''
+        run: |
+          echo "::error::Snapshot jobs failed:${{ steps.regenerate.outputs.failed }}. Their previous data was kept."
+          exit 1

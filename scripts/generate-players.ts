@@ -72,10 +72,14 @@ async function generate() {
     console.log(`Saved ${histories.size} player histories from ${all.length} archived matches to public/${PLAYERS_SNAPSHOT_DIR}/`);
     logRequestStats('players');
   } catch (err) {
+    // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+    process.exitCode = 1;
     console.warn('Player histories unavailable, keeping previous snapshot:', (err as Error).message);
   }
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   console.warn('Failed to generate player histories, keeping previous snapshot:', (err as Error).message);
 });

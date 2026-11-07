@@ -74,6 +74,8 @@ async function generate() {
     );
     logRequestStats('standings');
   } catch (err) {
+    // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+    process.exitCode = 1;
     console.warn(
       'Standings unavailable, keeping previous snapshot:',
       (err as Error).message
@@ -82,6 +84,8 @@ async function generate() {
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   console.warn(
     'Failed to generate standings snapshot, keeping previous snapshot:',
     (err as Error).message

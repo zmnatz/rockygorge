@@ -65,6 +65,7 @@ async function generate() {
     console.log(`Found ${urls.size} unique team crests (scores + league feeds).`);
   } catch (err) {
     complete = false;
+    process.exitCode = 1;
     console.warn('Falling back to scores snapshot only:', (err as Error).message);
   }
   fs.mkdirSync(outDir, { recursive: true });
@@ -110,6 +111,8 @@ async function generate() {
 }
 
 generate().catch((err) => {
+  // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
+  process.exitCode = 1;
   // Best-effort like the other snapshots: missing local crests fall back to
   // remote URLs (then initials avatars) at runtime, so this must not fail
   // the build either.
