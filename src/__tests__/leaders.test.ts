@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CapitalFixture } from '@/api/capital';
-import { buildLeadersSnapshot, tallyLeaders, type LeaderMatch } from '@/utils/leaders';
+import { buildLeadersSnapshot, leaderMatchFrom, tallyLeaders, type LeaderMatch } from '@/utils/leaders';
 
 function match(
   id: string,
@@ -293,5 +293,46 @@ describe('buildLeadersSnapshot', () => {
     expect(snapshot.attempted).toBe(2);
     expect(snapshot.failed).toBe(1);
     expect(snapshot.seasons[0].divisions[0].players[0].tries).toBe(1);
+  });
+});
+
+describe('leaderMatchFrom', () => {
+  it('keeps the scoring events and lineup names, with division and season from the fixture list', () => {
+    const fixture = {
+      id: 'f1',
+      compId: 'c1',
+      compName: 'Capital Men D3',
+      season: '2026/2027',
+      dateTime: '2026-10-10T17:00:00Z',
+      homeTeam: { name: 'Club MD3', score: '10', crest: '' },
+      awayTeam: { name: 'Other MD3', score: '5', crest: '' },
+    } as Parameters<typeof leaderMatchFrom>[0];
+    const player = (id: string, name: string, isHome: boolean) => ({ id, name, isHome, position: '1', shirtNumber: '1' });
+
+    const match = leaderMatchFrom(fixture, {
+      fixture: { ...fixture, compName: 'Renamed in match centre', venue: '' } as never,
+      commentary: [
+        { id: 'e1', minute: '10', type: 'Try', comment: 'Try - Sam Hooker' },
+        { id: 'e2', minute: '20', type: 'Substitution - Tactical', comment: 'Off: A, On: B' },
+      ],
+      players: [player('sam__1', 'Sam Hooker', true)],
+      substitutes: [player('kim__16', 'Kim Lock', false)],
+      coaches: [player('coach', 'Pat Coach', true)],
+    });
+
+    expect(match).toEqual({
+      fixture: {
+        id: 'f1',
+        compId: 'c1',
+        compName: 'Capital Men D3',
+        season: '2026/2027',
+        dateTime: '2026-10-10T17:00:00Z',
+        homeTeam: { name: 'Club MD3' },
+        awayTeam: { name: 'Other MD3' },
+      },
+      commentary: [{ type: 'Try', comment: 'Try - Sam Hooker' }],
+      players: [{ id: 'sam__1', name: 'Sam Hooker', isHome: true }],
+      substitutes: [{ id: 'kim__16', name: 'Kim Lock', isHome: false }],
+    });
   });
 });

@@ -1,10 +1,8 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import {
   aggregatePlayerHistory,
-  buildPlayerHistories,
-  mergeSavedHistories,
-  type PlayerHistory,
+  fetchMatchesInBatches,
+  type MatchCentreData,
   PLAYERS_SNAPSHOT_DIR,
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
@@ -17,74 +15,67 @@ import {
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
 import {
-  readManifest,
-  recordRun,
-  SNAPSHOT_FORMATS,
-  skipIfFresh,
-  syncDir,
-} from './lib/snapshot-freshness';
+  archivedMatches,
+  MATCH_ARCHIVE_DIR,
+  matchesToFetch,
+  readMatchArchive,
+  updateArchive,
+  writeMatchArchive,
+} from './lib/match-archive';
+import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh, syncDir } from './lib/snapshot-freshness';
 
-function readSavedHistories(dir: string): PlayerHistory[] {
-  if (!fs.existsSync(dir)) {
-    return [];
-  }
-  return fs
-    .readdirSync(dir)
-    .filter((name) => name !== PARTICIPATION_SNAPSHOT_FILE)
-    .map((name) => JSON.parse(fs.readFileSync(path.join(dir, name), 'utf-8')));
-}
-
-// Best-effort like the other snapshots: a throttled CMS (HTTP 429) must never
-// fail the build. On failure the previous snapshot is kept as-is.
+// Downloads what the match archive is missing, then calculates every season's
+// player histories and the eligibility record from the archive. Locked seasons
+// are never downloaded again, except for an archive format change or
+// --full-history. Best-effort like the other snapshots: a throttled CMS never
+// fails the build, and on failure the previous snapshot and archive are kept.
 async function generate() {
   const outDir = path.join(process.cwd(), 'public', PLAYERS_SNAPSHOT_DIR);
-  if (skipIfFresh('players', outDir)) {
+  const archiveDir = path.join(process.cwd(), MATCH_ARCHIVE_DIR);
+  if (skipIfFresh('players', outDir) && skipIfFresh('matches', archiveDir)) {
     return;
   }
-  console.log('Building player histories for static export...');
+  console.log('Building player histories from the match archive...');
   try {
-    // Every history is built in memory first, so a failed pull never leaves
-    // a partial set on disk.
-    // Only the current season is pulled; past seasons come from the saved files.
-    // Saved files in an older format can't be reused, and --full-history forces
-    // a complete pull to pick up corrections to past seasons.
-    const saved = readSavedHistories(outDir);
+    const results = leagueResults(readLeagueFixtures() as ScheduledFixture[]);
+    const current = results.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
     const fullHistory =
-      process.argv.includes('--full-history') ||
-      saved.length === 0 ||
-      readManifest().players?.format !== SNAPSHOT_FORMATS.players;
-    const { histories: pulled, results, matches, season } = await buildPlayerHistories(
-      leagueResults(readLeagueFixtures() as ScheduledFixture[]),
-      { concurrency: 3, fullHistory }
+      process.argv.includes('--full-history') || readManifest().matches?.format !== SNAPSHOT_FORMATS.matches;
+    const refreshFrom = fullHistory ? '' : current;
+    const saved = fullHistory ? {} : readMatchArchive(archiveDir);
+
+    const toFetch = matchesToFetch(results, saved, refreshFrom);
+    const { matches, failed } = await fetchMatchesInBatches(toFetch);
+    // A partial download would drop games, so the previous snapshot stays.
+    if (failed.length > 0) {
+      throw new Error(`${failed.length} of ${toFetch.length} matches failed`);
+    }
+    const byId = new Map(matches.map((match) => [match.fixture.id, match]));
+    const fetched = new Map<string, { season: string; match: MatchCentreData | null }>(
+      toFetch.map((fixture) => [fixture.id, { season: fixture.season, match: byId.get(fixture.id) ?? null }])
     );
-    const histories = fullHistory ? pulled : mergeSavedHistories(saved, pulled, season);
-    console.log(`Fetched ${matches.length} matches (${fullHistory ? 'all seasons' : season}).`);
+    const archive = updateArchive(saved, fetched, refreshFrom);
+    console.log(`Downloaded ${toFetch.length} matches (${fullHistory ? 'every season' : `${current} and any missing`}).`);
+
+    const all = archivedMatches(archive, results);
+    const histories = aggregatePlayerHistory(all);
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
       files[playerSnapshotFile(id)] = JSON.stringify(history);
     }
-    files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify(
-      {
-        generatedAt: new Date().toISOString(),
-        ...buildParticipationSnapshot(aggregatePlayerHistory(matches).values(), results),
-      }
-    );
-    const changed = syncDir(outDir, files);
-    fs.rmSync(path.join(path.dirname(outDir), 'players.json'), { force: true });
-    recordRun('players', changed);
-    console.log(`Saved ${histories.size} player histories to public/${PLAYERS_SNAPSHOT_DIR}/`);
+    files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      ...buildParticipationSnapshot(histories.values(), results),
+    });
+    recordRun('matches', writeMatchArchive(archiveDir, archive));
+    recordRun('players', syncDir(outDir, files));
+    console.log(`Saved ${histories.size} player histories from ${all.length} archived matches to public/${PLAYERS_SNAPSHOT_DIR}/`);
     logRequestStats('players');
   } catch (err) {
-    console.warn(
-      'Player histories unavailable, keeping previous snapshot:',
-      (err as Error).message
-    );
+    console.warn('Player histories unavailable, keeping previous snapshot:', (err as Error).message);
   }
 }
 
 generate().catch((err) => {
-  console.warn(
-    'Failed to generate player histories, keeping previous snapshot:',
-    (err as Error).message
-  );
+  console.warn('Failed to generate player histories, keeping previous snapshot:', (err as Error).message);
 });

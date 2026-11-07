@@ -9,6 +9,7 @@ import {
   participationRows,
   playerRounds,
   possibleFixtures,
+  qualifyingRows,
   playerSeasonEligibility,
   remainingMatches,
   leagueResults,
@@ -174,14 +175,47 @@ describe('buildParticipationSnapshot', () => {
     expect(snapshot.gaps).toEqual([]);
   });
 
-  it('does not flag or count a forfeit, even with a lineup posted', () => {
-    const snapshot = buildParticipationSnapshot(
-      [history('sam', 'Sam Hooker', [game('f1')])],
-      [result('f1', { status: 'Forfeit' })],
-    );
+  describe('a forfeit (Reg 3.4(h))', () => {
+    const forfeit = (homeScore: string, awayScore: string) =>
+      result('f1', {
+        status: 'Forfeit',
+        homeTeam: { name: 'Rocky Gorge MD1', score: homeScore },
+        awayTeam: { name: 'NOVA MD1', score: awayScore },
+      });
+    const histories = [
+      history('sam', 'Sam Hooker', [game('f1')]),
+      history('kim', 'Kim Lock', [game('f1', { starter: false, played: false })]),
+      history('lee', 'Lee Prop', [game('f1', { teamName: 'NOVA MD1', opponent: 'Rocky Gorge MD1' })]),
+    ];
 
-    expect(snapshot.gaps).toEqual([]);
-    expect(snapshot.rows).toEqual([]);
+    it("counts the non-forfeiting side's rostered players, starters and replacements", () => {
+      const snapshot = buildParticipationSnapshot(histories, [forfeit('49', '0')]);
+
+      expect(snapshot.rows.map((row) => [row.playerId, row.played, row.substitute])).toEqual([
+        ['kim', 0, 1],
+        ['sam', 1, 0],
+      ]);
+      expect(snapshot.gaps).toEqual([]);
+    });
+
+    it('gives the forfeiting side nothing, whichever side forfeited', () => {
+      const snapshot = buildParticipationSnapshot(histories, [forfeit('0', '49')]);
+
+      expect(snapshot.rows.map((row) => row.playerId)).toEqual(['lee']);
+    });
+
+    it("flags the non-forfeiting side when it entered no roster, as the match then doesn't count", () => {
+      const snapshot = buildParticipationSnapshot([], [forfeit('49', '0')]);
+
+      expect(snapshot.gaps.map((gap) => [gap.teamName, gap.kind])).toEqual([['Rocky Gorge MD1', 'no-lineup']]);
+    });
+
+    it('counts nobody when the scores leave the forfeiting side unclear', () => {
+      const snapshot = buildParticipationSnapshot(histories, [forfeit('', '')]);
+
+      expect(snapshot.rows).toEqual([]);
+      expect(snapshot.gaps).toEqual([]);
+    });
   });
 
   it('records the fixtures it has results for, including ones with gaps', () => {
@@ -563,7 +597,7 @@ describe('loadClubRecord', () => {
     ]);
   });
 
-  it('does not fetch a forfeit', async () => {
+  it('fetches a forfeit, as its roster can count', async () => {
     const fetched: string[] = [];
     await loadClubRecord(
       club,
@@ -576,7 +610,7 @@ describe('loadClubRecord', () => {
       }),
     );
 
-    expect(fetched).toEqual([]);
+    expect(fetched).toEqual(['f1']);
   });
 
   it('stops pulling at the first failure so the fallback is quick', async () => {
@@ -1130,6 +1164,12 @@ describe('playerRounds', () => {
     });
   });
 
+  it("counts a forfeit the side won with the player rostered, and says it was a forfeit", () => {
+    const [round] = rounds([fixture('f1', 'Round 1', '2026-09-10', { status: 'Forfeit' })]);
+
+    expect(round).toMatchObject({ status: 'forfeit-rostered', counted: true });
+  });
+
   it('flags a round whose substitutions were not entered, so a reserve may really have played', () => {
     const [round] = rounds([fixture('f3', 'Round 3', '2026-09-30')], {
       gaps: [
@@ -1288,5 +1328,17 @@ describe('possibleFixtures', () => {
 
     expect(counts).toEqual({ 'NOVA MD1': lists['NOVA MD1'].length, 'NOVA MD3': lists['NOVA MD3'].length });
     expect(counts).toEqual({ 'NOVA MD1': 0, 'NOVA MD3': 3 });
+  });
+});
+
+describe('qualifyingRows', () => {
+  it("drops a report's rows from competitions that don't count, as the match record does", () => {
+    const rows = [
+      row({ playerId: 'a', competition: 'Capital Men D3' }),
+      row({ playerId: 'b', competition: 'Capital Women D2-D1 Crossovers' }),
+      row({ playerId: 'c', competition: 'MAC 7s - Rites of Summer' }),
+    ];
+
+    expect(qualifyingRows(rows, baseConfig).map((item) => item.playerId)).toEqual(['a']);
   });
 });

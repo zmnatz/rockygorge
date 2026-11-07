@@ -43,7 +43,7 @@ function savedSeasons(
   };
 }
 
-function savedClubs(): Record<string, { crest: string | null }> {
+function savedClubCrests(): Record<string, { crest: string | null }> {
   const file = path.join(process.cwd(), 'public', 'data', CLUB_PAGES_FILE);
   return fs.existsSync(file) ? readJson<{ clubs: Record<string, { crest: string | null }> }>(file).clubs : {};
 }
@@ -63,7 +63,7 @@ async function generate() {
     const refreshFrom = previous?.refreshFrom ?? '';
     const snapshot = await buildStandingsSnapshot({
       gapMs: 300,
-      fetchFixtures: () => fetchLeagueFixtures(savedClubs(), refreshFrom),
+      fetchFixtures: () => fetchLeagueFixtures(savedClubCrests(), refreshFrom),
       saved: previous?.saved,
       refreshFrom,
     });

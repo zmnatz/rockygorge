@@ -154,7 +154,7 @@ The detailed match view — score, lineups, match events — rendered by shared 
 _Avoid_: Game detail, game page, match page
 
 **Side**:
-A Rocky Gorge team that plays in a competition. The club fields two Sides: the Upper Division (`Rocky Gorge MD1`, competing in MAC Men D1) and the Lower Division (`Rocky Gorge MD3`, competing in Capital Men D3). User-facing labels are D1 and D3.
+A club's team in a division, e.g. `Rocky Gorge MD1`. A club can field several, ranked by division, highest first; Rocky Gorge fields two, the Upper Division (`Rocky Gorge MD1`, competing in MAC Men D1) and the Lower Division (`Rocky Gorge MD3`, competing in Capital Men D3). User-facing labels are D1 and D3. Eligibility assesses only Men's Divisions I to III and Women's Divisions I and II.
 _Avoid_: Division (when meaning a Side), team, squad
 
 **Match Calendar Item**:
@@ -177,6 +177,18 @@ _Avoid_: Roster dump, participation export
 The number of NCS Qualifying Matches a player entered as a starter or substitute, taken from the `Played` and `Substitute` columns of the Match Participation Report or counted from the Match Record. It is the value every eligibility threshold checks.
 _Avoid_: Appearances, games played
 
+**Upper Side**:
+Any of a club's sides in a higher division than the one being assessed. A lower side's eligibility compares its matches, plus those of every side below it, with the total for all upper sides (ADR 012). Generalises Upper Division to any number of sides.
+_Avoid_: senior team
+
+**Locked Season**:
+A season before the current one. Its snapshot data is read once as the next season begins and never again, except for a format change.
+_Avoid_: archived season, old data
+
+**Name Withheld**:
+How the CMS shows a player whose profile isn't public. A hidden profile, not a player: it has no player record or eligibility row, and appears in red in lineups.
+_Avoid_: anonymous player, unknown player
+
 **One-Side Club**:
 A club with only one side in the fixture lists, which the eligibility tool assesses under the two-match minimum. Its other sides, if any, play outside the lists and aren't counted.
 _Avoid_: single team, solo club
@@ -194,7 +206,7 @@ A player's USA Rugby membership state, read from the report's `Player Rego Activ
 _Avoid_: Signup, CIPP
 
 **National Championship Series (NCS)**:
-USA Rugby's postseason competition for Men's Divisions I, II, and III whose eligibility rules this glossary encodes.
+USA Rugby's postseason competition for Men's Divisions I, II and III and Women's Divisions I and II, whose eligibility rules this glossary encodes. Men's Division IV and Women's Division III matches don't count towards it.
 _Avoid_: Playoffs (when meaning NCS)
 
 **Upper Division**:

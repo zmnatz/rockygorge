@@ -163,12 +163,12 @@ function evaluate(
     for (const [aboveIndex, count] of above.entries()) {
       if (count >= rules.upperMatchLimit) {
         reasons.push(
-          `Played ${count} ${rosters[aboveIndex].side.label} matches — playing ${rules.upperMatchLimit} forfeits ${own.label} eligibility`,
+          `Played ${count} ${rosters[aboveIndex].side.label} matches — playing ${rules.upperMatchLimit} for an upper side loses ${own.label} eligibility`,
         );
       }
     }
     if (atOrBelow < sum(above)) {
-      reasons.push(`Upper-division participation (${sum(above)}) exceeds ${ownLabel} participation (${atOrBelow})`);
+      reasons.push(`Upper-side participation (${sum(above)}) exceeds ${ownLabel} participation (${atOrBelow})`);
     }
   }
 

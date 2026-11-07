@@ -143,7 +143,7 @@ describe('computeBreakdown', () => {
     const breakdown = twoSides(rows);
     expect(breakdown.upper[0].eligible).toBe(true);
     expect(breakdown.lower[0].eligible).toBe(false);
-    expect(breakdown.lower[0].reasons.some((r) => r.includes('forfeits'))).toBe(true);
+    expect(breakdown.lower[0].reasons.some((r) => r.includes('loses'))).toBe(true);
   });
 
   it('counts substitute appearances toward participation', () => {
@@ -306,7 +306,7 @@ describe('computeBreakdown with fixtures still to play', () => {
     const { lower } = twoSides(overUpper, { upper: 0, lower: 5 });
 
     expect(lower[0].eligible).toBe(false);
-    expect(lower[0].reasons).toEqual(['Upper-division participation (3) exceeds D3 participation (1)']);
+    expect(lower[0].reasons).toEqual(['Upper-side participation (3) exceeds D3 participation (1)']);
   });
 
   it('counts on-track players in the summary', () => {

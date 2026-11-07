@@ -12,8 +12,8 @@
     "format": 1
   },
   "players": {
-    "updatedAt": "2026-11-07T21:02:33.587Z",
-    "format": 6
+    "updatedAt": "2026-11-07T21:45:54.238Z",
+    "format": 7
   },
   "crests": {
     "updatedAt": "2026-11-07T19:33:49.383Z",
@@ -22,5 +22,9 @@
   "clubPages": {
     "updatedAt": "2026-11-07T20:55:46.006Z",
     "format": 3
+  },
+  "matches": {
+    "updatedAt": "2026-11-07T21:43:09.778Z",
+    "format": 1
   }
 }

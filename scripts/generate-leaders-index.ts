@@ -1,50 +1,25 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import type {
   StandingsSnapshotIndex,
 } from '../src/api/capital';
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
-import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
+import { MATCH_ARCHIVE_DIR, readMatchArchive } from './lib/match-archive';
+import { recordRun, skipIfFresh } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
   buildLeadersSnapshot,
-  fetchLeaderMatch,
-  type LeaderMatch,
+  leaderMatchFrom,
   type MatchCache,
 } from '../src/utils/leaders';
 
-// Above this share of failed match-centre fetches (e.g. HTTP 429) the
-// leaderboard would undercount, so the previous snapshot is kept instead.
+// Above this share of failed match-centre fetches the leaderboard would
+// undercount, so the previous snapshot is kept instead. Matches come from the
+// archive, so nothing is fetched and none fail.
 const MAX_FAILED_SHARE = 0.05;
 
-// Match centres persist between runs (.cache/leaders is committed and
-// refreshed nightly), so only new or recent games hit the CMS.
-const CACHE_PATH = path.join(process.cwd(), '.cache', 'leaders', 'matches.json');
-
-function loadCache(): MatchCache & { save(): void } {
-  let entries: Record<string, LeaderMatch | null> = {};
-  try {
-    entries = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
-    // Entries cached before lineups carried player ids are refetched.
-    for (const [id, match] of Object.entries(entries)) {
-      if (match && [...match.players, ...match.substitutes].some((entry) => !entry.id)) {
-        delete entries[id];
-      }
-    }
-  } catch {
-    // First build, or the cache was cleared.
-  }
-  return {
-    get: (id) => (id in entries ? entries[id] : undefined),
-    set: (id, match) => {
-      entries[id] = match;
-    },
-    save: () => {
-      writeFileIfChanged(CACHE_PATH, JSON.stringify(entries));
-    },
-  };
-}
+// Leaders read the match archive the player job keeps, so they never ask the CMS.
+const noCache: MatchCache = { get: () => undefined, set: () => {} };
 
 // Best-effort like the other snapshots: a throttled CMS must never fail the
 // build. On failure the previous (committed) snapshot is kept.
@@ -54,16 +29,19 @@ async function generate() {
   if (skipIfFresh('leaders', path.join(outDir, 'index.json'))) {
     return;
   }
-  const cache = loadCache();
+  const archive = readMatchArchive(path.join(process.cwd(), MATCH_ARCHIVE_DIR));
+  const lookup = new Map(
+    Object.values(archive).flatMap((matches) => Object.entries(matches))
+  );
   try {
     const snapshot = await buildLeadersSnapshot({
       fetchFixtures: async () => readLeagueFixtures(),
-      fetchMatch: fetchLeaderMatch,
-      cache,
-      concurrency: 3,
-      gapMs: 300,
+      fetchMatch: async (fixture) => {
+        const data = lookup.get(fixture.id);
+        return data ? leaderMatchFrom(fixture, data) : null;
+      },
+      cache: noCache,
     });
-    cache.save();
     if (snapshot.failed > snapshot.attempted * MAX_FAILED_SHARE) {
       console.warn(
         `Leaderboard: ${snapshot.failed} of ${snapshot.attempted} games failed to load, keeping previous snapshot`

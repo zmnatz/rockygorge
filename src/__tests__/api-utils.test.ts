@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { get, mapConcurrent, post, postWithRetry, requestStats, resetRequestStats } from '@/utils/api';
+import { get, mapConcurrent, post, postWithRetry, rateLimitBudget, requestStats, resetRequestStats } from '@/utils/api';
 
 function mockFetch(status: number, body?: unknown) {
   const response = {
@@ -123,10 +123,10 @@ describe('error handling', () => {
 });
 
 describe('postWithRetry', () => {
-  it('retries a 429 then succeeds', async () => {
+  it('retries a server error then succeeds', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(mockFetch(429, {})())
+      .mockResolvedValueOnce(mockFetch(503, {})())
       .mockResolvedValueOnce(mockFetch(200, { data: 1 })());
     vi.stubGlobal('fetch', fetchMock);
 
@@ -149,12 +149,12 @@ describe('postWithRetry', () => {
   });
 
   it('gives up after exhausting retries', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(mockFetch(429, {})());
+    const fetchMock = vi.fn().mockResolvedValue(mockFetch(503, {})());
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(
       postWithRetry('/api/test', {}, null, { retries: 2, baseDelayMs: 1 })
-    ).rejects.toThrow('Request failed: 429');
+    ).rejects.toThrow('Request failed: 503');
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });
@@ -164,7 +164,7 @@ describe('requestStats', () => {
     resetRequestStats();
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(mockFetch(429, {})())
+      .mockResolvedValueOnce(mockFetch(503, {})())
       .mockResolvedValueOnce(mockFetch(200, { data: 1 })());
     vi.stubGlobal('fetch', fetchMock);
 
@@ -204,5 +204,48 @@ describe('mapConcurrent', () => {
         if (item === 2) throw new Error('no feed');
       }),
     ).rejects.toThrow('no feed');
+  });
+});
+
+describe('rateLimitBudget', () => {
+  it('reads the request budget from the limiter header, ignoring the complexity budget', () => {
+    expect(
+      rateLimitBudget(
+        '"IP limit by request count";type="RequestCount";budget=500;limited=?0;remaining=168;refill=1, "IP limit by query complexity";type="QueryComplexity";budget=1000000;limited=?0;remaining=944779;refill=60',
+      ),
+    ).toEqual({ remaining: 168, refillSeconds: 1 });
+  });
+
+  it('reads a blocked budget', () => {
+    expect(
+      rateLimitBudget('"IP limit by request count";type="RequestCount";budget=500;limited;remaining=0;refill=48'),
+    ).toEqual({ remaining: 0, refillSeconds: 48 });
+  });
+
+  it('has none when the header is missing', () => {
+    expect(rateLimitBudget(null)).toBeNull();
+  });
+});
+
+describe('postWithRetry and the rate limit', () => {
+  const limited = () => ({
+    ok: false,
+    status: 429,
+    headers: new Headers({ 'retry-after': '0.005' }),
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  });
+
+  it("waits out each 429's Retry-After without using up its retries", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(limited())
+      .mockResolvedValueOnce(limited())
+      .mockResolvedValueOnce(limited())
+      .mockResolvedValueOnce(mockFetch(200, { data: 1 })());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(postWithRetry('/api/test', {}, null, { retries: 0 })).resolves.toEqual({ data: 1 });
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 });
