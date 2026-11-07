@@ -11,6 +11,8 @@ node_modules
 .next/
 /out/
 
+.cache/snapshots-checked.json
+
 # public/data/ (build-time snapshots), public/crests/ and .cache/leaders
 # (match centre cache) are committed and refreshed nightly; see docs/snapshots.md.
 

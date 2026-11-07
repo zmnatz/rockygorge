@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Build-time snapshots (public/data/**, public/crests, .cache/leaders) are
-// committed to the repo and refreshed nightly by
-// .github/workflows/update-snapshots.yml. Two small files track them:
+// Snapshots (public/data/**, public/crests, .cache/leaders) are committed to the
+// repo and refreshed nightly by .github/workflows/update-snapshots.yml. Two small
+// files track them; the second is local and not committed:
 //
 // - public/data/manifest.json: when each snapshot's content last CHANGED, and
 //   the FORMAT version it was generated with.
