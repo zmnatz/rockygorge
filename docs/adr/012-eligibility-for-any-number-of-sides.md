@@ -6,7 +6,7 @@ The code takes any number of sides, though with the divisions below left out a c
 
 Decisions, so they are not "fixed" later:
 
-- **Limit on any upper side**: Reg 3.5(d)(i) says "the/either upper division team" and Figure 1 has 3/4/1 eligible for divisions 1 and 2 only, so four matches on any one side above forfeits, not four in total across them.
+- **Limit on any upper side**: Reg 3.5(d)(i) says "the/either upper division team" and Figure 1 has 3/4/1 eligible for divisions 1 and 2 only, so four matches on any one side above loses eligibility below it, not four in total across them.
 - **CSV reports**: any club's, with its sides read from the Team Name column. A report with several clubs offers a choice between them.
 - **Divisions outside the NCS**: Men's IV and Women's III aren't in the NCS (Terms and Definitions, 34), and per the club their matches don't count, so those sides aren't assessed and don't affect a club's other sides. A club with only those sides isn't listed. Austin Blacks, with four sides, is assessed on three.
 - **Crossovers and friendlies**: not NCS Qualifying Matches, excluded by competition name.
@@ -14,9 +14,8 @@ Decisions, so they are not "fixed" later:
 - **Same name, two ids**: not merged, even with no match in common, because combining two people could wrongly pass one. The report shows both CMS ids, and merging the profiles in Rugby Xplorer is the fix.
 - **Name Withheld**: a hidden profile, not a player. It gets no player record or eligibility row, and is red in match lineups. Red isn't a verdict, because a player can hold an approved exemption, so the wording says only that the name isn't public. A side whose lineup is entirely hidden shows as having no lineup, which is a known false gap.
 - **Forfeits (Reg 3.4(h))**: count for the non-forfeiting side's rostered players, starters and replacements, and for no one on the forfeiting side. The non-forfeiting side is the one with the higher score. The 48-hour roster lock can't be seen in the data, so a roster entered late still counts. This replaces ADR 010's "Forfeits: not played".
-- **Upper match limit**: applied per upper side, not across them combined, as Figure 1's 3/4/1 row requires.
 - **Not covered**: Recognized Competitive Matches (Reg 3.4.3), playing for another club (Reg 3.4(e)) and waivers aren't in the data.
 
 The union feed doesn't list all of its own fixtures, so the nightly job also reads each playing club's feed and keeps only the league's competitions. Clubs in other unions, such as Austin Blacks, aren't in the fixture lists and use a CSV report. Results before the current season are locked: no snapshot reads them again except for a format change or a manual `--full-history`. The current season's matches are re-read in full every night for player histories and eligibility, because the CMS shows no sign of what changed and late corrections affect verdicts.
 
-The raw match data is archived (`.cache/matches`, issue #224), and player histories, the eligibility record and leaders are calculated from it, so a change to those calculations needs no download. Only a change to the fields requested from the CMS downloads every season again.
+How the matches are downloaded and kept is in ADR 013.

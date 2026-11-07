@@ -1,5 +1,7 @@
 # Eligibility can run from the match record
 
+_Still current: the live pull, the fallback, the join key, coaches, substitutes and season. Replaced: which clubs (ADR 011, then ADR 012, any number of sides), forfeits (ADR 012, Reg 3.4(h)), and where history files come from (ADR 011, then ADR 013's match archive). ADR 012 also adds to the qualifying exclusions._
+
 The eligibility tool can run for any club with exactly two sides from CMS lineups, without a Rugby Xplorer CSV. Deployed pages start from the nightly snapshot and pull only the selected club's played fixtures that it has no result for, so most visits make no CMS requests. Corrections to fixtures that already have a result arrive with the next snapshot. If the snapshot can't be used, the page pulls the club's whole season. It falls back to the snapshot (`public/data/players/participation.json`) and says so if a pull fails; `next dev` and tests use only the snapshot, so development doesn't hit the CMS. A partial live pull counts as failed, since a partial count could wrongly pass or fail a player. Rows take the existing `PlayerRow` shape, so the rules in `computeBreakdown` and ADR 008 apply unchanged. The CSV path stays, because only the report carries USA IDs and registration dates and it is the union's official count.
 
 Decisions that differ from the CSV path, so they are not "fixed" later:

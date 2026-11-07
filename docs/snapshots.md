@@ -36,6 +36,8 @@ matches the code's format versions, so CI catches a forgotten regeneration.
 
 ## The match archive
 
+The decisions behind it are in `docs/adr/013-match-archive-and-batched-requests.md`.
+
 `.cache/matches/` holds the raw match-centre data for every played match, one file per season, a match per line. The player job downloads every current-season match each night, plus any locked-season match it doesn't have, and then calculates player histories, `participation.json` and (in the leaders job) the leaderboards from the whole archive. So a change to how those are calculated needs no download: bump that snapshot's format and regenerate, which takes seconds.
 
 Bump `matches` only when the fields requested from the CMS change. That downloads every season again, in about a dozen batched requests.

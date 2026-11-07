@@ -68,7 +68,7 @@ The API is publicly accessible, with no login or key. We read the same data ente
 **The API can't return a player's history.** We've found no way to ask it for one player's matches or statistics, or for a club's players and their appearances. It can only return fixture lists and the details of one match at a time. So every player's data is worked out by us:
 
 1. We load the full list of fixtures.
-2. We load the lineup, substitutes and timeline of every played match, one match at a time.
+2. We load the lineup, substitutes and timeline of every played match. Each match is its own query, though one request can carry up to 100 of them.
 3. We go through those matches and calculate each player's participation and statistics.
 
 This is why the report keeps a saved copy and updates it nightly, instead of looking a player up when you open a page. It also means our totals are calculated from the match records, not read from a total held by Rugby Xplorer, which is why each round links back to its match report.
@@ -80,7 +80,7 @@ This is why the report keeps a saved copy and updates it nightly, instead of loo
 - **League tables:** `compLadder`, used for the site's standings rather than for eligibility.
 - **Club pages:** `sites` and `entityDetails`, to find and confirm each club's Rugby Xplorer address.
 
-We pause between match requests and retry if the API asks us to slow down.
+The API allows each address about 500 requests, refilling at about 4 a second, and reports what's left with every answer. We ask for up to 100 matches in one request, slow down when the allowance runs low, and wait when the API asks us to. We keep every match we've loaded, so a season before the current one is downloaded once and then kept as it is.
 
 **An example.** This request asks for a union's results, naming the fields we want:
 
