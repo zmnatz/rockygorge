@@ -370,6 +370,32 @@ describe('ladderKeysOf', () => {
   });
 });
 
+describe('splitStandingsSnapshot ordering', () => {
+  it('orders each season the same way however the feed returned it, so a re-read makes no diff', () => {
+    const late = fixture('a', { dateTime: '2026-10-24T17:00:00Z' });
+    const tiedB = fixture('c', { dateTime: '2026-10-17T17:00:00Z' });
+    const tiedA = fixture('b', { dateTime: '2026-10-17T17:00:00Z' });
+    const split = (fixtures: CapitalFixture[]) =>
+      splitStandingsSnapshot({ generatedAt: '', fixtures, ladders: {} }).seasons['2025/2026'].fixtures.map((item) => item.id);
+
+    expect(split([late, tiedB, tiedA])).toEqual(['b', 'c', 'a']);
+    expect(split([tiedA, late, tiedB])).toEqual(['b', 'c', 'a']);
+  });
+});
+
+describe('splitStandingsSnapshot ladders', () => {
+  it('orders a season\'s ladders the same way however they arrived', () => {
+    const ladder = { id: 'x', hasPools: false, ladderPools: [] };
+    const fixtures = [fixture('a')];
+    const keys = (ladders: Record<string, typeof ladder>) =>
+      Object.keys(splitStandingsSnapshot({ generatedAt: '', fixtures, ladders }).seasons['2025/2026'].ladders);
+    const a = ladderSnapshotKey('a', '2025/2026');
+    const b = ladderSnapshotKey('b', '2025/2026');
+
+    expect(keys({ [b]: ladder, [a]: ladder })).toEqual([a, b]);
+  });
+});
+
 describe('isPastPage', () => {
   const page = (...seasons: string[]) => seasons.map((season, index) => fixture(`f${index}`, { season }));
 

@@ -67,6 +67,21 @@ function fixture(id: string, homeScore: string, awayScore: string) {
 }
 
 describe('aggregatePlayerHistory', () => {
+  it("takes a player's name and team from their latest match, whichever finished downloading first", () => {
+    const match = (id: string, dateTime: string, name: string) => ({
+      fixture: { ...fixture(id, '15', '22'), dateTime },
+      commentary: [],
+      players: [{ id: 'gabby__1', name, position: '1', shirtNumber: '1', isHome: true }],
+      substitutes: [],
+      coaches: [],
+    });
+    const older = match('old', '2026-09-01T17:00:00Z', 'Gabby Morris');
+    const newer = match('new', '2026-10-01T17:00:00Z', 'Gabrielle Morris');
+
+    expect(aggregatePlayerHistory([older, newer]).get('gabby')?.name).toBe('Gabrielle Morris');
+    expect(aggregatePlayerHistory([newer, older]).get('gabby')?.name).toBe('Gabrielle Morris');
+  });
+
   it('keeps no record for a hidden profile, in any spelling, as a lineup spot is not a person', () => {
     const histories = aggregatePlayerHistory([
       {

@@ -25,16 +25,9 @@ Two small files track the snapshots:
 Generating writes only files whose content differs (ignoring `generatedAt`),
 so a run that finds nothing new changes just the checked file.
 
-Each `generate:*` script decides whether to skip its CMS pulls:
+**Builds don't touch the CMS.** `bun run build`, which is all Netlify runs, is just `next build` from the committed snapshots. Only the nightly workflow or a deliberate run refreshes them, so a PR that changes a snapshot's format must regenerate and commit it, or the format test fails.
 
-- **Netlify / CI** (`NETLIFY` or `CI` set): skip when checked under 24 hours
-  ago and the output exists. Normal builds do no CMS work for these.
-- **Local builds**: always use the committed snapshot, whatever its age, so
-  `bun run build` never dirties your working tree. Refresh deliberately with
-  `bun run generate:force`.
-- **Format change**: if a snapshot's committed `format` differs from
-  `SNAPSHOT_FORMATS` in `scripts/lib/snapshot-freshness.ts`, it is stale
-  everywhere, local included, and regenerates.
+Run by hand, `bun run generate` skips a snapshot whose format is current. `bun run generate:force` refreshes everything.
 
 `.github/workflows/update-snapshots.yml` runs daily at 06:00 UTC (and on
 demand). It runs `bun run generate:force` and commits `public/data`,
@@ -72,13 +65,12 @@ The club pages job asks the CMS about a playing club only when it's new, every 3
 ```bash
 bun run generate:force   # refresh all snapshots now, ignoring the 24h check
 bun run build:force      # same, then build
-FORCE_SNAPSHOTS=1 bun run build   # equivalent to build:force
 bun scripts/generate-players.ts --force   # one snapshot
 ```
 
 `--force` only applies to the single script it is passed to (`bun run
 generate --force` would pass it to the last command only), so for the whole
-set use `FORCE_SNAPSHOTS=1` / the `:force` scripts.
+set use the `:force` scripts.
 
 After a manual forced refresh you want to keep, commit `public/data`,
 `public/crests` and `.cache` (or trigger the workflow instead).

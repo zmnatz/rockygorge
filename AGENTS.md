@@ -6,7 +6,7 @@
 - `bun run build`: Production build (Turbopack)
 - `bun run lint`: Lint codebase (Biome)
 - `bun run test`: Run tests (Vitest)
-- `bun run generate:force`: Refresh the committed build-time snapshots (`public/data/`, `public/crests/`, `.cache/leaders`) ignoring the 24h freshness check. `bun run build:force` also builds. Normal `build` skips snapshots under a day old; see `docs/snapshots.md`.
+- `bun run generate:force`: Refresh the committed snapshots (`public/data/`, `public/crests/`, `.cache/leaders`). `bun run build:force` also builds. Normal `build`, which is what Netlify runs, never touches the CMS; see `docs/snapshots.md`.
 
 ## Architecture & Tech Stack
 - **Framework**: Next.js (Pages Router)

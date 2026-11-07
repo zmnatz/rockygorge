@@ -103,7 +103,14 @@ async function generate() {
 
     const changed = writeFileIfChanged(
       outFile,
-      JSON.stringify({ generatedAt: new Date().toISOString(), clubs }, null, 1),
+      JSON.stringify(
+        {
+          generatedAt: new Date().toISOString(),
+          clubs: Object.fromEntries(Object.entries(clubs).sort(([a], [b]) => a.localeCompare(b))),
+        },
+        null,
+        1,
+      ),
     );
     recordRun('clubPages', changed);
     const all = Object.values(clubs);

@@ -1,565 +1,565 @@
 {
- "generatedAt": "2026-11-07T20:51:19.747Z",
+ "generatedAt": "2026-11-07T20:55:46.004Z",
  "clubs": {
-  "NOVA Women": {
-   "slug": "nova-women",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91263.png?v=1712072153923",
-   "checkedAt": "2026-11-07T20:46:10.963Z"
-  },
-  "DC Revolution Women": {
-   "slug": "dc-revolution",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91251.png?v=1712677213249",
-   "checkedAt": "2026-11-07T20:46:11.363Z"
-  },
-  "Charlottesville Bears Women": {
-   "slug": "blue-ridge-bears",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105404.png?v=1710424912665",
-   "checkedAt": "2026-11-07T20:46:08.573Z"
-  },
-  "Rappahannock Women": {
-   "slug": "rappahannock-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91270.png?v=1711814789862",
-   "checkedAt": "2026-11-07T20:46:09.252Z"
-  },
-  "Frederick Women": {
-   "slug": "frederick-rugby-women",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91253.png?v=1712684289094",
-   "checkedAt": "2026-11-07T20:46:09.568Z"
-  },
-  "Roanoke Women": {
-   "slug": "roanoke-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
-   "checkedAt": "2026-11-07T20:46:09.908Z"
-  },
-  "NOVA": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91262.png?v=1712692560036",
-   "checkedAt": "2026-11-07T20:46:19.188Z"
-  },
-  "Washington": {
-   "slug": "washington-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91282.png?v=1712767196010",
-   "checkedAt": "2026-11-07T20:46:19.550Z"
-  },
-  "Baltimore Chesapeake": {
-   "slug": "baltimore-chesapeake",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91246.png?v=1711459211973",
-   "checkedAt": "2026-11-07T20:46:12.467Z"
-  },
-  "Washington Irish": {
-   "slug": "washington-irish",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91280.png?v=1712767190887",
-   "checkedAt": "2026-11-07T20:46:12.818Z"
-  },
-  "DC Furies Women": {
-   "slug": "washington-furies",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91279.png?v=1712767181936",
-   "checkedAt": "2026-11-07T20:46:11.757Z"
-  },
-  "Philadelphia Women": {
-   "slug": "philadelphia-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91371.png?v=1710874696343",
-   "checkedAt": "2026-11-07T20:46:12.131Z"
-  },
   "Atlanta Harlequins Women": {
    "slug": "atlanta-harlequins",
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91333.png?v=1787071057028",
    "checkedAt": "2026-11-07T20:46:13.191Z"
-  },
-  "Potomac Exiles": {
-   "slug": "potomac-exiles",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91267.png?v=1711648057226",
-   "checkedAt": "2026-11-07T20:46:14.111Z"
-  },
-  "Rocky Gorge": {
-   "slug": "rocky-gorge-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91273.png?v=1712684240196",
-   "checkedAt": "2026-11-07T20:46:14.427Z"
-  },
-  "Boston Women": {
-   "slug": "boston-rugby-women",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/94007.png?v=1712684770084",
-   "checkedAt": "2026-11-07T20:46:15.802Z"
-  },
-  "Raleigh Women": {
-   "slug": "raleigh-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
-   "checkedAt": "2026-11-07T20:46:16.120Z"
-  },
-  "James River": {
-   "slug": "james-river-rugby-men",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91254.png?v=1712340555334",
-   "checkedAt": "2026-11-07T20:46:15.028Z"
-  },
-  "Raleigh": {
-   "slug": "raleigh-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
-   "checkedAt": "2026-11-07T20:46:15.347Z"
-  },
-  "Newport News Mariners": {
-   "slug": "newport-news",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91258.png?v=1712692749969",
-   "checkedAt": "2026-11-07T20:46:20.421Z"
-  },
-  "Virginia": {
-   "slug": "virginia-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91277.png?v=1793664959973",
-   "checkedAt": "2026-11-07T20:46:20.816Z"
-  },
-  "Western Suburbs": {
-   "slug": "western-suburbs",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91285.png?v=1712691079025",
-   "checkedAt": "2026-11-07T20:46:21.374Z"
-  },
-  "Washington Renegades": {
-   "slug": "washington-renegades",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91278.png?v=1712767177296",
-   "checkedAt": "2026-11-07T20:46:21.690Z"
-  },
-  "Norfolk Storm Women": {
-   "slug": "norfolk-storm",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91260.png?v=1712350274983",
-   "checkedAt": "2026-11-07T20:46:24.232Z"
-  },
-  "Stingers Women": {
-   "slug": "chesapeake-stingers",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91250.png?v=1725317435754",
-   "checkedAt": "2026-11-07T20:46:22.028Z"
-  },
-  "Baltimore Flamingos-Ferals Women": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:23.914Z"
-  },
-  "Severn River Women": {
-   "slug": "severn-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
-   "checkedAt": "2026-11-07T20:46:27.857Z"
-  },
-  "James River Women": {
-   "slug": "james-river-rugby-women",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91255.png?v=1736308711074",
-   "checkedAt": "2026-11-07T20:46:28.245Z"
-  },
-  "Schuylkill River": {
-   "slug": "schuylkill-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91378.png?v=1712354795933",
-   "checkedAt": "2026-11-07T20:46:31.839Z"
-  },
-  "West Potomac": {
-   "slug": "west-potomac-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91284.png?v=1729629858439",
-   "checkedAt": "2026-11-07T20:46:32.163Z"
-  },
-  "Severn River": {
-   "slug": "severn-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
-   "checkedAt": "2026-11-07T20:46:32.486Z"
-  },
-  "Pax River": {
-   "slug": "patuxent-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91264.png?v=1712801370562",
-   "checkedAt": "2026-11-07T20:46:32.925Z"
-  },
-  "Riverlands": {
-   "slug": "riverlands-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
-   "checkedAt": "2026-11-07T20:46:25.866Z"
-  },
-  "Norfolk Blues": {
-   "slug": "norfolk-blues",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91259.png?v=1712692806008",
-   "checkedAt": "2026-11-07T20:46:26.465Z"
-  },
-  "New York Women": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91308.png?v=1712805330200",
-   "checkedAt": "2026-11-07T20:46:31.253Z"
-  },
-  "Loudoun": {
-   "slug": "loudoun-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91256.png?v=1710354669012",
-   "checkedAt": "2026-11-07T20:46:34.745Z"
-  },
-  "Frederick": {
-   "slug": "frederick-rugby-men",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91252.png?v=1712257140904",
-   "checkedAt": "2026-11-07T20:46:34.429Z"
-  },
-  "Roanoke": {
-   "slug": "roanoke-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
-   "checkedAt": "2026-11-07T20:46:33.284Z"
-  },
-  "Va Beach": {
-   "slug": "virginia-beach-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91276.png?v=1724173895667",
-   "checkedAt": "2026-11-07T20:46:33.629Z"
-  },
-  "Baltimore Flamingos": {
-   "slug": "baltimore-flamingos",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91247.png?v=1727132648440",
-   "checkedAt": "2026-11-07T20:46:35.101Z"
-  },
-  "Raleigh Vipers": {
-   "slug": "raleigh-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
-   "checkedAt": "2026-11-07T20:46:35.415Z"
-  },
-  "Northern Virginia Women": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:38.561Z"
-  },
-  "Schuylkill River Exiles": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:42.653Z"
-  },
-  "Washington Scandals": {
-   "slug": "washington-scandals",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91283.png?v=1712767205844",
-   "checkedAt": "2026-11-07T20:46:43.827Z"
-  },
-  "Patuxent River": {
-   "slug": "patuxent-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91264.png?v=1712801370562",
-   "checkedAt": "2026-11-07T20:46:44.171Z"
-  },
-  "New River Valley": {
-   "slug": "new-river-valley",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105530.png?v=1742304778698",
-   "checkedAt": "2026-11-07T20:46:45.035Z"
-  },
-  "Virginia Beach": {
-   "slug": "virginia-beach-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91276.png?v=1724173895667",
-   "checkedAt": "2026-11-07T20:46:45.388Z"
-  },
-  "Newport News": {
-   "slug": "newport-news",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91258.png?v=1712692749969",
-   "checkedAt": "2026-11-07T20:46:45.750Z"
-  },
-  "Rocktown Roosters": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:48.079Z"
-  },
-  "D.C. Furies Women": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:52.075Z"
-  },
-  "Severn River Honey Badgers Women": {
-   "slug": "severn-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
-   "checkedAt": "2026-11-07T20:46:52.405Z"
-  },
-  "Charlottesville Women": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:56.253Z"
-  },
-  "D.C. Revolution Women": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:46:59.193Z"
-  },
-  "Baltimore Flamingos Women": {
-   "slug": "baltimore-flamingos",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91247.png?v=1727132648440",
-   "checkedAt": "2026-11-07T20:46:59.536Z"
-  },
-  "Raleigh Venom Women": {
-   "slug": "raleigh-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
-   "checkedAt": "2026-11-07T20:46:59.855Z"
-  },
-  "Riverlands Golden Boars": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
-   "checkedAt": "2026-11-07T20:47:04.181Z"
-  },
-  "Pittsburgh Harlequins": {
-   "slug": "pittsburgh-harlequins",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91265.png?v=1784219498289",
-   "checkedAt": "2026-11-07T20:47:04.792Z"
-  },
-  "Union Mudturtles Women": {
-   "slug": "union-county-lady-mudturtles",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91325.png?v=1712256185574",
-   "checkedAt": "2026-11-07T20:47:05.393Z"
-  },
-  "North Bay Women": {
-   "slug": "north-bay-rugby-women",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105258.png?v=1711994501913",
-   "checkedAt": "2026-11-07T20:47:05.727Z"
-  },
-  "Portland Women": {
-   "slug": "portland-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91202.png?v=1712708468309",
-   "checkedAt": "2026-11-07T20:47:06.494Z"
-  },
-  "New London County": {
-   "slug": "new-london-county-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91193.png?v=1711732355989",
-   "checkedAt": "2026-11-07T20:47:07.213Z"
-  },
-  "North Bay": {
-   "slug": "north-bay-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91261.png?v=1712337142782",
-   "checkedAt": "2026-11-07T20:47:09.158Z"
-  },
-  "New York": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91308.png?v=1712805330200",
-   "checkedAt": "2026-11-07T20:47:12.153Z"
-  },
-  "Queens": {
-   "slug": "queens-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91314.png?v=1711046815724",
-   "checkedAt": "2026-11-07T20:47:12.764Z"
-  },
-  "Boston Irish Wolfhounds": {
-   "slug": "boston-irish-wolfhounds",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91189.png?v=1728415447495",
-   "checkedAt": "2026-11-07T20:47:13.086Z"
-  },
-  "New Haven Old Black Women": {
-   "slug": "new-haven-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91307.png?v=1712168886455",
-   "checkedAt": "2026-11-07T20:47:13.416Z"
-  },
-  "Worcester Shamrocks Women": {
-   "slug": "worcester-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91203.png?v=1712802350481",
-   "checkedAt": "2026-11-07T20:47:14.030Z"
-  },
-  "Phoenixville White Horse Women": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91374.png?v=1712360915115",
-   "checkedAt": "2026-11-07T20:47:18.733Z"
-  },
-  "Old Blue": {
-   "slug": "old-blue-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91311.png?v=1746318359485",
-   "checkedAt": "2026-11-07T20:47:19.766Z"
-  },
-  "Wilkes-Barre Breakers": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91381.png?v=1725648663859",
-   "checkedAt": "2026-11-07T20:47:24.172Z"
-  },
-  "Syracuse Chargers": {
-   "slug": "syracuse-chargers",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91323.png?v=1711771863507",
-   "checkedAt": "2026-11-07T20:47:24.602Z"
-  },
-  "Belmont Shore": {
-   "slug": "belmont-shore-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93084.png?v=1712693052800",
-   "checkedAt": "2026-11-07T20:47:25.634Z"
-  },
-  "Austin Blacks": {
-   "slug": "austin-blacks",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93138.png?v=1712691156474",
-   "checkedAt": "2026-11-07T20:47:26.225Z"
-  },
-  "Metropolis Valkyries Women": {
-   "slug": "metropolis-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91117.png?v=1754083264160",
-   "checkedAt": "2026-11-07T20:47:27.231Z"
-  },
-  "sHARCs Women": {
-   "slug": "houston-athletic-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93153.png?v=1712691752814",
-   "checkedAt": "2026-11-07T20:47:27.580Z"
-  },
-  "Utah Vipers Women": {
-   "slug": "utah-vipers",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93081.png?v=1712692033964",
-   "checkedAt": "2026-11-07T20:47:28.186Z"
-  },
-  "Columbia Rhinos": {
-   "slug": "columbia-rhinos",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93112.png?v=1712765035775",
-   "checkedAt": "2026-11-07T20:47:28.518Z"
-  },
-  "Scottsdale Blues": {
-   "slug": "scottsdale-blues",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93130.png?v=1792168258820",
-   "checkedAt": "2026-11-07T20:47:29.117Z"
-  },
-  "Denver Highlanders": {
-   "slug": "denver-highlanders",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93061.png?v=1712686676484",
-   "checkedAt": "2026-11-07T20:47:29.740Z"
-  },
-  "Tampa Krewe Women": {
-   "slug": "tampa-bay-krewe-womens",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/94055.png?v=1747151511060",
-   "checkedAt": "2026-11-07T20:47:30.597Z"
-  },
-  "Las Vegas Irish Women": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93118.png?v=1730959172059",
-   "checkedAt": "2026-11-07T20:47:34.057Z"
-  },
-  "Grand Rapids Growlers Women": {
-   "slug": "grand-rapids-growlers",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91103.png?v=1742395513554",
-   "checkedAt": "2026-11-07T20:47:34.902Z"
   },
   "Atlanta Old White": {
    "slug": "atlanta-old-white",
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91334.png?v=1711822484557",
    "checkedAt": "2026-11-07T20:47:35.654Z"
   },
-  "Boise United": {
-   "slug": "boise-united-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91477.png?v=1712178384858",
-   "checkedAt": "2026-11-07T20:47:37.296Z"
+  "Austin Blacks": {
+   "slug": "austin-blacks",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93138.png?v=1712691156474",
+   "checkedAt": "2026-11-07T20:47:26.225Z"
   },
-  "Kansas City": {
-   "slug": "kansas-city-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91422.png?v=1712682015771",
-   "checkedAt": "2026-11-07T20:47:37.702Z"
+  "Baltimore Chesapeake": {
+   "slug": "baltimore-chesapeake",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91246.png?v=1711459211973",
+   "checkedAt": "2026-11-07T20:46:12.467Z"
   },
-  "Chicago Griffins": {
-   "slug": "chicago-rugby-club",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91060.png?v=1786833462836",
-   "checkedAt": "2026-11-07T20:47:38.029Z"
+  "Baltimore Flamingos": {
+   "slug": "baltimore-flamingos",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91247.png?v=1727132648440",
+   "checkedAt": "2026-11-07T20:46:35.101Z"
   },
-  "Virginia Rugby Football Club": {
+  "Baltimore Flamingos Women": {
+   "slug": "baltimore-flamingos",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91247.png?v=1727132648440",
+   "checkedAt": "2026-11-07T20:46:59.536Z"
+  },
+  "Baltimore Flamingos-Ferals Women": {
    "slug": null,
    "crest": null,
-   "checkedAt": "2026-11-07T20:47:41.357Z"
+   "checkedAt": "2026-11-07T20:46:23.914Z"
   },
-  "PWC Owls": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:47:44.380Z"
-  },
-  "Chesapeake Stingers": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:47:47.404Z"
-  },
-  "Norfolk Storm": {
-   "slug": "norfolk-storm",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91260.png?v=1712350274983",
-   "checkedAt": "2026-11-07T20:47:47.741Z"
-  },
-  "DC Revolution": {
-   "slug": "dc-revolution",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91251.png?v=1712677213249",
-   "checkedAt": "2026-11-07T20:47:48.089Z"
-  },
-  "Washington RFC": {
-   "slug": "washington-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91282.png?v=1712767196010",
-   "checkedAt": "2026-11-07T20:47:48.482Z"
-  },
-  "Philadelphia": {
-   "slug": "philadelphia-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91371.png?v=1710874696343",
-   "checkedAt": "2026-11-07T20:47:48.881Z"
-  },
-  "Raleigh Venom": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:47:51.902Z"
-  },
-  "James River Men": {
-   "slug": "james-river-rugby-men",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91254.png?v=1712340555334",
-   "checkedAt": "2026-11-07T20:47:52.220Z"
-  },
-  "Severn River Men": {
-   "slug": "severn-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
-   "checkedAt": "2026-11-07T20:47:52.569Z"
-  },
-  "Patuxent River Lions": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:47:55.845Z"
-  },
-  "NOVA Men": {
-   "slug": "nova",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/9900457.png?v=1770085462588",
-   "checkedAt": "2026-11-07T20:47:56.229Z"
-  },
-  "Washington Furies": {
-   "slug": "washington-furies",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91279.png?v=1712767181936",
-   "checkedAt": "2026-11-07T20:47:56.598Z"
-  },
-  "Golden Boars": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:47:59.444Z"
-  },
-  "Mystic River": {
-   "slug": "mystic-river-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91186.png?v=1728049460719",
-   "checkedAt": "2026-11-07T20:48:00.257Z"
+  "Belmont Shore": {
+   "slug": "belmont-shore-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93084.png?v=1712693052800",
+   "checkedAt": "2026-11-07T20:47:25.634Z"
   },
   "BIW Men D2 Senior": {
    "slug": null,
    "crest": null,
    "checkedAt": "2026-11-07T20:48:03.707Z"
   },
-  "West Potomac Beavers": {
+  "Blackwater": {
    "slug": null,
    "crest": null,
-   "checkedAt": "2026-11-07T20:48:06.808Z"
+   "checkedAt": "2026-11-07T20:48:20.122Z"
   },
-  "Prince William County": {
-   "slug": null,
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
-   "checkedAt": "2026-11-07T20:48:10.139Z"
+  "Boise United": {
+   "slug": "boise-united-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91477.png?v=1712178384858",
+   "checkedAt": "2026-11-07T20:47:37.296Z"
+  },
+  "Boston Irish Wolfhounds": {
+   "slug": "boston-irish-wolfhounds",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91189.png?v=1728415447495",
+   "checkedAt": "2026-11-07T20:47:13.086Z"
   },
   "Boston Irish Wolfhounds D2 Senior": {
    "slug": null,
    "crest": null,
    "checkedAt": "2026-11-07T20:48:13.356Z"
   },
-  "Richmond": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:48:15.926Z"
-  },
-  "Roanoke Men": {
-   "slug": "roanoke-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
-   "checkedAt": "2026-11-07T20:48:16.274Z"
-  },
-  "Blackwater": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:48:20.122Z"
-  },
-  "RRFC Golden Boars": {
-   "slug": null,
-   "crest": null,
-   "checkedAt": "2026-11-07T20:48:23.341Z"
-  },
-  "Virginia RFC": {
-   "slug": "virginia-rugby",
-   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91277.png?v=1793664959973",
-   "checkedAt": "2026-11-07T20:48:24.805Z"
+  "Boston Women": {
+   "slug": "boston-rugby-women",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/94007.png?v=1712684770084",
+   "checkedAt": "2026-11-07T20:46:15.802Z"
   },
   "Charlotte RFC Women": {
    "slug": "charlotte-rugby",
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91341.png?v=1724251938191",
    "checkedAt": "2026-11-07T20:48:25.125Z"
   },
+  "Charlottesville Bears Women": {
+   "slug": "blue-ridge-bears",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105404.png?v=1710424912665",
+   "checkedAt": "2026-11-07T20:46:08.573Z"
+  },
+  "Charlottesville Women": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:56.253Z"
+  },
+  "Chesapeake Stingers": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:47.404Z"
+  },
+  "Chicago Griffins": {
+   "slug": "chicago-rugby-club",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91060.png?v=1786833462836",
+   "checkedAt": "2026-11-07T20:47:38.029Z"
+  },
+  "Columbia Rhinos": {
+   "slug": "columbia-rhinos",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93112.png?v=1712765035775",
+   "checkedAt": "2026-11-07T20:47:28.518Z"
+  },
+  "D.C. Furies Women": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:52.075Z"
+  },
+  "D.C. Revolution Women": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:59.193Z"
+  },
+  "DC Furies Women": {
+   "slug": "washington-furies",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91279.png?v=1712767181936",
+   "checkedAt": "2026-11-07T20:46:11.757Z"
+  },
+  "DC Revolution": {
+   "slug": "dc-revolution",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91251.png?v=1712677213249",
+   "checkedAt": "2026-11-07T20:47:48.089Z"
+  },
+  "DC Revolution Women": {
+   "slug": "dc-revolution",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91251.png?v=1712677213249",
+   "checkedAt": "2026-11-07T20:46:11.363Z"
+  },
+  "Denver Highlanders": {
+   "slug": "denver-highlanders",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93061.png?v=1712686676484",
+   "checkedAt": "2026-11-07T20:47:29.740Z"
+  },
+  "Frederick": {
+   "slug": "frederick-rugby-men",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91252.png?v=1712257140904",
+   "checkedAt": "2026-11-07T20:46:34.429Z"
+  },
   "Frederick Men": {
    "slug": "frederick-rugby-men",
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91252.png?v=1712257140904",
    "checkedAt": "2026-11-07T20:48:25.452Z"
+  },
+  "Frederick Women": {
+   "slug": "frederick-rugby-women",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91253.png?v=1712684289094",
+   "checkedAt": "2026-11-07T20:46:09.568Z"
+  },
+  "Golden Boars": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:59.444Z"
+  },
+  "Grand Rapids Growlers Women": {
+   "slug": "grand-rapids-growlers",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91103.png?v=1742395513554",
+   "checkedAt": "2026-11-07T20:47:34.902Z"
+  },
+  "James River": {
+   "slug": "james-river-rugby-men",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91254.png?v=1712340555334",
+   "checkedAt": "2026-11-07T20:46:15.028Z"
+  },
+  "James River Men": {
+   "slug": "james-river-rugby-men",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91254.png?v=1712340555334",
+   "checkedAt": "2026-11-07T20:47:52.220Z"
+  },
+  "James River Women": {
+   "slug": "james-river-rugby-women",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91255.png?v=1736308711074",
+   "checkedAt": "2026-11-07T20:46:28.245Z"
+  },
+  "Kansas City": {
+   "slug": "kansas-city-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91422.png?v=1712682015771",
+   "checkedAt": "2026-11-07T20:47:37.702Z"
+  },
+  "Las Vegas Irish Women": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93118.png?v=1730959172059",
+   "checkedAt": "2026-11-07T20:47:34.057Z"
+  },
+  "Loudoun": {
+   "slug": "loudoun-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91256.png?v=1710354669012",
+   "checkedAt": "2026-11-07T20:46:34.745Z"
+  },
+  "Metropolis Valkyries Women": {
+   "slug": "metropolis-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91117.png?v=1754083264160",
+   "checkedAt": "2026-11-07T20:47:27.231Z"
+  },
+  "Mystic River": {
+   "slug": "mystic-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91186.png?v=1728049460719",
+   "checkedAt": "2026-11-07T20:48:00.257Z"
+  },
+  "New Haven Old Black Women": {
+   "slug": "new-haven-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91307.png?v=1712168886455",
+   "checkedAt": "2026-11-07T20:47:13.416Z"
+  },
+  "New London County": {
+   "slug": "new-london-county-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91193.png?v=1711732355989",
+   "checkedAt": "2026-11-07T20:47:07.213Z"
+  },
+  "New River Valley": {
+   "slug": "new-river-valley",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105530.png?v=1742304778698",
+   "checkedAt": "2026-11-07T20:46:45.035Z"
+  },
+  "New York": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91308.png?v=1712805330200",
+   "checkedAt": "2026-11-07T20:47:12.153Z"
+  },
+  "New York Women": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91308.png?v=1712805330200",
+   "checkedAt": "2026-11-07T20:46:31.253Z"
+  },
+  "Newport News": {
+   "slug": "newport-news",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91258.png?v=1712692749969",
+   "checkedAt": "2026-11-07T20:46:45.750Z"
+  },
+  "Newport News Mariners": {
+   "slug": "newport-news",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91258.png?v=1712692749969",
+   "checkedAt": "2026-11-07T20:46:20.421Z"
+  },
+  "Norfolk Blues": {
+   "slug": "norfolk-blues",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91259.png?v=1712692806008",
+   "checkedAt": "2026-11-07T20:46:26.465Z"
+  },
+  "Norfolk Storm": {
+   "slug": "norfolk-storm",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91260.png?v=1712350274983",
+   "checkedAt": "2026-11-07T20:47:47.741Z"
+  },
+  "Norfolk Storm Women": {
+   "slug": "norfolk-storm",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91260.png?v=1712350274983",
+   "checkedAt": "2026-11-07T20:46:24.232Z"
+  },
+  "North Bay": {
+   "slug": "north-bay-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91261.png?v=1712337142782",
+   "checkedAt": "2026-11-07T20:47:09.158Z"
+  },
+  "North Bay Women": {
+   "slug": "north-bay-rugby-women",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/105258.png?v=1711994501913",
+   "checkedAt": "2026-11-07T20:47:05.727Z"
+  },
+  "Northern Virginia Women": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:38.561Z"
+  },
+  "NOVA": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91262.png?v=1712692560036",
+   "checkedAt": "2026-11-07T20:46:19.188Z"
+  },
+  "NOVA Men": {
+   "slug": "nova",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/9900457.png?v=1770085462588",
+   "checkedAt": "2026-11-07T20:47:56.229Z"
+  },
+  "NOVA Women": {
+   "slug": "nova-women",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91263.png?v=1712072153923",
+   "checkedAt": "2026-11-07T20:46:10.963Z"
+  },
+  "Old Blue": {
+   "slug": "old-blue-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91311.png?v=1746318359485",
+   "checkedAt": "2026-11-07T20:47:19.766Z"
+  },
+  "Patuxent River": {
+   "slug": "patuxent-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91264.png?v=1712801370562",
+   "checkedAt": "2026-11-07T20:46:44.171Z"
+  },
+  "Patuxent River Lions": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:55.845Z"
+  },
+  "Pax River": {
+   "slug": "patuxent-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91264.png?v=1712801370562",
+   "checkedAt": "2026-11-07T20:46:32.925Z"
+  },
+  "Philadelphia": {
+   "slug": "philadelphia-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91371.png?v=1710874696343",
+   "checkedAt": "2026-11-07T20:47:48.881Z"
+  },
+  "Philadelphia Women": {
+   "slug": "philadelphia-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91371.png?v=1710874696343",
+   "checkedAt": "2026-11-07T20:46:12.131Z"
+  },
+  "Phoenixville White Horse Women": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91374.png?v=1712360915115",
+   "checkedAt": "2026-11-07T20:47:18.733Z"
+  },
+  "Pittsburgh Harlequins": {
+   "slug": "pittsburgh-harlequins",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91265.png?v=1784219498289",
+   "checkedAt": "2026-11-07T20:47:04.792Z"
+  },
+  "Portland Women": {
+   "slug": "portland-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91202.png?v=1712708468309",
+   "checkedAt": "2026-11-07T20:47:06.494Z"
+  },
+  "Potomac Exiles": {
+   "slug": "potomac-exiles",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91267.png?v=1711648057226",
+   "checkedAt": "2026-11-07T20:46:14.111Z"
+  },
+  "Prince William County": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
+   "checkedAt": "2026-11-07T20:48:10.139Z"
+  },
+  "PWC Owls": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:44.380Z"
+  },
+  "Queens": {
+   "slug": "queens-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91314.png?v=1711046815724",
+   "checkedAt": "2026-11-07T20:47:12.764Z"
+  },
+  "Raleigh": {
+   "slug": "raleigh-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
+   "checkedAt": "2026-11-07T20:46:15.347Z"
+  },
+  "Raleigh Venom": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:51.902Z"
+  },
+  "Raleigh Venom Women": {
+   "slug": "raleigh-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
+   "checkedAt": "2026-11-07T20:46:59.855Z"
+  },
+  "Raleigh Vipers": {
+   "slug": "raleigh-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
+   "checkedAt": "2026-11-07T20:46:35.415Z"
+  },
+  "Raleigh Women": {
+   "slug": "raleigh-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91269.png?v=1712767318610",
+   "checkedAt": "2026-11-07T20:46:16.120Z"
+  },
+  "Rappahannock Women": {
+   "slug": "rappahannock-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91270.png?v=1711814789862",
+   "checkedAt": "2026-11-07T20:46:09.252Z"
+  },
+  "Richmond": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:48:15.926Z"
+  },
+  "Riverlands": {
+   "slug": "riverlands-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
+   "checkedAt": "2026-11-07T20:46:25.866Z"
+  },
+  "Riverlands Golden Boars": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91268.png?v=1724146824702",
+   "checkedAt": "2026-11-07T20:47:04.181Z"
+  },
+  "Roanoke": {
+   "slug": "roanoke-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
+   "checkedAt": "2026-11-07T20:46:33.284Z"
+  },
+  "Roanoke Men": {
+   "slug": "roanoke-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
+   "checkedAt": "2026-11-07T20:48:16.274Z"
+  },
+  "Roanoke Women": {
+   "slug": "roanoke-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91272.png?v=1712692707799",
+   "checkedAt": "2026-11-07T20:46:09.908Z"
+  },
+  "Rocktown Roosters": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:48.079Z"
+  },
+  "Rocky Gorge": {
+   "slug": "rocky-gorge-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91273.png?v=1712684240196",
+   "checkedAt": "2026-11-07T20:46:14.427Z"
+  },
+  "RRFC Golden Boars": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:48:23.341Z"
+  },
+  "Schuylkill River": {
+   "slug": "schuylkill-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91378.png?v=1712354795933",
+   "checkedAt": "2026-11-07T20:46:31.839Z"
+  },
+  "Schuylkill River Exiles": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:46:42.653Z"
+  },
+  "Scottsdale Blues": {
+   "slug": "scottsdale-blues",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93130.png?v=1792168258820",
+   "checkedAt": "2026-11-07T20:47:29.117Z"
+  },
+  "Severn River": {
+   "slug": "severn-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
+   "checkedAt": "2026-11-07T20:46:32.486Z"
+  },
+  "Severn River Honey Badgers Women": {
+   "slug": "severn-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
+   "checkedAt": "2026-11-07T20:46:52.405Z"
+  },
+  "Severn River Men": {
+   "slug": "severn-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
+   "checkedAt": "2026-11-07T20:47:52.569Z"
+  },
+  "Severn River Women": {
+   "slug": "severn-river-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91275.png?v=1724864354040",
+   "checkedAt": "2026-11-07T20:46:27.857Z"
+  },
+  "sHARCs Women": {
+   "slug": "houston-athletic-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93153.png?v=1712691752814",
+   "checkedAt": "2026-11-07T20:47:27.580Z"
+  },
+  "Stingers Women": {
+   "slug": "chesapeake-stingers",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91250.png?v=1725317435754",
+   "checkedAt": "2026-11-07T20:46:22.028Z"
+  },
+  "Syracuse Chargers": {
+   "slug": "syracuse-chargers",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91323.png?v=1711771863507",
+   "checkedAt": "2026-11-07T20:47:24.602Z"
+  },
+  "Tampa Krewe Women": {
+   "slug": "tampa-bay-krewe-womens",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/94055.png?v=1747151511060",
+   "checkedAt": "2026-11-07T20:47:30.597Z"
+  },
+  "Union Mudturtles Women": {
+   "slug": "union-county-lady-mudturtles",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91325.png?v=1712256185574",
+   "checkedAt": "2026-11-07T20:47:05.393Z"
+  },
+  "Utah Vipers Women": {
+   "slug": "utah-vipers",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/93081.png?v=1712692033964",
+   "checkedAt": "2026-11-07T20:47:28.186Z"
+  },
+  "Va Beach": {
+   "slug": "virginia-beach-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91276.png?v=1724173895667",
+   "checkedAt": "2026-11-07T20:46:33.629Z"
+  },
+  "Virginia": {
+   "slug": "virginia-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91277.png?v=1793664959973",
+   "checkedAt": "2026-11-07T20:46:20.816Z"
+  },
+  "Virginia Beach": {
+   "slug": "virginia-beach-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91276.png?v=1724173895667",
+   "checkedAt": "2026-11-07T20:46:45.388Z"
+  },
+  "Virginia RFC": {
+   "slug": "virginia-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91277.png?v=1793664959973",
+   "checkedAt": "2026-11-07T20:48:24.805Z"
+  },
+  "Virginia Rugby Football Club": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:47:41.357Z"
+  },
+  "Washington": {
+   "slug": "washington-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91282.png?v=1712767196010",
+   "checkedAt": "2026-11-07T20:46:19.550Z"
+  },
+  "Washington Furies": {
+   "slug": "washington-furies",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91279.png?v=1712767181936",
+   "checkedAt": "2026-11-07T20:47:56.598Z"
+  },
+  "Washington Irish": {
+   "slug": "washington-irish",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91280.png?v=1712767190887",
+   "checkedAt": "2026-11-07T20:46:12.818Z"
+  },
+  "Washington Renegades": {
+   "slug": "washington-renegades",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91278.png?v=1712767177296",
+   "checkedAt": "2026-11-07T20:46:21.690Z"
+  },
+  "Washington RFC": {
+   "slug": "washington-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91282.png?v=1712767196010",
+   "checkedAt": "2026-11-07T20:47:48.482Z"
+  },
+  "Washington Scandals": {
+   "slug": "washington-scandals",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91283.png?v=1712767205844",
+   "checkedAt": "2026-11-07T20:46:43.827Z"
+  },
+  "West Potomac": {
+   "slug": "west-potomac-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91284.png?v=1729629858439",
+   "checkedAt": "2026-11-07T20:46:32.163Z"
+  },
+  "West Potomac Beavers": {
+   "slug": null,
+   "crest": null,
+   "checkedAt": "2026-11-07T20:48:06.808Z"
+  },
+  "Western Suburbs": {
+   "slug": "western-suburbs",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91285.png?v=1712691079025",
+   "checkedAt": "2026-11-07T20:46:21.374Z"
+  },
+  "Wilkes-Barre Breakers": {
+   "slug": null,
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91381.png?v=1725648663859",
+   "checkedAt": "2026-11-07T20:47:24.172Z"
+  },
+  "Worcester Shamrocks Women": {
+   "slug": "worcester-rugby",
+   "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91203.png?v=1712802350481",
+   "checkedAt": "2026-11-07T20:47:14.030Z"
   }
  }
 }

@@ -470,7 +470,14 @@ export function splitStandingsSnapshot(snapshot: StandingsSnapshot): {
   for (const fixture of snapshot.fixtures) {
     seasons[fixture.season]?.fixtures.push(fixture);
   }
-  for (const [key, ladder] of Object.entries(snapshot.ladders)) {
+  // The CMS returns tied fixtures in varying order, which would look like a change.
+  for (const season of Object.values(seasons)) {
+    season.fixtures.sort(
+      (a, b) =>
+        new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime() || a.id.localeCompare(b.id)
+    );
+  }
+  for (const [key, ladder] of Object.entries(snapshot.ladders).sort(([a], [b]) => a.localeCompare(b))) {
     const season = key.slice(key.indexOf('|') + 1);
     if (seasons[season]) {
       seasons[season].ladders[key] = ladder;

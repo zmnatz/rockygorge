@@ -176,8 +176,15 @@ export function aggregatePlayerHistory(
   matches: MatchCentreData[]
 ): Map<string, PlayerHistory> {
   const histories = new Map<string, PlayerHistory>();
+  // Newest first, because matches arrive in whichever order they finished
+  // downloading and a player's name and team come from the first one seen.
+  const ordered = [...matches].sort(
+    (a, b) =>
+      new Date(b.fixture.dateTime).getTime() - new Date(a.fixture.dateTime).getTime() ||
+      a.fixture.id.localeCompare(b.fixture.id)
+  );
 
-  for (const match of matches) {
+  for (const match of ordered) {
     const { fixture, commentary, players, substitutes, coaches } = match;
     const roster = [...players, ...substitutes, ...coaches];
     const starterIds = new Set(players.map((player) => playerKey(player.id)));
