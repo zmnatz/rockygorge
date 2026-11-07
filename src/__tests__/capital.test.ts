@@ -14,6 +14,7 @@ import {
   isResult,
   isSevensComp,
   buildStandingsSnapshot,
+  isPastPage,
   leagueClubIds,
   mergeLeagueFeeds,
   seasonSnapshotFile,
@@ -366,6 +367,22 @@ describe('ladderKeysOf', () => {
       fixture('x', { compId: 'x', compName: 'Capital Women D2-D1 Crossovers' }),
     ];
     expect(ladderKeysOf(fixtures)).toEqual([]);
+  });
+});
+
+describe('isPastPage', () => {
+  const page = (...seasons: string[]) => seasons.map((season, index) => fixture(`f${index}`, { season }));
+
+  it('ends a feed at a page with nothing from the seasons still being read', () => {
+    expect(isPastPage(page('2025/2026', '2024/2025'), '2026/2027')).toBe(true);
+  });
+
+  it('carries on through a page with any current fixture', () => {
+    expect(isPastPage(page('2026/2027', '2025/2026'), '2026/2027')).toBe(false);
+  });
+
+  it('reads everything on a full refresh', () => {
+    expect(isPastPage(page('2022/2023'), '')).toBe(false);
   });
 });
 

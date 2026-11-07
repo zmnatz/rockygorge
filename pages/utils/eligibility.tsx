@@ -654,7 +654,7 @@ export default function EligibilityPage() {
              Championships and 7s don't count. Participation counts starts and
              substitute appearances; a listed player who never enters the game doesn't
              count. Fixtures still to play before Super Regionals count towards the
-             two-match minimums, shown as on track. Lists clubs with one or two sides. Click a player to check their
+             two-match minimums, shown as on track. On track is experimental, because future playoff matches aren't always entered in Rugby Xplorer. Men's Division IV, Women's Division III and crossover matches don't count. Click a player to check their
              count round by round against the Rugby Xplorer match reports. This is a guide: the Rugby Xplorer report is
              the official count, and the record has no registration data, so check registration separately.`
           : `Paste or upload the Rugby Xplorer matches-played report for any club to see

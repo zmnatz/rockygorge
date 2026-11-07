@@ -157,15 +157,22 @@ async function fetchFixturesPage(
   return response.data.getEntityFixturesAndResults ?? [];
 }
 
+// Whether a page of a feed has nothing from the seasons still being read. Feeds
+// list newest first closely enough to stop there: checked on every current feed.
+export function isPastPage(page: CapitalFixture[], refreshFrom: string): boolean {
+  return refreshFrom !== '' && page.every((fixture) => fixture.season < refreshFrom);
+}
+
 async function fetchFeed(
   entityId: number,
-  entityType: string
+  entityType: string,
+  refreshFrom = ''
 ): Promise<CapitalFixture[]> {
   const all: CapitalFixture[] = [];
   for (let skip = 0; skip < MAX_FIXTURES; skip += PAGE_SIZE) {
     const page = await fetchFixturesPage(entityId, entityType, skip);
     all.push(...page);
-    if (page.length < PAGE_SIZE) {
+    if (page.length < PAGE_SIZE || isPastPage(page, refreshFrom)) {
       break;
     }
     await sleep(FETCH_GAP_MS);
@@ -275,13 +282,13 @@ export async function fetchLeagueFixtures(
   refreshFrom: string
 ): Promise<CapitalFixture[]> {
   const base = mergeFixtures(
-    await fetchFeed(CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE),
-    await fetchFeed(CLUB_ENTITY_ID, CLUB_ENTITY_TYPE)
+    await fetchFeed(CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE, refreshFrom),
+    await fetchFeed(CLUB_ENTITY_ID, CLUB_ENTITY_TYPE, refreshFrom)
   );
   const clubFeeds: CapitalFixture[][] = [];
   for (const id of leagueClubIds(base, savedClubs, refreshFrom)) {
     await sleep(FETCH_GAP_MS);
-    clubFeeds.push(await fetchFeed(id, CLUB_ENTITY_TYPE));
+    clubFeeds.push(await fetchFeed(id, CLUB_ENTITY_TYPE, refreshFrom));
   }
   return backfillCrests(mergeLeagueFeeds(base, clubFeeds));
 }

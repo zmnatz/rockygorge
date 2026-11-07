@@ -2,13 +2,15 @@
 
 The tool now evaluates a club with any number of sides under one rule, read from the 2026-27 Senior Club Regulations, replacing the upper/lower model of ADR 008 and the one-or-two limit of ADR 011. For a side, count its matches and those of every side below it: that total must reach the two-match minimum (Reg 3.5.2(a)) and be at least the total for every side above (Reg 3.5(d)(ii)), and no side above may have reached four matches (Reg 3.5(d)(i)). The top side only needs two matches at any level (Reg 3.5.2(b)), and that is also the whole rule for a one-side club (Reg 3.4.2(e)), so it isn't an interpretation as ADR 011 first said.
 
-The regulations stop at three divisions, and clubs such as Austin Blacks field four, so four or more sides follow the same form. `eligibility-regulation.test.ts` holds all 20 rows of Figure 1 as the independent check; a change that breaks one is wrong.
+The code takes any number of sides, though with the divisions below left out a club has at most three in the rules. `eligibility-regulation.test.ts` holds all 20 rows of Figure 1 as the independent check; a change that breaks one is wrong.
 
 Decisions, so they are not "fixed" later:
 
 - **Limit on any upper side**: Reg 3.5(d)(i) says "the/either upper division team" and Figure 1 has 3/4/1 eligible for divisions 1 and 2 only, so four matches on any one side above forfeits, not four in total across them.
 - **CSV reports**: any club's, with its sides read from the Team Name column. A report with several clubs offers a choice between them.
-- **Divisions outside the NCS**: Men's IV and Women's III aren't in the NCS (Terms and Definitions, 34) but are listed and counted as sides. The regulations don't say whether such a side changes a club's limits, so this is flagged on the methodology page.
+- **Divisions outside the NCS**: Men's IV and Women's III aren't in the NCS (Terms and Definitions, 34), and per the club their matches don't count, so those sides aren't assessed and don't affect a club's other sides. A club with only those sides isn't listed. Austin Blacks, with four sides, is assessed on three.
+- **Crossovers and friendlies**: not NCS Qualifying Matches, excluded by competition name.
+- **On track is experimental**: future playoff matches aren't always entered, so possible fixtures can be incomplete and the page says so.
 - **Same name, two ids**: not merged, even with no match in common, because combining two people could wrongly pass one. The report shows both CMS ids, and merging the profiles in Rugby Xplorer is the fix.
 - **Name Withheld**: a hidden profile, not a player. It gets no player record or eligibility row, and is red in match lineups. Red isn't a verdict, because a player can hold an approved exemption, so the wording says only that the name isn't public. A side whose lineup is entirely hidden shows as having no lineup, which is a known false gap.
 - **Not covered**: Recognized Competitive Matches (Reg 3.4.3), playing for another club (Reg 3.4(e)) and waivers aren't in the data.

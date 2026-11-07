@@ -1,5 +1,5 @@
 import { parseCsv } from '@/utils/csv';
-import { parseTeamSide } from '@/utils/teamSide';
+import { isNcsSide, parseTeamSide } from '@/utils/teamSide';
 import type {
   Club,
   DivisionSummary,
@@ -244,13 +244,13 @@ export function sameNamePlayers(sides: { players: PlayerEligibility[] }[]): { na
     .map((entry) => ({ name: entry.name, ids: [...entry.ids].sort() }));
 }
 
-/** Clubs and their sides, highest division first, from team names. A team name
+/** Clubs and their NCS sides, highest division first, from team names. A team name
  *  that doesn't end in a division can't be ranked and is skipped. Sorted by name. */
 export function clubsFromTeamNames(teamNames: Iterable<string>): Club[] {
   const clubs = new Map<string, Map<string, number>>();
   for (const teamName of teamNames) {
     const side = parseTeamSide(teamName);
-    if (!side) continue;
+    if (!side || !isNcsSide(side)) continue;
     const sides = clubs.get(side.clubName) ?? new Map<string, number>();
     sides.set(teamName, side.level);
     clubs.set(side.clubName, sides);

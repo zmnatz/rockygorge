@@ -9,6 +9,7 @@ import {
   type StandingsSnapshotIndex,
 } from '../src/api/capital';
 import { CLUB_PAGES_FILE } from '../src/utils/rugbyXplorer';
+import { logRequestStats } from './lib/log-request-stats';
 import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 
@@ -71,6 +72,7 @@ async function generate() {
     console.log(
       `Saved ${snapshot.fixtures.length} fixtures and ${Object.keys(snapshot.ladders).length} ladders across ${index.seasons.length} seasons to public/data/standings/`
     );
+    logRequestStats('standings');
   } catch (err) {
     console.warn(
       'Standings unavailable, keeping previous snapshot:',

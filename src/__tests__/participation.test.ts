@@ -292,7 +292,7 @@ describe('listClubs', () => {
     const clubs = listClubs(
       [
         fixtureOf('NOVA WD1', 'Boston WD1', 'Atlantic Women D1'),
-        fixtureOf('NOVA WD3', 'Stingers WD3', 'Capital Women D3'),
+        fixtureOf('NOVA WD2', 'Raleigh WD2', 'Capital Women D2'),
         fixtureOf('NOVA MD1', 'Washington MD1', 'MAC Men D1'),
       ],
       baseConfig,
@@ -300,7 +300,7 @@ describe('listClubs', () => {
 
     expect(clubs.find((club) => club.name === 'NOVA Women')?.sides).toEqual([
       { teamName: 'NOVA WD1', label: 'D1' },
-      { teamName: 'NOVA WD3', label: 'D3' },
+      { teamName: 'NOVA WD2', label: 'D2' },
     ]);
     expect(clubs.find((club) => club.name === 'NOVA')?.sides).toEqual([{ teamName: 'NOVA MD1', label: 'D1' }]);
   });
@@ -1238,6 +1238,14 @@ describe('playerSeasonEligibility', () => {
 
     expect(playerSeasonEligibility(snapshot, fixtures, 'sevens', baseConfig, NOW)).toEqual([]);
     expect(playerSeasonEligibility(snapshot, fixtures, 'nobody', baseConfig, NOW)).toEqual([]);
+  });
+});
+
+describe('NCS Qualifying Matches', () => {
+  it('leaves out crossovers, so a side playing only those is not listed', () => {
+    const clubs = listClubs([fixtureOf('Philadelphia WD1', 'Severn River WD2', 'Capital Women D2-D1 Crossovers')], baseConfig);
+
+    expect(clubs).toEqual([]);
   });
 });
 

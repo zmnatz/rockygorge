@@ -12,6 +12,7 @@ import {
   type CmsSite,
 } from '../src/utils/rugbyXplorer';
 import { currentSeason, readLeagueFixtures } from './lib/league-fixtures';
+import { logRequestStats } from './lib/log-request-stats';
 import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 
 const CMS_URL = 'https://rugby-au-cms.graphcdn.app';
@@ -102,6 +103,7 @@ async function generate() {
     console.log(
       `${all.length} clubs: ${all.filter((club) => club.slug).length} pages, ${all.filter((club) => club.crest).length} crests.`
     );
+    logRequestStats('club pages');
   } catch (err) {
     console.warn('Club pages unavailable, keeping previous list:', (err as Error).message);
   }

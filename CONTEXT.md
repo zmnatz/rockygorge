@@ -182,7 +182,7 @@ A club with only one side in the fixture lists, which the eligibility tool asses
 _Avoid_: single team, solo club
 
 **NCS Qualifying Match**:
-A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships and 7s don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
+A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships, 7s, friendlies, crossovers, and Men's D4 and Women's D3 matches don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
 _Avoid_: Game, friendly
 
 **On Track**:

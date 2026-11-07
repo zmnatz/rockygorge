@@ -9,6 +9,13 @@ export interface TeamSide {
   level: number;
 }
 
+/** The National Championship Series covers men's divisions 1 to 3 and women's 1 and
+ *  2 (Senior Club Regulations, Terms and Definitions 34). Matches below that don't
+ *  count towards eligibility, so those sides aren't assessed. */
+export function isNcsSide({ gender, level }: Pick<TeamSide, 'gender' | 'level'>): boolean {
+  return level <= (gender === 'W' ? 2 : 3);
+}
+
 /** Reads a side's club and division from its name, e.g. "NOVA WD3". A team name
  *  that doesn't end in a division gives null. */
 export function parseTeamSide(teamName: string): TeamSide | null {

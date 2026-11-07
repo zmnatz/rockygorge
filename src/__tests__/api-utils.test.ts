@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { get, post, postWithRetry } from '@/utils/api';
+import { get, post, postWithRetry, requestStats, resetRequestStats } from '@/utils/api';
 
 function mockFetch(status: number, body?: unknown) {
   const response = {
@@ -156,5 +156,21 @@ describe('postWithRetry', () => {
       postWithRetry('/api/test', {}, null, { retries: 2, baseDelayMs: 1 })
     ).rejects.toThrow('Request failed: 429');
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('requestStats', () => {
+  it('counts requests, retries and time spent waiting between them', async () => {
+    resetRequestStats();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(mockFetch(429, {})())
+      .mockResolvedValueOnce(mockFetch(200, { data: 1 })());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await postWithRetry('/api/test', {}, null, { baseDelayMs: 1 });
+
+    expect(requestStats).toMatchObject({ requests: 2, retries: 1 });
+    expect(requestStats.waitMs).toBeGreaterThan(0);
   });
 });

@@ -82,12 +82,12 @@ describe('fixtures still to play with more than two sides', () => {
 
 describe('clubsInRows', () => {
   it("finds a CSV report's club and sides from its team names, for any club", () => {
-    const rows = ['Austin Blacks MD4', 'Austin Blacks MD1', 'Austin Blacks MD3', 'Austin Blacks MD2'].map((name) => row(name, 1));
+    const rows = ['Austin Blacks MD3', 'Austin Blacks MD1', 'Austin Blacks MD2'].map((name) => row(name, 1));
 
     expect(clubsInRows(rows)).toEqual([
       {
         name: 'Austin Blacks',
-        sides: [1, 2, 3, 4].map((level) => ({ teamName: `Austin Blacks MD${level}`, label: `D${level}` })),
+        sides: [1, 2, 3].map((level) => ({ teamName: `Austin Blacks MD${level}`, label: `D${level}` })),
       },
     ]);
   });
@@ -135,5 +135,24 @@ describe('sameNamePlayers', () => {
     );
 
     expect(sameNamePlayers(result)).toEqual([{ name: 'Sean Dougherty', ids: ['a', 'b'] }]);
+  });
+});
+
+describe('sides outside the National Championship Series', () => {
+  it("leaves out men's division 4 and women's division 3, whose matches don't count", () => {
+    const rows = ['Severn River MD3', 'Severn River MD4', 'NOVA WD1', 'NOVA WD3', 'Stingers WD3', 'Pax River MD4'].map(
+      (name) => row(name, 1),
+    );
+
+    expect(clubsInRows(rows)).toEqual([
+      { name: 'NOVA Women', sides: [{ teamName: 'NOVA WD1', label: 'D1' }] },
+      { name: 'Severn River', sides: [{ teamName: 'Severn River MD3', label: 'D3' }] },
+    ]);
+  });
+
+  it("keeps men's divisions 1 to 3 and women's divisions 1 and 2", () => {
+    const rows = ['Club MD1', 'Club MD2', 'Club MD3', 'Club WD1', 'Club WD2'].map((name) => row(name, 1));
+
+    expect(clubsInRows(rows).map((club) => club.sides.length)).toEqual([3, 2]);
   });
 });

@@ -15,6 +15,7 @@ import {
   type ScheduledFixture,
 } from '../src/utils/participation';
 import { readLeagueFixtures } from './lib/league-fixtures';
+import { logRequestStats } from './lib/log-request-stats';
 import {
   readManifest,
   recordRun,
@@ -72,6 +73,7 @@ async function generate() {
     fs.rmSync(path.join(path.dirname(outDir), 'players.json'), { force: true });
     recordRun('players', changed);
     console.log(`Saved ${histories.size} player histories to public/${PLAYERS_SNAPSHOT_DIR}/`);
+    logRequestStats('players');
   } catch (err) {
     console.warn(
       'Player histories unavailable, keeping previous snapshot:',

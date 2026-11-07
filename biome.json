@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
   "files": {
-    "includes": ["**", "!**/.next", "!**/build", "!**/.netlify", "!**/.cache"]
+    "includes": ["**", "!**/.next", "!**/build", "!**/.netlify", "!**/.cache", "!**/public/data", "!**/public/crests"]
   },
   "formatter": { "enabled": false },
   "assist": { "enabled": false },

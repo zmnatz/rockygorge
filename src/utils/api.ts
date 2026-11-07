@@ -45,6 +45,13 @@ interface RetryOptions {
   baseDelayMs?: number;
 }
 
+/** Counts for the current process, so a snapshot job can report where its time went. */
+export const requestStats = { requests: 0, retries: 0, waitMs: 0, requestMs: 0 };
+
+export function resetRequestStats(): void {
+  Object.assign(requestStats, { requests: 0, retries: 0, waitMs: 0, requestMs: 0 });
+}
+
 function statusFromError(error: unknown): number | undefined {
   const match = String((error as Error)?.message ?? '').match(
     /Request failed: (\d{3})/
@@ -68,6 +75,8 @@ export async function postWithRetry<T>(
   const baseDelayMs = options?.baseDelayMs ?? 1000;
 
   for (let attempt = 0; ; attempt++) {
+    const startedAt = Date.now();
+    requestStats.requests += 1;
     try {
       return await post<T>(url, body, accessToken);
     } catch (error) {
@@ -77,7 +86,12 @@ export async function postWithRetry<T>(
       if (!retryable || attempt >= retries) {
         throw error;
       }
-      await sleep(baseDelayMs * 2 ** attempt + Math.random() * 250);
+      const delay = baseDelayMs * 2 ** attempt + Math.random() * 250;
+      requestStats.retries += 1;
+      requestStats.waitMs += delay;
+      await sleep(delay);
+    } finally {
+      requestStats.requestMs += Date.now() - startedAt;
     }
   }
 }

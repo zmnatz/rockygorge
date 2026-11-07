@@ -4,6 +4,7 @@ import type {
   StandingsSnapshotIndex,
 } from '../src/api/capital';
 import { readLeagueFixtures } from './lib/league-fixtures';
+import { logRequestStats } from './lib/log-request-stats';
 import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
@@ -81,6 +82,7 @@ async function generate() {
     console.log(
       `Saved scoring leaders for ${snapshot.attempted - snapshot.failed} of ${snapshot.attempted} games across ${seasons.length} seasons to public/data/leaders/`
     );
+    logRequestStats('leaders');
   } catch (err) {
     console.warn('Leaderboard unavailable, keeping previous snapshot:', (err as Error).message);
   }

@@ -260,7 +260,8 @@ function PossibleFixtures({ player, schedule }: { player: PlayerEligibility; sch
       <Typography variant="subtitle2">Possible fixtures: {possible.length} left</Typography>
       <Typography variant="caption" color="text.secondary">
         Why this player is on track. They could still reach the minimum in these fixtures, though
-        availability isn&apos;t checked and a side may not reach a playoff.
+        availability isn&apos;t checked and a side may not reach a playoff. On track is experimental:
+        future playoff matches aren&apos;t always entered in Rugby Xplorer, so this list may be incomplete.
       </Typography>
       <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
         <Table size="small">
