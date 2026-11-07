@@ -4,15 +4,16 @@ name: Deploy preview screenshots
 # on the orphan `pr-screenshots` branch (so they can be embedded inline), and
 # keeps one sticky comment on the PR up to date.
 #
-# Runs when Netlify reports a successful deploy preview (a `deployment_status`
-# event whose URL starts with https://deploy-preview-), so it never waits on
-# the deploy. Such workflows run from the default branch's copy of this file:
-# changes here take effect once merged. Can also be run by hand with a preview
+# Runs when Netlify reports a successful deploy preview (a `status` event from
+# the deploy/netlify context whose URL starts with https://deploy-preview-), so
+# it never waits on the deploy. Netlify posts commit statuses, not GitHub
+# deployments, so `deployment_status` never fires here. Such workflows run from
+# the default branch's copy of this file: changes here take effect once merged. Can also be run by hand with a preview
 # URL and PR number. Pages come from the PR description's `## Screenshots`
 # section plus routes mapped from changed files (playwright/config/screenshots.yml); `/`
 # is always included.
 on:
-  deployment_status:
+  status:
   workflow_dispatch:
     inputs:
       preview_url:
@@ -27,7 +28,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: screenshots-${{ inputs.pr_number || github.event.deployment_status.environment_url }}
+  group: screenshots-${{ inputs.pr_number || github.event.target_url }}
   cancel-in-progress: true
 
 env:
@@ -39,8 +40,9 @@ jobs:
     # Ignore production and branch deploys: only successful deploy previews.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       startsWith(github.event.deployment_status.environment_url, 'https://deploy-preview-'))
+      (github.event.state == 'success' &&
+       github.event.context == 'deploy/netlify' &&
+       startsWith(github.event.target_url, 'https://deploy-preview-'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
@@ -57,7 +59,7 @@ jobs:
         env:
           INPUT_URL: ${{ inputs.preview_url }}
           INPUT_PR: ${{ inputs.pr_number }}
-          EVENT_URL: ${{ github.event.deployment_status.environment_url }}
+          EVENT_URL: ${{ github.event.target_url }}
         run: |
           url="${INPUT_URL:-$EVENT_URL}"
           url="${url%/}"
@@ -98,7 +100,9 @@ jobs:
           PR: ${{ steps.ctx.outputs.pr }}
         run: |
           gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json body -q .body > pr-body.md
-          gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only > changed-files.txt
+          # Not `gh pr diff`, which fails above 300 files. This API returns up to
+          # 3000, enough to map routes; the description can list any it misses.
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename' > changed-files.txt
 
       - name: Take screenshots
         env:
