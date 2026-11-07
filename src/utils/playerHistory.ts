@@ -353,6 +353,7 @@ function newestFirst(
 export async function buildPlayerHistories(options?: BuildOptions): Promise<{
   histories: Map<string, PlayerHistory>;
   results: FixtureLookupItem[];
+  matches: MatchCentreData[];
 }> {
   const results = (await fetchAllFixtures()).filter(
     (fixture) =>
@@ -371,7 +372,7 @@ export async function buildPlayerHistories(options?: BuildOptions): Promise<{
     );
   }
 
-  return { histories: aggregatePlayerHistory(matches), results };
+  return { histories: aggregatePlayerHistory(matches), results, matches };
 }
 
 export interface FetchMatchesOptions {

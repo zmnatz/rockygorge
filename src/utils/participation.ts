@@ -292,6 +292,19 @@ export interface ScheduledFixture {
 const isScored = (fixture: { homeTeam: { score: string }; awayTeam: { score: string } }) =>
   fixture.homeTeam.score !== '' && fixture.awayTeam.score !== '';
 
+/** Played fixtures in the schedule that the club feed doesn't have. The club feed
+ *  only covers Rocky Gorge's competitions, and the schedule has every side's. */
+export function scheduledResults(
+  results: { id: string }[],
+  schedule: ScheduledFixture[],
+  now: Date = new Date(),
+): ScheduledFixture[] {
+  const known = new Set(results.map((fixture) => fixture.id));
+  return schedule.filter(
+    (fixture) => !known.has(fixture.id) && isScored(fixture) && new Date(fixture.dateTime) <= now,
+  );
+}
+
 /** Pulls one club's latest-season participation live. The schedule comes from the
  *  nightly fixture list, and each played match's score and lineup from the CMS.
  *  Throws if any match can't be fetched, since a partial count could wrongly pass

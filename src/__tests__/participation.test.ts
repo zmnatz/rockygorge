@@ -8,6 +8,7 @@ import {
   listClubs,
   loadClubRecord,
   participationRows,
+  scheduledResults,
   type ParticipationSnapshot,
   type ResultFixture,
 } from '@/utils/participation';
@@ -582,5 +583,70 @@ describe('loadClubRecord', () => {
     );
 
     expect(record).toMatchObject({ source: 'saved', liveFailed: false });
+  });
+});
+
+describe('scheduledResults', () => {
+  const NOW = new Date('2026-11-06T12:00:00Z');
+  const scheduled = (id: string, overrides: Record<string, unknown> = {}) => ({
+    id,
+    compId: 'd2',
+    compName: 'Capital Men D2',
+    season: SEASON,
+    dateTime: '2026-10-17T17:00:00Z',
+    status: 'Result',
+    sourceType: '2',
+    homeTeam: { name: 'James River MD2', score: '10' },
+    awayTeam: { name: 'Raleigh MD2', score: '5' },
+    ...overrides,
+  });
+
+  it("adds played fixtures the club feed doesn't have, and nothing else", () => {
+    const unscored = {
+      homeTeam: { name: 'James River MD2', score: '' },
+      awayTeam: { name: 'Raleigh MD2', score: '' },
+    };
+    const extra = scheduledResults(
+      [result('in-feed')],
+      [
+        scheduled('in-feed'),
+        scheduled('d2-result'),
+        scheduled('women', { compName: 'Atlantic Women D1' }),
+        scheduled('not-played', unscored),
+        scheduled('upcoming-placeholder', { dateTime: '2026-11-14T17:00:00Z' }),
+      ],
+      NOW,
+    );
+
+    expect(extra.map((fixture) => fixture.id)).toEqual(['d2-result', 'women']);
+  });
+
+  it('gives a side outside the club feed rows, and a gap when it has no lineup', () => {
+    const [withLineup, withoutLineup] = scheduledResults(
+      [],
+      [scheduled('f1'), scheduled('f2', { dateTime: '2026-10-24T17:00:00Z' })],
+      NOW,
+    );
+    const snapshot = buildParticipationSnapshot(
+      [
+        history('jo', 'Jo Prop', [
+          game('f1', { compName: 'Capital Men D2', teamName: 'James River MD2', opponent: 'Raleigh MD2' }),
+        ]),
+        history('al', 'Al Lock', [
+          game('f1', { compName: 'Capital Men D2', teamName: 'Raleigh MD2', opponent: 'James River MD2' }),
+        ]),
+      ],
+      [withLineup, withoutLineup],
+      NOW,
+    );
+
+    expect(snapshot.rows.map((row) => [row.teamName, row.played])).toEqual([
+      ['James River MD2', 1],
+      ['Raleigh MD2', 1],
+    ]);
+    expect(snapshot.gaps.map((gap) => [gap.fixtureId, gap.teamName, gap.kind])).toEqual([
+      ['f2', 'James River MD2', 'no-lineup'],
+      ['f2', 'Raleigh MD2', 'no-lineup'],
+    ]);
   });
 });
