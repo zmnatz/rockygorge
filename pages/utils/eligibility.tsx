@@ -736,8 +736,8 @@ export default function EligibilityPage() {
         {source === 'record'
           ? `Pick a club to see which players are NCS-eligible, from the league and
              local playoff lineups in the match record. Participation counts starts and
-             substitute appearances. Lists clubs with exactly two sides, the case these
-             rules cover. This is a guide: the Rugby Xplorer report is the official count,
+             substitute appearances; a listed player who never enters the game doesn't
+             count. Lists clubs with two sides. This is a guide: the Rugby Xplorer report is the official count,
              and the record has no registration data, so check registration separately.`
           : `Paste or upload the Rugby Xplorer matches-played report to see which
              players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.

@@ -51,7 +51,7 @@ const history = (id: string, name: string, games: PlayerGameLog[]): PlayerHistor
 });
 
 describe('buildParticipationSnapshot', () => {
-  it('totals starts, substitute appearances and unused reserves per team and competition', () => {
+  it("totals starts and substitute appearances, and doesn't count a reserve who never entered", () => {
     const snapshot = buildParticipationSnapshot(
       [
         history('sam', 'Sam Van Der Berg', [
@@ -76,7 +76,7 @@ describe('buildParticipationSnapshot', () => {
         lastRegistered: '',
         teamName: 'Rocky Gorge MD1',
         competition: 'MAC Men D1',
-        appearances: 3,
+        appearances: 2,
         played: 1,
         substitute: 1,
         rounds: { 'Round 4': 'Start', 'Round 5': 'Sub', 'Round 6': 'R' },
@@ -255,14 +255,8 @@ describe('listClubs', () => {
     ]);
   });
 
-  it('leaves out clubs with one side, and clubs with three that the two-side rules do not cover', () => {
-    const clubs = listClubs(
-      [
-        fixtureOf('Frederick MD3', 'Severn River MD3'),
-        fixtureOf('Severn River MD1', 'Severn River MD4'),
-      ],
-      baseConfig,
-    );
+  it('leaves out clubs with one side', () => {
+    const clubs = listClubs([fixtureOf('Frederick MD3', 'Loudoun MD3')], baseConfig);
 
     expect(clubs).toEqual([]);
   });

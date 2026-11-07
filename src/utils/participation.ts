@@ -99,7 +99,7 @@ export function buildParticipationSnapshot(
         substitute: 0,
         rounds: {},
       };
-      row.appearances += 1;
+      if (game.played) row.appearances += 1;
       if (game.starter) row.played += 1;
       else if (game.played) row.substitute += 1;
       row.rounds[fixture.round || game.dateTime.slice(0, 10)] = roundCode(game);
@@ -185,7 +185,7 @@ interface FixtureSides {
   awayTeam: { name: string };
 }
 
-/** Clubs with exactly two sides in qualifying competitions, by name. A team name
+/** Clubs with two sides in qualifying competitions, by name. A team name
  *  that doesn't end in a division can't be ranked and is skipped. */
 export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): Club[] {
   const clubs = new Map<string, { name: string; sides: Map<string, number> }>();
