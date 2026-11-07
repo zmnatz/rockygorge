@@ -1,6 +1,6 @@
 import { sleep } from '@/utils/api';
 import { type CapitalFixture, compareCompNames, isLeagueComp, isResult } from '@/api/capital';
-import { fetchMatchCentre, playerKey } from '@/utils/playerHistory';
+import { isNameWithheld, type MatchCentreData, playerKey } from '@/utils/playerHistory';
 import { type ScoringKind, scoringKind } from '@/utils/scoring';
 
 // Player scoring leaderboards per season and division, built from match
@@ -76,10 +76,6 @@ export interface LeadersDivision {
   players: PlayerLine[];
 }
 
-// The CMS shows players who opt out of publication as "Name Withheld".
-// Different people share it, so it is never credited as a player.
-const WITHHELD = 'name withheld';
-
 function normalizeName(name: string): string {
   return name.trim().replace(/\s+/g, ' ').toLowerCase();
 }
@@ -146,7 +142,7 @@ export function tallyLeaders(
       const named = roster.filter((entry) => normalizeName(entry.name) === wanted);
       const sides = new Set(named.map((entry) => entry.isHome));
       const player = named[0];
-      if (!wanted || wanted === WITHHELD || !player || sides.size !== 1) {
+      if (!wanted || isNameWithheld(wanted) || !player || sides.size !== 1) {
         division.unattributed += 1;
         continue;
       }
@@ -267,15 +263,10 @@ export async function buildLeadersSnapshot({
   return { generatedAt: at.toISOString(), seasons: tallyLeaders(matches, played), attempted, failed };
 }
 
-// CMS adapter: the match centre for one fixture, trimmed to what the
-// leaderboard needs (scoring commentary and lineup names) so cached games
-// stay small. Division and season come from the fixture list, which is
+// A match centre trimmed to what the leaderboard needs: scoring commentary and
+// lineup names. Division and season come from the fixture list, which is
 // authoritative for both.
-export async function fetchLeaderMatch(fixture: CapitalFixture): Promise<LeaderMatch | null> {
-  const data = await fetchMatchCentre(fixture);
-  if (!data) {
-    return null;
-  }
+export function leaderMatchFrom(fixture: CapitalFixture, data: MatchCentreData): LeaderMatch {
   const lineup = (players: LineupEntry[]) =>
     players.map(({ id, name, isHome }) => ({ id, name, isHome }));
   return {

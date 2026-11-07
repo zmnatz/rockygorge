@@ -129,6 +129,9 @@ export function nextGamedayMatch(resolved: ResolvedGameday): SideMatch | null {
   return resolved.kind === 'next' ? (resolved.matches[0] ?? null) : null;
 }
 
+/** How many results the home page's ticker shows. */
+export const HOME_RESULT_COUNT = 4;
+
 // What the home page inlines from the full season snapshot: the newest
 // results (the ticker, plus the recap window the next-game card checks
 // against) and the next upcoming fixtures, one per Side so a doubleheader
@@ -172,6 +175,39 @@ export function gamedaySeedScores<
     SEED_GAMEDAYS
   );
   return club.filter((score) => days.includes(toLocalDayKey(score.dateTime)));
+}
+
+// What the home and Gameday pages' static HTML would show if built at `now`. The
+// nightly job saves it, so a commit, and with it a build, happens on a night that
+// changes first paint even when no match data changed: a match day arriving, a
+// recap ending, the next fixture passing. Other quiet nights stay quiet.
+export function firstPaintKey<T extends GamedayFixtureInput>(
+  scores: T[],
+  sides: GamedaySide[],
+  now: Date = new Date()
+) {
+  const view = (seed: T[]) => {
+    const fixtures = seed.map((score) => ({
+      ...score,
+      status: score.status ?? '',
+      isLive: score.isLive ?? false,
+    }));
+    const { kind, date } = resolveGameday(fixtures, sides, now);
+    return { fixtures: seed.map((score) => score.id), kind, date };
+  };
+  return {
+    home: view(homePageScores(scores, HOME_RESULT_COUNT, sides.length, now)),
+    gameday: view(gamedaySeedScores(scores, sides, now)),
+  };
+}
+
+interface GamedayFixtureInput {
+  id: string;
+  dateTime: string;
+  status?: string;
+  isLive?: boolean;
+  homeTeam: { name: string; score: string };
+  awayTeam: { name: string; score: string };
 }
 
 // Default toggle pick for the day: the live Match, else the earlier

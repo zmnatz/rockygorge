@@ -70,7 +70,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
                 fontWeight: homeWon ? 'bold' : 'normal',
               }}
             >
-              <Crest src={score.homeTeam.crest} alt="" />
+              <Crest src={score.homeTeam.crest} alt="" name={score.homeTeam.name} />
               <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
                 {score.homeTeam.name}
               </Typography>
@@ -86,7 +86,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
                 fontWeight: awayWon ? 'bold' : 'normal',
               }}
             >
-              <Crest src={score.awayTeam.crest} alt="" />
+              <Crest src={score.awayTeam.crest} alt="" name={score.awayTeam.name} />
               <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0 }}>
                 {score.awayTeam.name}
               </Typography>
@@ -130,7 +130,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
                   mt: 0.5,
                 }}
               >
-                <Crest src={score.homeTeam.crest} alt="" />
+                <Crest src={score.homeTeam.crest} alt="" name={score.homeTeam.name} />
                 <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
                   {score.homeTeam.score}
                 </Typography>
@@ -148,7 +148,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
                 <Typography variant="body2" sx={{ fontWeight: 'bold', flexShrink: 0 }}>
                   {score.awayTeam.score}
                 </Typography>
-                <Crest src={score.awayTeam.crest} alt="" />
+                <Crest src={score.awayTeam.crest} alt="" name={score.awayTeam.name} />
               </Box>
             </Box>
           </Box>
@@ -251,6 +251,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
           <Crest
             src={score.homeTeam.crest}
             alt={score.homeTeam.name}
+            name={score.homeTeam.name}
             size="md"
           />
           <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
@@ -272,6 +273,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
           <Crest
             src={score.awayTeam.crest}
             alt={score.awayTeam.name}
+            name={score.awayTeam.name}
             size="md"
           />
           <Typography variant="body1" noWrap sx={{ flex: 1, minWidth: 0 }}>
@@ -309,6 +311,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
           <Crest
             src={score.homeTeam.crest}
             alt={score.homeTeam.name}
+            name={score.homeTeam.name}
             size={large ? 'xl' : 'lg'}
           />
           <Box
@@ -371,6 +374,7 @@ export function ScoreCard({ score, compact, large, location, kickoff, hideFooter
           <Crest
             src={score.awayTeam.crest}
             alt={score.awayTeam.name}
+            name={score.awayTeam.name}
             size={large ? 'xl' : 'lg'}
           />
           <Box

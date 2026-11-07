@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { crestEntityId } from '@/utils/rugbyXplorer';
+import { parseTeamSide } from '@/utils/teamSide';
 import { useMemo } from 'react';
-import { postWithRetry, sleep } from '@/utils/api';
+import { mapConcurrent, postWithRetry, sleep } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
 
 export const CAPITAL_UNION_ID = 90067;
@@ -16,6 +18,7 @@ export const CLUB_ENTITY_TYPE = 'club';
 const SCORES_URL = 'https://rugby-au-cms.graphcdn.app';
 const PAGE_SIZE = 100;
 const MAX_FIXTURES = 1500;
+const CLUB_FEED_CONCURRENCY = 3;
 const FETCH_GAP_MS = 300;
 
 export interface CapitalTeam {
@@ -155,15 +158,22 @@ async function fetchFixturesPage(
   return response.data.getEntityFixturesAndResults ?? [];
 }
 
+// Whether a page of a feed has nothing from the seasons still being read. Feeds
+// list newest first closely enough to stop there: checked on every current feed.
+export function isPastPage(page: CapitalFixture[], refreshFrom: string): boolean {
+  return refreshFrom !== '' && page.every((fixture) => fixture.season < refreshFrom);
+}
+
 async function fetchFeed(
   entityId: number,
-  entityType: string
+  entityType: string,
+  refreshFrom = ''
 ): Promise<CapitalFixture[]> {
   const all: CapitalFixture[] = [];
   for (let skip = 0; skip < MAX_FIXTURES; skip += PAGE_SIZE) {
     const page = await fetchFixturesPage(entityId, entityType, skip);
     all.push(...page);
-    if (page.length < PAGE_SIZE) {
+    if (page.length < PAGE_SIZE || isPastPage(page, refreshFrom)) {
       break;
     }
     await sleep(FETCH_GAP_MS);
@@ -222,6 +232,66 @@ function withBestCrest(
   return crest ? { ...team, crest } : team;
 }
 
+// The union's feed misses some of its own fixtures, which appear only in the
+// feeds of the clubs playing them. Those feeds also list matches in other unions'
+// competitions, so only the league's own competitions are taken from them.
+export function mergeLeagueFeeds(
+  base: CapitalFixture[],
+  clubFeeds: CapitalFixture[][]
+): CapitalFixture[] {
+  const competitions = new Set(base.map((fixture) => fixture.compId));
+  return clubFeeds.reduce(
+    (merged, feed) =>
+      mergeFixtures(
+        merged,
+        feed.filter((fixture) => competitions.has(fixture.compId))
+      ),
+    base
+  );
+}
+
+// The clubs whose feeds to read: those with a side in a season still being
+// refreshed. A side whose fixtures only carry the placeholder crest gets its id
+// from the saved club list instead.
+export function leagueClubIds(
+  fixtures: CapitalFixture[],
+  savedClubs: Record<string, { crest: string | null } | undefined>,
+  refreshFrom: string
+): number[] {
+  const ids = new Set<number>();
+  for (const fixture of fixtures) {
+    if (fixture.season < refreshFrom) {
+      continue;
+    }
+    for (const team of [fixture.homeTeam, fixture.awayTeam]) {
+      const clubName = parseTeamSide(team.name)?.clubName;
+      for (const crest of [team.crest, clubName ? savedClubs[clubName]?.crest : null]) {
+        const id = crest ? crestEntityId(crest) : null;
+        if (id) {
+          ids.add(Number(id));
+        }
+      }
+    }
+  }
+  return [...ids];
+}
+
+// Every club's fixtures in the league, for the nightly snapshot. A failed feed
+// throws, because a missing fixture would undercount players without any sign.
+export async function fetchLeagueFixtures(
+  savedClubs: Record<string, { crest: string | null } | undefined>,
+  refreshFrom: string
+): Promise<CapitalFixture[]> {
+  const base = mergeFixtures(
+    await fetchFeed(CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE, refreshFrom),
+    await fetchFeed(CLUB_ENTITY_ID, CLUB_ENTITY_TYPE, refreshFrom)
+  );
+  const clubFeeds = await mapConcurrent(leagueClubIds(base, savedClubs, refreshFrom), CLUB_FEED_CONCURRENCY, (id) =>
+    fetchFeed(id, CLUB_ENTITY_TYPE, refreshFrom)
+  );
+  return backfillCrests(mergeLeagueFeeds(base, clubFeeds));
+}
+
 export async function fetchAllCapitalFixtures(): Promise<CapitalFixture[]> {
   const union = await fetchFeed(CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE);
   const club = await fetchFeed(CLUB_ENTITY_ID, CLUB_ENTITY_TYPE);
@@ -234,6 +304,11 @@ export async function fetchAllCapitalFixtures(): Promise<CapitalFixture[]> {
 export async function findCapitalFixtureById(
   matchId: string
 ): Promise<CapitalFixture | undefined> {
+  // The nightly list covers fixtures neither live feed has, with no CMS requests.
+  const saved = await findSavedFixture(matchId);
+  if (saved) {
+    return saved;
+  }
   for (const [entityId, entityType] of [
     [CAPITAL_UNION_ID, CAPITAL_ENTITY_TYPE],
     [CLUB_ENTITY_ID, CLUB_ENTITY_TYPE],
@@ -300,6 +375,18 @@ async function fetchSnapshotFile<T>(file: string): Promise<T | null> {
     // No prebuilt snapshot (e.g. dev before first generate) -- live fills in.
     return null;
   }
+}
+
+async function findSavedFixture(matchId: string): Promise<CapitalFixture | undefined> {
+  const index = await fetchSnapshotFile<StandingsSnapshotIndex>('index.json');
+  for (const season of index?.seasons ?? []) {
+    const snapshot = await fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season));
+    const found = snapshot?.fixtures?.find((fixture) => fixture.id === matchId);
+    if (found) {
+      return found;
+    }
+  }
+  return undefined;
 }
 
 // The current season's fixtures from the nightly snapshot: every side's
@@ -383,7 +470,14 @@ export function splitStandingsSnapshot(snapshot: StandingsSnapshot): {
   for (const fixture of snapshot.fixtures) {
     seasons[fixture.season]?.fixtures.push(fixture);
   }
-  for (const [key, ladder] of Object.entries(snapshot.ladders)) {
+  // The CMS returns tied fixtures in varying order, which would look like a change.
+  for (const season of Object.values(seasons)) {
+    season.fixtures.sort(
+      (a, b) =>
+        new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime() || a.id.localeCompare(b.id)
+    );
+  }
+  for (const [key, ladder] of Object.entries(snapshot.ladders).sort(([a], [b]) => a.localeCompare(b))) {
     const season = key.slice(key.indexOf('|') + 1);
     if (seasons[season]) {
       seasons[season].ladders[key] = ladder;
@@ -799,15 +893,34 @@ export async function buildStandingsSnapshot({
   fetchLadder = fetchCompLadder,
   now = () => new Date(),
   gapMs = 0,
+  saved,
+  refreshFrom = '',
 }: {
   fetchFixtures?: () => Promise<CapitalFixture[]>;
   fetchLadder?: (key: LadderKey) => Promise<CompLadder | null>;
   now?: () => Date;
   gapMs?: number;
+  /** The previous snapshot, whose seasons before `refreshFrom` are kept as they are. */
+  saved?: Pick<StandingsSnapshot, 'fixtures' | 'ladders'>;
+  /** The earliest season to read again. Past seasons don't change. */
+  refreshFrom?: string;
 } = {}): Promise<StandingsSnapshot> {
-  const fixtures = await fetchFixtures();
-  const ladders: Record<string, CompLadder> = {};
-  for (const key of ladderKeysOf(fixtures)) {
+  const fresh = await fetchFixtures();
+  const fixtures = saved
+    ? [
+        ...fresh.filter((fixture) => fixture.season >= refreshFrom),
+        ...saved.fixtures.filter((fixture) => fixture.season < refreshFrom),
+      ]
+    : fresh;
+  const ladders: Record<string, CompLadder> = saved
+    ? Object.fromEntries(
+        Object.entries(saved.ladders).filter(
+          ([key]) => key.slice(key.indexOf('|') + 1) < refreshFrom
+        )
+      )
+    : {};
+  const toFetch = ladderKeysOf(fixtures).filter((key) => !saved || key.season >= refreshFrom);
+  for (const key of toFetch) {
     // A missing ladder just falls back to the live fetch on the page.
     const ladder = await fetchLadder(key).catch(() => null);
     if (ladder) {

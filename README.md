@@ -53,9 +53,9 @@ bun run build
 
 Outputs a static site to the `build/` directory.
 
-CMS-derived JSON snapshots (`public/data/`, `public/crests/`, `.cache/leaders`) are committed and
-refreshed nightly by a GitHub Action; a build skips regenerating any snapshot
-under 24 hours old. To force a refresh use `bun run generate:force` (or
+CMS-derived JSON snapshots (`public/data/`, `public/crests/`, `.cache/matches`) are committed and
+refreshed nightly by a GitHub Action; a build uses them as they are and never
+contacts the CMS. To force a refresh use `bun run generate:force` (or
 `bun run build:force` to also build). See [docs/snapshots.md](docs/snapshots.md).
 
 ### Other Commands

@@ -11,7 +11,7 @@
 
   [plugins.inputs]
     # .next/cache speeds up page prerendering. The generated snapshots
-    # (public/data, public/crests, .cache/leaders) are committed to the repo,
+    # (public/data, public/crests, .cache/matches) are committed to the repo,
     # so they must NOT be cached here: a restored cache would overwrite the
     # fresher committed copies.
     paths = [".next/cache"]

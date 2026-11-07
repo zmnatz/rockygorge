@@ -1,22 +1,14 @@
-# Player eligibility thresholds and team roles.
-# Source: USA Senior Club Regulations, current edition (§3.4.2, §3.5).
-# See docs/adr/008-eligibility-rules.md for the interpretations encoded here.
+# Player eligibility thresholds.
+# Source: USA Club Rugby Senior Club Regulations 2026-27 (§3.4.2, §3.5).
+# See docs/adr/012-eligibility-for-any-number-of-sides.md.
 
-upperDivision:
-  teamName: "Rocky Gorge MD1"
-  label: "D1"
-  # Reg 3.4.2(d) / 3.5.2(c): at least two NCS Qualifying Matches at any level with the club.
-  minimumTotalMatches: 2
+# Reg 3.4.2(e): at least two NCS Qualifying matches with the club. Reg 3.5.2(a) applies it
+# at a lower side's own level or below; Reg 3.5.2(b) at any level for the top side.
+minimumMatches: 2
 
-lowerDivision:
-  teamName: "Rocky Gorge MD3"
-  label: "D3"
-  # Reg 3.5.2(a): at least two NCS Qualifying Matches at the lower division itself.
-  minimumMatches: 2
-  # Reg 3.5(d)(i): on playing a fourth upper-division match the player is no longer eligible for the lower side.
-  upperMatchLimit: 4
-  # Reg 3.5(d)(ii)(a) + Figure 1: lower-division participation must be at least the upper-division count.
-  lowerAtLeastUpper: true
+# Reg 3.5(d)(i): on playing a fourth match for any upper side, a player is no longer
+# eligible for the lower side(s).
+upperMatchLimit: 4
 
 # Competitions that aren't NCS Qualifying Matches. League and local playoff matches count.
 # Case-insensitive name fragments. Applied to the match record and to possible future
@@ -28,3 +20,6 @@ nonQualifyingCompetitions:
   - "7s"
   - "7's"
   - "Sevens"
+  - "Friendly"
+  - "Friendlies"
+  - "Crossover"

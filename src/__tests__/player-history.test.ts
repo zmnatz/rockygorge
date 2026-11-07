@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   aggregatePlayerHistory,
+  fetchMatchCentres,
   fetchMatches,
+  fetchMatchesInBatches,
+  isNameWithheld,
   isScoreEventType,
   loadPlayerHistory,
-  mergeSavedHistories,
   playerKey,
 } from '@/utils/playerHistory';
 
@@ -66,6 +68,52 @@ function fixture(id: string, homeScore: string, awayScore: string) {
 }
 
 describe('aggregatePlayerHistory', () => {
+  it('tidies stray spaces in a name, as the CMS sometimes has them', () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [],
+        players: [{ id: 'chan__1', name: ' Chandler  Dodge ', position: '1', shirtNumber: '1', isHome: true }],
+        substitutes: [],
+        coaches: [],
+      },
+    ]);
+
+    expect(histories.get('chan')?.name).toBe('Chandler Dodge');
+  });
+
+  it("takes a player's name and team from their latest match, whichever finished downloading first", () => {
+    const match = (id: string, dateTime: string, name: string) => ({
+      fixture: { ...fixture(id, '15', '22'), dateTime },
+      commentary: [],
+      players: [{ id: 'gabby__1', name, position: '1', shirtNumber: '1', isHome: true }],
+      substitutes: [],
+      coaches: [],
+    });
+    const older = match('old', '2026-09-01T17:00:00Z', 'Gabby Morris');
+    const newer = match('new', '2026-10-01T17:00:00Z', 'Gabrielle Morris');
+
+    expect(aggregatePlayerHistory([older, newer]).get('gabby')?.name).toBe('Gabrielle Morris');
+    expect(aggregatePlayerHistory([newer, older]).get('gabby')?.name).toBe('Gabrielle Morris');
+  });
+
+  it('keeps no record for a hidden profile, in any spelling, as a lineup spot is not a person', () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [{ id: 'c1', minute: '12', type: 'Try', comment: 'Try - Name Withheld' }],
+        players: [
+          { id: 'hidden__1', name: 'Name Withheld', position: '1', shirtNumber: '1', isHome: true },
+          { id: 'real__2', name: 'Sam Hooker', position: '2', shirtNumber: '2', isHome: true },
+        ],
+        substitutes: [{ id: 'also-hidden__16', name: ' name  withheld ', position: '16', shirtNumber: '16', isHome: true }],
+        coaches: [],
+      },
+    ]);
+
+    expect([...histories.keys()]).toEqual(['real']);
+  });
+
   it('records games, starter status and matching scoring events', () => {
     const histories = aggregatePlayerHistory([
       {
@@ -350,7 +398,7 @@ describe('aggregatePlayerHistory substitute matching', () => {
 
   it('credits one substitute for each event when several share a name', () => {
     expect(
-      cameOn([sub('a', 'Name Withheld', true), sub('b', 'Name Withheld', true)], ['Name Withheld']),
+      cameOn([sub('a', 'Sam Smith', true), sub('b', 'Sam Smith', true)], ['Sam Smith']),
     ).toEqual([true, false]);
   });
 
@@ -427,78 +475,102 @@ describe('fetchMatches', () => {
   });
 });
 
-describe('mergeSavedHistories', () => {
-  const CURRENT = '2026/2027';
-  const logged = (fixtureId: string, season: string, dateTime: string) => ({
-    fixtureId,
-    season,
-    dateTime,
-    compName: 'MAC Men D1',
-    teamName: 'Rocky Gorge MD1',
-    opponent: 'NOVA MD1',
-    scoreFor: '10',
-    scoreAgainst: '5',
-    result: 'W' as const,
-    starter: true,
-    played: true,
-    coach: false,
-  });
-  const scored = (fixtureId: string, season: string, dateTime: string) => ({
-    id: `${fixtureId}-try`,
-    fixtureId,
-    season,
-    dateTime,
-    compName: 'MAC Men D1',
-    opponent: 'NOVA MD1',
-    minute: '10',
-    type: 'Try',
-    comment: 'Try - Sam Hooker',
-  });
-  const old = logged('old', '2025/2026', '2025-10-01T17:00:00Z');
-  const stale = logged('stale', CURRENT, '2026-09-01T17:00:00Z');
-  const fresh = logged('fresh', CURRENT, '2026-10-01T17:00:00Z');
-  const history = (id: string, games: typeof old[], scoringEvents: ReturnType<typeof scored>[] = []) => ({
-    id,
-    name: 'Sam Hooker',
-    teamName: 'Rocky Gorge MD1',
-    games,
-    scoringEvents,
+describe('isNameWithheld', () => {
+  it.each(['Name Withheld', 'name withheld', ' Name  Withheld '])('recognises %j', (name) => {
+    expect(isNameWithheld(name)).toBe(true);
   });
 
-  it("keeps saved past seasons and replaces the current season's games, newest first", () => {
-    const merged = mergeSavedHistories(
-      [history('sam', [old, stale], [scored('old', '2025/2026', old.dateTime), scored('stale', CURRENT, stale.dateTime)])],
-      new Map([['sam', history('sam', [fresh], [scored('fresh', CURRENT, fresh.dateTime)])]]),
-      CURRENT,
+  it('does not match a real name', () => {
+    expect(isNameWithheld('Sam Withheld')).toBe(false);
+  });
+});
+
+describe('fetching match centres in batches', () => {
+  const fixtureFor = (id: string) => ({ id, compId: `comp-${id}`, season: '2026/2027', sourceType: '2' });
+  const part = (id: string) => ({
+    getFixtureItem: {
+      id,
+      compId: `comp-${id}`,
+      compName: 'Capital Men D3',
+      dateTime: '2026-10-10T17:00:00Z',
+      season: '2026/2027',
+      venue: '',
+      homeTeam: { id: 'h', name: 'Club MD3', teamId: 'h', score: '10', crest: '' },
+      awayTeam: { id: 'a', name: 'Other MD3', teamId: 'a', score: '5', crest: '' },
+    },
+    allMatchCommentary: [],
+    allMatchStatsSummary: {
+      lineUp: { players: [{ id: `${id}-p__1`, name: 'Sam Hooker', position: '1', shirtNumber: '1', isHome: true }], substitutes: [], coaches: [] },
+    },
+  });
+  const respond = (body: unknown) => ({
+    ok: true,
+    status: 200,
+    headers: new Headers(),
+    json: () => Promise.resolve(body),
+    text: () => Promise.resolve(JSON.stringify(body)),
+  });
+  /** Answers a batched or single match query from its variables, as the CMS does. */
+  const cms = (handle: (ids: string[]) => { data: Record<string, unknown> | null; errors?: unknown[] }) =>
+    vi.fn(async (_url: string, init: RequestInit) => {
+      const { variables, operationName } = JSON.parse(String(init.body));
+      const ids = Object.values(variables).map((comp) => (comp as { fixture: string }).fixture);
+      const body = handle(ids);
+      if (operationName !== 'PlayerHistoryMatchCentreQuery' || !body.data) return respond(body);
+      // A single query reads its fields without aliases.
+      return respond({ data: { getFixtureItem: body.data.m0, allMatchCommentary: body.data.e0, allMatchStatsSummary: body.data.s0 } });
+    });
+  const aliased = (ids: string[], skip: string[] = []) => ({
+    data: Object.fromEntries(
+      ids.flatMap((id, index) => {
+        const value = skip.includes(id) ? { getFixtureItem: null, allMatchCommentary: null, allMatchStatsSummary: null } : part(id);
+        return [
+          [`m${index}`, value.getFixtureItem],
+          [`e${index}`, value.allMatchCommentary],
+          [`s${index}`, value.allMatchStatsSummary],
+        ];
+      }),
+    ),
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks for several matches in one request, and records a match with no details as null', async () => {
+    const fetchMock = cms((ids) => aliased(ids, ['b']));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchMatchCentres([fixtureFor('a'), fixtureFor('b')]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.get('a')?.players.map((player) => player.name)).toEqual(['Sam Hooker']);
+    expect(result.get('a')?.fixture.season).toBe('2026/2027');
+    expect(result.get('b')).toBeNull();
+  });
+
+  it('splits a long list into batches of the given size', async () => {
+    const fetchMock = cms((ids) => aliased(ids));
+    vi.stubGlobal('fetch', fetchMock);
+    const fixtures = Array.from({ length: 25 }, (_, index) => fixtureFor(`f${index}`));
+
+    const { matches, failed } = await fetchMatchesInBatches(fixtures, { batchSize: 10, gapMs: 0, retryDelayMs: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(matches).toHaveLength(25);
+    expect(failed).toEqual([]);
+  });
+
+  it('falls back to one request per match when a batch is rejected, so only the bad match fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      cms((ids) => (ids.includes('bad') ? { data: null, errors: [{ message: 'Unknown fixture' }] } : aliased(ids))),
     );
 
-    expect(merged.get('sam')?.games.map((game) => game.fixtureId)).toEqual(['fresh', 'old']);
-    expect(merged.get('sam')?.scoringEvents.map((event) => event.fixtureId)).toEqual(['fresh', 'old']);
-  });
+    const { matches, failed } = await fetchMatchesInBatches([fixtureFor('a'), fixtureFor('bad'), fixtureFor('c')], {
+      gapMs: 0,
+      retryDelayMs: 0,
+    });
 
-  it('keeps a player with only past seasons, and adds a new player', () => {
-    const merged = mergeSavedHistories(
-      [history('past', [old])],
-      new Map([['new', history('new', [fresh])]]),
-      CURRENT,
-    );
-
-    expect([...merged.keys()].sort()).toEqual(['new', 'past']);
-  });
-
-  it('drops a saved player whose only games left the current season', () => {
-    const merged = mergeSavedHistories([history('gone', [stale])], new Map(), CURRENT);
-
-    expect(merged.has('gone')).toBe(false);
-  });
-
-  it('keeps the saved name and team so they do not churn', () => {
-    const merged = mergeSavedHistories(
-      [{ ...history('sam', [old]), teamName: 'Rocky Gorge MD3' }],
-      new Map([['sam', history('sam', [fresh])]]),
-      CURRENT,
-    );
-
-    expect(merged.get('sam')?.teamName).toBe('Rocky Gorge MD3');
+    expect(matches.map((match) => match.fixture.id).sort()).toEqual(['a', 'c']);
+    expect(failed.map((fixture) => fixture.id)).toEqual(['bad']);
   });
 });

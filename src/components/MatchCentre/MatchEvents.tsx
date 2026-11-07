@@ -205,7 +205,7 @@ function MatchEventRow({
         </Typography>
       )}
       {crest ? (
-        <Crest src={crest} alt={teamName} />
+        <Crest src={crest} alt={teamName} name={teamName} />
       ) : (
         <Typography
           variant="caption"

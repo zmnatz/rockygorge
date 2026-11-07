@@ -1,5 +1,7 @@
 # Eligibility is evaluated from the 2025-26 Senior Club Regulations
 
+_The 2026-27 regulations and any number of sides are in ADR 012, which replaces the upper/lower model here. The deliberate exclusions below still stand._
+
 The eligibility tool encodes USA Rugby's player-eligibility rules for a two-division club (Rocky Gorge MD1 upper, MD3 lower) from the current Senior Club Regulations. D1 eligibility requires a combined two NCS Qualifying Matches at any level; D3 eligibility requires three checks — two matches at the lower division, at most three upper-division matches (a fourth reaches the four-game cap and forfeits D3 eligibility), and lower-division participation at least equal to the upper-division count.
 
 The regulation's two-division clause is written "50% or more of matches played for the upper division team (lower division participation must be greater or equal to the number of upper division matches played)", which is internally ambiguous; the Figure 1 eligibility matrix settles it as `D3 >= D1` (1 D1 + 1 D3 is "Div 1 Only", 2/2 is cross-eligible), so we evaluate `md3 >= md1` and a fourth upper-division match forfeits D3 eligibility (Reg 3.5(d)(i)).

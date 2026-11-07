@@ -2,10 +2,14 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import MuiLink from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import { useMatch } from '@/components/Scores/useMatch';
 import { MatchCentre } from '@/components/MatchCentre';
+import { clubPages } from '@/utils/clubPages';
+import { matchUrl } from '@/utils/rugbyXplorer';
+import { parseTeamSide } from '@/utils/teamSide';
 
 export default function GamePage() {
   const router = useRouter();
@@ -45,6 +49,7 @@ export default function GamePage() {
   }
 
   const { getFixtureItem: game } = data;
+  const homeClub = parseTeamSide(game.homeTeam.name)?.clubName;
 
   return (
     <>
@@ -61,6 +66,16 @@ export default function GamePage() {
         {game.homeTeam.name} vs {game.awayTeam.name}
       </Typography>
       <MatchCentre data={data} />
+      <Box sx={{ textAlign: 'center', pb: 3 }}>
+        <MuiLink
+          variant="body2"
+          href={matchUrl(game.id, clubPages[homeClub ?? '']?.slug ?? null)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View this match on Rugby Xplorer
+        </MuiLink>
+      </Box>
     </>
   );
 }

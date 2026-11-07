@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Build-time snapshots (public/data/**, public/crests, .cache/leaders) are
-// committed to the repo and refreshed nightly by
-// .github/workflows/update-snapshots.yml. Two small files track them:
+// Snapshots (public/data/**, public/crests, .cache/matches) are committed to the
+// repo and refreshed nightly by .github/workflows/update-snapshots.yml, which
+// always forces a refresh. Builds never generate them. Two small files track
+// them; the second is local and not committed:
 //
 // - public/data/manifest.json: when each snapshot's content last CHANGED, and
 //   the FORMAT version it was generated with.
@@ -11,13 +12,13 @@ import path from 'node:path';
 //   against the CMS (changed or not). Freshness is judged from this one.
 //
 // A run that finds nothing new rewrites only the checked file, so data files
-// (and git history) don't churn. Generate scripts skip their CMS pulls while
-// the checked time is under MAX_AGE_MS old, unless forced. Local builds (no
-// CI/NETLIFY env) never refresh because of age, so they don't dirty the tree;
-// they use the committed snapshot, or `generate:force`.
+// (and git history) don't churn. Run unforced, a generate script skips a
+// snapshot whose format is current: locally always, and in CI while the checked
+// time is under MAX_AGE_MS old. Nothing runs unforced in CI today; the nightly
+// workflow forces every run.
 export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests';
+export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests' | 'clubPages' | 'matches';
 
 // Bump a snapshot's number whenever the shape of its output (or the
 // generator's logic) changes. A committed snapshot with a different format is
@@ -25,11 +26,15 @@ export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'cre
 // commit it (`bun run generate:force`); src/__tests__/snapshot-freshness.test.ts
 // fails until it does.
 export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
-  scores: 2,
-  standings: 1,
+  scores: 3,
+  standings: 2,
   leaders: 1,
-  players: 3,
+  players: 7,
   crests: 1,
+  clubPages: 3,
+  // The match archive: bump only when the fields requested from the CMS change,
+  // as it downloads every season again. Other snapshots rebuild from it.
+  matches: 1,
 };
 
 export type SnapshotStamps = Partial<Record<SnapshotName, string>>;
@@ -72,7 +77,7 @@ export function isLocal(env: Record<string, string | undefined> = process.env): 
 }
 
 // `--force` on the command line or FORCE_SNAPSHOTS=1 in the environment
-// (the latter is what lets `bun run build` be forced).
+// (the latter is what the :force scripts set).
 export function isForced(
   argv: string[] = process.argv,
   env: Record<string, string | undefined> = process.env

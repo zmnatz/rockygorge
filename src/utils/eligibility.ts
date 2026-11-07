@@ -1,12 +1,14 @@
 import { parseCsv } from '@/utils/csv';
+import { isNcsSide, parseTeamSide } from '@/utils/teamSide';
 import type {
-  DivisionRole,
+  Club,
   DivisionSummary,
   EligibilityBreakdown,
-  EligibilityConfig,
+  EligibilityRules,
   PlayerEligibility,
   PlayerRow,
   RemainingMatches,
+  Side,
 } from '@/types/eligibility';
 
 const HEADER_COLUMNS = [
@@ -77,108 +79,15 @@ function participation(row: PlayerRow | undefined): number {
   return row.played + row.substitute;
 }
 
-function teamRole(teamName: string, config: EligibilityConfig): DivisionRole | null {
-  if (teamName === config.upperDivision.teamName) return 'upper';
-  if (teamName === config.lowerDivision.teamName) return 'lower';
-  return null;
-}
+const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
-function evaluate(
-  row: PlayerRow,
-  ownParticipation: number,
-  otherParticipation: number,
-  config: EligibilityConfig,
-  sourceRows: PlayerRow[],
-  remaining: RemainingMatches,
-): PlayerEligibility {
-  const role = teamRole(row.teamName, config);
-  if (!role) throw new Error(`No division configured for team "${row.teamName}"`);
-
-  const reasons: string[] = [];
-  const pending: string[] = [];
-
-  // A two-match minimum is met if the player can still reach it by Super
-  // Regionals; see docs/adr/008-eligibility-rules.md.
-  const checkMinimum = (
-    count: number,
-    minimum: number,
-    fixturesLeft: number,
-    matchLabel: string,
-  ) => {
-    if (count >= minimum) return;
-    const short = minimum - count;
-    if (short <= fixturesLeft) {
-      pending.push(
-        `Needs ${short} more ${matchLabel} match${short === 1 ? '' : 'es'} (${fixturesLeft} fixture${fixturesLeft === 1 ? '' : 's'} left)`,
-      );
-    } else {
-      reasons.push(`Needs ${minimum} ${matchLabel} matches (has ${count})`);
-    }
-  };
-
-  if (role === 'upper') {
-    checkMinimum(
-      ownParticipation + otherParticipation,
-      config.upperDivision.minimumTotalMatches,
-      remaining.upper + remaining.lower,
-      'qualifying',
-    );
-  } else {
-    checkMinimum(
-      ownParticipation,
-      config.lowerDivision.minimumMatches,
-      remaining.lower,
-      config.lowerDivision.label,
-    );
-    if (otherParticipation >= config.lowerDivision.upperMatchLimit) {
-      reasons.push(
-        `Played ${otherParticipation} upper-division matches — playing ${config.lowerDivision.upperMatchLimit} forfeits lower-division eligibility`,
-      );
-    }
-    if (
-      config.lowerDivision.lowerAtLeastUpper &&
-      ownParticipation < otherParticipation
-    ) {
-      reasons.push(
-        `Upper-division participation (${otherParticipation}) exceeds ${config.lowerDivision.label} participation (${ownParticipation})`,
-      );
-    }
-  }
-
-  return {
-    playerId: row.playerId,
-    firstName: row.firstName,
-    lastName: row.lastName,
-    name: [row.firstName, row.lastName].filter(Boolean).join(' '),
-    lastRegistered: row.lastRegistered,
-    teamName: row.teamName,
-    role,
-    played: row.played,
-    substitute: row.substitute,
-    participation: ownParticipation,
-    otherDivisionParticipation: otherParticipation,
-    rows: sourceRows,
-    eligible: reasons.length === 0,
-    reasons,
-    pending,
-  };
-}
-
-const byName = (a: PlayerEligibility, b: PlayerEligibility) =>
-  a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
-
-/** Resolve the display label for a division side: its single competition when
- *  the side spans exactly one, otherwise the configured team name (a side can
- *  span several competitions). Shared by the table tabs and the export report
- *  so the label can't drift between them. */
-export function divisionLabel(
-  label: string,
-  teamName: string,
-  summary: DivisionSummary,
-): string {
-  return summary.competitions.length === 1
-    ? `${label} side — ${summary.competitions[0]}`
-    : `${label} side — ${teamName}`;
+/** A side's roster: players keyed by id (rows across competitions combined),
+ *  each player's raw rows, and the competitions those rows span. */
+interface Roster {
+  side: Side;
+  combined: Map<string, PlayerRow>;
+  sources: Map<string, PlayerRow[]>;
+  competitions: Set<string>;
 }
 
 /** Combine two rows for the same player on the same team, summing the match
@@ -192,85 +101,204 @@ function combineRows(previous: PlayerRow, next: PlayerRow): PlayerRow {
   };
 }
 
-/** Compute per-division eligibility by joining each player's team rows on USA ID.
- *  Rows for the same player on the same team (one per competition) are combined
- *  into a single participation total; rows with no USA ID cannot be joined and
- *  are excluded. */
-export function computeBreakdown(
-  rows: PlayerRow[],
-  config: EligibilityConfig,
-  remaining: RemainingMatches = { upper: 0, lower: 0 },
-): EligibilityBreakdown {
-  /** A division's joined roster: players keyed by USA ID (rows across
-   *  competitions combined), each player's raw CSV rows, and the
-   *  competitions those rows span. */
-  const team = (teamName: string) => {
-    const map = new Map<string, PlayerRow>();
-    const sources = new Map<string, PlayerRow[]>();
-    const competitions = new Set<string>();
-    for (const row of rows) {
-      if (row.teamName !== teamName) continue;
-      const key = row.playerId.trim();
-      if (!key) continue;
-      if (row.competition.trim() !== '') competitions.add(row.competition);
-      const previous = map.get(key);
-      map.set(key, previous ? combineRows(previous, row) : row);
-      sources.set(key, [...(sources.get(key) ?? []), row]);
+function buildRoster(side: Side, rows: PlayerRow[]): Roster {
+  const combined = new Map<string, PlayerRow>();
+  const sources = new Map<string, PlayerRow[]>();
+  const competitions = new Set<string>();
+  for (const row of rows) {
+    if (row.teamName !== side.teamName) continue;
+    const key = row.playerId.trim();
+    if (!key) continue;
+    if (row.competition.trim() !== '') competitions.add(row.competition);
+    const previous = combined.get(key);
+    combined.set(key, previous ? combineRows(previous, row) : row);
+    sources.set(key, [...(sources.get(key) ?? []), row]);
+  }
+  return { side, combined, sources, competitions };
+}
+
+/** The verdict for one player on the side at `index`. Reg 3.5(d) and Figure 1:
+ *  a lower side's minimum and its comparison both count that side and those below
+ *  it, against every side above. Regulations stop at three divisions; a fourth
+ *  follows the same form. See docs/adr/012-eligibility-for-any-number-of-sides.md. */
+function evaluate(
+  row: PlayerRow,
+  index: number,
+  rosters: Roster[],
+  rules: EligibilityRules,
+  remaining: RemainingMatches,
+): PlayerEligibility {
+  const key = row.playerId.trim();
+  const counts = rosters.map((roster) => participation(roster.combined.get(key)));
+  const above = counts.slice(0, index);
+  const atOrBelow = sum(counts.slice(index));
+  const own = rosters[index].side;
+  const isLowest = index === rosters.length - 1;
+  const ownLabel = isLowest ? own.label : `${own.label} or lower`;
+  const fixturesLeft = sum(
+    rosters.slice(index).map((roster) => remaining[roster.side.teamName] ?? 0),
+  );
+
+  const reasons: string[] = [];
+  const pending: string[] = [];
+
+  // A two-match minimum is met if the player can still reach it by Super
+  // Regionals (Reg 3.5.1(a)); see docs/adr/008-eligibility-rules.md.
+  const checkMinimum = (count: number, matchLabel: string) => {
+    if (count >= rules.minimumMatches) return;
+    const short = rules.minimumMatches - count;
+    if (short <= fixturesLeft) {
+      pending.push(
+        `Needs ${short} more ${matchLabel} match${short === 1 ? '' : 'es'} (${fixturesLeft} fixture${fixturesLeft === 1 ? '' : 's'} left)`,
+      );
+    } else {
+      reasons.push(`Needs ${rules.minimumMatches} ${matchLabel} matches (has ${count})`);
     }
-    return { map, sources, competitions };
   };
 
-  const upperTeam = team(config.upperDivision.teamName);
-  const lowerTeam = team(config.lowerDivision.teamName);
-
-  /** All of a player's CSV rows across every team, so the detail modal shows
-   *  no matter which division table opened it. The player's own team first. */
-  const sourcesFor = (row: PlayerRow): PlayerRow[] => {
-    const upper = upperTeam.sources.get(row.playerId) ?? [];
-    const lower = lowerTeam.sources.get(row.playerId) ?? [];
-    return teamRole(row.teamName, config) === 'upper' ? [...upper, ...lower] : [...lower, ...upper];
-  };
-
-  const upper = [...upperTeam.map.values()].map((row) =>
-    evaluate(
-      row,
-      participation(row),
-      participation(lowerTeam.map.get(row.playerId.trim())),
-      config,
-      sourcesFor(row),
-      remaining,
-    ),
-  );
-  const lower = [...lowerTeam.map.values()].map((row) =>
-    evaluate(
-      row,
-      participation(row),
-      participation(upperTeam.map.get(row.playerId.trim())),
-      config,
-      sourcesFor(row),
-      remaining,
-    ),
-  );
-
-  upper.sort(byName);
-  lower.sort(byName);
-
-  const summarize = (players: PlayerEligibility[], competitions: Set<string>): DivisionSummary => ({
-    total: players.length,
-    eligible: players.filter((player) => player.eligible).length,
-    onTrack: players.filter((player) => player.eligible && player.pending.length > 0).length,
-    competitions: [...competitions].sort(),
-  });
-
-  const ignoredTeamNames = [
-    ...new Set(rows.map((row) => row.teamName).filter((name) => teamRole(name, config) === null)),
-  ];
+  if (index === 0) {
+    checkMinimum(sum(counts), 'qualifying');
+  } else {
+    checkMinimum(atOrBelow, ownLabel);
+    for (const [aboveIndex, count] of above.entries()) {
+      if (count >= rules.upperMatchLimit) {
+        reasons.push(
+          `Played ${count} ${rosters[aboveIndex].side.label} matches — playing ${rules.upperMatchLimit} for an upper side loses ${own.label} eligibility`,
+        );
+      }
+    }
+    if (atOrBelow < sum(above)) {
+      reasons.push(`Upper-side participation (${sum(above)}) exceeds ${ownLabel} participation (${atOrBelow})`);
+    }
+  }
 
   return {
-    upper,
-    lower,
-    upperSummary: summarize(upper, upperTeam.competitions),
-    lowerSummary: summarize(lower, lowerTeam.competitions),
-    ignoredTeamNames,
+    playerId: row.playerId,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    name: [row.firstName, row.lastName].filter(Boolean).join(' '),
+    lastRegistered: row.lastRegistered,
+    teamName: row.teamName,
+    played: row.played,
+    substitute: row.substitute,
+    participation: counts[index],
+    otherSides: rosters.flatMap((roster, rosterIndex) =>
+      rosterIndex === index
+        ? []
+        : [{ label: roster.side.label, teamName: roster.side.teamName, participation: counts[rosterIndex] }],
+    ),
+    // All of a player's rows, own side first, so the detail view shows them from any table.
+    rows: [rosters[index], ...rosters.filter((_, rosterIndex) => rosterIndex !== index)].flatMap(
+      (roster) => roster.sources.get(key) ?? [],
+    ),
+    eligible: reasons.length === 0,
+    reasons,
+    pending,
+  };
+}
+
+const byName = (a: PlayerEligibility, b: PlayerEligibility) =>
+  a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
+
+/** Resolve the display label for a side: its single competition when the side
+ *  spans exactly one, otherwise its team name (a side can span several
+ *  competitions). Shared by the table and the export so they can't drift. */
+export function divisionLabel(label: string, teamName: string, summary: DivisionSummary): string {
+  return summary.competitions.length === 1
+    ? `${label} side — ${summary.competitions[0]}`
+    : `${label} side — ${teamName}`;
+}
+
+const normalizedName = (name: string) => name.trim().replace(/\s+/g, ' ').toLowerCase();
+
+/** Whether a player's name is held by more than one player on their side. */
+export function hasSharedName(player: { name: string }, shared: Set<string>): boolean {
+  return shared.has(normalizedName(player.name));
+}
+
+/** Names held by more than one player on a side. They stay separate players,
+ *  because a shared name doesn't prove they are one person, so the page shows
+ *  their ids to tell them apart. */
+export function sharedNames(players: { name: string }[]): Set<string> {
+  const seen = new Set<string>();
+  const shared = new Set<string>();
+  for (const { name } of players) {
+    const key = normalizedName(name);
+    if (seen.has(key)) shared.add(key);
+    seen.add(key);
+  }
+  return shared;
+}
+
+/** Each name held by more than one player at a club, with its ids, for the report's note. */
+export function sameNamePlayers(sides: { players: PlayerEligibility[] }[]): { name: string; ids: string[] }[] {
+  const byName = new Map<string, { name: string; ids: Set<string> }>();
+  for (const player of sides.flatMap((side) => side.players)) {
+    const key = normalizedName(player.name);
+    const entry = byName.get(key) ?? { name: player.name, ids: new Set<string>() };
+    entry.ids.add(player.playerId);
+    byName.set(key, entry);
+  }
+  return [...byName.values()]
+    .filter((entry) => entry.ids.size > 1)
+    .map((entry) => ({ name: entry.name, ids: [...entry.ids].sort() }));
+}
+
+/** Clubs and their NCS sides, highest division first, from team names. A team name
+ *  that doesn't end in a division can't be ranked and is skipped. Sorted by name. */
+export function clubsFromTeamNames(teamNames: Iterable<string>): Club[] {
+  const clubs = new Map<string, Map<string, number>>();
+  for (const teamName of teamNames) {
+    const side = parseTeamSide(teamName);
+    if (!side || !isNcsSide(side)) continue;
+    const sides = clubs.get(side.clubName) ?? new Map<string, number>();
+    sides.set(teamName, side.level);
+    clubs.set(side.clubName, sides);
+  }
+  return [...clubs]
+    .map(([name, sides]) => ({
+      name,
+      sides: [...sides]
+        .sort((a, b) => a[1] - b[1])
+        .map(([teamName, level]) => ({ teamName, label: `D${level}` })),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** The clubs in a Match Participation Report, from its Team Name column. */
+export function clubsInRows(rows: PlayerRow[]): Club[] {
+  return clubsFromTeamNames(rows.map((row) => row.teamName));
+}
+
+/** Compute each side's verdicts by joining a player's rows across the club's sides
+ *  on their id. Rows for the same player on the same team (one per competition)
+ *  are combined into a single total; rows with no id cannot be joined and are
+ *  excluded. */
+export function computeBreakdown(
+  rows: PlayerRow[],
+  sides: Side[],
+  rules: EligibilityRules,
+  remaining: RemainingMatches = {},
+): EligibilityBreakdown {
+  const rosters = sides.map((side) => buildRoster(side, rows));
+  const teamNames = new Set(sides.map((side) => side.teamName));
+
+  return {
+    sides: rosters.map((roster, index) => {
+      const players = [...roster.combined.values()]
+        .map((row) => evaluate(row, index, rosters, rules, remaining))
+        .sort(byName);
+      return {
+        ...roster.side,
+        players,
+        summary: {
+          total: players.length,
+          eligible: players.filter((player) => player.eligible).length,
+          onTrack: players.filter((player) => player.eligible && player.pending.length > 0).length,
+          competitions: [...roster.competitions].sort(),
+        },
+      };
+    }),
+    ignoredTeamNames: [...new Set(rows.map((row) => row.teamName).filter((name) => !teamNames.has(name)))],
   };
 }

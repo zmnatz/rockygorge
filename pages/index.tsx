@@ -17,11 +17,10 @@ import type { Score } from '@/components/Scores/types';
 import { crestSrc } from '@/utils/crest';
 import { markdownToReact } from '@/utils/markdown';
 import matchesConfig from '@config/matches.yml';
-import { homePageScores } from '@/utils/gameday';
+import { HOME_RESULT_COUNT, homePageScores } from '@/utils/gameday';
 import { showOnHome, toSectionCard } from '@/utils/sections';
 
 // Ticker size (see Scores.tsx MAX_GAMES).
-const MAX_RESULTS = 4;
 
 interface HomeProps {
   initialScores: Score[];
@@ -42,7 +41,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
     if (Array.isArray(json)) {
       // The snapshot spans the season; the page needs only the ticker's
       // results and the next game, so inline just those.
-      initialScores = homePageScores(json as Score[], MAX_RESULTS, matchesConfig.sides.length);
+      initialScores = homePageScores(json as Score[], HOME_RESULT_COUNT, matchesConfig.sides.length);
     }
   } catch {
     // Fall back to client-side live fetch

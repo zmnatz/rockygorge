@@ -6,7 +6,7 @@
 - `bun run build`: Production build (Turbopack)
 - `bun run lint`: Lint codebase (Biome)
 - `bun run test`: Run tests (Vitest)
-- `bun run generate:force`: Refresh the committed build-time snapshots (`public/data/`, `public/crests/`, `.cache/leaders`) ignoring the 24h freshness check. `bun run build:force` also builds. Normal `build` skips snapshots under a day old; see `docs/snapshots.md`.
+- `bun run generate:force`: Refresh the committed snapshots (`public/data/`, `public/crests/`, `.cache/matches`). `bun run build:force` also builds. Normal `build`, which is what Netlify runs, never touches the CMS; see `docs/snapshots.md`.
 
 ## Architecture & Tech Stack
 - **Framework**: Next.js (Pages Router)
@@ -21,7 +21,7 @@
 - `src/components/`: Shared UI components.
 - `content/`: YAML site data (events, calendar, store, forms, links, gauntlet, stats).
 - `config/`: YAML application configuration (admin, link_mappings).
-- `public/data/`, `public/crests/`, `.cache/leaders/`: generated CMS snapshots, committed and updated nightly by `.github/workflows/update-snapshots.yml`. Never hand-edit; regenerate (`docs/snapshots.md`).
+- `public/data/`, `public/crests/`, `.cache/matches/`: generated CMS snapshots, committed and updated nightly by `.github/workflows/update-snapshots.yml`. Never hand-edit; regenerate (`docs/snapshots.md`).
 - `src/types/`: TypeScript definitions.
 - `src/utils/`: Helper functions.
 

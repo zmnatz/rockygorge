@@ -2,7 +2,8 @@ import { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box, { type BoxProps } from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { crestSrc, isPlaceholderCrest, teamAbbreviation } from '@/utils/crest';
+import { clubPages } from '@/utils/clubPages';
+import { crestSrc, isPlaceholderCrest, resolveTeamCrest, teamAbbreviation } from '@/utils/crest';
 
 export type CrestSize = 'xs' | 'md' | 'lg' | 'xl';
 
@@ -37,8 +38,9 @@ interface CrestProps extends Omit<BoxProps<'img'>, 'src' | 'component' | 'size'>
 // Teams stuck on the CMS generic placeholder get an initials avatar instead
 // of a wall of identical badges, as does any image that fails to load when
 // the team name is provided — a logo never shows as a broken image.
-export function Crest({ src, alt, size = 'xs', name, sx, ...rest }: CrestProps) {
+export function Crest({ src: fixtureCrest, alt, size = 'xs', name, sx, ...rest }: CrestProps) {
   const [remoteFailed, setRemoteFailed] = useState(false);
+  const src = resolveTeamCrest(fixtureCrest, name, clubPages);
   if (!src) {
     return null;
   }

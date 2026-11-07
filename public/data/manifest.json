@@ -1,22 +1,30 @@
 {
   "scores": {
-    "updatedAt": "2026-11-06T09:41:38.867Z",
-    "format": 2
+    "updatedAt": "2026-11-07T21:14:17.907Z",
+    "format": 3
   },
   "standings": {
-    "updatedAt": "2026-11-07T12:13:50.532Z",
-    "format": 1
+    "updatedAt": "2026-11-07T21:02:19.177Z",
+    "format": 2
   },
   "leaders": {
-    "updatedAt": "2026-11-07T12:13:59.818Z",
+    "updatedAt": "2026-11-07T20:55:32.612Z",
     "format": 1
   },
   "players": {
-    "updatedAt": "2026-11-07T12:14:18.500Z",
-    "format": 3
+    "updatedAt": "2026-11-07T21:45:54.238Z",
+    "format": 7
   },
   "crests": {
-    "updatedAt": "2026-11-05T10:26:27.737Z",
+    "updatedAt": "2026-11-07T19:33:49.383Z",
+    "format": 1
+  },
+  "clubPages": {
+    "updatedAt": "2026-11-07T20:55:46.006Z",
+    "format": 3
+  },
+  "matches": {
+    "updatedAt": "2026-11-07T21:43:09.778Z",
     "format": 1
   }
 }

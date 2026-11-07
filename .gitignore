@@ -11,8 +11,10 @@ node_modules
 .next/
 /out/
 
-# public/data/ (build-time snapshots), public/crests/ and .cache/leaders
-# (match centre cache) are committed and refreshed nightly; see docs/snapshots.md.
+.cache/snapshots-checked.json
+
+# public/data/ (build-time snapshots), public/crests/ and .cache/matches
+# (match archive) are committed and refreshed nightly; see docs/snapshots.md.
 
 # misc
 .DS_Store

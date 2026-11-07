@@ -3,6 +3,7 @@ import matchesConfig from '@config/matches.yml';
 import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 import type { GamedayFixture, GamedaySide } from '@/types/gameday';
 import {
+  firstPaintKey,
   homePageScores,
   CENTRE_IDLE_POLL_MS,
   FIXTURES_IDLE_POLL_MS,
@@ -587,5 +588,45 @@ describe('gamedaySeedScores', () => {
 
   it('drops fixtures involving neither Side', () => {
     expect(gamedaySeedScores([score('x', 3, 'A', 'B')], sides, builtAt)).toEqual([]);
+  });
+});
+
+describe('firstPaintKey', () => {
+  const clubSides: GamedaySide[] = [{ teamName: 'Club MD1', label: 'D1', compName: 'League' }];
+  const score = (id: string, dateTime: string, played = false) => ({
+      id,
+      dateTime,
+      compId: 'c',
+      compName: 'League',
+      season: '2026/2027',
+      status: played ? 'Result' : 'Fixture',
+      sourceType: '2',
+      isLive: false,
+      venue: '',
+      homeTeam: { id: 'h', name: 'Club MD1', teamId: 'h', score: played ? '10' : '', crest: '' },
+      awayTeam: { id: 'a', name: 'Other MD1', teamId: 'a', score: played ? '5' : '', crest: '' },
+    });
+  const scores = [
+    score('played', '2026-10-03T17:00:00Z', true),
+    score('next', '2026-11-14T17:00:00Z'),
+    score('later', '2026-12-05T17:00:00Z'),
+  ];
+  const keyOn = (date: string) => firstPaintKey(scores, clubSides, new Date(`${date}T06:00:00Z`));
+
+  it('stays the same on nights when the pages would render the same', () => {
+    expect(keyOn('2026-11-01')).toEqual(keyOn('2026-11-02'));
+    expect(keyOn('2026-11-08')).toEqual(keyOn('2026-11-09'));
+  });
+
+  it('changes when a match day arrives', () => {
+    expect(keyOn('2026-11-14')).not.toEqual(keyOn('2026-11-13'));
+  });
+
+  it('changes when the day after a match turns the view to a recap', () => {
+    expect(keyOn('2026-11-15')).not.toEqual(keyOn('2026-11-14'));
+  });
+
+  it('changes when a recap window ends', () => {
+    expect(keyOn('2026-11-18')).not.toEqual(keyOn('2026-11-15'));
   });
 });

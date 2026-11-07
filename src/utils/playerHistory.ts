@@ -1,4 +1,4 @@
-import { postWithRetry, sleep } from '@/utils/api';
+import { mapConcurrent, postWithRetry, sleep } from '@/utils/api';
 import { scoringKind } from '@/utils/scoring';
 import type { FixtureItem, MatchPlayer } from '@/types/match';
 
@@ -8,7 +8,6 @@ const CLUB_ENTITY_ID = 91273;
 
 const MAX_FIXTURES = 500;
 const PAGE_SIZE = 100;
-const FETCH_GAP_MS = 500;
 // Breathing room between match-centre requests so snapshot builds don't trip
 // the CMS rate limit (HTTP 429).
 const MATCH_CENTRE_GAP_MS = 300;
@@ -108,6 +107,12 @@ export function playerKey(id: string): string {
   return id.split('__')[0];
 }
 
+// The CMS shows a player whose profile isn't public as "Name Withheld". It isn't
+// a person: each record is a hidden profile, so it never becomes a player record.
+export function isNameWithheld(name: string): boolean {
+  return name.trim().replace(/\s+/g, ' ').toLowerCase() === 'name withheld';
+}
+
 export function isScoreEventType(type: string): boolean {
   return scoringKind(type) !== null;
 }
@@ -171,8 +176,15 @@ export function aggregatePlayerHistory(
   matches: MatchCentreData[]
 ): Map<string, PlayerHistory> {
   const histories = new Map<string, PlayerHistory>();
+  // Newest first, because matches arrive in whichever order they finished
+  // downloading and a player's name and team come from the first one seen.
+  const ordered = [...matches].sort(
+    (a, b) =>
+      new Date(b.fixture.dateTime).getTime() - new Date(a.fixture.dateTime).getTime() ||
+      a.fixture.id.localeCompare(b.fixture.id)
+  );
 
-  for (const match of matches) {
+  for (const match of ordered) {
     const { fixture, commentary, players, substitutes, coaches } = match;
     const roster = [...players, ...substitutes, ...coaches];
     const starterIds = new Set(players.map((player) => playerKey(player.id)));
@@ -184,7 +196,7 @@ export function aggregatePlayerHistory(
 
     for (const player of roster) {
       const key = playerKey(player.id);
-      if (seenInFixture.has(key)) {
+      if (seenInFixture.has(key) || isNameWithheld(player.name)) {
         continue;
       }
       seenInFixture.add(key);
@@ -193,7 +205,7 @@ export function aggregatePlayerHistory(
       if (!history) {
         history = {
           id: key,
-          name: player.name,
+          name: player.name.trim().replace(/\s+/g, ' '),
           teamName: player.isHome ? fixture.homeTeam.name : fixture.awayTeam.name,
           games: [],
           scoringEvents: [],
@@ -289,8 +301,8 @@ const FIXTURE_LOOKUP_QUERY = `query PlayerHistoryFixtureLookupQuery($entityId: I
   }
 }`;
 
-const MATCH_CENTRE_QUERY = `query PlayerHistoryMatchCentreQuery($comp: CompInput) {
-  getFixtureItem(comp: $comp) {
+// The fields read for each match, shared by the single and batched queries.
+const MATCH_FIXTURE_FIELDS = `{
     id
     compId
     compName
@@ -300,15 +312,9 @@ const MATCH_CENTRE_QUERY = `query PlayerHistoryMatchCentreQuery($comp: CompInput
     homeTeam { id name teamId score crest __typename }
     awayTeam { id name teamId score crest __typename }
     __typename
-  }
-  allMatchCommentary(comp: $comp) {
-    id
-    minute
-    type
-    comment
-    __typename
-  }
-  allMatchStatsSummary(comp: $comp) {
+  }`;
+const MATCH_COMMENTARY_FIELDS = `{ id minute type comment __typename }`;
+const MATCH_STATS_FIELDS = `{
     id
     lineUp {
       players { id name position shirtNumber isHome __typename }
@@ -317,7 +323,12 @@ const MATCH_CENTRE_QUERY = `query PlayerHistoryMatchCentreQuery($comp: CompInput
       __typename
     }
     __typename
-  }
+  }`;
+
+const MATCH_CENTRE_QUERY = `query PlayerHistoryMatchCentreQuery($comp: CompInput) {
+  getFixtureItem(comp: $comp) ${MATCH_FIXTURE_FIELDS}
+  allMatchCommentary(comp: $comp) ${MATCH_COMMENTARY_FIELDS}
+  allMatchStatsSummary(comp: $comp) ${MATCH_STATS_FIELDS}
 }`;
 
 interface MatchCentreResponse {
@@ -334,12 +345,6 @@ interface MatchCentreResponse {
   } | null;
 }
 
-interface BuildOptions {
-  concurrency?: number;
-  // Fetch every season's matches, not just the current one's.
-  fullHistory?: boolean;
-}
-
 // Newest first; same-time entries order by fixture id so the snapshot output
 // is identical between runs (fetch order is not).
 function newestFirst(
@@ -350,71 +355,6 @@ function newestFirst(
     new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime() ||
     a.fixtureId.localeCompare(b.fixtureId)
   );
-}
-
-export async function buildPlayerHistories(options?: BuildOptions): Promise<{
-  histories: Map<string, PlayerHistory>;
-  results: FixtureLookupItem[];
-  matches: MatchCentreData[];
-  season: string;
-}> {
-  const allResults = (await fetchAllFixtures()).filter(
-    (fixture) =>
-      fixture.homeTeam.score.length > 0 &&
-      fixture.awayTeam.score.length > 0
-  );
-  const season = allResults.reduce(
-    (latest, fixture) => (fixture.season > latest ? fixture.season : latest),
-    ''
-  );
-  const results = options?.fullHistory
-    ? allResults
-    : allResults.filter((fixture) => fixture.season === season);
-
-  const { matches, failed } = await fetchMatches(results, fetchMatchCentre, {
-    concurrency: options?.concurrency,
-  });
-  // A partial pull would drop games and delete player files, so the caller
-  // keeps the previous snapshot instead.
-  if (failed.length > 0) {
-    throw new Error(
-      `${failed.length} of ${results.length} fixtures failed: ${failed.map((fixture) => fixture.id).join(', ')}`
-    );
-  }
-
-  return { histories: aggregatePlayerHistory(matches), results, matches, season };
-}
-
-// Past seasons don't change, so the saved histories keep them and only the
-// current season comes from the fresh pull. A saved player whose only games were
-// in the current season, and no longer are, is dropped.
-export function mergeSavedHistories(
-  saved: PlayerHistory[],
-  current: Map<string, PlayerHistory>,
-  season: string
-): Map<string, PlayerHistory> {
-  const merged = new Map(current);
-  for (const history of saved) {
-    const fresh = current.get(history.id);
-    const games = [
-      ...(fresh?.games ?? []),
-      ...history.games.filter((game) => game.season !== season),
-    ].sort(newestFirst);
-    if (games.length === 0) {
-      continue;
-    }
-    merged.set(history.id, {
-      id: history.id,
-      name: history.name,
-      teamName: history.teamName,
-      games,
-      scoringEvents: [
-        ...(fresh?.scoringEvents ?? []),
-        ...history.scoringEvents.filter((event) => event.season !== season),
-      ].sort(newestFirst),
-    });
-  }
-  return merged;
 }
 
 export interface FetchMatchesOptions {
@@ -510,35 +450,108 @@ export async function findFixtureById(
   return undefined;
 }
 
-async function fetchAllFixtures(): Promise<FixtureLookupItem[]> {
-  const all: FixtureLookupItem[] = [];
-  for (let skip = 0; skip < MAX_FIXTURES; skip += PAGE_SIZE) {
-    const page = await fetchFixturePage(skip);
-    all.push(...page);
-    if (page.length < PAGE_SIZE) {
-      break;
-    }
-    await sleep(FETCH_GAP_MS);
+type MatchCentreFixture = Pick<FixtureLookupItem, 'id' | 'compId' | 'season' | 'sourceType'>;
+
+const compInput = (fixture: MatchCentreFixture) => ({
+  id: fixture.compId,
+  season: fixture.season,
+  fixture: fixture.id,
+  sourceType: fixture.sourceType ?? '2',
+});
+
+function toMatchCentreData(
+  fixture: MatchCentreFixture,
+  { getFixtureItem, allMatchCommentary, allMatchStatsSummary }: MatchCentreResponse
+): MatchCentreData | null {
+  if (!getFixtureItem || !allMatchStatsSummary) {
+    return null;
   }
-  return all;
+  return {
+    fixture: { ...getFixtureItem, season: fixture.season },
+    commentary: allMatchCommentary ?? [],
+    players: allMatchStatsSummary.lineUp.players,
+    substitutes: allMatchStatsSummary.lineUp.substitutes,
+    coaches: allMatchStatsSummary.lineUp.coaches,
+  };
+}
+
+/** Matches per request. The CMS answers several in one request, which counts
+ *  once against its rate limit; batches of 25 to 150 all worked, taking 2 to 31
+ *  seconds. See docs/snapshots.md. */
+export const MATCH_BATCH_SIZE = 100;
+
+/** Several matches in one request, each under its own alias. A match the CMS has
+ *  no details for is null. Throws if the CMS reports any error, so a caller can
+ *  fall back to asking one at a time. */
+export async function fetchMatchCentres(
+  fixtures: MatchCentreFixture[]
+): Promise<Map<string, MatchCentreData | null>> {
+  const declarations = fixtures.map((_, index) => `$c${index}: CompInput`).join(', ');
+  const selections = fixtures
+    .map(
+      (_, index) =>
+        `m${index}: getFixtureItem(comp: $c${index}) ${MATCH_FIXTURE_FIELDS}
+  e${index}: allMatchCommentary(comp: $c${index}) ${MATCH_COMMENTARY_FIELDS}
+  s${index}: allMatchStatsSummary(comp: $c${index}) ${MATCH_STATS_FIELDS}`
+    )
+    .join('\n  ');
+  const response = await postWithRetry<{
+    data: Record<string, unknown> | null;
+    errors?: { message: string }[];
+  }>(SCORES_URL, {
+    query: `query MatchCentreBatch(${declarations}) {\n  ${selections}\n}`,
+    variables: Object.fromEntries(fixtures.map((fixture, index) => [`c${index}`, compInput(fixture)])),
+  });
+  if (response.errors?.length || !response.data) {
+    throw new Error(`Match centre batch failed: ${response.errors?.[0]?.message ?? 'no data'}`);
+  }
+  const data = response.data;
+  return new Map(
+    fixtures.map((fixture, index) => [
+      fixture.id,
+      toMatchCentreData(fixture, {
+        getFixtureItem: data[`m${index}`] as MatchCentreResponse['getFixtureItem'],
+        allMatchCommentary: data[`e${index}`] as MatchCentreResponse['allMatchCommentary'],
+        allMatchStatsSummary: data[`s${index}`] as MatchCentreResponse['allMatchStatsSummary'],
+      }),
+    ])
+  );
+}
+
+/** fetchMatches in batches: each batch is one request, and a batch the CMS
+ *  rejects is asked again one match at a time, so only a bad match fails. */
+export async function fetchMatchesInBatches<Fixture extends MatchCentreFixture>(
+  fixtures: Fixture[],
+  { batchSize = MATCH_BATCH_SIZE, concurrency = 2, ...options }: FetchMatchesOptions & { batchSize?: number } = {}
+): Promise<{ matches: MatchCentreData[]; failed: Fixture[] }> {
+  const batches: Fixture[][] = [];
+  for (let start = 0; start < fixtures.length; start += batchSize) {
+    batches.push(fixtures.slice(start, start + batchSize));
+  }
+  const matches: MatchCentreData[] = [];
+  const rejected: Fixture[] = [];
+  await mapConcurrent(batches, concurrency, async (batch) => {
+    try {
+      for (const match of (await fetchMatchCentres(batch)).values()) {
+        if (match) matches.push(match);
+      }
+    } catch {
+      rejected.push(...batch);
+    }
+  });
+  const retried = await fetchMatches<Fixture, MatchCentreData>(rejected, (fixture) => fetchMatchCentre(fixture), options);
+  return { matches: [...matches, ...retried.matches], failed: retried.failed };
 }
 
 export async function fetchMatchCentre(
-  fixture: Pick<FixtureLookupItem, 'id' | 'compId' | 'season' | 'sourceType'>
+  fixture: MatchCentreFixture
 ): Promise<MatchCentreData | null> {
   const response = await postWithRetry<{
     data: MatchCentreResponse;
     errors?: { message: string }[];
   }>(SCORES_URL, {
     operationName: 'PlayerHistoryMatchCentreQuery',
-    variables: {
-      comp: {
-        id: fixture.compId,
-        season: fixture.season,
-        fixture: fixture.id,
-        sourceType: fixture.sourceType ?? '2',
-      },
-    },
+    variables: { comp: compInput(fixture) },
     query: MATCH_CENTRE_QUERY,
   });
 
@@ -548,17 +561,5 @@ export async function fetchMatchCentre(
     throw new Error(`Match centre query failed: ${response.errors[0].message}`);
   }
 
-  const { getFixtureItem, allMatchCommentary, allMatchStatsSummary } =
-    response.data;
-  if (!getFixtureItem || !allMatchStatsSummary) {
-    return null;
-  }
-
-  return {
-    fixture: { ...getFixtureItem, season: fixture.season },
-    commentary: allMatchCommentary ?? [],
-    players: allMatchStatsSummary.lineUp.players,
-    substitutes: allMatchStatsSummary.lineUp.substitutes,
-    coaches: allMatchStatsSummary.lineUp.coaches,
-  };
+  return toMatchCentreData(fixture, response.data);
 }
