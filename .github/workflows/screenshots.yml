@@ -78,6 +78,12 @@ jobs:
             echo "sha=$sha"
           } >> "$GITHUB_OUTPUT"
 
+      # The image's Node is too old to run the TypeScript tooling directly.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Checkout PR head
         uses: actions/checkout@v4
         with:
