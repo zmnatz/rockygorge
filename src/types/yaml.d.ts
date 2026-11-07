@@ -53,7 +53,7 @@ declare module '@config/practice-fields.yml' {
 }
 
 declare module '@config/eligibility.yml' {
-  const eligibility: import('./eligibility').EligibilityConfig;
+  const eligibility: import('./eligibility').EligibilityRules;
   export default eligibility;
 }
 

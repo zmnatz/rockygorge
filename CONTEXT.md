@@ -170,7 +170,7 @@ The Rugby Xplorer CSV export the eligibility tool consumes — one row per playe
 _Avoid_: Roster dump, match report
 
 **Match Record**:
-The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club with one or two sides without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
+The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
 _Avoid_: Roster dump, participation export
 
 **Match Participation**:
@@ -178,7 +178,7 @@ The number of NCS Qualifying Matches a player entered as a starter or substitute
 _Avoid_: Appearances, games played
 
 **One-Side Club**:
-A club with only one side in the fixture lists, which the eligibility tool assesses under the two-match minimum at any level. Its other sides, if any, play outside the lists and aren't counted.
+A club with only one side in the fixture lists, which the eligibility tool assesses under the two-match minimum. Its other sides, if any, play outside the lists and aren't counted.
 _Avoid_: single team, solo club
 
 **NCS Qualifying Match**:
@@ -186,7 +186,7 @@ A league or local-playoff match that counts toward a player's Match Participatio
 _Avoid_: Game, friendly
 
 **On Track**:
-A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's possible matches remain before Super Regionals, including playoff fixtures with no teams assigned yet. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the Lower Division comparison.
+A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's possible matches remain before Super Regionals, including playoff fixtures with no teams assigned yet. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the comparison with upper sides.
 _Avoid_: Provisionally eligible, pending
 
 **Registration**:

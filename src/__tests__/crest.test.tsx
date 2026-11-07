@@ -105,11 +105,11 @@ describe('Crest', () => {
     const html = renderToStaticMarkup(
       <Crest
         src="https://d26phqdbpt0w91.cloudfront.net/NonVideo/d89f330c-59ec-44cb-b7c1-f23052bfa9ee.png"
-        alt="Stingers"
-        name="Stingers WD3"
+        alt="Unlisted Club"
+        name="Unlisted Club WD3"
       />
     );
     expect(html).not.toContain('<img');
-    expect(html).toContain('>SW</div>');
+    expect(html).toContain('>UCW</div>');
   });
 });

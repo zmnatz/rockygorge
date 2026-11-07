@@ -1,27 +1,32 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import eligibility from '@config/eligibility.yml';
-import { seasonSnapshotFile, type CapitalFixture } from '../src/api/capital';
 import { postWithRetry, sleep } from '../src/utils/api';
-import { listClubs } from '../src/utils/participation';
+import { parseTeamSide, type TeamSide } from '../src/utils/teamSide';
 import {
   CLUB_PAGES_FILE,
   clubPageCandidates,
   crestEntityId,
   resolveClubPage,
-  type ClubPages,
+  type ClubPage,
   type CmsEntity,
   type CmsSite,
 } from '../src/utils/rugbyXplorer';
-import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
+import { currentSeason, readLeagueFixtures } from './lib/league-fixtures';
+import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 
 const CMS_URL = 'https://rugby-au-cms.graphcdn.app';
 const LOOKUP_GAP_MS = 250;
 
-function currentSeasonFixtures(): CapitalFixture[] {
-  const dir = path.join(process.cwd(), 'public', 'data', 'standings');
-  const read = (file: string) => JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
-  return read(seasonSnapshotFile(read('index.json').defaultSeason)).fixtures;
+// Reusable only in the current format, and unless a full refresh was asked for.
+function savedClubs(file: string): Record<string, ClubPage> {
+  if (
+    process.argv.includes('--full-history') ||
+    readManifest().clubPages?.format !== SNAPSHOT_FORMATS.clubPages ||
+    !fs.existsSync(file)
+  ) {
+    return {};
+  }
+  return JSON.parse(fs.readFileSync(file, 'utf-8')).clubs;
 }
 
 async function cms<T>(query: string, variables: Record<string, string> = {}): Promise<T> {
@@ -32,7 +37,7 @@ async function cms<T>(query: string, variables: Record<string, string> = {}): Pr
 async function lookupEntity(slug: string): Promise<CmsEntity> {
   await sleep(LOOKUP_GAP_MS);
   const data = await cms<{ entityDetails: CmsEntity }>(
-    'query($slug:String){entityDetails(slug:$slug){id name type}}',
+    'query($slug:String){entityDetails(slug:$slug){id name type crest}}',
     { slug },
   );
   return data.entityDetails;
@@ -46,39 +51,57 @@ async function generate() {
   }
   console.log('Confirming Rugby Xplorer club pages through the CMS...');
   try {
-    const fixtures = currentSeasonFixtures();
     const { sites } = await cms<{ sites: CmsSite[] }>('{sites{name slug}}');
-    const crests = new Map<string, string>();
+    const fixtures = readLeagueFixtures();
+    // Only clubs playing this season are looked up again; a past club keeps its entry.
+    const season = currentSeason();
+    const playing = new Set(
+      fixtures
+        .filter((fixture) => fixture.season === season)
+        .flatMap((fixture) => [fixture.homeTeam.name, fixture.awayTeam.name])
+        .map((teamName) => parseTeamSide(teamName)?.clubName),
+    );
+    const saved = savedClubs(outFile);
+    // Each club once, with the first real crest any of its sides carried. That
+    // crest also gives the club's id, which confirms its page more surely than a name.
+    const known = new Map<string, TeamSide & { crest: string | null }>();
     for (const fixture of fixtures) {
       for (const team of [fixture.homeTeam, fixture.awayTeam]) {
-        crests.set(team.name, team.crest);
+        const side = parseTeamSide(team.name);
+        if (!side) continue;
+        const crest = crestEntityId(team.crest) ? team.crest : null;
+        const club = known.get(side.clubName);
+        if (!club) known.set(side.clubName, { ...side, crest });
+        else if (!club.crest) club.crest = crest;
       }
     }
 
-    const clubs: ClubPages = {};
-    for (const club of listClubs(fixtures, eligibility)) {
-      const isWomen = club.name.endsWith(' Women');
-      const baseName = club.name.replace(/ Women$/, '');
-      // A side's crest may be stored elsewhere, so either side can supply the id.
-      const entityId =
-        [club.upperTeam, club.lowerTeam]
-          .map((team) => (team ? crestEntityId(crests.get(team) ?? '') : null))
-          .find(Boolean) ?? null;
-      clubs[club.name] = await resolveClubPage(
-        clubPageCandidates(baseName, isWomen ? 'W' : 'M', sites, entityId),
+    const clubs: Record<string, ClubPage> = {};
+    for (const [name, club] of known) {
+      const kept = saved[name];
+      if (kept && !playing.has(name)) {
+        clubs[name] = kept;
+        continue;
+      }
+      const entityId = club.crest ? crestEntityId(club.crest) : null;
+      const page = await resolveClubPage(
+        clubPageCandidates(club.baseName, club.gender, sites, entityId),
         entityId,
-        baseName,
+        club.baseName,
         lookupEntity,
       );
+      clubs[name] = { slug: page?.slug ?? null, crest: page?.crest ?? club.crest };
     }
 
     const changed = writeFileIfChanged(
       outFile,
-      JSON.stringify({ generatedAt: new Date().toISOString(), clubs }),
+      JSON.stringify({ generatedAt: new Date().toISOString(), clubs }, null, 1),
     );
     recordRun('clubPages', changed);
-    const found = Object.values(clubs).filter(Boolean).length;
-    console.log(`Confirmed ${found} of ${Object.keys(clubs).length} club pages.`);
+    const all = Object.values(clubs);
+    console.log(
+      `${all.length} clubs: ${all.filter((club) => club.slug).length} pages, ${all.filter((club) => club.crest).length} crests.`
+    );
   } catch (err) {
     console.warn('Club pages unavailable, keeping previous list:', (err as Error).message);
   }

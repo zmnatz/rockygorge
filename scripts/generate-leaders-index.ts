@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-  fetchAllCapitalFixtures,
-  type StandingsSnapshotIndex,
+import type {
+  StandingsSnapshotIndex,
 } from '../src/api/capital';
+import { readLeagueFixtures } from './lib/league-fixtures';
 import { recordRun, skipIfFresh, writeFileIfChanged } from './lib/snapshot-freshness';
 import { writeSeasonSnapshot } from './lib/write-season-snapshot';
 import {
@@ -56,7 +56,7 @@ async function generate() {
   const cache = loadCache();
   try {
     const snapshot = await buildLeadersSnapshot({
-      fetchFixtures: fetchAllCapitalFixtures,
+      fetchFixtures: async () => readLeagueFixtures(),
       fetchMatch: fetchLeaderMatch,
       cache,
       concurrency: 3,

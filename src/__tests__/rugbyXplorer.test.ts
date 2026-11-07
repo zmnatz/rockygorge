@@ -60,6 +60,19 @@ describe('clubPageCandidates', () => {
   });
 });
 
+describe('resolveClubPage crests', () => {
+  it("ignores the CMS's generic placeholder as a club's crest", async () => {
+    const lookup = async () => ({
+      id: '5',
+      name: 'Pax River',
+      type: 'club',
+      crest: 'https://d26phqdbpt0w91.cloudfront.net/NonVideo/d89f330c.png',
+    });
+
+    await expect(resolveClubPage(['x'], '5', 'Pax River', lookup)).resolves.toEqual({ slug: 'x', crest: null });
+  });
+});
+
 describe('clubPageCandidates by name', () => {
   it("does not offer a men's page for a women's side, or the reverse", () => {
     const sites = [
@@ -75,12 +88,13 @@ describe('clubPageCandidates by name', () => {
 });
 
 describe('resolveClubPage', () => {
-  const details = (id: string | null, name: string | null = 'Some Club') => ({ id, name, type: 'club' });
+  const CREST = 'https://dpf0m541u9zk8.cloudfront.net/ru/team/91267.png?v=1';
+  const details = (id: string | null, name: string | null = 'Some Club') => ({ id, name, type: 'club', crest: CREST });
 
   it('accepts the first slug the CMS confirms has the crest id', async () => {
     const lookup = async (slug: string) => (slug === 'second' ? details('91267') : details('999'));
 
-    await expect(resolveClubPage(['first', 'second', 'third'], '91267', 'Potomac Exiles', lookup)).resolves.toBe('second');
+    await expect(resolveClubPage(['first', 'second', 'third'], '91267', 'Potomac Exiles', lookup)).resolves.toEqual({ slug: 'second', crest: CREST });
   });
 
   it('accepts nothing when no slug has the crest id, even with a matching name', async () => {
@@ -92,12 +106,12 @@ describe('resolveClubPage', () => {
   it('with no crest id, accepts a club whose name matches once a generic word is dropped', async () => {
     const lookup = async () => details('5', 'Pax River Rugby');
 
-    await expect(resolveClubPage(['pax-river-rugby'], null, 'Pax River', lookup)).resolves.toBe('pax-river-rugby');
+    await expect(resolveClubPage(['pax-river-rugby'], null, 'Pax River', lookup)).resolves.toEqual({ slug: 'pax-river-rugby', crest: CREST });
   });
 
   it('with no crest id, does not accept a different club or a non-club', async () => {
     const other = async () => details('5', 'Pax River Youth Rugby');
-    const union = async () => ({ id: '5', name: 'Pax River', type: 'geographical-union' });
+    const union = async () => ({ id: '5', name: 'Pax River', type: 'geographical-union', crest: CREST });
     const missing = async () => details(null, null);
 
     await expect(resolveClubPage(['x'], null, 'Pax River', other)).resolves.toBeNull();

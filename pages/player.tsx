@@ -17,6 +17,9 @@ import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { loadCurrentSeasonFixtures } from '@/api/capital';
 import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
+import { PlayerEligibilityDialog } from '@/components/PlayerEligibilityDialog';
+import { clubPages } from '@/utils/clubPages';
+import type { Club, PlayerEligibility } from '@/types/eligibility';
 import {
   loadPlayerHistory,
   type PlayerHistory,
@@ -80,13 +83,9 @@ export default function PlayersPage() {
       )}
 
       {playerId && !isPending && !isError && !history && (
-        <>
-          {/* History files cover Rocky Gorge's competitions; the record covers every club. */}
-          <SeasonEligibility playerId={playerId} showName />
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-            No match history page for this player.
-          </Typography>
-        </>
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
+          No history found for this player.
+        </Typography>
       )}
 
       {playerId && history && <PlayerHistoryView history={history} />}
@@ -94,9 +93,11 @@ export default function PlayersPage() {
   );
 }
 
-/** The player's current-season verdicts, from the nightly record. */
-function SeasonEligibility({ playerId, showName = false }: { playerId: string; showName?: boolean }) {
-  const { data, isPending, isError } = useQuery({
+/** The player's current-season verdicts as chips, from the nightly record. Each
+ *  opens the round-by-round detail. */
+function SeasonEligibility({ playerId }: { playerId: string }) {
+  const [open, setOpen] = useState<{ verdict: PlayerEligibility; club: Club } | null>(null);
+  const { data } = useQuery({
     queryKey: ['playerEligibility', playerId],
     queryFn: async () => {
       const [snapshot, fixtures] = await Promise.all([
@@ -106,6 +107,7 @@ function SeasonEligibility({ playerId, showName = false }: { playerId: string; s
       if (!snapshot) return null;
       return {
         snapshot,
+        fixtures,
         clubs: playerSeasonEligibility(snapshot, fixtures, playerId, eligibility),
       };
     },
@@ -113,72 +115,56 @@ function SeasonEligibility({ playerId, showName = false }: { playerId: string; s
     retry: 1,
   });
 
-  if (isPending) return null;
-  const name = showName ? data?.clubs[0]?.verdicts[0]?.name : undefined;
-  const gapCount = data
-    ? data.clubs.reduce((total, { club }) => total + clubGaps(data.snapshot, club, eligibility).length, 0)
-    : 0;
+  if (!data || data.clubs.length === 0) return null;
+  const gaps = open ? clubGaps(data.snapshot, open.club, eligibility).length : 0;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2, mb: 4 }} data-testid="season-eligibility">
-      {name && (
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
-          {name}
-        </Typography>
+    <>
+      {data.clubs.flatMap(({ club, verdicts }) =>
+        verdicts.map((verdict) => (
+          <EligibilityStatusChip
+            key={verdict.teamName}
+            player={verdict}
+            sideLabel={club.sides.find((side) => side.teamName === verdict.teamName)?.label}
+            onClick={() => setOpen({ verdict, club })}
+          />
+        ))
       )}
-      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-        {data ? `${data.snapshot.season} eligibility` : 'Eligibility'}
-      </Typography>
-      {(isError || !data) && (
-        <Typography variant="body2" color="text.secondary">
-          Eligibility is unavailable right now.
-        </Typography>
-      )}
-      {data?.clubs.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          No NCS Qualifying Matches recorded this season.
-        </Typography>
-      )}
-      {data?.clubs.flatMap(({ verdicts }) => verdicts).map((verdict) => (
-        <Box key={verdict.teamName} sx={{ mt: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-              {verdict.teamName}
-            </Typography>
-            <EligibilityStatusChip player={verdict} />
-            <Typography variant="caption" color="text.secondary">
-              {verdict.participation} {verdict.participation === 1 ? 'match' : 'matches'} for this side
-            </Typography>
-          </Box>
-          {[...verdict.reasons, ...verdict.pending].map((note) => (
-            <Typography key={note} variant="body2" color="text.secondary">
-              {note}
-            </Typography>
-          ))}
-        </Box>
-      ))}
-      {gapCount > 0 && (
-        <Typography variant="body2" color="warning.main" sx={{ mt: 1.5 }}>
-          {gapCount} {gapCount === 1 ? 'match has' : 'matches have'} gaps in this club&apos;s
-          record, so this count may be low. The eligibility report lists them.
-        </Typography>
-      )}
-      {data && (
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5, mb: 0 }}>
-          A guide from the match record
-          {data.snapshot.generatedAt &&
-            `, as of ${new Date(data.snapshot.generatedAt).toLocaleDateString()}`}
-          . The Rugby Xplorer report is the official count, and registration isn&apos;t checked.{' '}
-          <MuiLink component={Link} href="/utils/eligibility">
-            Eligibility report
-          </MuiLink>
-          {' · '}
-          <MuiLink component={Link} href="/utils/eligibility-methodology">
-            How it&apos;s worked out
-          </MuiLink>
-        </Typography>
-      )}
-    </Paper>
+      <PlayerEligibilityDialog
+        player={open?.verdict ?? null}
+        source="record"
+        ownLabel={open?.club.sides.find((side) => side.teamName === open.verdict.teamName)?.label ?? ''}
+        accounting={
+          open && {
+            snapshot: data.snapshot,
+            fixtures: data.fixtures,
+            clubSlug: clubPages[open.club.name]?.slug ?? null,
+            sides: open.club.sides.map((side) => side.teamName),
+          }
+        }
+        schedule={
+          open && {
+            club: open.club,
+            fixtures: data.fixtures,
+            clubSlug: clubPages[open.club.name]?.slug ?? null,
+          }
+        }
+        footer={
+          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1, mb: 0 }}>
+            {gaps > 0 &&
+              `${gaps} ${gaps === 1 ? 'match has' : 'matches have'} gaps in this club's record, so counts may be low. `}
+            {data.snapshot.season} season, as of{' '}
+            {data.snapshot.generatedAt ? new Date(data.snapshot.generatedAt).toLocaleDateString() : 'the last update'}. A
+            guide from the match record: the Rugby Xplorer report is the official count, and registration isn&apos;t
+            checked.{' '}
+            <MuiLink component={Link} href="/utils/eligibility-methodology">
+              How it&apos;s worked out
+            </MuiLink>
+          </Typography>
+        }
+        onClose={() => setOpen(null)}
+      />
+    </>
   );
 }
 
@@ -214,15 +200,16 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }} aria-hidden="true">
           {history.name}
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          {history.teamName} • {history.games.length}{' '}
-          {history.games.length === 1 ? 'game' : 'games'} •{' '}
-          {history.scoringEvents.length}{' '}
-          {history.scoringEvents.length === 1 ? 'score' : 'scores'}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="subtitle1" color="text.secondary">
+            {history.teamName} • {history.games.length}{' '}
+            {history.games.length === 1 ? 'game' : 'games'} •{' '}
+            {history.scoringEvents.length}{' '}
+            {history.scoringEvents.length === 1 ? 'score' : 'scores'}
+          </Typography>
+          <SeasonEligibility playerId={history.id} />
+        </Box>
       </Box>
-
-      <SeasonEligibility playerId={history.id} />
 
       <Tabs
         value={season}

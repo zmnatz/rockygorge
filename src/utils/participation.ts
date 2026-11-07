@@ -1,6 +1,7 @@
-import { computeBreakdown } from '@/utils/eligibility';
+import { clubsFromTeamNames, computeBreakdown } from '@/utils/eligibility';
 import type {
-  EligibilityConfig,
+  Club,
+  EligibilityRules,
   PlayerEligibility,
   PlayerRow,
   RemainingMatches,
@@ -170,23 +171,12 @@ export function buildParticipationSnapshot(
   };
 }
 
-/** A club in the record. With two sides the regulations' two-side rules apply;
- *  a club with one side has only `upperTeam`, whatever its division, because the
- *  upper side's rule (two matches at any level) is the one that applies to it.
- *  See docs/adr/011-eligibility-for-one-side-clubs.md. */
-export interface Club {
-  name: string;
-  upperTeam: string;
-  lowerTeam: string | null;
-  upperLabel: string;
-  lowerLabel: string | null;
-}
+const isClubSide = (club: Club, teamName: string) =>
+  club.sides.some((side) => side.teamName === teamName);
 
-const SIDE_NAME = /^(.+) (M|W)?D(\d+)$/;
-
-function isQualifying(competition: string, config: EligibilityConfig): boolean {
+function isQualifying(competition: string, rules: EligibilityRules): boolean {
   const name = competition.toLowerCase();
-  return !config.nonQualifyingCompetitions.some((term) => name.includes(term.toLowerCase()));
+  return !rules.nonQualifyingCompetitions.some((term) => name.includes(term.toLowerCase()));
 }
 
 /** The name fields listClubs needs from a fixture. */
@@ -196,64 +186,50 @@ interface FixtureSides {
   awayTeam: { name: string };
 }
 
-/** The sides a club fields. */
-export function clubSides(club: Pick<Club, 'upperTeam' | 'lowerTeam'>): string[] {
-  return club.lowerTeam === null ? [club.upperTeam] : [club.upperTeam, club.lowerTeam];
-}
-
-/** Clubs with one or two sides in qualifying competitions, by name. A team name
- *  that doesn't end in a division can't be ranked and is skipped. The rules don't
- *  cover a club fielding three sides, so one is left out. */
-export function listClubs(fixtures: FixtureSides[], config: EligibilityConfig): Club[] {
-  const clubs = new Map<string, { name: string; sides: Map<string, number> }>();
-  for (const fixture of fixtures) {
-    if (!isQualifying(fixture.compName, config)) continue;
-    for (const { name: teamName } of [fixture.homeTeam, fixture.awayTeam]) {
-      const match = teamName.match(SIDE_NAME);
-      if (!match) continue;
-      const [, clubName, gender, level] = match;
-      const name = gender === 'W' ? `${clubName} Women` : clubName;
-      const club = clubs.get(name) ?? { name, sides: new Map<string, number>() };
-      club.sides.set(teamName, Number(level));
-      clubs.set(name, club);
-    }
-  }
-
-  return [...clubs.values()]
-    .filter((club) => club.sides.size <= 2)
-    .map((club) => {
-      const [[upperTeam, upperLevel], lower] = [...club.sides].sort((a, b) => a[1] - b[1]);
-      return {
-        name: club.name,
-        upperTeam,
-        lowerTeam: lower?.[0] ?? null,
-        upperLabel: `D${upperLevel}`,
-        lowerLabel: lower ? `D${lower[1]}` : null,
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+/** Clubs and their sides in qualifying competitions, by name. */
+export function listClubs(fixtures: FixtureSides[], rules: EligibilityRules): Club[] {
+  return clubsFromTeamNames(
+    fixtures
+      .filter((fixture) => isQualifying(fixture.compName, rules))
+      .flatMap((fixture) => [fixture.homeTeam.name, fixture.awayTeam.name]),
+  );
 }
 
 /** A competition's division: playoffs can be a separate competition from the
  *  league they belong to. */
 const divisionOf = (compName: string) => compName.replace(/\s+playoffs?$/i, '').toLowerCase();
 
+/** A match a side could still play before the Super Regionals deadline. */
+export interface PossibleFixture {
+  fixtureId?: string;
+  teamName: string;
+  competition: string;
+  dateTime: string;
+  /** Empty when the teams aren't assigned yet. */
+  opponent: string;
+  /** A playoff with no teams assigned, which the side may not reach. */
+  open: boolean;
+}
+
+type ScheduleFixture = FixtureSides & {
+  id?: string;
+  dateTime: string;
+  status?: string;
+  homeTeam: { name: string; score: string };
+  awayTeam: { name: string; score: string };
+};
+
 /** Each side's possible matches before the Super Regionals deadline, which count
  *  towards the two-match minimums. A postponed fixture has no date to count on,
  *  and a forfeit won't be played. Future playoff fixtures have no teams assigned,
  *  so any side in that division could play in them: each such date is one possible
  *  match, since a side plays once on a date however many fixtures are on it. */
-export function remainingMatches(
-  fixtures: (FixtureSides & {
-    dateTime: string;
-    status?: string;
-    homeTeam: { name: string; score: string };
-    awayTeam: { name: string; score: string };
-  })[],
-  sides: Pick<Club, 'upperTeam' | 'lowerTeam'>,
-  config: EligibilityConfig,
+export function possibleFixtures(
+  fixtures: ScheduleFixture[],
+  club: Pick<Club, 'sides'>,
+  rules: EligibilityRules,
   now: Date = new Date(),
-): RemainingMatches {
+): Record<string, PossibleFixture[]> {
   const upcoming = fixtures.filter((fixture) => {
     return (
       new Date(fixture.dateTime) > now &&
@@ -261,83 +237,90 @@ export function remainingMatches(
       fixture.status !== 'Postponed' &&
       fixture.homeTeam.score === '' &&
       fixture.awayTeam.score === '' &&
-      isQualifying(fixture.compName, config)
+      isQualifying(fixture.compName, rules)
     );
   });
   const plays = (fixture: FixtureSides, team: string) =>
     fixture.homeTeam.name === team || fixture.awayTeam.name === team;
   const dateOf = (fixture: { dateTime: string }) => fixture.dateTime.slice(0, 10);
 
-  const count = (team: string) => {
+  const forSide = (teamName: string): PossibleFixture[] => {
     const divisions = new Set(
-      fixtures.filter((fixture) => plays(fixture, team)).map((fixture) => divisionOf(fixture.compName)),
+      fixtures.filter((fixture) => plays(fixture, teamName)).map((fixture) => divisionOf(fixture.compName)),
     );
-    const own = upcoming.filter((fixture) => plays(fixture, team));
+    const own = upcoming.filter((fixture) => plays(fixture, teamName));
     const ownDates = new Set(own.map(dateOf));
-    const openDates = new Set(
-      upcoming
-        .filter(
-          (fixture) =>
-            (fixture.homeTeam.name === '' || fixture.awayTeam.name === '') &&
-            divisions.has(divisionOf(fixture.compName)),
-        )
-        .map(dateOf)
-        .filter((date) => !ownDates.has(date)),
-    );
-    return own.length + openDates.size;
+    const openByDate = new Map<string, ScheduleFixture>();
+    for (const fixture of upcoming) {
+      const date = dateOf(fixture);
+      if (
+        (fixture.homeTeam.name === '' || fixture.awayTeam.name === '') &&
+        divisions.has(divisionOf(fixture.compName)) &&
+        !ownDates.has(date) &&
+        !openByDate.has(date)
+      ) {
+        openByDate.set(date, fixture);
+      }
+    }
+    const toPossible = (fixture: ScheduleFixture, open: boolean): PossibleFixture => ({
+      fixtureId: fixture.id,
+      teamName,
+      competition: fixture.compName,
+      dateTime: fixture.dateTime,
+      opponent: open ? '' : fixture.homeTeam.name === teamName ? fixture.awayTeam.name : fixture.homeTeam.name,
+      open,
+    });
+    return [
+      ...own.map((fixture) => toPossible(fixture, false)),
+      ...[...openByDate.values()].map((fixture) => toPossible(fixture, true)),
+    ].sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
   };
-  return {
-    upper: count(sides.upperTeam),
-    // Open playoff slots have an empty team name, so a missing side can't be counted.
-    lower: sides.lowerTeam === null ? 0 : count(sides.lowerTeam),
-  };
+  return Object.fromEntries(club.sides.map(({ teamName }) => [teamName, forSide(teamName)]));
 }
 
-/** The regulation thresholds, applied to this club's two sides. */
-export function clubConfig(club: Club, base: EligibilityConfig): EligibilityConfig {
-  return {
-    ...base,
-    upperDivision: { ...base.upperDivision, teamName: club.upperTeam, label: club.upperLabel },
-    lowerDivision: {
-      ...base.lowerDivision,
-      teamName: club.lowerTeam ?? '',
-      label: club.lowerLabel ?? '',
-    },
-  };
+/** How many possible matches each side has. */
+export function remainingMatches(
+  fixtures: ScheduleFixture[],
+  club: Pick<Club, 'sides'>,
+  rules: EligibilityRules,
+  now: Date = new Date(),
+): RemainingMatches {
+  return Object.fromEntries(
+    Object.entries(possibleFixtures(fixtures, club, rules, now)).map(([teamName, list]) => [teamName, list.length]),
+  );
 }
 
 /** The club's rows that count towards Match Participation. As in a Match
- *  Participation Report, every player has a row on both sides, so a player only
- *  ever listed on one side still gets a verdict for the other. */
+ *  Participation Report, every player has a row on every side, so a player only
+ *  ever listed on one side still gets a verdict for the others. */
 export function participationRows(
   snapshot: ParticipationSnapshot,
   club: Club,
-  config: EligibilityConfig,
+  rules: EligibilityRules,
 ): PlayerRow[] {
+  const teams = club.sides.map((side) => side.teamName);
   const rows = snapshot.rows.filter(
-    (row) =>
-      (row.teamName === club.upperTeam || row.teamName === club.lowerTeam) &&
-      isQualifying(row.competition, config),
+    (row) => teams.includes(row.teamName) && isQualifying(row.competition, rules),
   );
   const onSide = new Set(rows.map((row) => `${row.teamName}\0${row.playerId}`));
-  const emptyRows = rows.flatMap((row) => {
-    const otherTeam = row.teamName === club.upperTeam ? club.lowerTeam : club.upperTeam;
-    if (otherTeam === null) return [];
-    const key = `${otherTeam}\0${row.playerId}`;
-    if (onSide.has(key)) return [];
-    onSide.add(key);
-    return [
-      {
-        ...row,
-        teamName: otherTeam,
-        competition: '',
-        appearances: 0,
-        played: 0,
-        substitute: 0,
-        rounds: {},
-      },
-    ];
-  });
+  const emptyRows = rows.flatMap((row) =>
+    teams.flatMap((teamName) => {
+      const key = `${teamName}\0${row.playerId}`;
+      if (onSide.has(key)) return [];
+      onSide.add(key);
+      return [
+        {
+          ...row,
+          teamName,
+          competition: '',
+          appearances: 0,
+          played: 0,
+          substitute: 0,
+          rounds: {},
+        },
+      ];
+    }),
+  );
   return [...rows, ...emptyRows];
 }
 
@@ -345,12 +328,10 @@ export function participationRows(
 export function clubGaps(
   snapshot: ParticipationSnapshot,
   club: Club,
-  config: EligibilityConfig,
+  rules: EligibilityRules,
 ): ParticipationGap[] {
   return snapshot.gaps.filter(
-    (gap) =>
-      (gap.teamName === club.upperTeam || gap.teamName === club.lowerTeam) &&
-      isQualifying(gap.competition, config),
+    (gap) => isClubSide(club, gap.teamName) && isQualifying(gap.competition, rules),
   );
 }
 
@@ -365,19 +346,18 @@ export function playerSeasonEligibility(
   snapshot: ParticipationSnapshot,
   fixtures: Parameters<typeof remainingMatches>[0],
   playerId: string,
-  base: EligibilityConfig,
+  rules: EligibilityRules,
   now: Date = new Date(),
 ): PlayerClubEligibility[] {
   const own = { ...snapshot, rows: snapshot.rows.filter((row) => row.playerId === playerId) };
   const teams = new Set(own.rows.map((row) => row.teamName));
-  return listClubs(fixtures, base)
-    .filter((club) => clubSides(club).some((team) => teams.has(team)))
+  return listClubs(fixtures, rules)
+    .filter((club) => club.sides.some((side) => teams.has(side.teamName)))
     .flatMap((club) => {
-      const config = clubConfig(club, base);
-      const rows = participationRows(own, club, config);
+      const rows = participationRows(own, club, rules);
       if (rows.length === 0) return [];
-      const { upper, lower } = computeBreakdown(rows, config, remainingMatches(fixtures, club, config, now));
-      return [{ club, verdicts: [...upper, ...lower] }];
+      const { sides } = computeBreakdown(rows, club.sides, rules, remainingMatches(fixtures, club, rules, now));
+      return [{ club, verdicts: sides.flatMap((side) => side.players) }];
     });
 }
 
@@ -425,7 +405,7 @@ interface PlayerRoundsInput {
   rows: PlayerRow[];
   gaps: ParticipationGap[];
   resultIds: string[];
-  config: EligibilityConfig;
+  rules: EligibilityRules;
   now?: Date;
 }
 
@@ -438,7 +418,7 @@ export function playerRounds({
   rows,
   gaps,
   resultIds,
-  config,
+  rules,
   now = new Date(),
 }: PlayerRoundsInput): PlayerRound[] {
   const results = new Set(resultIds);
@@ -446,7 +426,7 @@ export function playerRounds({
     gaps.some((gap) => gap.kind === kind && gap.fixtureId === fixtureId && gap.teamName === teamName);
 
   const statusOf = (fixture: PlayerRoundsInput['fixtures'][number]): PlayerRoundStatus => {
-    if (!isQualifying(fixture.compName, config)) return 'not-qualifying';
+    if (!isQualifying(fixture.compName, rules)) return 'not-qualifying';
     if (fixture.status === 'Forfeit') return 'forfeit';
     if (fixture.status === 'Postponed') return 'postponed';
     const code = rows.find((row) => row.teamName === teamName && row.competition === fixture.compName)
@@ -504,17 +484,13 @@ export interface ScheduledFixture {
 const isScored = (fixture: { homeTeam: { score: string }; awayTeam: { score: string } }) =>
   fixture.homeTeam.score !== '' && fixture.awayTeam.score !== '';
 
-/** Played fixtures in the schedule that the club feed doesn't have. The club feed
- *  only covers Rocky Gorge's competitions, and the schedule has every side's. */
-export function scheduledResults(
-  results: { id: string }[],
+/** The league's played fixtures: every side, competition and season in the
+ *  schedule. A fixture dated later can carry a placeholder score. */
+export function leagueResults(
   schedule: ScheduledFixture[],
   now: Date = new Date(),
 ): ScheduledFixture[] {
-  const known = new Set(results.map((fixture) => fixture.id));
-  return schedule.filter(
-    (fixture) => !known.has(fixture.id) && isScored(fixture) && new Date(fixture.dateTime) <= now,
-  );
+  return schedule.filter((fixture) => isScored(fixture) && new Date(fixture.dateTime) <= now);
 }
 
 /** Pulls one club's latest-season participation live. The schedule comes from the
@@ -531,12 +507,11 @@ async function pullClubParticipation(
 ): Promise<ParticipationSnapshot | null> {
   const started = fixtures.filter((fixture) => new Date(fixture.dateTime) <= now);
   const season = started.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
-  const isClubSide = (name: string) => name === club.upperTeam || name === club.lowerTeam;
   // Build on the snapshot when it covers this club and season; otherwise pull it all.
   const base =
     saved?.resultIds &&
     saved.season === season &&
-    clubSides(club).every((team) => saved.rows.some((row) => row.teamName === team))
+    club.sides.every((side) => saved.rows.some((row) => row.teamName === side.teamName))
       ? saved
       : null;
   const known = new Set(base?.resultIds);
@@ -545,7 +520,7 @@ async function pullClubParticipation(
       fixture.season === season &&
       !known.has(fixture.id) &&
       fixture.status !== 'Postponed' &&
-      (isClubSide(fixture.homeTeam.name) || isClubSide(fixture.awayTeam.name)),
+      (isClubSide(club, fixture.homeTeam.name) || isClubSide(club, fixture.awayTeam.name)),
   );
   // Every played fixture already has a result, so no requests are needed.
   if (base && own.length === 0) {
@@ -644,9 +619,7 @@ export async function loadClubRecord(
     }
   }
 
-  const hasClub = saved?.rows.some(
-    (row) => row.teamName === club.upperTeam || row.teamName === club.lowerTeam,
-  );
+  const hasClub = saved?.rows.some((row) => isClubSide(club, row.teamName));
   if (!saved || !hasClub) {
     throw new Error(`No saved match data for ${club.name}.`);
   }

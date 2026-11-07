@@ -35,7 +35,7 @@
     "dev": "next dev",
     "build": "bun run generate; next build",
     "build:force": "FORCE_SNAPSHOTS=1 bun run build",
-    "generate": "bun run generate:scores; bun run generate:standings; bun run generate:leaders; bun run generate:players; bun run generate:crests; bun run generate:club-pages",
+    "generate": "bun run generate:scores; bun run generate:standings; bun run generate:leaders; bun run generate:players; bun run generate:club-pages; bun run generate:crests",
     "generate:force": "FORCE_SNAPSHOTS=1 bun run generate",
     "generate:players": "bun scripts/generate-players.ts",
     "generate:scores": "bun scripts/generate-scores-index.ts",

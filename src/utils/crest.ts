@@ -1,3 +1,5 @@
+import { parseTeamSide } from '@/utils/teamSide';
+
 // Local crest files baked at build time (scripts/generate-crests.ts).
 // Remote CMS URLs like `.../ru/team/91273.png?v=...` map deterministically
 // to `/crests/91273.webp`. Unknown patterns (or a missing local file, e.g.
@@ -29,6 +31,20 @@ export function crestSrc(remoteUrl: string | undefined | null): string {
 // of identical badges.
 export function isPlaceholderCrest(remoteUrl: string | undefined | null): boolean {
   return !!remoteUrl && remoteUrl.includes('/NonVideo/');
+}
+
+// A fixture often carries the placeholder when the side's club has a real crest
+// in the CMS (scripts/generate-club-pages.ts), so the club's crest is used then.
+export function resolveTeamCrest(
+  fixtureCrest: string | undefined | null,
+  teamName: string | undefined,
+  clubs: Record<string, { crest: string | null } | undefined>
+): string | undefined | null {
+  if (fixtureCrest && !isPlaceholderCrest(fixtureCrest)) {
+    return fixtureCrest;
+  }
+  const side = teamName ? parseTeamSide(teamName) : null;
+  return (side && clubs[side.clubName]?.crest) || fixtureCrest;
 }
 
 // Short code for avatar fallbacks, e.g. "Rocky Gorge MD3" -> "RGM".

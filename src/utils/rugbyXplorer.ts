@@ -1,3 +1,5 @@
+import { isPlaceholderCrest } from '@/utils/crest';
+
 // Links to Rugby Xplorer, and working out which of its pages belongs to a club.
 // xplorer.rugby blocks automated clients, so club pages are found and confirmed
 // through the CMS behind it, never by loading the site. See
@@ -19,8 +21,8 @@ export function fixturesUrl(clubSlug: string | null): string | null {
   return clubSlug ? `${SITE}/${clubSlug}/fixtures-results` : null;
 }
 
-/** The list of Capital clubs, for a club with no known page. */
-export const UNION_CLUBS_URL = `${SITE}/${UNION_SLUG}/clubs`;
+/** Rugby Xplorer's front page, for a club with no known page. */
+export const RUGBY_XPLORER_URL = SITE;
 
 /** The club id in a CMS-hosted crest URL, e.g. `.../ru/team/91273.png`. */
 export function crestEntityId(crest: string): string | null {
@@ -36,6 +38,7 @@ export interface CmsEntity {
   id: string | null;
   name: string | null;
   type: string | null;
+  crest: string | null;
 }
 
 const kebab = (text: string) =>
@@ -84,6 +87,12 @@ export function clubPageCandidates(
   ];
 }
 
+/** A club's confirmed Rugby Xplorer page and real crest, if it has them. */
+export interface ClubPage {
+  slug: string | null;
+  crest: string | null;
+}
+
 /** The first candidate the CMS confirms is this club: by id from its crest when
  *  it has one, otherwise by name, since a wrong link is worse than no link. */
 export async function resolveClubPage(
@@ -91,7 +100,7 @@ export async function resolveClubPage(
   entityId: string | null,
   clubName: string,
   lookup: (slug: string) => Promise<CmsEntity>,
-): Promise<string | null> {
+): Promise<ClubPage | null> {
   for (const slug of candidates) {
     const entity = await lookup(slug);
     const confirmed = entityId
@@ -99,22 +108,10 @@ export async function resolveClubPage(
       : entity.id !== null &&
         entity.type === 'club' &&
         clubWords(entity.name ?? '') === clubWords(clubName);
-    if (confirmed) return slug;
+    if (confirmed) {
+      const crest = entity.crest && !isPlaceholderCrest(entity.crest) ? entity.crest : null;
+      return { slug, crest };
+    }
   }
   return null;
-}
-
-/** Club name to Rugby Xplorer slug, null when no page could be confirmed. */
-export type ClubPages = Record<string, string | null>;
-
-/** Loads the nightly club page list. Links are a convenience, so a missing or
- *  unreadable list only costs the links. */
-export async function loadClubPages(): Promise<ClubPages> {
-  try {
-    const res = await fetch(`/data/${CLUB_PAGES_FILE}`);
-    if (!res.ok || !res.headers.get('content-type')?.includes('json')) return {};
-    return ((await res.json()) as { clubs?: ClubPages }).clubs ?? {};
-  } catch {
-    return {};
-  }
 }

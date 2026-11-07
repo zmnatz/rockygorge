@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { crestFileName, isPlaceholderCrest } from '../src/utils/crest';
-import { fetchAllCapitalFixtures } from '../src/api/capital';
+import { CLUB_PAGES_FILE } from '../src/utils/rugbyXplorer';
+import { readLeagueFixtures } from './lib/league-fixtures';
 import { recordRun, skipIfFresh } from './lib/snapshot-freshness';
 
 interface SnapshotScore {
@@ -39,8 +40,20 @@ async function generate() {
   } else {
     console.warn('No public/data/scores.json — run generate:scores first.');
   }
+  // Clubs' own crests, for sides whose fixtures only carry the placeholder.
+  const clubPagesPath = path.join(process.cwd(), 'public', 'data', CLUB_PAGES_FILE);
+  if (fs.existsSync(clubPagesPath)) {
+    const { clubs } = JSON.parse(fs.readFileSync(clubPagesPath, 'utf-8')) as {
+      clubs: Record<string, { crest: string | null }>;
+    };
+    for (const club of Object.values(clubs)) {
+      if (club.crest) {
+        urls.add(club.crest);
+      }
+    }
+  }
   try {
-    const fixtures = await fetchAllCapitalFixtures();
+    const fixtures = readLeagueFixtures();
     for (const fixture of fixtures) {
       if (fixture.homeTeam.crest) {
         urls.add(fixture.homeTeam.crest);

@@ -14,6 +14,8 @@ import {
   isResult,
   isSevensComp,
   buildStandingsSnapshot,
+  leagueClubIds,
+  mergeLeagueFeeds,
   seasonSnapshotFile,
   splitStandingsSnapshot,
   ladderKeyFor,
@@ -367,8 +369,91 @@ describe('ladderKeysOf', () => {
   });
 });
 
+describe('mergeLeagueFeeds', () => {
+  it("adds fixtures from clubs' feeds in the league's competitions, and no others", () => {
+    const merged = mergeLeagueFeeds(
+      [fixture('base', { compId: 'd2' })],
+      [
+        [fixture('base', { compId: 'd2' }), fixture('missed', { compId: 'd2' })],
+        [fixture('friendly', { compId: 'carolinas' }), fixture('missed', { compId: 'd2' })],
+      ],
+    );
+
+    expect(merged.map((item) => item.id)).toEqual(['base', 'missed']);
+  });
+});
+
+describe('leagueClubIds', () => {
+  const crest = (id: number) => `https://dpf0m541u9zk8.cloudfront.net/ru/team/${id}.png?v=1`;
+  const team = (name: string, teamCrest: string) => ({ ...fixture('x').homeTeam, name, crest: teamCrest });
+
+  it("takes ids from crests, and from the saved clubs for sides with only a placeholder", () => {
+    const fixtures = [
+      fixture('a', {
+        season: '2026/2027',
+        homeTeam: team('Raleigh MD2', 'https://d26phqdbpt0w91.cloudfront.net/NonVideo/x.png'),
+        awayTeam: team('NOVA MD1', crest(91262)),
+      }),
+    ];
+
+    const ids = leagueClubIds(fixtures, { Raleigh: { crest: crest(91269) }, Gone: { crest: crest(1) } }, '2026/2027');
+
+    expect(ids.sort()).toEqual([91262, 91269]);
+  });
+
+  it('skips clubs seen only in a past season, once past seasons are settled', () => {
+    const fixtures = [fixture('a', { season: '2025/2026', homeTeam: team('NOVA MD1', crest(91262)), awayTeam: team('', '') })];
+
+    expect(leagueClubIds(fixtures, {}, '2026/2027')).toEqual([]);
+    expect(leagueClubIds(fixtures, {}, '')).toEqual([91262]);
+  });
+});
+
 describe('buildStandingsSnapshot', () => {
   const ladder = (id: string) => ({ id, hasPools: false, ladderPools: [] });
+
+  describe('with a saved snapshot', () => {
+    const CURRENT = '2026/2027';
+    const PAST = '2025/2026';
+    const key = (compId: string, season: string) => ladderSnapshotKey(compId, season);
+    const saved = {
+      generatedAt: '2026-11-01T00:00:00Z',
+      fixtures: [
+        fixture('old', { compId: 'd3', season: PAST, homeTeam: { ...fixture('x').homeTeam, score: 'saved' } }),
+        fixture('stale', { compId: 'd3', season: CURRENT }),
+      ],
+      ladders: { [key('d3', PAST)]: ladder('saved'), [key('d3', CURRENT)]: ladder('saved') },
+    };
+    const build = (fetched: string[]) =>
+      buildStandingsSnapshot({
+        fetchFixtures: async () => [
+          fixture('new', { compId: 'd3', season: CURRENT }),
+          fixture('old', { compId: 'd3', season: PAST, homeTeam: { ...fixture('x').homeTeam, score: 'fresh' } }),
+        ],
+        fetchLadder: async (ladderKey) => {
+          fetched.push(ladderKey.season);
+          return ladder('fresh');
+        },
+        saved,
+        refreshFrom: CURRENT,
+      });
+
+    it('asks for no ladder from a past season, and keeps the saved one', async () => {
+      const fetched: string[] = [];
+      const snapshot = await build(fetched);
+
+      expect(fetched).toEqual([CURRENT]);
+      expect(snapshot.ladders[key('d3', PAST)]).toEqual(ladder('saved'));
+      expect(snapshot.ladders[key('d3', CURRENT)]).toEqual(ladder('fresh'));
+    });
+
+    it("keeps a past season's saved fixtures, and replaces the current season's", async () => {
+      const snapshot = await build([]);
+
+      expect(snapshot.fixtures.map((item) => item.id).sort()).toEqual(['new', 'old']);
+      expect(snapshot.fixtures.find((item) => item.id === 'old')?.homeTeam.score).toBe('saved');
+    });
+  });
 
   it('bundles the fixtures with every league ladder, keyed by comp and season', async () => {
     const fixtures = [

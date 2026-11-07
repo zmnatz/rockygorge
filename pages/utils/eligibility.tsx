@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { loadCurrentSeasonFixtures } from '@/api/capital';
@@ -33,59 +33,66 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
-import { computeBreakdown, divisionLabel, parsePlayerRows } from '@/utils/eligibility';
 import {
-  clubConfig,
+  PlayerEligibilityDialog,
+  type ClubSchedule,
+  type ReportSource,
+  type RoundAccounting,
+} from '@/components/PlayerEligibilityDialog';
+import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
+import {
+  clubsInRows,
+  computeBreakdown,
+  divisionLabel,
+  hasSharedName,
+  parsePlayerRows,
+  sameNamePlayers,
+  sharedNames,
+} from '@/utils/eligibility';
+import {
   clubGaps,
-  clubSides,
   listClubs,
   loadClubRecord,
   loadParticipationSnapshot,
   participationRows,
-  playerRounds,
   remainingMatches,
   type ParticipationGap,
-  type ParticipationSnapshot,
-  type PlayerRound,
-  type PlayerRoundStatus,
-  type ScheduledFixture,
 } from '@/utils/participation';
-import { fixturesUrl, loadClubPages, matchUrl, UNION_CLUBS_URL } from '@/utils/rugbyXplorer';
+import { clubPages } from '@/utils/clubPages';
+import { fixturesUrl, RUGBY_XPLORER_URL } from '@/utils/rugbyXplorer';
 import { fetchMatchCentre } from '@/utils/playerHistory';
 import { compareValues, type SortDirection } from '@/utils/sort';
 import eligibility from '@config/eligibility.yml';
 
 import type {
   EligibilityBreakdown,
-  EligibilityConfig,
   PlayerEligibility,
   PlayerRow,
 } from '@/types/eligibility';
-
-/** Where a report's rows came from. Only a CSV report carries USA IDs and
- *  registration dates. */
-type ReportSource = 'record' | 'csv';
 
 // Deployed pages pull live; dev uses the saved snapshot so working on the page
 // doesn't hit the CMS.
 const LIVE_RECORD = process.env.NODE_ENV === 'production';
 const LIVE_RECORD_STALE_MS = 10 * 60 * 1000;
 
+/** This site's own club, shown first. */
+const DEFAULT_CLUB = 'Rocky Gorge';
+
 type StatusFilter = 'all' | 'eligible' | 'ineligible';
 
+/** A fixed column, or `other:<label>` for another side's participation. */
 type SortKey =
   | 'name'
   | 'lastRegistered'
   | 'played'
   | 'sub'
   | 'participation'
-  | 'otherDivision'
   | 'status'
-  | 'reasons';
+  | 'reasons'
+  | `other:${string}`;
 
 const getColumns = (
-  otherLabel: string | null,
+  otherLabels: string[],
   source: ReportSource,
 ): { key: SortKey; title: string; numeric?: boolean }[] => [
   { key: 'name', title: 'Player' },
@@ -93,12 +100,20 @@ const getColumns = (
   { key: 'played', title: 'Played', numeric: true },
   { key: 'sub', title: 'Sub', numeric: true },
   { key: 'participation', title: 'Participation', numeric: true },
-  ...(otherLabel
-    ? [{ key: 'otherDivision' as const, title: `${otherLabel} Participation`, numeric: true }]
-    : []),
+  ...otherLabels.map((label) => ({
+    key: `other:${label}` as const,
+    title: `${label} Participation`,
+    numeric: true,
+  })),
   { key: 'status', title: 'Status' },
   { key: 'reasons', title: 'Reason' },
 ];
+
+/** A player's participation for an `other:<label>` column. */
+function otherSideCount(player: PlayerEligibility, key: `other:${string}`): number {
+  const label = key.slice('other:'.length);
+  return player.otherSides.find((side) => side.label === label)?.participation ?? 0;
+}
 
 function sortValue(player: PlayerEligibility, key: SortKey): string | number {
   switch (key) {
@@ -112,12 +127,12 @@ function sortValue(player: PlayerEligibility, key: SortKey): string | number {
       return player.substitute;
     case 'participation':
       return player.participation;
-    case 'otherDivision':
-      return player.otherDivisionParticipation;
     case 'status':
       return player.eligible ? (player.pending.length > 0 ? 1 : 2) : 0;
     case 'reasons':
       return player.reasons.length + player.pending.length;
+    default:
+      return otherSideCount(player, key);
   }
 }
 
@@ -125,10 +140,11 @@ interface DivisionTableProps {
   title: string;
   source: ReportSource;
   ownLabel: string;
-  /** The club's other side, null for a club with one side. */
-  otherLabel: string | null;
+  /** The club's other sides; empty for a club with one side. */
+  otherLabels: string[];
   /** What the player detail needs to account for each round; absent for a CSV report. */
   accounting: RoundAccounting | null;
+  schedule: ClubSchedule | null;
   summary: { total: number; eligible: number; onTrack: number };
   visibleCount: number;
   filtered: boolean;
@@ -137,9 +153,11 @@ interface DivisionTableProps {
   statusFilter: StatusFilter;
   onStatusFilterChange: (value: StatusFilter) => void;
   players: PlayerEligibility[];
+  /** The side's players before filtering. */
+  allPlayers: PlayerEligibility[];
 }
 
-function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSource) {
+function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSource, showCmsId: boolean) {
   switch (key) {
     case 'name':
       return (
@@ -152,6 +170,11 @@ function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSourc
               USA ID {player.playerId}
             </Typography>
           )}
+          {source === 'record' && showCmsId && (
+            <Typography variant="caption" color="text.secondary">
+              CMS ID {player.playerId}
+            </Typography>
+          )}
         </>
       );
     case 'lastRegistered':
@@ -162,8 +185,6 @@ function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSourc
       return player.substitute;
     case 'participation':
       return player.participation;
-    case 'otherDivision':
-      return player.otherDivisionParticipation;
     case 'status':
       return <EligibilityStatusChip player={player} />;
     case 'reasons':
@@ -176,6 +197,8 @@ function renderCell(player: PlayerEligibility, key: SortKey, source: ReportSourc
           {player.reasons.join(' · ')}
         </Typography>
       );
+    default:
+      return otherSideCount(player, key);
   }
 }
 
@@ -183,8 +206,9 @@ function DivisionTable({
   title,
   source,
   ownLabel,
-  otherLabel,
+  otherLabels,
   accounting,
+  schedule,
   summary,
   visibleCount,
   filtered,
@@ -193,6 +217,7 @@ function DivisionTable({
   statusFilter,
   onStatusFilterChange,
   players,
+  allPlayers,
 }: DivisionTableProps) {
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection }>({
     key: 'name',
@@ -200,7 +225,9 @@ function DivisionTable({
   });
   const [detail, setDetail] = useState<PlayerEligibility | null>(null);
 
-  const columns = getColumns(otherLabel, source);
+  // From the whole side, so a filter hiding one of the pair still shows the id.
+  const shared = useMemo(() => sharedNames(allPlayers), [allPlayers]);
+  const columns = getColumns(otherLabels, source);
   const visibleColumns = columns.filter((col) => !hiddenColumns.includes(col.key));
 
   const handleSort = (key: SortKey) => {
@@ -318,7 +345,7 @@ function DivisionTable({
                     align={col.numeric ? 'right' : 'left'}
                     sx={col.key === 'participation' ? { fontWeight: 'bold' } : undefined}
                   >
-                    {renderCell(player, col.key, source)}
+                    {renderCell(player, col.key, source, hasSharedName(player, shared))}
                   </TableCell>
                 ))}
               </TableRow>
@@ -335,308 +362,38 @@ function DivisionTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <PlayerDetailsDialog
+      <PlayerEligibilityDialog
         player={detail}
         source={source}
         ownLabel={ownLabel}
-        hasOtherSide={otherLabel !== null}
         accounting={accounting}
+        schedule={schedule}
+        showCmsId={detail !== null && hasSharedName(detail, shared)}
+        showHistoryLink
         onClose={() => setDetail(null)}
       />
     </Paper>
   );
 }
 
-/** One labeled fact row in the player detail dialog. */
-function Fact({ label, value }: { label: string; value: ReactNode }) {
+function reportPlayerLine(player: PlayerEligibility, source: ReportSource, shared: Set<string>): string {
+  const shownName =
+    source === 'csv'
+      ? `${player.name} (#${player.playerId})`
+      : hasSharedName(player, shared)
+        ? `${player.name} (CMS ID ${player.playerId})`
+        : player.name;
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, py: 0.5 }}>
-      <Typography variant="body2" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 'medium', textAlign: 'right' }}>
-        {value ?? '—'}
-      </Typography>
-    </Box>
-  );
-}
-
-/** The per-round attendance codes across a player's competitions, as a matrix
- *  with one row per competition and one Round column per reported round. */
-function RoundsMatrix({ rows }: { rows: PlayerRow[] }) {
-  const roundNames = useMemo(() => {
-    const names = new Set<string>();
-    for (const source of rows) {
-      for (const name of Object.keys(source.rounds)) names.add(name);
-    }
-    return [...names].sort((a, b) => {
-      const numOf = (name: string) => Number(name.match(/\d+/)?.[0]);
-      const na = numOf(a);
-      const nb = numOf(b);
-      if (Number.isNaN(na) && Number.isNaN(nb)) return a.localeCompare(b);
-      if (Number.isNaN(na)) return 1;
-      if (Number.isNaN(nb)) return -1;
-      return na - nb;
-    });
-  }, [rows]);
-
-  if (roundNames.length === 0) {
-    return (
-      <Typography variant="body2" color="text.secondary">
-        No round data.
-      </Typography>
-    );
-  }
-  return (
-    <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Competition</TableCell>
-            {roundNames.map((round) => (
-              <TableCell key={round} align="center">
-                {round}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((source) => (
-            <TableRow key={source.competition || 'report row'}>
-              <TableCell>{source.competition || 'Report row'}</TableCell>
-              {roundNames.map((round) => {
-                const code = source.rounds[round];
-                const shown = code && code !== 'R' ? code : null;
-                return (
-                  <TableCell key={round} align="center">
-                    {shown ?? (
-                      <Box component="span" sx={{ color: 'text.disabled' }}>
-                        —
-                      </Box>
-                    )}
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
-
-/** What's needed to set a player's verdict against the team's fixtures. */
-interface RoundAccounting {
-  snapshot: ParticipationSnapshot;
-  fixtures: ScheduledFixture[];
-  clubSlug: string | null;
-  /** The club's sides, upper first. */
-  sides: string[];
-}
-
-const ROUND_STATUS: Record<PlayerRoundStatus, string> = {
-  started: 'Started',
-  substitute: 'Came on as a substitute',
-  unused: "Listed as a substitute, didn't come on",
-  'not-listed': 'Not in the lineup',
-  'no-lineup': 'No lineup recorded',
-  forfeit: 'Forfeit, not played',
-  postponed: 'Postponed',
-  'not-qualifying': 'Not an NCS Qualifying Match',
-  'awaiting-result': 'No result yet',
-  upcoming: 'Still to play',
-};
-
-function roundDate(dateTime: string): string {
-  return new Date(dateTime).toLocaleDateString(undefined, { timeZone: 'UTC' });
-}
-
-/** One team's fixtures for one player, each linked to its Rugby Xplorer report. */
-function TeamRounds({
-  teamName,
-  rounds,
-  clubSlug,
-}: {
-  teamName: string;
-  rounds: PlayerRound[];
-  clubSlug: string | null;
-}) {
-  const counted = rounds.filter((round) => round.counted).length;
-  return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="subtitle2">
-        {teamName}: {counted} counted {counted === 1 ? 'match' : 'matches'}
-      </Typography>
-      <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Round</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Opponent</TableCell>
-              <TableCell>Score</TableCell>
-              <TableCell>This player</TableCell>
-              <TableCell align="center">Counted</TableCell>
-              <TableCell>Report</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rounds.map((round) => (
-              <TableRow key={round.fixtureId}>
-                <TableCell>{round.round}</TableCell>
-                <TableCell>{roundDate(round.dateTime)}</TableCell>
-                <TableCell>{round.opponent || 'To be decided'}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {round.scoreFor || round.scoreAgainst ? `${round.scoreFor} - ${round.scoreAgainst}` : '—'}
-                </TableCell>
-                <TableCell>
-                  {ROUND_STATUS[round.status]}
-                  {round.substitutionsMissing && (
-                    <Typography variant="caption" color="warning.main" component="div">
-                      No substitutions recorded for this match
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="center">{round.counted ? 'Yes' : 'No'}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  <MuiLink href={matchUrl(round.fixtureId, clubSlug)} target="_blank" rel="noopener noreferrer">
-                    Rugby Xplorer
-                  </MuiLink>
-                </TableCell>
-              </TableRow>
-            ))}
-            {rounds.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary' }}>
-                  No fixtures this season.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
-}
-
-/** Full report detail for one player, opened by clicking a table row. */
-function PlayerDetailsDialog({
-  player,
-  source,
-  ownLabel,
-  hasOtherSide,
-  accounting,
-  onClose,
-}: {
-  player: PlayerEligibility | null;
-  source: ReportSource;
-  ownLabel: string;
-  hasOtherSide: boolean;
-  accounting: RoundAccounting | null;
-  onClose: () => void;
-}) {
-  return (
-    <Dialog open={player !== null} onClose={onClose} maxWidth="md" fullWidth>
-      {player !== null && (
-        <>
-          <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Typography variant="h6" component="span">
-                {player.name}
-              </Typography>
-              {source === 'csv' && (
-                <Typography variant="body2" color="text.secondary" component="span">
-                  USA ID {player.playerId}
-                </Typography>
-              )}
-              <EligibilityStatusChip player={player} />
-            </Box>
-          </DialogTitle>
-          <DialogContent dividers>
-            {player.reasons.length > 0 && (
-              <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                {player.reasons.join(' · ')}
-              </Typography>
-            )}
-            {player.pending.length > 0 && (
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                {player.pending.join(' · ')}
-              </Typography>
-            )}
-            <Box>
-              {source === 'csv' && <Fact label="Last registered" value={player.lastRegistered} />}
-              <Fact label="Side" value={`${ownLabel} side`} />
-              <Fact label="Played" value={player.played} />
-              <Fact label="Substitute" value={player.substitute} />
-              <Fact label="Participation" value={player.participation} />
-              {hasOtherSide && (
-                <Fact label="Other-division participation" value={player.otherDivisionParticipation} />
-              )}
-            </Box>
-            {accounting ? (
-              <>
-                {/* The player's own side first; both sides feed a two-side verdict. */}
-                {[player.teamName, ...accounting.sides.filter((side) => side !== player.teamName)].map((side) => (
-                  <TeamRounds
-                    key={side}
-                    teamName={side}
-                    clubSlug={accounting.clubSlug}
-                    rounds={playerRounds({
-                      fixtures: accounting.fixtures,
-                      teamName: side,
-                      season: accounting.snapshot.season,
-                      rows: player.rows,
-                      gaps: accounting.snapshot.gaps,
-                      resultIds: accounting.snapshot.resultIds ?? [],
-                      config: eligibility,
-                    })}
-                  />
-                ))}
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  Open a report to check a line against Rugby Xplorer.{' '}
-                  <MuiLink component={Link} href={`/player?id=${encodeURIComponent(player.playerId)}`}>
-                    Player history
-                  </MuiLink>
-                </Typography>
-              </>
-            ) : (
-              <>
-                {player.rows.map((source) => (
-                  <Box key={source.competition || 'report row'} sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2">
-                      {source.competition || 'Report row'} — {source.teamName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Appearances {source.appearances} · Played {source.played} · Substitute{' '}
-                      {source.substitute}
-                    </Typography>
-                  </Box>
-                ))}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2">Rounds by competition</Typography>
-                  <RoundsMatrix rows={player.rows} />
-                </Box>
-              </>
-            )}
-          </DialogContent>
-        </>
-      )}
-    </Dialog>
-  );
-}
-
-function reportPlayerLine(player: PlayerEligibility, otherLabel: string | null, source: ReportSource): string {
-  return (
-    `${source === 'csv' ? `${player.name} (#${player.playerId})` : player.name}: ` +
+    `${shownName}: ` +
     `played ${player.played} / sub ${player.substitute} ` +
     `(participation ${player.participation})` +
-    (otherLabel ? `, ${otherLabel} participation ${player.otherDivisionParticipation}` : '')
+    player.otherSides.map((side) => `, ${side.label} participation ${side.participation}`).join('')
   );
 }
 
 /** A gap in the match record, in the words shown on the page and in the export. */
 function gapText(gap: ParticipationGap): string {
-  const date = roundDate(gap.dateTime);
+  const date = new Date(gap.dateTime).toLocaleDateString(undefined, { timeZone: 'UTC' });
   const problem = gap.kind === 'no-lineup' ? 'no lineup recorded' : 'no substitutions recorded';
   return `${gap.teamName} v ${gap.opponent} (${date}): ${problem}`;
 }
@@ -647,32 +404,9 @@ interface ReportMeta {
   source: ReportSource;
   season?: string;
   gaps: ParticipationGap[];
-  /** A club with one side reports only that side. */
-  oneSide: boolean;
 }
 
-function buildReport(
-  breakdown: EligibilityBreakdown,
-  config: EligibilityConfig,
-  { title, source, season, gaps, oneSide }: ReportMeta,
-): string {
-  const sections = [
-    {
-      heading: divisionLabel(config.upperDivision.label, config.upperDivision.teamName, breakdown.upperSummary),
-      otherLabel: oneSide ? null : config.lowerDivision.label,
-      players: breakdown.upper,
-    },
-    ...(oneSide
-      ? []
-      : [
-          {
-            heading: divisionLabel(config.lowerDivision.label, config.lowerDivision.teamName, breakdown.lowerSummary),
-            otherLabel: config.upperDivision.label,
-            players: breakdown.lower,
-          },
-        ]),
-  ];
-
+function buildReport(breakdown: EligibilityBreakdown, { title, source, season, gaps }: ReportMeta): string {
   const lines: string[] = [];
   lines.push(`${title.toUpperCase()} ELIGIBILITY REPORT`);
   lines.push(`Generated: ${new Date().toLocaleString()}`);
@@ -686,12 +420,22 @@ function buildReport(
     lines.push('');
   }
 
-  for (const section of sections) {
-    const eligible = section.players.filter((p) => p.eligible);
-    const ineligible = section.players.filter((p) => !p.eligible);
+  const sameNames = source === 'record' ? sameNamePlayers(breakdown.sides) : [];
+  if (sameNames.length > 0) {
+    lines.push('PLAYERS WITH THE SAME NAME (kept separate; counts may be low if one person has two profiles)');
+    for (const { name, ids } of sameNames) {
+      lines.push(`  ${name}: CMS IDs ${ids.join(', ')}`);
+    }
+    lines.push('');
+  }
+
+  for (const side of breakdown.sides) {
+    const shared = sharedNames(side.players);
+    const eligible = side.players.filter((p) => p.eligible);
+    const ineligible = side.players.filter((p) => !p.eligible);
 
     lines.push('='.repeat(46));
-    lines.push(section.heading);
+    lines.push(divisionLabel(side.label, side.teamName, side.summary));
     lines.push('='.repeat(46));
     lines.push('');
     lines.push(`ELIGIBLE (${eligible.length})`);
@@ -699,7 +443,7 @@ function buildReport(
       lines.push('  (none)');
     } else {
       for (const player of eligible) {
-        lines.push(`  ${reportPlayerLine(player, section.otherLabel, source)}`);
+        lines.push(`  ${reportPlayerLine(player, source, shared)}`);
         for (const note of player.pending) {
           lines.push(`    • On track: ${note}`);
         }
@@ -711,7 +455,7 @@ function buildReport(
       lines.push('  (none)');
     } else {
       for (const player of ineligible) {
-        lines.push(`  ${reportPlayerLine(player, section.otherLabel, source)}`);
+        lines.push(`  ${reportPlayerLine(player, source, shared)}`);
         for (const reason of player.reasons) {
           lines.push(`    • ${reason}`);
         }
@@ -786,11 +530,13 @@ export default function EligibilityPage() {
   });
   const fixtures = schedule.data;
   const clubs = useMemo(() => (fixtures ? listClubs(fixtures, eligibility) : []), [fixtures]);
-  // Defaults to the configured club, this site's own.
+  const csvClubs = useMemo(() => (csvRows ? clubsInRows(csvRows) : []), [csvRows]);
+  const pickableClubs = source === 'record' ? clubs : csvClubs;
+  // Defaults to this site's own club.
   const club =
-    clubs.find((candidate) => candidate.name === clubName) ??
-    clubs.find((candidate) => candidate.upperTeam === eligibility.upperDivision.teamName) ??
-    clubs[0] ??
+    pickableClubs.find((candidate) => candidate.name === clubName) ??
+    pickableClubs.find((candidate) => candidate.name === DEFAULT_CLUB) ??
+    pickableClubs[0] ??
     null;
   const record = useQuery({
     queryKey: ['eligibility-record', club?.name],
@@ -806,56 +552,32 @@ export default function EligibilityPage() {
     retry: false,
   });
   const clubRecord = record.data ?? null;
-  const clubPages = useQuery({
-    queryKey: ['eligibility-club-pages'],
-    queryFn: loadClubPages,
-    staleTime: Number.POSITIVE_INFINITY,
-  });
-  const clubSlug = (club && clubPages.data?.[club.name]) || null;
+  const clubSlug = (club && clubPages[club.name]?.slug) || null;
   const snapshot = clubRecord?.snapshot ?? null;
-  const recordReport = useMemo(() => {
-    if (!snapshot || !club) return null;
-    const config = clubConfig(club, eligibility);
-    return {
-      config,
-      breakdown: computeBreakdown(
-        participationRows(snapshot, club, config),
-        config,
-        remainingMatches(fixtures ?? [], club, config),
-      ),
-      gaps: clubGaps(snapshot, club, config),
-    };
-  }, [snapshot, club, fixtures]);
 
-  const csvBreakdown = useMemo(
-    () =>
-      csvRows &&
-      computeBreakdown(
-        csvRows,
-        eligibility,
-        remainingMatches(
-          fixtures ?? [],
-          {
-            upperTeam: eligibility.upperDivision.teamName,
-            lowerTeam: eligibility.lowerDivision.teamName,
-          },
-          eligibility,
-        ),
-      ),
-    [csvRows, fixtures],
+  const breakdown = useMemo(() => {
+    if (!club) return null;
+    const remaining = remainingMatches(fixtures ?? [], club, eligibility);
+    if (source === 'csv') {
+      return csvRows && computeBreakdown(csvRows, club.sides, eligibility, remaining);
+    }
+    return snapshot
+      ? computeBreakdown(participationRows(snapshot, club, eligibility), club.sides, eligibility, remaining)
+      : null;
+  }, [source, club, csvRows, snapshot, fixtures]);
+  const gaps = useMemo(
+    () => (source === 'record' && snapshot && club ? clubGaps(snapshot, club, eligibility) : []),
+    [source, snapshot, club],
   );
-
-  const breakdown = source === 'record' ? (recordReport?.breakdown ?? null) : csvBreakdown;
-  const config = source === 'record' ? (recordReport?.config ?? eligibility) : eligibility;
-  const gaps = source === 'record' ? (recordReport?.gaps ?? []) : [];
-  const upperLabel = config.upperDivision.label;
-  const lowerLabel = config.lowerDivision.label;
-  const oneSide = source === 'record' && club?.lowerTeam === null;
+  const oneSide = club?.sides.length === 1;
+  const sameNames = source === 'record' && breakdown ? sameNamePlayers(breakdown.sides) : [];
   const accounting: RoundAccounting | null =
     source === 'record' && snapshot && club
-      ? { snapshot, fixtures: fixtures ?? [], clubSlug, sides: clubSides(club) }
+      ? { snapshot, fixtures: fixtures ?? [], clubSlug, sides: club.sides.map((side) => side.teamName) }
       : null;
+  const clubSchedule: ClubSchedule | null = club ? { club, fixtures: fixtures ?? [], clubSlug } : null;
   const clubFixturesUrl = fixturesUrl(clubSlug);
+  const activeSide = breakdown?.sides[Math.min(activeTab, breakdown.sides.length - 1)] ?? null;
 
   const matchesFilters = (player: PlayerEligibility) => {
     if (statusFilter === 'eligible' && !player.eligible) return false;
@@ -863,8 +585,7 @@ export default function EligibilityPage() {
     return true;
   };
 
-  const upperPlayers = breakdown ? breakdown.upper.filter(matchesFilters) : [];
-  const lowerPlayers = breakdown ? breakdown.lower.filter(matchesFilters) : [];
+  const visiblePlayers = activeSide ? activeSide.players.filter(matchesFilters) : [];
   const filtersActive = statusFilter !== 'all';
 
   const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -904,11 +625,13 @@ export default function EligibilityPage() {
 
   const handleExport = () => {
     if (!breakdown) return;
-    const meta: ReportMeta =
-      source === 'record' && club && snapshot
-        ? { title: club.name, source, season: snapshot.season, gaps, oneSide }
-        : { title: 'Rocky Gorge', source, gaps, oneSide };
-    const blob = new Blob([buildReport(breakdown, config, meta)], { type: 'text/plain;charset=utf-8' });
+    const meta: ReportMeta = {
+      title: club?.name ?? 'Club',
+      source,
+      season: source === 'record' ? snapshot?.season : undefined,
+      gaps,
+    };
+    const blob = new Blob([buildReport(breakdown, meta)], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -934,8 +657,8 @@ export default function EligibilityPage() {
              two-match minimums, shown as on track. Lists clubs with one or two sides. Click a player to check their
              count round by round against the Rugby Xplorer match reports. This is a guide: the Rugby Xplorer report is
              the official count, and the record has no registration data, so check registration separately.`
-          : `Paste or upload the Rugby Xplorer matches-played report to see which
-             players are NCS-eligible for the ${upperLabel} and ${lowerLabel} sides.
+          : `Paste or upload the Rugby Xplorer matches-played report for any club to see
+             which players are NCS-eligible for each of its sides.
              Participation counts as Played + Substitute; per-round attendance codes
              do not count. Fixtures still to play before Super Regionals count towards
              the two-match minimums, shown as on track. Players are assumed registered — the report only lists
@@ -958,7 +681,7 @@ export default function EligibilityPage() {
           <ToggleButton value="record">Match record</ToggleButton>
           <ToggleButton value="csv">CSV report</ToggleButton>
         </ToggleButtonGroup>
-        {source === 'record' && club && (
+        {club && (
           <>
             <FormControl size="small" sx={{ minWidth: 220 }}>
               <InputLabel id="eligibility-club-label">Club</InputLabel>
@@ -966,34 +689,35 @@ export default function EligibilityPage() {
                 labelId="eligibility-club-label"
                 label="Club"
                 value={club.name}
-                onChange={(event) => setClubName(event.target.value)}
+                onChange={(event) => {
+                  setClubName(event.target.value);
+                  setActiveTab(0);
+                }}
               >
-                {clubs.map((candidate) => (
+                {pickableClubs.map((candidate) => (
                   <MenuItem key={candidate.name} value={candidate.name}>
                     {candidate.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            {clubRecord && (
+            {source === 'record' && clubRecord && (
               <Typography variant="body2" color="text.secondary">
                 {clubRecord.snapshot.season} season ·{' '}
                 {clubRecord.source === 'live' ? 'Live data' : 'Saved data'}
                 {clubRecord.asOf && ` from ${new Date(clubRecord.asOf).toLocaleString()}`}
               </Typography>
             )}
-            {clubPages.isSuccess && (
-              <MuiLink
-                variant="body2"
-                href={clubFixturesUrl ?? UNION_CLUBS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {clubFixturesUrl
-                  ? `${club.name} fixtures on Rugby Xplorer`
-                  : 'Find this club on Rugby Xplorer'}
-              </MuiLink>
-            )}
+            <MuiLink
+              variant="body2"
+              href={clubFixturesUrl ?? RUGBY_XPLORER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {clubFixturesUrl
+                ? `${club.name} fixtures on Rugby Xplorer`
+                : 'Find this club on Rugby Xplorer'}
+            </MuiLink>
           </>
         )}
       </Box>
@@ -1015,7 +739,7 @@ export default function EligibilityPage() {
         </Alert>
       )}
 
-      {source === 'record' && schedule.isSuccess && !club && (
+      {source === 'record' && schedule.isSuccess && clubs.length === 0 && (
         <Alert severity="info" sx={{ mb: 3 }}>
           The fixture list has no clubs yet. Use a CSV report instead.
         </Alert>
@@ -1023,8 +747,8 @@ export default function EligibilityPage() {
 
       {oneSide && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Only one of this club&apos;s sides is in the fixture lists, so it is assessed as a
-          one-side club: two qualifying matches, and no other side to compare.
+          Only one of this club&apos;s sides is in the data, so it is assessed as a one-side club:
+          two qualifying matches, and no other side to compare.
         </Typography>
       )}
 
@@ -1035,6 +759,21 @@ export default function EligibilityPage() {
           <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
             {gaps.map((gap) => (
               <li key={`${gap.fixtureId}-${gap.teamName}`}>{gapText(gap)}</li>
+            ))}
+          </Box>
+        </Alert>
+      )}
+
+      {sameNames.length > 0 && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          These players share a name, so they are kept separate. If one person has two Rugby
+          Xplorer profiles, their matches stay split until the profiles are merged, and each count
+          may be low:
+          <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+            {sameNames.map(({ name, ids }) => (
+              <li key={name}>
+                {name}: CMS IDs {ids.join(', ')}
+              </li>
             ))}
           </Box>
         </Alert>
@@ -1091,12 +830,15 @@ export default function EligibilityPage() {
               <Box />
             ) : (
               <Tabs
-                value={activeTab}
+                value={Math.min(activeTab, breakdown.sides.length - 1)}
                 onChange={(_, newValue) => setActiveTab(newValue)}
                 aria-label="Eligibility by division"
+                variant="scrollable"
+                scrollButtons="auto"
               >
-                <Tab label={`${upperLabel} side`} />
-                <Tab label={`${lowerLabel} side`} />
+                {breakdown.sides.map((side) => (
+                  <Tab key={side.teamName} label={`${side.label} side`} />
+                ))}
               </Tabs>
             )}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -1110,38 +852,25 @@ export default function EligibilityPage() {
               </Button>
             </Box>
           </Box>
-          {(oneSide || activeTab === 0) && (
+          {activeSide && (
             <DivisionTable
-              title={divisionLabel(upperLabel, config.upperDivision.teamName, breakdown.upperSummary)}
+              title={divisionLabel(activeSide.label, activeSide.teamName, activeSide.summary)}
               source={source}
-              ownLabel={upperLabel}
-              otherLabel={oneSide ? null : lowerLabel}
+              ownLabel={activeSide.label}
+              otherLabels={breakdown.sides
+                .filter((side) => side.teamName !== activeSide.teamName)
+                .map((side) => side.label)}
               accounting={accounting}
-              summary={breakdown.upperSummary}
-              visibleCount={upperPlayers.length}
+              schedule={clubSchedule}
+              summary={activeSide.summary}
+              visibleCount={visiblePlayers.length}
               filtered={filtersActive}
               hiddenColumns={hiddenColumns}
               onHiddenColumnsChange={setHiddenColumns}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
-              players={upperPlayers}
-            />
-          )}
-          {!oneSide && activeTab === 1 && (
-            <DivisionTable
-              title={divisionLabel(lowerLabel, config.lowerDivision.teamName, breakdown.lowerSummary)}
-              source={source}
-              ownLabel={lowerLabel}
-              otherLabel={upperLabel}
-              accounting={accounting}
-              summary={breakdown.lowerSummary}
-              visibleCount={lowerPlayers.length}
-              filtered={filtersActive}
-              hiddenColumns={hiddenColumns}
-              onHiddenColumnsChange={setHiddenColumns}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              players={lowerPlayers}
+              players={visiblePlayers}
+              allPlayers={activeSide.players}
             />
           )}
         </>

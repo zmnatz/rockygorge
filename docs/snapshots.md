@@ -9,9 +9,9 @@ time, so the results are **committed to the repo** and refreshed nightly.
 | scores    | `public/data/scores.json`   | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
 | leaders   | `public/data/leaders/`, plus the match-centre cache `.cache/leaders/matches.json` | `scripts/generate-leaders-index.ts` |
-| players   | `public/data/players/`, including the eligibility tool's `participation.json` (reads the standings snapshot for every side's fixtures) | `scripts/generate-players.ts` |
+| players   | `public/data/players/`, including the eligibility tool's `participation.json` (built from the standings snapshot's fixtures, for every side and season) | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
-| clubPages | `public/data/club-pages.json` (each club's Rugby Xplorer page, confirmed through the CMS) | `scripts/generate-club-pages.ts` |
+| clubPages | `public/data/club-pages.json` (each club's Rugby Xplorer page and crest, confirmed through the CMS) | `scripts/generate-club-pages.ts` |
 
 ## How freshness works
 
@@ -53,16 +53,17 @@ If a PR changes what a generator writes (shape of the JSON, filtering logic):
 A test (`snapshot-freshness.test.ts`) fails until the committed manifest
 matches the code's format versions, so CI catches a forgotten regeneration.
 
-## Player histories pull the current season only
+## Results before the current season are locked
 
-Past seasons don't change, so `generate-players.ts` fetches the current season's
-matches and keeps older seasons from the committed files. It pulls every season
-when the saved files are missing or the `players` format changed. To pick up a
-correction to a past season, run:
+Each snapshot reads only the current season, every night, and keeps older seasons from the committed files. A finished season gets one last read as the next one begins, because the season saved as current is re-read first. Everything is read when the saved files are missing or that snapshot's format changed. Nothing reads a locked season otherwise. `--full-history` is a manual override for an exceptional correction:
 
 ```bash
+bun scripts/generate-standings-index.ts --force --full-history
 bun scripts/generate-players.ts --force --full-history
+bun scripts/generate-club-pages.ts --force --full-history
 ```
+
+Fixture lists are in `public/data/standings/`. The other snapshots read them rather than asking the CMS again, so standings must run first. Only the standings job reads every playing club's feed, because the union's feed misses some of its own fixtures.
 
 ## Forcing an update
 

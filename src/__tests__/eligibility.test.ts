@@ -1,23 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { parsePlayerRows, computeBreakdown } from '@/utils/eligibility';
-import type { EligibilityConfig } from '@/types/eligibility';
+import type { PlayerRow } from '@/types/eligibility';
 
 const HEADER_CSV = `"USA ID","First Name","Last Name","Player Last Registered","Player Rego Active","Club Name","Team Name","Competition","Appearances","Played","Reserve","Substitute","Round 1","Round 2","Round 3","Round 4","Round 5","Round 6","Round 7","Round 8","Round 9","Round 10","Round 11","Round 12","Round 13"`;
 
-const config: EligibilityConfig = {
-  upperDivision: {
-    teamName: 'Rocky Gorge MD1',
-    label: 'D1',
-    minimumTotalMatches: 2,
-  },
-  lowerDivision: {
-    teamName: 'Rocky Gorge MD3',
-    label: 'D3',
-    minimumMatches: 2,
-    upperMatchLimit: 4,
-    lowerAtLeastUpper: true,
-  },
-  nonQualifyingCompetitions: [],
+const rules = { minimumMatches: 2, upperMatchLimit: 4, nonQualifyingCompetitions: [] };
+const sides = [
+  { teamName: 'Rocky Gorge MD1', label: 'D1' },
+  { teamName: 'Rocky Gorge MD3', label: 'D3' },
+];
+
+/** A two-side club's result, by side. */
+const twoSides = (rows: PlayerRow[], remaining = { upper: 0, lower: 0 }) => {
+  const { sides: [upper, lower], ignoredTeamNames } = computeBreakdown(rows, sides, rules, {
+    'Rocky Gorge MD1': remaining.upper,
+    'Rocky Gorge MD3': remaining.lower,
+  });
+  return {
+    upper: upper.players,
+    lower: lower.players,
+    upperSummary: upper.summary,
+    lowerSummary: lower.summary,
+    ignoredTeamNames,
+  };
 };
 
 const SAMPLE_CSV = [
@@ -28,7 +33,7 @@ const SAMPLE_CSV = [
   '"2164744","Nicolas","Capobianco","NA","NA","Rocky Gorge Rugby","Rocky Gorge MD1","MAC Men D1","0","0","0","0","","","","","","","","",""',
 ].join('\n');
 
-const row = (overrides: Record<string, string | number | boolean>) => ({
+const row = (overrides: Partial<PlayerRow>): PlayerRow => ({
   playerId: '100',
   firstName: 'Jane',
   lastName: 'Doe',
@@ -83,7 +88,7 @@ describe('parsePlayerRows', () => {
 
 describe('computeBreakdown', () => {
   it('marks 0-appearance players ineligible with the participation reason', () => {
-    const breakdown = computeBreakdown(parsePlayerRows(SAMPLE_CSV), config);
+    const breakdown = twoSides(parsePlayerRows(SAMPLE_CSV));
     expect(breakdown.upperSummary).toEqual({ total: 2, eligible: 0, onTrack: 0, competitions: ['MAC Men D1'] });
     expect(breakdown.lowerSummary).toEqual({ total: 2, eligible: 0, onTrack: 0, competitions: ['Capital Men D3'] });
 
@@ -98,7 +103,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1' }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const d3 = breakdown.lower.find((p) => p.playerId === '1');
     const d1 = breakdown.upper.find((p) => p.playerId === '1');
     expect(d3?.reasons).toEqual([]);
@@ -111,7 +116,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', played: 0 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const d3 = breakdown.lower.find((p) => p.playerId === '1');
     const d1 = breakdown.upper.find((p) => p.playerId === '1');
     expect(d3?.eligible).toBe(true);
@@ -123,7 +128,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', played: 3, appearances: 3 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', played: 1, appearances: 1 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.upper[0].eligible).toBe(true);
     expect(breakdown.lower[0].eligible).toBe(false);
     expect(breakdown.lower[0].reasons.some((r) => r.includes('Needs 2 D3 matches'))).toBe(true);
@@ -135,7 +140,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', played: 4, appearances: 4 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', played: 5, appearances: 5 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.upper[0].eligible).toBe(true);
     expect(breakdown.lower[0].eligible).toBe(false);
     expect(breakdown.lower[0].reasons.some((r) => r.includes('forfeits'))).toBe(true);
@@ -146,14 +151,14 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', substitute: 2, appearances: 2 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1' }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.lower[0].participation).toBe(2);
     expect(breakdown.lower[0].eligible).toBe(true);
   });
 
   it('collects team names that map to neither division', () => {
     const rows = [row({ teamName: 'Rocky Gorge MD2' })];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.ignoredTeamNames).toEqual(['Rocky Gorge MD2']);
     expect(breakdown.upper).toHaveLength(0);
     expect(breakdown.lower).toHaveLength(0);
@@ -165,7 +170,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3 Cup', played: 1, appearances: 1 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1' }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const d3 = breakdown.lower.find((p) => p.playerId === '1');
     expect(breakdown.lower).toHaveLength(1);
     expect(d3?.played).toBe(2);
@@ -179,7 +184,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 1, appearances: 1 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1 Cup', played: 1, appearances: 1 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.upper).toHaveLength(1);
     expect(breakdown.upper[0].participation).toBe(2);
     expect(breakdown.upper[0].eligible).toBe(true);
@@ -192,9 +197,9 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 2, appearances: 2 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1 Cup', played: 1, appearances: 1 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const lower = breakdown.lower.find((p) => p.playerId === '1');
-    expect(lower?.otherDivisionParticipation).toBe(3);
+    expect(lower?.otherSides).toEqual([{ label: 'D1', teamName: 'Rocky Gorge MD1', participation: 3 }]);
     expect(lower?.eligible).toBe(false);
     expect(lower?.reasons.some((r) => r.includes('exceeds'))).toBe(true);
   });
@@ -204,7 +209,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3', played: 1, appearances: 1 }),
       row({ playerId: '1', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3 Cup', played: 1, appearances: 1 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const player = breakdown.lower[0];
     expect(player.rows).toHaveLength(2);
     expect(player.rows.map((source) => source.competition)).toEqual(['Capital Men D3', 'Capital Men D3 Cup']);
@@ -217,7 +222,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '7', teamName: 'Rocky Gorge MD3', competition: 'Capital Men D3 Cup', played: 1, appearances: 1 }),
       row({ playerId: '7', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 1, appearances: 1 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     const lower = breakdown.lower.find((p) => p.playerId === '7');
     const upper = breakdown.upper.find((p) => p.playerId === '7');
     expect(lower?.rows.map((source) => source.competition)).toEqual([
@@ -237,7 +242,7 @@ describe('computeBreakdown', () => {
       row({ playerId: '', teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
       row({ playerId: '100', teamName: 'Rocky Gorge MD3', played: 2, appearances: 2 }),
     ];
-    const breakdown = computeBreakdown(rows, config);
+    const breakdown = twoSides(rows);
     expect(breakdown.lower).toHaveLength(1);
     expect(breakdown.lower[0].playerId).toBe('100');
     expect(breakdown.lowerSummary.total).toBe(1);
@@ -253,7 +258,7 @@ describe('computeBreakdown with fixtures still to play', () => {
     list.find((player) => player.playerId === id);
 
   it('keeps a player eligible and on track when remaining fixtures can reach the upper minimum', () => {
-    const { upper } = computeBreakdown(players, config, { upper: 1, lower: 0 });
+    const { upper } = twoSides(players, { upper: 1, lower: 0 });
 
     expect(verdict(upper, 'one-upper')).toMatchObject({
       eligible: true,
@@ -263,14 +268,14 @@ describe('computeBreakdown with fixtures still to play', () => {
   });
 
   it('counts fixtures on either side towards the upper minimum', () => {
-    const { upper } = computeBreakdown(players, config, { upper: 0, lower: 1 });
+    const { upper } = twoSides(players, { upper: 0, lower: 1 });
 
     expect(verdict(upper, 'one-upper')).toMatchObject({ eligible: true });
   });
 
   it('counts only lower-division fixtures towards the lower minimum', () => {
-    const { lower: upperOnly } = computeBreakdown(players, config, { upper: 5, lower: 0 });
-    const { lower: withLower } = computeBreakdown(players, config, { upper: 0, lower: 1 });
+    const { lower: upperOnly } = twoSides(players, { upper: 5, lower: 0 });
+    const { lower: withLower } = twoSides(players, { upper: 0, lower: 1 });
 
     expect(verdict(upperOnly, 'one-lower')).toMatchObject({
       eligible: false,
@@ -285,7 +290,7 @@ describe('computeBreakdown with fixtures still to play', () => {
 
   it('fails a player when too few fixtures remain to reach the minimum', () => {
     const noMatches = [row({ playerId: 'none', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1' })];
-    const { upper } = computeBreakdown(noMatches, config, { upper: 1, lower: 0 });
+    const { upper } = twoSides(noMatches, { upper: 1, lower: 0 });
 
     expect(verdict(upper, 'none')).toMatchObject({
       eligible: false,
@@ -298,14 +303,14 @@ describe('computeBreakdown with fixtures still to play', () => {
       row({ playerId: 'p', teamName: 'Rocky Gorge MD3', played: 1 }),
       row({ playerId: 'p', teamName: 'Rocky Gorge MD1', competition: 'MAC Men D1', played: 3 }),
     ];
-    const { lower } = computeBreakdown(overUpper, config, { upper: 0, lower: 5 });
+    const { lower } = twoSides(overUpper, { upper: 0, lower: 5 });
 
     expect(lower[0].eligible).toBe(false);
     expect(lower[0].reasons).toEqual(['Upper-division participation (3) exceeds D3 participation (1)']);
   });
 
   it('counts on-track players in the summary', () => {
-    const { upperSummary } = computeBreakdown(players, config, { upper: 1, lower: 0 });
+    const { upperSummary } = twoSides(players, { upper: 1, lower: 0 });
 
     expect(upperSummary).toMatchObject({ total: 1, eligible: 1, onTrack: 1 });
   });

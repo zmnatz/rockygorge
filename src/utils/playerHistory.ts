@@ -8,7 +8,6 @@ const CLUB_ENTITY_ID = 91273;
 
 const MAX_FIXTURES = 500;
 const PAGE_SIZE = 100;
-const FETCH_GAP_MS = 500;
 // Breathing room between match-centre requests so snapshot builds don't trip
 // the CMS rate limit (HTTP 429).
 const MATCH_CENTRE_GAP_MS = 300;
@@ -108,6 +107,12 @@ export function playerKey(id: string): string {
   return id.split('__')[0];
 }
 
+// The CMS shows a player whose profile isn't public as "Name Withheld". It isn't
+// a person: each record is a hidden profile, so it never becomes a player record.
+export function isNameWithheld(name: string): boolean {
+  return name.trim().replace(/\s+/g, ' ').toLowerCase() === 'name withheld';
+}
+
 export function isScoreEventType(type: string): boolean {
   return scoringKind(type) !== null;
 }
@@ -184,7 +189,7 @@ export function aggregatePlayerHistory(
 
     for (const player of roster) {
       const key = playerKey(player.id);
-      if (seenInFixture.has(key)) {
+      if (seenInFixture.has(key) || isNameWithheld(player.name)) {
         continue;
       }
       seenInFixture.add(key);
@@ -352,17 +357,15 @@ function newestFirst(
   );
 }
 
-export async function buildPlayerHistories(options?: BuildOptions): Promise<{
+export async function buildPlayerHistories(
+  allResults: FixtureLookupItem[],
+  options?: BuildOptions
+): Promise<{
   histories: Map<string, PlayerHistory>;
   results: FixtureLookupItem[];
   matches: MatchCentreData[];
   season: string;
 }> {
-  const allResults = (await fetchAllFixtures()).filter(
-    (fixture) =>
-      fixture.homeTeam.score.length > 0 &&
-      fixture.awayTeam.score.length > 0
-  );
   const season = allResults.reduce(
     (latest, fixture) => (fixture.season > latest ? fixture.season : latest),
     ''
@@ -508,19 +511,6 @@ export async function findFixtureById(
     }
   }
   return undefined;
-}
-
-async function fetchAllFixtures(): Promise<FixtureLookupItem[]> {
-  const all: FixtureLookupItem[] = [];
-  for (let skip = 0; skip < MAX_FIXTURES; skip += PAGE_SIZE) {
-    const page = await fetchFixturePage(skip);
-    all.push(...page);
-    if (page.length < PAGE_SIZE) {
-      break;
-    }
-    await sleep(FETCH_GAP_MS);
-  }
-  return all;
 }
 
 export async function fetchMatchCentre(

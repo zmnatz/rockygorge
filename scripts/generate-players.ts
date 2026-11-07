@@ -1,11 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { seasonSnapshotFile } from '../src/api/capital';
 import {
   aggregatePlayerHistory,
   buildPlayerHistories,
-  fetchMatchCentre,
-  fetchMatches,
   mergeSavedHistories,
   type PlayerHistory,
   PLAYERS_SNAPSHOT_DIR,
@@ -13,10 +10,11 @@ import {
 } from '../src/utils/playerHistory';
 import {
   buildParticipationSnapshot,
+  leagueResults,
   PARTICIPATION_SNAPSHOT_FILE,
-  scheduledResults,
   type ScheduledFixture,
 } from '../src/utils/participation';
+import { readLeagueFixtures } from './lib/league-fixtures';
 import {
   readManifest,
   recordRun,
@@ -24,15 +22,6 @@ import {
   skipIfFresh,
   syncDir,
 } from './lib/snapshot-freshness';
-
-// The current season's fixtures for every side, from the standings snapshot
-// (generated before this one). Throws if it's missing, which keeps the previous
-// snapshot rather than dropping those sides.
-function currentSeasonSchedule(): ScheduledFixture[] {
-  const dir = path.join(process.cwd(), 'public', 'data', 'standings');
-  const read = (file: string) => JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
-  return read(seasonSnapshotFile(read('index.json').defaultSeason)).fixtures;
-}
 
 function readSavedHistories(dir: string): PlayerHistory[] {
   if (!fs.existsSync(dir)) {
@@ -55,7 +44,6 @@ async function generate() {
   try {
     // Every history is built in memory first, so a failed pull never leaves
     // a partial set on disk.
-    const schedule = currentSeasonSchedule();
     // Only the current season is pulled; past seasons come from the saved files.
     // Saved files in an older format can't be reused, and --full-history forces
     // a complete pull to pick up corrections to past seasons.
@@ -64,22 +52,12 @@ async function generate() {
       process.argv.includes('--full-history') ||
       saved.length === 0 ||
       readManifest().players?.format !== SNAPSHOT_FORMATS.players;
-    const { histories: pulled, results, matches, season } = await buildPlayerHistories({
-      concurrency: 3,
-      fullHistory,
-    });
+    const { histories: pulled, results, matches, season } = await buildPlayerHistories(
+      leagueResults(readLeagueFixtures() as ScheduledFixture[]),
+      { concurrency: 3, fullHistory }
+    );
     const histories = fullHistory ? pulled : mergeSavedHistories(saved, pulled, season);
     console.log(`Fetched ${matches.length} matches (${fullHistory ? 'all seasons' : season}).`);
-    // Sides outside the club feed only need participation, not player files.
-    const otherResults = scheduledResults(results, schedule);
-    const other = await fetchMatches(
-      otherResults.filter((fixture) => fixture.status !== 'Forfeit'),
-      fetchMatchCentre,
-      { concurrency: 3 }
-    );
-    if (other.failed.length > 0) {
-      throw new Error(`${other.failed.length} of ${otherResults.length} other fixtures failed`);
-    }
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
       files[playerSnapshotFile(id)] = JSON.stringify(history);
@@ -87,10 +65,7 @@ async function generate() {
     files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
-        ...buildParticipationSnapshot(
-          aggregatePlayerHistory([...matches, ...other.matches]).values(),
-          [...results, ...otherResults]
-        ),
+        ...buildParticipationSnapshot(aggregatePlayerHistory(matches).values(), results),
       }
     );
     const changed = syncDir(outDir, files);

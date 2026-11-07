@@ -26,11 +26,11 @@ export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'cre
 // fails until it does.
 export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   scores: 2,
-  standings: 1,
+  standings: 2,
   leaders: 1,
-  players: 4,
+  players: 6,
   crests: 1,
-  clubPages: 1,
+  clubPages: 2,
 };
 
 export type SnapshotStamps = Partial<Record<SnapshotName, string>>;

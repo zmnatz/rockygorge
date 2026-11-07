@@ -5,7 +5,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import features from '@config/features.yml';
-import { playerKey } from '@/utils/playerHistory';
+import { isNameWithheld, playerKey } from '@/utils/playerHistory';
 import type { MatchPlayer, Team } from '@/types/match';
 import { nameInSet } from './matchCentreUtils';
 
@@ -23,6 +23,9 @@ export function TeamPanel({ team, isHome, lineup, substitutes, coaches, substitu
   const hasUnusedSubstitutes =
     substituteActiveNames !== undefined &&
     teamSubstitutes.some((player) => !nameInSet(player.name, substituteActiveNames));
+  const hasWithheldName = [...lineup, ...substitutes].some(
+    (player) => player.isHome === isHome && isNameWithheld(player.name)
+  );
   return (
     <>
       <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
@@ -39,6 +42,11 @@ export function TeamPanel({ team, isHome, lineup, substitutes, coaches, substitu
         {hasUnusedSubstitutes && (
           <Typography variant="caption" color="text.secondary">
             Dimmed players did not take the field.
+          </Typography>
+        )}
+        {hasWithheldName && (
+          <Typography variant="caption" color="error" component="p">
+            Names in red are not public in Rugby Xplorer.
           </Typography>
         )}
         <Divider sx={{ my: 2 }} />
@@ -92,6 +100,13 @@ function PlayerName({
   player,
   ...linkProps
 }: { player: MatchPlayer } & Omit<ComponentProps<typeof MuiLink>, 'href' | 'component'>) {
+  if (isNameWithheld(player.name)) {
+    return (
+      <Typography component="span" variant="inherit" color="error">
+        {player.name}
+      </Typography>
+    );
+  }
   if (!features.playerLinks) {
     return <>{player.name}</>;
   }

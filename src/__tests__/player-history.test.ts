@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   aggregatePlayerHistory,
   fetchMatches,
+  isNameWithheld,
   isScoreEventType,
   loadPlayerHistory,
   mergeSavedHistories,
@@ -66,6 +67,23 @@ function fixture(id: string, homeScore: string, awayScore: string) {
 }
 
 describe('aggregatePlayerHistory', () => {
+  it('keeps no record for a hidden profile, in any spelling, as a lineup spot is not a person', () => {
+    const histories = aggregatePlayerHistory([
+      {
+        fixture: fixture('game1', '15', '22'),
+        commentary: [{ id: 'c1', minute: '12', type: 'Try', comment: 'Try - Name Withheld' }],
+        players: [
+          { id: 'hidden__1', name: 'Name Withheld', position: '1', shirtNumber: '1', isHome: true },
+          { id: 'real__2', name: 'Sam Hooker', position: '2', shirtNumber: '2', isHome: true },
+        ],
+        substitutes: [{ id: 'also-hidden__16', name: ' name  withheld ', position: '16', shirtNumber: '16', isHome: true }],
+        coaches: [],
+      },
+    ]);
+
+    expect([...histories.keys()]).toEqual(['real']);
+  });
+
   it('records games, starter status and matching scoring events', () => {
     const histories = aggregatePlayerHistory([
       {
@@ -350,7 +368,7 @@ describe('aggregatePlayerHistory substitute matching', () => {
 
   it('credits one substitute for each event when several share a name', () => {
     expect(
-      cameOn([sub('a', 'Name Withheld', true), sub('b', 'Name Withheld', true)], ['Name Withheld']),
+      cameOn([sub('a', 'Sam Smith', true), sub('b', 'Sam Smith', true)], ['Sam Smith']),
     ).toEqual([true, false]);
   });
 
@@ -500,5 +518,15 @@ describe('mergeSavedHistories', () => {
     );
 
     expect(merged.get('sam')?.teamName).toBe('Rocky Gorge MD3');
+  });
+});
+
+describe('isNameWithheld', () => {
+  it.each(['Name Withheld', 'name withheld', ' Name  Withheld '])('recognises %j', (name) => {
+    expect(isNameWithheld(name)).toBe(true);
+  });
+
+  it('does not match a real name', () => {
+    expect(isNameWithheld('Sam Withheld')).toBe(false);
   });
 });
