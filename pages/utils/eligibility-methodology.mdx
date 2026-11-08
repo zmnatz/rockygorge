@@ -40,7 +40,7 @@ The report applies the match-based rules above, the ones Rugby Xplorer's records
 **What counts as a match.** Match Participation is the number of NCS Qualifying Matches a player entered, as a starter or as a substitute who came on (Reg 3.4.2(e)).
 
 - **Counts:** every match in the fixture lists, unless its competition is excluded below. This is meant to be league and local playoff matches.
-- **Doesn't count:** competitions whose name marks them as Super Regionals, National Championships, 7s, friendlies or crossovers.
+- **Doesn't count:** competitions whose name marks them as Super Regionals, National Championships, 7s, friendlies, crossovers, socials, festivals or qualifier rosters.
 - **Doesn't count:** Men's Division IV and Women's Division III matches, because those divisions aren't part of the National Championship Series (Terms and Definitions, 34). Those sides aren't assessed, and a club with only those sides isn't listed.
 - **Forfeits (Reg 3.4(h)):** a forfeit counts for every player on the non-forfeiting side's roster, starters and replacements, provided the roster was entered. It counts for no one on the forfeiting side. A forfeit whose winning side entered no roster is flagged with the gaps, because it then counts for nobody.
 - **Doesn't count:** being listed as a substitute without coming on.
@@ -59,12 +59,15 @@ For example, at a club with divisions 1, 2 and 3, a player with two matches in e
 
 **On track (experimental).** Future playoff matches aren't always entered in Rugby Xplorer, so the possible fixtures may be incomplete, and a player shown as ineligible for being short of the minimum might still be able to reach it. Players must be able to reach the two-match minimum by the start of the National Championship Series (Reg 3.5.1(a)), so a player passes if enough possible matches remain. Possible matches are unplayed fixtures with a date in competitions that count, so Super Regionals are left out by competition name rather than by a cut-off date. These players appear as "on track" rather than "eligible", and their dialog lists the possible fixtures behind that. This means they could still qualify, not that they will: remaining fixtures aren't checked against availability, and they include future playoff dates the side may not reach. Remaining fixtures never affect the four-match limit or the comparison with upper sides.
 
+**Caution (experimental).** A player who is eligible for a lower side appears as "caution" when one more match for an upper side would end that eligibility for the rest of the season. That means either three matches for any one upper side, because a fourth forfeits the side (Reg 3.5(d)(i)), or being level with the upper sides' total with no fixtures left at or below this side to catch up (Reg 3.5(d)(ii)). A match missing from the record could change this, so check the official Rugby Xplorer record.
+
 **Interpretations to review:**
 
 - Forfeits: the side with the higher score is taken as the non-forfeiting side. The 48-hour deadline for locking the roster isn't visible in the data, so a roster entered late still counts. Replacements on the roster count as well as starters.
 - The four-match limit applies to each upper side separately, not to their total. Figure 1's row with 3, 4 and 1 matches, eligible for divisions 1 and 2 only, requires this.
 - The two-match minimum must be reachable before Super Regionals, which we take as the start of the National Championship Series.
 - Competitions are excluded by name, so a new kind of competition counts until it is added to the list.
+- Where a club has two sides at one level, such as "MD3" and "MD3 2nd XV", the 1st XV is treated as the upper side.
 
 **Not checked:** the rules marked as not checked in the summary above, such as registration and transfers, aren't in Rugby Xplorer's match records, so check them separately.
 
@@ -181,12 +184,12 @@ A correction in Rugby Xplorer clears these gaps. They don't catch everything, so
 
 Each update is all or nothing. If any request for a match fails, the previous night's data stays in place, because a partial count could wrongly pass or fail a player. If the CMS answers but holds no details for a match, that isn't a failure, and the match shows as "No lineup recorded".
 
-**When the report is opened.** The nightly data can miss matches played since it ran, so the report goes back for incomplete matches:
+**When you check for newer matches.** The nightly data can miss matches played since it ran, so the report has a "Check for newer matches" button that goes back for incomplete matches:
 
 1. It finds the selected club's fixtures that have kicked off but had no result in the nightly data.
 2. It requests only those matches from the CMS. If there are none, it makes no requests. If the nightly data has nothing for one of the club's sides, it requests that club's whole season instead.
 3. It adds a match to the count only if it now has a score, because a lineup can be posted before kickoff.
-4. A match that still has no result stays marked "No result yet", and is checked again the next time the report loads.
+4. A match that still has no result stays marked "No result yet", and is checked again the next time you check.
 
 If any of those requests fail, the report uses the nightly data and says so. The report shows which data it used, and when. A match picked up this way counts straight away, but its score in the round list appears after the next nightly run.
 
@@ -195,7 +198,7 @@ If any of those requests fail, the report uses the nightly data and says so. The
 - Corrections to a match that already had a result, including one flagged with a gap.
 - Fixtures added or rescheduled since the last run.
 
-The verdict on a player's page uses the nightly data only, so it can be up to a day behind the report.
+The verdict on a player's page uses the nightly data only, so it can be up to a day behind a report that has checked for newer matches.
 
 ## The CSV report
 

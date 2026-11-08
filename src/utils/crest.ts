@@ -1,4 +1,4 @@
-import { parseTeamSide } from '@/utils/teamSide';
+import { parseTeamSide } from '@zmnatz/usa-club-rugby-data';
 
 // Local crest files baked at build time (scripts/generate-crests.ts).
 // Remote CMS URLs like `.../ru/team/91273.png?v=...` map deterministically

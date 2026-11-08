@@ -170,7 +170,7 @@ The Rugby Xplorer CSV export the eligibility tool consumes — one row per playe
 _Avoid_: Roster dump, match report
 
 **Match Record**:
-The lineups and substitutions the CMS holds for each result, pulled live for the selected club (with a nightly snapshot as fallback) so the eligibility tool can run for any club without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
+The lineups and substitutions the CMS holds for each result, read from a nightly snapshot (with newer matches pulled live for the selected club on request) so the eligibility tool can run for any club without a Match Participation Report. It carries no USA IDs or registration data, and it can have gaps: a side with no lineup, or with no substitutions entered.
 _Avoid_: Roster dump, participation export
 
 **Match Participation**:
@@ -194,12 +194,16 @@ A club with only one side in the fixture lists, which the eligibility tool asses
 _Avoid_: single team, solo club
 
 **NCS Qualifying Match**:
-A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships, 7s, friendlies, crossovers, and Men's D4 and Women's D3 matches don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
+A league or local-playoff match that counts toward a player's Match Participation; Super Regionals, National Championships, 7s, friendlies, crossovers, socials, festivals, qualifier rosters, and Men's D4 and Women's D3 matches don't count. The Rocky Gorge counts are the MAC Men D1 and Capital Men D3 competitions.
 _Avoid_: Game, friendly
 
 **On Track**:
 A player who hasn't yet met a two-match minimum but can still reach it, because enough of the side's possible matches remain before Super Regionals, including playoff fixtures with no teams assigned yet. Counted as eligible and shown separately. Remaining fixtures count only towards the minimums, not the four-game cap or the comparison with upper sides.
 _Avoid_: Provisionally eligible, pending
+
+**Caution**:
+An eligible player one Upper Side match from losing a lower side for the rest of the season. Counted as eligible and shown separately, and outranks On Track.
+_Avoid_: at risk, warning
 
 **Registration**:
 A player's USA Rugby membership state, read from the report's `Player Rego Active` and `Player Last Registered` fields. Registration is assumed — the report only lists registered players — so the breakdown shows the last-registered date for reference and does not gate eligibility on it.

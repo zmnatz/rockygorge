@@ -1,11 +1,14 @@
 import { MDXProvider } from "@mdx-js/react";
 import Head from "next/head";
+import Link from "next/link";
 import type { AppProps } from "next/app";
 
 import { Container, CssBaseline, Link as MuiLink } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { AppCacheProvider } from "@mui/material-nextjs/v16-pagesRouter";
+import { EligibilityLinksProvider } from "@zmnatz/usa-club-rugby-components";
 
+import { eligibilityRoutes } from "@/utils/eligibility";
 import { mdxComponents } from '@/utils/mdx'
 import { theme } from "@/utils/theme";
 import { Toolbar } from "@/components/Toolbar";
@@ -36,7 +39,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <Toolbar />
         <Container component="main" id="main-content" tabIndex={-1} maxWidth={false}>
           <MDXProvider components={mdxComponents}>
-            <Component {...pageProps} />
+            <EligibilityLinksProvider Link={Link} routes={eligibilityRoutes}>
+              <Component {...pageProps} />
+            </EligibilityLinksProvider>
           </MDXProvider>
         </Container>
         <Footer />
