@@ -1,18 +1,18 @@
 {
   "scores": {
-    "updatedAt": "2026-11-07T21:14:17.907Z",
+    "updatedAt": "2026-11-08T12:32:50.114Z",
     "format": 3
   },
   "standings": {
-    "updatedAt": "2026-11-07T21:02:19.177Z",
+    "updatedAt": "2026-11-08T12:33:33.117Z",
     "format": 2
   },
   "leaders": {
-    "updatedAt": "2026-11-07T20:55:32.612Z",
+    "updatedAt": "2026-11-08T12:33:38.390Z",
     "format": 1
   },
   "players": {
-    "updatedAt": "2026-11-07T21:45:54.238Z",
+    "updatedAt": "2026-11-08T12:33:37.986Z",
     "format": 7
   },
   "crests": {
@@ -24,7 +24,7 @@
     "format": 3
   },
   "matches": {
-    "updatedAt": "2026-11-07T21:43:09.778Z",
+    "updatedAt": "2026-11-08T12:33:37.797Z",
     "format": 1
   }
 }
