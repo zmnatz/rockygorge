@@ -9,7 +9,7 @@ import { useMatch } from '@/components/Scores/useMatch';
 import { MatchCentre } from '@/components/MatchCentre';
 import { clubPages } from '@/utils/clubPages';
 import { matchUrl } from '@/utils/rugbyXplorer';
-import { parseTeamSide } from '@/utils/teamSide';
+import { parseTeamSide } from '@zmnatz/usa-club-rugby-data';
 
 export default function GamePage() {
   const router = useRouter();

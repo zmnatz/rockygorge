@@ -15,17 +15,21 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
+import { EligibilityStatusChip, PlayerEligibilityDialog } from '@zmnatz/usa-club-rugby-components';
+import {
+  type Club,
+  clubGaps,
+  DEFAULT_RULES,
+  type PlayerEligibility,
+  playerSeasonEligibility,
+} from '@zmnatz/usa-club-rugby-data';
 import { loadCurrentSeasonFixtures } from '@/api/capital';
-import { EligibilityStatusChip } from '@/components/EligibilityStatusChip';
-import { PlayerEligibilityDialog } from '@/components/PlayerEligibilityDialog';
 import { clubPages } from '@/utils/clubPages';
-import type { Club, PlayerEligibility } from '@/types/eligibility';
+import { loadParticipationSnapshot } from '@/utils/eligibility';
 import {
   loadPlayerHistory,
   type PlayerHistory,
 } from '@/utils/playerHistory';
-import { clubGaps, loadParticipationSnapshot, playerSeasonEligibility } from '@/utils/participation';
-import eligibility from '@config/eligibility.yml';
 
 export default function PlayersPage() {
   const router = useRouter();
@@ -108,7 +112,7 @@ function SeasonEligibility({ playerId }: { playerId: string }) {
       return {
         snapshot,
         fixtures,
-        clubs: playerSeasonEligibility(snapshot, fixtures, playerId, eligibility),
+        clubs: playerSeasonEligibility(snapshot, fixtures, playerId, DEFAULT_RULES),
       };
     },
     staleTime: 10 * 60 * 1000,
@@ -116,7 +120,7 @@ function SeasonEligibility({ playerId }: { playerId: string }) {
   });
 
   if (!data || data.clubs.length === 0) return null;
-  const gaps = open ? clubGaps(data.snapshot, open.club, eligibility).length : 0;
+  const gaps = open ? clubGaps(data.snapshot, open.club, DEFAULT_RULES).length : 0;
 
   return (
     <>
@@ -134,21 +138,8 @@ function SeasonEligibility({ playerId }: { playerId: string }) {
         player={open?.verdict ?? null}
         source="record"
         ownLabel={open?.club.sides.find((side) => side.teamName === open.verdict.teamName)?.label ?? ''}
-        accounting={
-          open && {
-            snapshot: data.snapshot,
-            fixtures: data.fixtures,
-            clubSlug: clubPages[open.club.name]?.slug ?? null,
-            sides: open.club.sides.map((side) => side.teamName),
-          }
-        }
-        schedule={
-          open && {
-            club: open.club,
-            fixtures: data.fixtures,
-            clubSlug: clubPages[open.club.name]?.slug ?? null,
-          }
-        }
+        record={open && { club: open.club, snapshot: data.snapshot, fixtures: data.fixtures }}
+        clubSlug={open ? (clubPages[open.club.name]?.slug ?? null) : null}
         footer={
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1, mb: 0 }}>
             {gaps > 0 &&

@@ -52,11 +52,6 @@ declare module '@config/practice-fields.yml' {
   export default practiceFields;
 }
 
-declare module '@config/eligibility.yml' {
-  const eligibility: import('./eligibility').EligibilityRules;
-  export default eligibility;
-}
-
 declare module '@config/features.yml' {
   const features: { playerLinks: boolean };
   export default features;

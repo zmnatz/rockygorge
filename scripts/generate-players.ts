@@ -6,12 +6,8 @@ import {
   PLAYERS_SNAPSHOT_DIR,
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
-import {
-  buildParticipationSnapshot,
-  leagueResults,
-  PARTICIPATION_SNAPSHOT_FILE,
-  type ScheduledFixture,
-} from '../src/utils/participation';
+import { buildParticipationSnapshot, leagueResults, type ScheduledFixture } from '@zmnatz/usa-club-rugby-data';
+import { PARTICIPATION_SNAPSHOT_FILE } from '../src/utils/eligibility';
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
 import {

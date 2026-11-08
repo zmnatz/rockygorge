@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { postWithRetry, sleep } from '../src/utils/api';
-import { parseTeamSide, type TeamSide } from '../src/utils/teamSide';
+import { parseTeamSide, type TeamSide } from '@zmnatz/usa-club-rugby-data';
 import {
   CLUB_PAGES_FILE,
   clubPageCandidates,

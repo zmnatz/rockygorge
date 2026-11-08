@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { crestEntityId } from '@/utils/rugbyXplorer';
-import { parseTeamSide } from '@/utils/teamSide';
+import { parseTeamSide } from '@zmnatz/usa-club-rugby-data';
 import { useMemo } from 'react';
 import { mapConcurrent, postWithRetry, sleep } from '@/utils/api';
 import { isPlaceholderCrest } from '@/utils/crest';
