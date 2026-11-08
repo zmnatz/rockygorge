@@ -1,5 +1,7 @@
 # Eligibility handles any number of sides, from the 2026-27 regulations
 
+_The decisions below are current, but the code and its tests, including the Figure 1 table in `eligibility-regulation.test.ts`, now live in the `usa-club-rugby-eligibility` repo and reach this site as `@zmnatz/usa-club-rugby-data`. A change to the rules is made there. The packages also exclude socials, festivals and qualifier rosters from NCS Qualifying Matches, and add the Caution status._
+
 The tool now evaluates a club with any number of sides under one rule, read from the 2026-27 Senior Club Regulations, replacing the upper/lower model of ADR 008 and the one-or-two limit of ADR 011. For a side, count its matches and those of every side below it: that total must reach the two-match minimum (Reg 3.5.2(a)) and be at least the total for every side above (Reg 3.5(d)(ii)), and no side above may have reached four matches (Reg 3.5(d)(i)). The top side only needs two matches at any level (Reg 3.5.2(b)), and that is also the whole rule for a one-side club (Reg 3.4.2(e)), so it isn't an interpretation as ADR 011 first said.
 
 The code takes any number of sides, though with the divisions below left out a club has at most three in the rules. `eligibility-regulation.test.ts` holds all 20 rows of Figure 1 as the independent check; a change that breaks one is wrong.
