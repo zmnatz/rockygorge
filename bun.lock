@@ -15,8 +15,8 @@
         "@mui/material-nextjs": "9.4.0",
         "@paypal/react-paypal-js": "^7.3.3",
         "@tanstack/react-query": "^5.101.4",
-        "@zmnatz/usa-club-rugby-components": "^0.4.1",
-        "@zmnatz/usa-club-rugby-data": "^0.4.1",
+        "@zmnatz/usa-club-rugby-components": "^0.5.1",
+        "@zmnatz/usa-club-rugby-data": "^0.5.1",
         "js-yaml": "^5.2.3",
         "netlify-identity-widget": "^2.0.3",
         "octokit": "^5.0.5",
@@ -759,9 +759,9 @@
 
     "@whatwg-node/server": ["@whatwg-node/server@0.11.0", "", { "dependencies": { "@envelop/instrumentation": "^1.0.0", "@whatwg-node/disposablestack": "^0.0.6", "@whatwg-node/fetch": "^0.10.13", "@whatwg-node/promise-helpers": "^1.3.2", "tslib": "^2.6.3" } }, "sha512-VSdkwnJRr8Yv9UgB2aXB3VUPWwd6Oqnn0hycFwhg9pZgWxJXb7JmhsiXe9tmpMwjHFxli12PGcz9aI63YYloGQ=="],
 
-    "@zmnatz/usa-club-rugby-components": ["@zmnatz/usa-club-rugby-components@0.4.1", "", { "peerDependencies": { "@emotion/react": "^11.14.0", "@emotion/styled": "^11.14.1", "@mui/material": "^9.3.1", "@zmnatz/usa-club-rugby-data": "^0.4.0", "react": "^19.2.8" } }, "sha512-ZqABBvOYPUKTlIc/LCWnBkI2707tNZCGzFiJaBXsex7P0WsFkuVdw/mO2VZ0r8xARXedQlfEn4HNjErLN/D3Kw=="],
+    "@zmnatz/usa-club-rugby-components": ["@zmnatz/usa-club-rugby-components@0.5.1", "", { "peerDependencies": { "@emotion/react": "^11.14.0", "@emotion/styled": "^11.14.1", "@mui/material": "^9.3.1", "@zmnatz/usa-club-rugby-data": "0.5.1", "react": "^19.2.8" } }, "sha512-ned2Jgfywkn6jb3/nkaB2W7Os6fhNC3z7X5pTXsPyVZ80+lTphs4ilBgm+dZCfLCz6CSsHmbeSKIArOWwI+Q1w=="],
 
-    "@zmnatz/usa-club-rugby-data": ["@zmnatz/usa-club-rugby-data@0.4.1", "", { "bin": { "usa-club-rugby-data": "dist/cli.js" } }, "sha512-sVeSzXDXhHf1yIlctCkFQIE3JJqMdC5ftjbYRF8R+vg1e/ARtxy6CsJzNoTJ1Q5E/YZnXkzWSqCUmKxneW/QrA=="],
+    "@zmnatz/usa-club-rugby-data": ["@zmnatz/usa-club-rugby-data@0.5.1", "", { "bin": { "usa-club-rugby-data": "dist/cli.js" } }, "sha512-D0lER0Ujrq1/7dYKIELKivlSm65jGI0jhx6JyljpLfdAySvzhIzyt/8sA48xjZrupoFMoElEzZMbJI0PyjrXFw=="],
 
     "abbrev": ["abbrev@3.0.1", "", {}, "sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg=="],
 

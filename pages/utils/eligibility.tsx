@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -14,12 +14,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import {
-  ClubEligibilityReport,
-  MatchParticipationReport,
-  type ReportSource,
-} from '@zmnatz/usa-club-rugby-components';
-import { clubKey, DEFAULT_RULES, listClubs, type PublishedClub } from '@zmnatz/usa-club-rugby-data';
+import { ClubEligibilityReport, MatchParticipationReport } from '@zmnatz/usa-club-rugby-components';
+import { clubKey, DEFAULT_RULES, listClubs, type PublishedClub, type ReportSource } from '@zmnatz/usa-club-rugby-data';
 import { loadCurrentSeasonFixtures } from '@/api/capital';
 import { clubPages } from '@/utils/clubPages';
 import { eligibilityRoutes, loadParticipationSnapshot } from '@/utils/eligibility';
@@ -32,10 +28,12 @@ export default function EligibilityPage() {
   const router = useRouter();
   const [source, setSource] = useState<ReportSource>('record');
 
-  const schedule = useQuery({
-    queryKey: ['eligibility-fixtures'],
-    queryFn: loadCurrentSeasonFixtures,
-  });
+  const queryClient = useQueryClient();
+  const fixturesQuery = { queryKey: ['eligibility-fixtures'], queryFn: loadCurrentSeasonFixtures };
+  const schedule = useQuery(fixturesQuery);
+  // The CSV report asks for the fixtures when it is first run: the same query, so a list
+  // already loaded for the match record isn't fetched again.
+  const loadFixtures = () => queryClient.ensureQueryData(fixturesQuery);
   const fixtures = schedule.data;
   const saved = useQuery({
     queryKey: ['eligibility-record'],
@@ -121,12 +119,18 @@ export default function EligibilityPage() {
       )}
 
       {isRecord && club && fixtures && saved.data && (
-        <ClubEligibilityReport key={club.key} club={club} saved={saved.data} fixtures={fixtures} live clubSlug={clubSlug} />
+        <ClubEligibilityReport
+          key={club.key}
+          club={club}
+          saved={saved.data}
+          fixtures={fixtures}
+          playerHref={eligibilityRoutes.player}
+        />
       )}
 
       {/* Stays mounted, so a pasted report survives switching to the match record and back. */}
       <div hidden={isRecord}>
-        <MatchParticipationReport fixtures={fixtures} />
+        <MatchParticipationReport loadFixtures={loadFixtures} />
       </div>
     </Container>
   );
