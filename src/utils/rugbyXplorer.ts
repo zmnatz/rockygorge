@@ -16,14 +16,6 @@ export function matchUrl(fixtureId: string, clubSlug: string | null): string {
   return `${SITE}/${clubSlug ?? UNION_SLUG}/match-centre/${encodeURIComponent(fixtureId)}?tab=Points-Summary`;
 }
 
-/** A club's fixtures and results on Rugby Xplorer, when its page is known. */
-export function fixturesUrl(clubSlug: string | null): string | null {
-  return clubSlug ? `${SITE}/${clubSlug}/fixtures-results` : null;
-}
-
-/** Rugby Xplorer's front page, for a club with no known page. */
-export const RUGBY_XPLORER_URL = SITE;
-
 /** The club id in a CMS-hosted crest URL, e.g. `.../ru/team/91273.png`. */
 export function crestEntityId(crest: string): string | null {
   return crest.match(/\/team\/(\d+)\./)?.[1] ?? null;

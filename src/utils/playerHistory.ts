@@ -78,6 +78,9 @@ export interface PlayerHistory {
   teamName: string;
   games: PlayerGameLog[];
   scoringEvents: PlayerScoringEvent[];
+  /** Whether the eligibility site has a page for this player, which the player page then
+   *  links to. Set by the snapshot generator, not by `aggregatePlayerHistory`. */
+  eligibility?: boolean;
 }
 
 interface FixtureLookupItem {

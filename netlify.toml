@@ -13,6 +13,28 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# The eligibility report moved to the USA Club Rugby eligibility site
+# (docs/adr/015-eligibility-on-its-own-site.md). Old links keep working: a club named in
+# the query goes to that club's page there, and the rest to Rocky Gorge's.
+[[redirects]]
+  from = "/utils/eligibility"
+  query = {club = ":club"}
+  to = "https://usa-club-rugby-eligibility.netlify.app/club/:club/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/utils/eligibility"
+  to = "https://usa-club-rugby-eligibility.netlify.app/club/rocky-gorge/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/utils/eligibility-methodology"
+  to = "https://usa-club-rugby-eligibility.netlify.app/methodology/"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/api/calendar"
   to = "https://www.googleapis.com/calendar/v3/calendars/t1s0l2ucm1fl084olhmj69pme8@group.calendar.google.com/events"

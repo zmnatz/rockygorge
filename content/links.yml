@@ -37,10 +37,10 @@
   title: 'Where is Practice'
   summary: 'When and where the next practice is'
   header: true
-- slug: '/utils/eligibility'
-  href: '/utils/eligibility'
+- slug: 'eligibility'
+  href: 'https://usa-club-rugby-eligibility.netlify.app/club/rocky-gorge'
   title: 'Eligibility'
-  summary: 'NCS player eligibility breakdown from the match record or a matches-played report'
+  summary: "Rocky Gorge's NCS player eligibility, on the USA Club Rugby eligibility site"
   menu: true
 - slug: '/admin'
   href: '/admin'
