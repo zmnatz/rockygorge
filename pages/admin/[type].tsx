@@ -118,7 +118,9 @@ export async function getStaticProps({ params }: { params?: { type: string } }) 
     return { notFound: true };
   }
 
-  const filePath = path.join(process.cwd(), ADMIN_FILE_PATHS[type]);
+  // Only read at build time (fallback: false, no revalidate), so not traced into the
+  // server function, which would otherwise carry the whole project.
+  const filePath = path.join(/* turbopackIgnore: true */ process.cwd(), ADMIN_FILE_PATHS[type]);
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const data = load(fileContents);
 

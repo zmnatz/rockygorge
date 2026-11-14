@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { Crest } from '@/components/Crest';
 import type { CapitalFixture } from '@/api/capital';
 import type { LeadersDivision } from '@/utils/leaders';
+import { playerPath } from '@/utils/playerHistory';
 import { teamCrest } from '@/utils/scoreboard';
 import {
   coverageNote,
@@ -132,7 +133,7 @@ export function LeadersTable({
                     {player.playerId ? (
                       <MuiLink
                         component={NextLink}
-                        href={`/player?id=${encodeURIComponent(player.playerId)}`}
+                        href={playerPath(player.playerId)}
                         underline="hover"
                         color="inherit"
                         variant="body2"

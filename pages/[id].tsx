@@ -48,7 +48,7 @@ export default function StoreItem({
   return (
     <>
       <Head>
-        <title>{title} | Rocky Gorge Rugby</title>
+        <title>{`${title} | Rocky Gorge Rugby`}</title>
         <meta name="description" content={description || `Get ${title} from the Rocky Gorge Rugby store.`} />
       </Head>
       <PaypalProduct

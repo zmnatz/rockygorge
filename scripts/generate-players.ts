@@ -6,8 +6,8 @@ import {
   PLAYERS_SNAPSHOT_DIR,
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
-import { buildParticipationSnapshot, leagueResults, type ScheduledFixture } from '@zmnatz/usa-club-rugby-data';
-import { PARTICIPATION_SNAPSHOT_FILE } from '../src/utils/eligibility';
+import { leagueResults, type ScheduledFixture } from '@zmnatz/usa-club-rugby-data';
+import { eligibilityPlayerIds } from './lib/eligibility-players';
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
 import {
@@ -21,7 +21,7 @@ import {
 import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh, syncDir } from './lib/snapshot-freshness';
 
 // Downloads what the match archive is missing, then calculates every season's
-// player histories and the eligibility record from the archive. Locked seasons
+// player histories from the archive. Locked seasons
 // are never downloaded again, except for an archive format change or
 // --full-history. Best-effort like the other snapshots: a throttled CMS never
 // fails the build, and on failure the previous snapshot and archive are kept.
@@ -55,14 +55,11 @@ async function generate() {
 
     const all = archivedMatches(archive, results);
     const histories = aggregatePlayerHistory(all);
+    const linked = await eligibilityPlayerIds();
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
-      files[playerSnapshotFile(id)] = JSON.stringify(history);
+      files[playerSnapshotFile(id)] = JSON.stringify({ ...history, eligibility: linked.has(id) });
     }
-    files[PARTICIPATION_SNAPSHOT_FILE] = JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      ...buildParticipationSnapshot(histories.values(), results),
-    });
     recordRun('matches', writeMatchArchive(archiveDir, archive));
     recordRun('players', syncDir(outDir, files));
     console.log(`Saved ${histories.size} player histories from ${all.length} archived matches to public/${PLAYERS_SNAPSHOT_DIR}/`);

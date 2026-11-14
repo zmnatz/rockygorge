@@ -85,13 +85,9 @@ export default function GameStatsPage({ game, allColumns }) {
   return (
     <Box sx={{ width: '100%', p: 2 }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Link href="/stats">
-          {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-          }
-          <MuiLink underline="hover" color="inherit">
-            Stats
-          </MuiLink>
-        </Link>
+        <MuiLink component={Link} href="/stats" underline="hover" color="inherit">
+          Stats
+        </MuiLink>
         <Typography color="text.secondary">Season: {game.season}</Typography>
         <Typography color="text.secondary">Division: {game.division}</Typography>
         {game.date && <Typography color="text.secondary">Date: {game.date}</Typography>}
@@ -159,11 +155,7 @@ export default function GameStatsPage({ game, allColumns }) {
         renderCell={(col, row) => {
           if (col.key === 'name') {
             return (
-              <Link href={`/stats/${slugify(String(row[col.dataIndex] ?? ''))}`}>
-                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                }
-                <MuiLink underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
-              </Link>
+              <MuiLink component={Link} href={`/stats/${slugify(String(row[col.dataIndex] ?? ''))}`} underline="hover">{row[col.dataIndex] as ReactNode}</MuiLink>
             );
           }
           return row[col.dataIndex] as ReactNode

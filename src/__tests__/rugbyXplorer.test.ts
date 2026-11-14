@@ -3,7 +3,6 @@ import {
   clubPageCandidates,
   clubPageIsDue,
   crestEntityId,
-  fixturesUrl,
   matchUrl,
   resolveClubPage,
 } from '@/utils/rugbyXplorer';
@@ -19,16 +18,6 @@ describe('matchUrl', () => {
     expect(matchUrl('abc', null)).toBe(
       'https://xplorer.rugby/capitalrugby/match-centre/abc?tab=Points-Summary',
     );
-  });
-});
-
-describe('fixturesUrl', () => {
-  it("links to the club's fixtures and results", () => {
-    expect(fixturesUrl('potomac-exiles')).toBe('https://xplorer.rugby/potomac-exiles/fixtures-results');
-  });
-
-  it("has no link for a club with no known page, so the page can't imply one", () => {
-    expect(fixturesUrl(null)).toBeNull();
   });
 });
 

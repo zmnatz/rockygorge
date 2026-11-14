@@ -55,7 +55,7 @@ export default function EventPage({
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Head>
-        <title>{title} | Rocky Gorge Rugby</title>
+        <title>{`${title} | Rocky Gorge Rugby`}</title>
         <meta name="description" content={description} />
       </Head>
       <Box>

@@ -24,7 +24,7 @@ export default function Form({
   return (
     <>
       <Head>
-        <title>{title} | Rocky Gorge Rugby</title>
+        <title>{`${title} | Rocky Gorge Rugby`}</title>
         <meta name="description" content={title} />
       </Head>
       <Box sx={{textAlign: 'center'}}>

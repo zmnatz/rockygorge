@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
+// Built and served by Netlify's Next.js runtime, which Netlify adds for a Next site
+// (docs/adr/014-nextjs-runtime.md). Images stay unoptimized, served as they are.
 const nextConfig = {
   images: { unoptimized: true },
-  output: "export",
-  distDir: 'build',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  // The player page is rendered on request from the player snapshots, so its function
+  // carries them (ADR 016). Route keys are globs, so the brackets of `[id]` are escaped.
+  outputFileTracingIncludes: {
+    '/player/[[]id[]]': ['./public/data/players/*.json'],
+  },
   experimental: {
     useTypeScriptCli: true,
   },

@@ -13,7 +13,7 @@ const PAGE_SIZE = 100;
 const MATCH_CENTRE_GAP_MS = 300;
 const RETRY_PASS_DELAY_MS = 15_000;
 
-// Under public/; the script writes it, the page fetches it from the site root.
+// Under public/; the script writes it, and the player page reads it on the server.
 export const PLAYERS_SNAPSHOT_DIR = 'data/players';
 
 // Per-player snapshot path, shared by the build script and the player page.
@@ -21,25 +21,9 @@ export function playerSnapshotFile(id: string): string {
   return `${encodeURIComponent(id)}.json`;
 }
 
-// Loads one player's history from the per-player snapshot (written by
-// scripts/generate-players.ts). Player links only come from results, so
-// a missing file just means null; any other failure throws. The host's
-// catch-all rewrite answers a missing file with index.html and a 200, so a
-// non-JSON response counts as missing too.
-export async function loadPlayerHistory(
-  id: string
-): Promise<PlayerHistory | null> {
-  const res = await fetch(`/${PLAYERS_SNAPSHOT_DIR}/${playerSnapshotFile(id)}`);
-  if (res.status === 404) {
-    return null;
-  }
-  if (!res.ok) {
-    throw new Error(`Player history request failed: ${res.status}`);
-  }
-  if (!res.headers.get('content-type')?.includes('json')) {
-    return null;
-  }
-  return (await res.json()) as PlayerHistory;
+/** A player's page, by the base CMS id (`playerKey`). */
+export function playerPath(id: string): string {
+  return `/player/${encodeURIComponent(id)}`;
 }
 
 export interface PlayerGameLog {
@@ -78,6 +62,9 @@ export interface PlayerHistory {
   teamName: string;
   games: PlayerGameLog[];
   scoringEvents: PlayerScoringEvent[];
+  /** Whether the eligibility site has a page for this player, which the player page then
+   *  links to. Set by the snapshot generator, not by `aggregatePlayerHistory`. */
+  eligibility?: boolean;
 }
 
 interface FixtureLookupItem {
