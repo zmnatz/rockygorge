@@ -1,88 +1,50 @@
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { Link as MuiLink } from '@mui/material';
+import type { GetStaticPaths, GetStaticProps } from 'next';
 import Link from 'next/link';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
-import { useQuery } from '@tanstack/react-query';
 import { eligibilityPlayerUrl } from '@/utils/eligibilitySite';
-import {
-  loadPlayerHistory,
-  type PlayerHistory,
-} from '@/utils/playerHistory';
+import type { PlayerHistory } from '@/utils/playerHistory';
+import { readPlayerHistory } from '@/utils/playerSnapshot';
 
-export default function PlayersPage() {
-  const router = useRouter();
-  const { id } = router.query;
-  const playerId = typeof id === 'string' ? id : undefined;
+// No player page is built: each is rendered from the player's committed snapshot on its
+// first request and cached until the next deploy, which is when the nightly snapshots
+// change (ADR 016). An id with no snapshot is a 404.
+export const getStaticPaths: GetStaticPaths = async () => ({ paths: [], fallback: 'blocking' });
 
-  const {
-    data: history,
-    isPending,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ['playerHistory', playerId],
-    enabled: !!playerId,
-    queryFn: () => loadPlayerHistory(playerId as string),
-    staleTime: 10 * 60 * 1000,
-    retry: 1,
+export const getStaticProps: GetStaticProps<{ history: PlayerHistory }> = async ({ params }) => {
+  const history = typeof params?.id === 'string' ? await readPlayerHistory(params.id) : null;
+  return history ? { props: { history } } : { notFound: true };
+};
+
+// Rendered on the server, so dates are in the club's time zone, not the server's.
+const formatDate = (dateTime: string) =>
+  new Date(dateTime).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'America/New_York',
   });
 
+export default function PlayerPage({ history }: { history: PlayerHistory }) {
   return (
     <Box sx={{ py: 4, px: 2, maxWidth: 900, mx: 'auto' }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <MuiLink component={Link} href="/" underline="hover" color="inherit">
           Home
         </MuiLink>
-        <Typography color="text.primary">
-          {history ? history.name : 'Player'}
-        </Typography>
+        <Typography color="text.primary">{history.name}</Typography>
       </Breadcrumbs>
-
-      {!playerId && (
-        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-          No player selected.
-        </Typography>
-      )}
-
-      {playerId && isPending && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
-          <CircularProgress />
-          <Typography variant="body2" color="text.secondary">
-            Loading history…
-          </Typography>
-        </Box>
-      )}
-
-      {playerId && !isPending && isError && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
-          <Typography variant="body2" color="text.secondary">
-            Failed to load player history.
-          </Typography>
-          <Button variant="outlined" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </Box>
-      )}
-
-      {playerId && !isPending && !isError && !history && (
-        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 8 }}>
-          No history found for this player.
-        </Typography>
-      )}
-
-      {playerId && history && <PlayerHistoryView history={history} />}
+      <PlayerHistoryView history={history} />
     </Box>
   );
 }
@@ -106,7 +68,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
   return (
     <>
       <Head>
-        <title>{history.name} | Rocky Gorge Rugby</title>
+        <title>{`${history.name} | Rocky Gorge Rugby`}</title>
         <meta
           name="description"
           content={`${history.name} (${history.teamName}): ${history.games.length} games played and ${history.scoringEvents.length} scoring events.`}
@@ -172,7 +134,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
           <MuiLink
             key={game.fixtureId}
             component={Link}
-              href={`/game?id=${game.fixtureId}`}
+            href={`/game?id=${game.fixtureId}`}
             underline="none"
             color="inherit"
           >
@@ -203,11 +165,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {game.compName} •{' '}
-                  {new Date(game.dateTime).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {formatDate(game.dateTime)}
                 </Typography>
               </Box>
               <Typography
@@ -248,7 +206,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
           <MuiLink
             key={event.id}
             component={Link}
-              href={`/game?id=${event.fixtureId}`}
+            href={`/game?id=${event.fixtureId}`}
             underline="none"
             color="inherit"
           >
@@ -272,11 +230,7 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
                 <Typography variant="body2">{event.comment}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   vs {event.opponent} • {event.compName} •{' '}
-                  {new Date(event.dateTime).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {formatDate(event.dateTime)}
                 </Typography>
               </Box>
               <Typography

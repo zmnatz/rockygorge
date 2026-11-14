@@ -5,7 +5,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import features from '@config/features.yml';
-import { isNameWithheld, playerKey } from '@/utils/playerHistory';
+import { isNameWithheld, playerKey, playerPath } from '@/utils/playerHistory';
 import type { MatchPlayer, Team } from '@/types/match';
 import { nameInSet } from './matchCentreUtils';
 
@@ -113,7 +113,7 @@ function PlayerName({
   return (
     <MuiLink
       component={NextLink}
-      href={`/player?id=${playerKey(player.id)}`}
+      href={playerPath(playerKey(player.id))}
       underline="hover"
       {...linkProps}
     >

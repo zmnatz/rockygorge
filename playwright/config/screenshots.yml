@@ -29,3 +29,9 @@ rules:
       - src/components/Toolbar.tsx
     routes:
       - path: /
+  - files:
+      - pages/player/**
+      - src/utils/playerHistory.ts
+      - src/utils/playerSnapshot.ts
+    routes:
+      - path: /player/f5JqeT4vzmH2nxtnR

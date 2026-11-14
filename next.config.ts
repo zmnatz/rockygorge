@@ -4,6 +4,11 @@
 const nextConfig = {
   images: { unoptimized: true },
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  // The player page is rendered on request from the player snapshots, so its function
+  // carries them (ADR 016). Route keys are globs, so the brackets of `[id]` are escaped.
+  outputFileTracingIncludes: {
+    '/player/[[]id[]]': ['./public/data/players/*.json'],
+  },
   experimental: {
     useTypeScriptCli: true,
   },
