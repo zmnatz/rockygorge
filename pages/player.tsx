@@ -15,17 +15,6 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
-import { EligibilityStatusChip, PlayerEligibilityDialog } from '@zmnatz/usa-club-rugby-components';
-import {
-  type Club,
-  clubGaps,
-  DEFAULT_RULES,
-  type PlayerEligibility,
-  playerSeasonEligibility,
-} from '@zmnatz/usa-club-rugby-data';
-import { loadCurrentSeasonFixtures } from '@/api/capital';
-import { clubPages } from '@/utils/clubPages';
-import { loadParticipationSnapshot } from '@/utils/eligibility';
 import {
   loadPlayerHistory,
   type PlayerHistory,
@@ -97,68 +86,6 @@ export default function PlayersPage() {
   );
 }
 
-/** The player's current-season verdicts as chips, from the nightly record. Each
- *  opens the round-by-round detail. */
-function SeasonEligibility({ playerId }: { playerId: string }) {
-  const [open, setOpen] = useState<{ verdict: PlayerEligibility; club: Club } | null>(null);
-  const { data } = useQuery({
-    queryKey: ['playerEligibility', playerId],
-    queryFn: async () => {
-      const [snapshot, fixtures] = await Promise.all([
-        loadParticipationSnapshot(),
-        loadCurrentSeasonFixtures(),
-      ]);
-      if (!snapshot) return null;
-      return {
-        snapshot,
-        fixtures,
-        clubs: playerSeasonEligibility(snapshot, fixtures, playerId, DEFAULT_RULES),
-      };
-    },
-    staleTime: 10 * 60 * 1000,
-    retry: 1,
-  });
-
-  if (!data || data.clubs.length === 0) return null;
-  const gaps = open ? clubGaps(data.snapshot, open.club, DEFAULT_RULES).length : 0;
-
-  return (
-    <>
-      {data.clubs.flatMap(({ club, verdicts }) =>
-        verdicts.map((verdict) => (
-          <EligibilityStatusChip
-            key={verdict.teamName}
-            player={verdict}
-            sideLabel={club.sides.find((side) => side.teamName === verdict.teamName)?.label}
-            onClick={() => setOpen({ verdict, club })}
-          />
-        ))
-      )}
-      <PlayerEligibilityDialog
-        player={open?.verdict ?? null}
-        source="record"
-        ownLabel={open?.club.sides.find((side) => side.teamName === open.verdict.teamName)?.label ?? ''}
-        record={open && { club: open.club, snapshot: data.snapshot, fixtures: data.fixtures }}
-        clubSlug={open ? (clubPages[open.club.name]?.slug ?? null) : null}
-        footer={
-          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1, mb: 0 }}>
-            {gaps > 0 &&
-              `${gaps} ${gaps === 1 ? 'match has' : 'matches have'} gaps in this club's record, so counts may be low. `}
-            {data.snapshot.season} season, as of{' '}
-            {data.snapshot.generatedAt ? new Date(data.snapshot.generatedAt).toLocaleDateString() : 'the last update'}. A
-            guide from the match record: the Rugby Xplorer report is the official count, and registration isn&apos;t
-            checked.{' '}
-            <MuiLink component={Link} href="/utils/eligibility-methodology">
-              How it&apos;s worked out
-            </MuiLink>
-          </Typography>
-        }
-        onClose={() => setOpen(null)}
-      />
-    </>
-  );
-}
-
 function PlayerHistoryView({ history }: { history: PlayerHistory }) {
   const [season, setSeason] = useState<string>('all');
   const seasons = useMemo(
@@ -198,7 +125,6 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
             {history.scoringEvents.length}{' '}
             {history.scoringEvents.length === 1 ? 'score' : 'scores'}
           </Typography>
-          <SeasonEligibility playerId={history.id} />
         </Box>
       </Box>
 

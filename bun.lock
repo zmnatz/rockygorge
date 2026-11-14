@@ -15,7 +15,6 @@
         "@mui/material-nextjs": "9.4.0",
         "@paypal/react-paypal-js": "^7.3.3",
         "@tanstack/react-query": "^5.101.4",
-        "@zmnatz/usa-club-rugby-components": "^0.4.1",
         "@zmnatz/usa-club-rugby-data": "^0.4.1",
         "js-yaml": "^5.2.3",
         "netlify-identity-widget": "^2.0.3",
@@ -758,8 +757,6 @@
     "@whatwg-node/promise-helpers": ["@whatwg-node/promise-helpers@1.3.2", "", { "dependencies": { "tslib": "^2.6.3" } }, "sha512-Nst5JdK47VIl9UcGwtv2Rcgyn5lWtZ0/mhRQ4G8NN2isxpq2TO30iqHzmwoJycjWuyUfg3GFXqP/gFHXeV57IA=="],
 
     "@whatwg-node/server": ["@whatwg-node/server@0.11.0", "", { "dependencies": { "@envelop/instrumentation": "^1.0.0", "@whatwg-node/disposablestack": "^0.0.6", "@whatwg-node/fetch": "^0.10.13", "@whatwg-node/promise-helpers": "^1.3.2", "tslib": "^2.6.3" } }, "sha512-VSdkwnJRr8Yv9UgB2aXB3VUPWwd6Oqnn0hycFwhg9pZgWxJXb7JmhsiXe9tmpMwjHFxli12PGcz9aI63YYloGQ=="],
-
-    "@zmnatz/usa-club-rugby-components": ["@zmnatz/usa-club-rugby-components@0.4.1", "", { "peerDependencies": { "@emotion/react": "^11.14.0", "@emotion/styled": "^11.14.1", "@mui/material": "^9.3.1", "@zmnatz/usa-club-rugby-data": "^0.4.0", "react": "^19.2.8" } }, "sha512-ZqABBvOYPUKTlIc/LCWnBkI2707tNZCGzFiJaBXsex7P0WsFkuVdw/mO2VZ0r8xARXedQlfEn4HNjErLN/D3Kw=="],
 
     "@zmnatz/usa-club-rugby-data": ["@zmnatz/usa-club-rugby-data@0.4.1", "", { "bin": { "usa-club-rugby-data": "dist/cli.js" } }, "sha512-sVeSzXDXhHf1yIlctCkFQIE3JJqMdC5ftjbYRF8R+vg1e/ARtxy6CsJzNoTJ1Q5E/YZnXkzWSqCUmKxneW/QrA=="],
 

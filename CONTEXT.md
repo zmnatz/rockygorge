@@ -165,6 +165,8 @@ _Avoid_: Match entry, schedule item, calendar match
 
 Eligibility rules follow the current USA Senior Club Regulations (§3.4.2, §3.5).
 
+The eligibility report itself is no longer on this site: it lives on the USA Club Rugby eligibility site, and these terms are kept for the data the site still uses (ADR 015).
+
 **Match Participation Report**:
 The Rugby Xplorer CSV export the eligibility tool consumes — one row per player per team and competition, carrying `Appearances` / `Played` / `Reserve` / `Substitute` totals alongside per-round attendance codes.
 _Avoid_: Roster dump, match report

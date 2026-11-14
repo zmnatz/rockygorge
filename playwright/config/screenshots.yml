@@ -4,13 +4,6 @@
 # that fill in after load; the default is network idle plus a short settle.
 rules:
   - files:
-      - pages/utils/eligibility.tsx
-      - pages/utils/eligibility-methodology.mdx
-      - src/utils/eligibility.ts
-    routes:
-      - path: /utils/eligibility
-      - path: /utils/eligibility-methodology
-  - files:
       - pages/gameday.tsx
       - src/components/MatchCentre/**
       - src/utils/gameday.ts
