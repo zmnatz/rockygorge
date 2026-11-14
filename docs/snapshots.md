@@ -9,7 +9,7 @@ time, so the results are **committed to the repo** and refreshed nightly.
 | scores    | `public/data/scores.json`, plus `first-paint.json` | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
 | leaders   | `public/data/leaders/`, calculated from the match archive | `scripts/generate-leaders-index.ts` |
-| players   | `public/data/players/` and the match archive `.cache/matches/` | `scripts/generate-players.ts` |
+| players   | `public/data/players/` and the match archive `.cache/matches/`; each player file also records whether the eligibility site has a page for them | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
 | clubPages | `public/data/club-pages.json` (each club's Rugby Xplorer page and crest, confirmed through the CMS) | `scripts/generate-club-pages.ts` |
 

@@ -29,7 +29,7 @@ export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   scores: 3,
   standings: 2,
   leaders: 1,
-  players: 7,
+  players: 8,
   crests: 1,
   clubPages: 3,
   // The match archive: bump only when the fields requested from the CMS change,

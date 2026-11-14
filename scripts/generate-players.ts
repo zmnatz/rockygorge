@@ -7,6 +7,7 @@ import {
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
 import { leagueResults, type ScheduledFixture } from '@zmnatz/usa-club-rugby-data';
+import { eligibilityPlayerIds } from './lib/eligibility-players';
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
 import {
@@ -54,9 +55,10 @@ async function generate() {
 
     const all = archivedMatches(archive, results);
     const histories = aggregatePlayerHistory(all);
+    const linked = await eligibilityPlayerIds();
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
-      files[playerSnapshotFile(id)] = JSON.stringify(history);
+      files[playerSnapshotFile(id)] = JSON.stringify({ ...history, eligibility: linked.has(id) });
     }
     recordRun('matches', writeMatchArchive(archiveDir, archive));
     recordRun('players', syncDir(outDir, files));

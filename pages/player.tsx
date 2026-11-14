@@ -15,6 +15,7 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { visuallyHidden } from '@mui/utils';
 import { useQuery } from '@tanstack/react-query';
+import { eligibilityPlayerUrl } from '@/utils/eligibilitySite';
 import {
   loadPlayerHistory,
   type PlayerHistory,
@@ -126,6 +127,17 @@ function PlayerHistoryView({ history }: { history: PlayerHistory }) {
             {history.scoringEvents.length === 1 ? 'score' : 'scores'}
           </Typography>
         </Box>
+        {history.eligibility && (
+          <MuiLink
+            href={eligibilityPlayerUrl(history.id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            sx={{ display: 'inline-block', mt: 1 }}
+          >
+            Eligibility report
+          </MuiLink>
+        )}
       </Box>
 
       <Tabs
