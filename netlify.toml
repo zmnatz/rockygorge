@@ -1,5 +1,5 @@
-# Built and served by Netlify's Next.js runtime, which Netlify adds for a Next site and
-# which saves .next/cache between builds (docs/adr/014-nextjs-runtime.md).
+# Built and served by Netlify's Next.js runtime, which saves .next/cache between builds
+# (docs/adr/014-nextjs-runtime.md).
 [build]
   command = "bun run build"
   publish = ".next"
@@ -7,6 +7,11 @@
 [build.environment]
   NETLIFY_USE_BUN = "true"
   BUN_VERSION = "1.3.14"
+
+# Declared, not left to Netlify to add: this site was a static export for years, and
+# Netlify didn't add the runtime by itself, so every page was a 404.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [[redirects]]
   from = "/api/calendar"
