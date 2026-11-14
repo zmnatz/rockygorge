@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NextRequest } from 'next/server';
-import { caseRedirect, config, legacyPlayerRedirect, MIXED_CASE_ROUTES, proxy } from '../../proxy';
+import { caseRedirect, config, eligibilityRedirect, legacyPlayerRedirect, MIXED_CASE_ROUTES, proxy } from '../../proxy';
 import { mixedCaseRoutes, siteRoutes } from '../utils/siteRoutes';
 
 const request = (path: string) => proxy(new NextRequest(new URL(path, 'https://rockygorge.example')));
@@ -11,7 +11,7 @@ describe('the lowercase addresses the static export answered at', () => {
   });
 
   it('are what the proxy runs on, beside any page path with a capital', () => {
-    expect(config.matcher.slice(2).sort()).toEqual(MIXED_CASE_ROUTES.map((route) => route.toLowerCase()).sort());
+    expect(config.matcher.slice(4).sort()).toEqual(MIXED_CASE_ROUTES.map((route) => route.toLowerCase()).sort());
   });
 
   it('redirect to the route, keeping the query', () => {
@@ -79,5 +79,27 @@ describe('siteRoutes', () => {
     const routes = siteRoutes(process.cwd());
     expect(routes).toEqual(expect.arrayContaining(['/', '/calendar', '/stats', '/gauntlet/submit', '/banquet', '/forms/asr']));
     expect(routes.some((route) => route.includes('[') || route.includes('/_'))).toBe(false);
+  });
+});
+
+describe("the eligibility report's old addresses", () => {
+  const url = (path: string) => new URL(path, 'https://rockygorge.example');
+  const site = 'https://usa-club-rugby-eligibility.netlify.app';
+
+  it("send a club to its page on the eligibility site, without the old query", () => {
+    const response = request('/utils/eligibility?club=baltimore-chesapeake&x=1');
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe(`${site}/club/baltimore-chesapeake/`);
+  });
+
+  it("send the rest to Rocky Gorge's page, and the methodology to the site's", () => {
+    expect(eligibilityRedirect(url('/utils/eligibility'))).toBe(`${site}/club/rocky-gorge/`);
+    expect(eligibilityRedirect(url('/utils/eligibility?club=Not%20A%20Key'))).toBe(`${site}/club/rocky-gorge/`);
+    expect(eligibilityRedirect(url('/utils/eligibility-methodology'))).toBe(`${site}/methodology/`);
+    expect(eligibilityRedirect(url('/utils/lineup-graphic'))).toBeNull();
+  });
+
+  it('are what the proxy runs on', () => {
+    expect(config.matcher.slice(2, 4)).toEqual(['/utils/eligibility', '/utils/eligibility-methodology']);
   });
 });

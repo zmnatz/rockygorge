@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { ELIGIBILITY_SITE } from '@/utils/eligibilitySite';
 import { playerPath } from '@/utils/playerHistory';
 
 // Netlify served the old static export case-insensitively: it redirected any path with a
@@ -32,7 +33,23 @@ export function legacyPlayerRedirect(url: URL): URL | null {
   return target;
 }
 
+// Club keys, the data package's `clubKey`, are lowercase words joined by hyphens.
+const CLUB_KEY = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** Where the eligibility report's old pages went: the USA Club Rugby eligibility site
+ *  (ADR 015). `/utils/eligibility?club=<key>` goes to that club's page there, since both
+ *  sites key clubs by `clubKey`, and without a club to Rocky Gorge's. Not a Netlify
+ *  redirect, which would pass the old query on. */
+export function eligibilityRedirect(url: URL): string | null {
+  if (url.pathname === '/utils/eligibility-methodology') return `${ELIGIBILITY_SITE}/methodology/`;
+  if (url.pathname !== '/utils/eligibility') return null;
+  const club = url.searchParams.get('club');
+  return `${ELIGIBILITY_SITE}/club/${club && CLUB_KEY.test(club) ? club : 'rocky-gorge'}/`;
+}
+
 export function proxy(request: NextRequest) {
+  const eligibility = eligibilityRedirect(request.nextUrl);
+  if (eligibility) return NextResponse.redirect(eligibility, 301);
   const legacy = legacyPlayerRedirect(request.nextUrl);
   if (legacy) return NextResponse.redirect(legacy, 308);
   const target = caseRedirect(request.nextUrl.pathname);
@@ -44,12 +61,14 @@ export function proxy(request: NextRequest) {
 
 // Constants, as Next requires, matched with case: a page path with a capital in it (not a
 // file, a build asset, the data, the API or a player page, whose names and ids have
-// capitals of their own), the lowercase form of each mixed-case route, and the player
-// page's old address.
+// capitals of their own), the player page's and the eligibility report's old addresses,
+// and the lowercase form of each mixed-case route.
 export const config = {
   matcher: [
     '/((?!_next/|api/|data/|crests/|player/)(?=[^.]*$)(?=.*[A-Z]).*)',
     '/player',
+    '/utils/eligibility',
+    '/utils/eligibility-methodology',
     '/halloffame',
     '/whereispractice',
     '/forms/halloffame',

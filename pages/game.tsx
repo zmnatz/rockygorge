@@ -54,9 +54,7 @@ export default function GamePage() {
   return (
     <>
       <Head>
-        <title>
-          {game.homeTeam.name} vs {game.awayTeam.name} | Rocky Gorge Rugby
-        </title>
+        <title>{`${game.homeTeam.name} vs ${game.awayTeam.name} | Rocky Gorge Rugby`}</title>
         <meta
           name="description"
           content={`${game.homeTeam.name} ${game.homeTeam.score} - ${game.awayTeam.score} ${game.awayTeam.name}: lineups, scores and match events.`}
