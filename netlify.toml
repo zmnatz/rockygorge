@@ -1,20 +1,12 @@
+# Built and served by Netlify's Next.js runtime, which Netlify adds for a Next site and
+# which saves .next/cache between builds (docs/adr/014-nextjs-runtime.md).
 [build]
   command = "bun run build"
-  publish = "build"
+  publish = ".next"
 
 [build.environment]
   NETLIFY_USE_BUN = "true"
   BUN_VERSION = "1.3.14"
-
-[[plugins]]
-  package = "netlify-plugin-cache"
-
-  [plugins.inputs]
-    # .next/cache speeds up page prerendering. The generated snapshots
-    # (public/data, public/crests, .cache/matches) are committed to the repo,
-    # so they must NOT be cached here: a restored cache would overwrite the
-    # fresher committed copies.
-    paths = [".next/cache"]
 
 [[redirects]]
   from = "/api/calendar"
@@ -22,8 +14,3 @@
   force = true
   status = 200
   headers = {X-goog-api-key = "AIzaSyDnoONpe29Y9gWIbhRKb_btifHo5X-d_Xo"}
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200

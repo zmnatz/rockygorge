@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
+// Built and served by Netlify's Next.js runtime, which Netlify adds for a Next site
+// (docs/adr/014-nextjs-runtime.md). Images stay unoptimized, served as they are.
 const nextConfig = {
   images: { unoptimized: true },
-  output: "export",
-  distDir: 'build',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   experimental: {
     useTypeScriptCli: true,

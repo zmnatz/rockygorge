@@ -27,7 +27,7 @@ This project is [MIT licensed](LICENSE) and governed by our [Code of Conduct](CO
 | Data | YAML files (via `yaml-loader` + Turbopack) |
 | Data Fetching | TanStack Query |
 | Payments | PayPal (`@paypal/react-paypal-js`) |
-| Deployment | Netlify (static export) |
+| Deployment | Netlify, on its Next.js runtime |
 | Testing | Vitest |
 
 ## Getting Started
@@ -51,7 +51,7 @@ The development server starts at [http://localhost:3000](http://localhost:3000).
 bun run build
 ```
 
-Outputs a static site to the `build/` directory.
+Builds to `.next/`, which Netlify's Next.js runtime serves; `bunx next start` serves it locally.
 
 CMS-derived JSON snapshots (`public/data/`, `public/crests/`, `.cache/matches`) are committed and
 refreshed nightly by a GitHub Action; a build uses them as they are and never

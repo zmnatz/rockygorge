@@ -30,9 +30,9 @@ limits of that protection, so a future editor knows the intent behind it.
   authorization (role/email allowlist) beyond authentication — anyone invited
   to the site's Identity can edit content.
 
-- The admin page **HTML is publicly downloadable** — the site is statically
-  exported (`output: "export"`), so the pages ship to everyone and the login
-  flow is client-side UX only.
+- The admin page **HTML is publicly downloadable** — the admin pages are
+  prerendered at build time like the rest of the site, so they ship to
+  everyone and the login flow is client-side UX only.
 
 ## How it works
 

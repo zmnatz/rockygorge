@@ -1,0 +1,11 @@
+# The site runs on Netlify's Next.js runtime, not as a static export
+
+The site was a static export (`output: "export"` into `build/`), served by Netlify with a catch-all that answered every unknown path with the home page. A static export can't render a page on request, so a page whose data is too big or too many to build ahead, such as a player page for each of thousands of players, could only be an empty page that fills in after load from files committed each night. Netlify's Next.js runtime can render a page on its first request and cache it, as the usa-club-rugby-eligibility site does (its ADRs 012 and 014).
+
+Decisions, so they are not "fixed" later:
+
+- **The move changes no page.** Every page that was exported is still built at build time from the same `getStaticProps` and `getStaticPaths` (all with `fallback: false`), with the same URLs. Rendering a page on request is a separate change, page by page.
+- **Netlify adds the runtime.** It detects a Next.js site without `output: "export"` and adds `@netlify/plugin-nextjs`; `netlify.toml` publishes `.next`, the default `distDir`. There is no version pinned in the repo.
+- **No build cache plugin.** The runtime saves and restores `.next/cache` itself, so `netlify-plugin-cache` is gone. The committed snapshots (`public/data`, `public/crests`, `.cache/matches`) were never cached, and still aren't.
+- **An unknown path is a 404.** The `/* → /index.html` catch-all only stood in for routes a static host couldn't know. Next answers an unknown path with its 404 page, where the catch-all served the home page with a 200.
+- **Unchanged:** images stay unoptimized (`images.unoptimized`), the `/api/calendar` proxy in `netlify.toml` and the Netlify Functions in `netlify/functions/` work as before, and the admin pages still ship to everyone, with sign-in handled in the browser (`docs/known-issues/admin-auth.md`).
