@@ -15,6 +15,8 @@ node_modules
 
 # public/data/ (build-time snapshots), public/crests/ and .cache/matches
 # (match archive) are committed and refreshed nightly; see docs/snapshots.md.
+# The player histories are calculated from the archive at build time, not committed (ADR 016).
+/public/data/players/
 
 # misc
 .DS_Store

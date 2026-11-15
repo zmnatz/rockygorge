@@ -34,7 +34,7 @@
     "netlify": "netlify dev",
     "start": "next dev",
     "dev": "next dev",
-    "build": "next build",
+    "build": "bun scripts/generate-players.ts --offline && next build",
     "build:force": "bun run generate:force; next build",
     "generate": "bun run generate:scores; bun run generate:standings; bun run generate:players; bun run generate:leaders; bun run generate:club-pages; bun run generate:crests",
     "generate:force": "FORCE_SNAPSHOTS=1 bun run generate",

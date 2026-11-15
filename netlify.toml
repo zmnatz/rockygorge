@@ -3,6 +3,11 @@
 [build]
   command = "bun run build"
   publish = ".next"
+  # Skips the build (exit 0) when nothing since the last one can change the site: the docs,
+  # the tests and their config, CI and editor config, agent skills, and Markdown (pages are
+  # .mdx). A build without cache has CACHED_COMMIT_REF equal to COMMIT_REF, which would look
+  # like no change, so it always builds; so does any git error (exit 128).
+  ignore = '''test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- . ':!docs' ':!src/__tests__' ':!vitest.config.ts' ':!.github' ':!.husky' ':!.vscode' ':!.opencode' ':!LICENSE' ':!*.md' '''
 
 [build.environment]
   NETLIFY_USE_BUN = "true"
