@@ -255,20 +255,6 @@ export function useGamedayFixtures(seed?: ClubFixture[]) {
   });
 }
 
-async function fetchStaticScores(): Promise<Score[]> {
-  try {
-    const res = await fetch('/data/scores.json');
-    if (!res.ok) {
-      return [];
-    }
-    const json = await res.json();
-    return Array.isArray(json) ? (json as Score[]) : [];
-  } catch {
-    // No prebuilt index (e.g. dev before first generate) — live fills in.
-    return [];
-  }
-}
-
 // Merges live results over the prebuilt index: live wins on duplicate ids,
 // static-only games are retained, newest first. Used so the ticker renders
 // instantly from the build-time snapshot, then fills in newer games.
@@ -285,28 +271,20 @@ export function mergeScores(live: Score[], stat: Score[]): Score[] {
   );
 }
 
-export function useScores(initialScores?: Score[]) {
-  const staticQuery = useQuery({
-    queryKey: ['scores-static'],
-    queryFn: fetchStaticScores,
-    initialData: initialScores,
-    staleTime: Infinity,
-    placeholderData: [],
-  });
-  const staticScores = staticQuery.data ?? [];
+// `initialScores` is the page's snapshot, read in getStaticProps.
+export function useScores(initialScores: Score[] = []) {
   return useQuery({
     queryKey: ['scores'],
     queryFn: async () => {
       try {
         const live = await fetchLiveScores();
-        return mergeScores(live, staticScores);
+        return mergeScores(live, initialScores);
       } catch (error) {
         console.info('Unable to load scores', error);
-        return staticScores;
+        return initialScores;
       }
     },
-    initialData: staticScores,
-    enabled: !staticQuery.isPending,
+    initialData: initialScores,
     staleTime: 5 * 60 * 1000,
   });
 }

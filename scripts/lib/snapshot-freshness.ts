@@ -1,24 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Snapshots (public/data/**, public/crests, .cache/matches) are committed to the
-// repo and refreshed nightly by .github/workflows/update-snapshots.yml, which
-// always forces a refresh. Builds never generate them. Two small files track
-// them; the second is local and not committed:
+// Snapshots (public/data/** except what the build calculates, public/crests,
+// .cache/matches) are committed to the repo and refreshed nightly by
+// .github/workflows/update-snapshots.yml, which always forces a refresh. Builds never pull
+// them. public/data/manifest.json records when each snapshot's content last CHANGED, and the
+// FORMAT version it was generated with.
 //
-// - public/data/manifest.json: when each snapshot's content last CHANGED, and
-//   the FORMAT version it was generated with.
-// - .cache/snapshots-checked.json: when each snapshot was last CHECKED
-//   against the CMS (changed or not). Freshness is judged from this one.
-//
-// A run that finds nothing new rewrites only the checked file, so data files
-// (and git history) don't churn. Run unforced, a generate script skips a
-// snapshot whose format is current: locally always, and in CI while the checked
-// time is under MAX_AGE_MS old. Nothing runs unforced in CI today; the nightly
-// workflow forces every run.
-export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+// A run that finds nothing new leaves the data files (and git history) alone. Run unforced
+// by hand, a generate script skips a snapshot whose format is current.
 
-export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'crests' | 'clubPages' | 'matches';
+export type SnapshotName = 'scores' | 'standings' | 'players' | 'crests' | 'clubPages' | 'matches';
 
 // Bump a snapshot's number whenever the shape of its output (or the
 // generator's logic) changes. A committed snapshot with a different format is
@@ -28,7 +20,6 @@ export type SnapshotName = 'scores' | 'standings' | 'leaders' | 'players' | 'cre
 export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   scores: 3,
   standings: 2,
-  leaders: 1,
   players: 9,
   crests: 1,
   clubPages: 3,
@@ -37,17 +28,12 @@ export const SNAPSHOT_FORMATS: Record<SnapshotName, number> = {
   matches: 1,
 };
 
-export type SnapshotStamps = Partial<Record<SnapshotName, string>>;
 export type SnapshotManifest = Partial<
   Record<SnapshotName, { updatedAt: string; format: number }>
 >;
 
 export function manifestPath(root = process.cwd()): string {
   return path.join(root, 'public', 'data', 'manifest.json');
-}
-
-export function checkedPath(root = process.cwd()): string {
-  return path.join(root, '.cache', 'snapshots-checked.json');
 }
 
 function readJson<T>(file: string): T {
@@ -67,15 +53,6 @@ export function readManifest(root = process.cwd()): SnapshotManifest {
   return readJson(manifestPath(root));
 }
 
-export function readChecked(root = process.cwd()): SnapshotStamps {
-  return readJson(checkedPath(root));
-}
-
-// Netlify and GitHub Actions both set CI; their checkouts are throwaway.
-export function isLocal(env: Record<string, string | undefined> = process.env): boolean {
-  return !env.CI && !env.NETLIFY;
-}
-
 // `--force` on the command line or FORCE_SNAPSHOTS=1 in the environment
 // (the latter is what the :force scripts set).
 export function isForced(
@@ -88,31 +65,12 @@ export function isForced(
 
 export function isFresh(
   name: SnapshotName,
-  options: {
-    now?: number;
-    checked?: SnapshotStamps;
-    manifest?: SnapshotManifest;
-    forced?: boolean;
-    local?: boolean;
-  } = {}
+  options: { manifest?: SnapshotManifest; forced?: boolean } = {}
 ): boolean {
   if (options.forced ?? isForced()) {
     return false;
   }
-  if ((options.manifest ?? readManifest())[name]?.format !== SNAPSHOT_FORMATS[name]) {
-    return false;
-  }
-  if (options.local ?? isLocal()) {
-    return true;
-  }
-  const stamp = (options.checked ?? readChecked())[name];
-  const checked = stamp ? Date.parse(stamp) : Number.NaN;
-  if (Number.isNaN(checked)) {
-    return false;
-  }
-  const age = (options.now ?? Date.now()) - checked;
-  // A timestamp from the future (clock skew) is not trusted.
-  return age >= 0 && age < MAX_AGE_MS;
+  return (options.manifest ?? readManifest())[name]?.format === SNAPSHOT_FORMATS[name];
 }
 
 // Returns true (and logs) when the caller should skip its update.
@@ -121,13 +79,9 @@ export function skipIfFresh(name: SnapshotName, requiredPath: string): boolean {
     return false;
   }
   console.log(
-    `Skipping ${name} snapshot: using committed copy (checked ${readChecked()[name]}). Use --force or FORCE_SNAPSHOTS=1 to refresh.`
+    `Skipping ${name} snapshot: using the committed copy. Use --force or FORCE_SNAPSHOTS=1 to refresh.`
   );
   return true;
-}
-
-export function markChecked(name: SnapshotName, now = new Date(), root = process.cwd()): void {
-  writeJson(checkedPath(root), { ...readChecked(root), [name]: now.toISOString() });
 }
 
 export function markUpdated(name: SnapshotName, now = new Date(), root = process.cwd()): void {
@@ -137,10 +91,8 @@ export function markUpdated(name: SnapshotName, now = new Date(), root = process
   });
 }
 
-// Call after a successful pull: always records the check, and records an
-// update only when the content actually changed.
+// Call after a successful pull: records an update only when the content actually changed.
 export function recordRun(name: SnapshotName, changed: boolean, now = new Date()): void {
-  markChecked(name, now);
   // A format bump is recorded even if the regenerated content is identical.
   if (changed || readManifest()[name]?.format !== SNAPSHOT_FORMATS[name]) {
     markUpdated(name, now);

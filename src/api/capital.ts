@@ -405,10 +405,23 @@ export async function loadCurrentSeasonFixtures(): Promise<CapitalFixture[]> {
 // Loads the snapshot for one season (the wanted one, else the index's
 // default). Pass null to hold off until the wanted season is known (e.g.
 // before the router is ready).
-export function useStandingsSnapshot(wantedSeason: string | null | undefined) {
+//
+// `initial` is the index and the default season's file, read in the page's getStaticProps,
+// so a visit with no `?season=` shows the standings without a request; any other season is
+// fetched from /data/standings.
+export interface InitialStandings {
+  index: StandingsSnapshotIndex;
+  season: SeasonSnapshot;
+}
+
+export function useStandingsSnapshot(
+  wantedSeason: string | null | undefined,
+  initial?: InitialStandings | null
+) {
   const indexQuery = useQuery({
     queryKey: ['standings-snapshot', 'index'],
     queryFn: () => fetchSnapshotFile<StandingsSnapshotIndex>('index.json'),
+    initialData: initial?.index,
     staleTime: Number.POSITIVE_INFINITY,
   });
   const index = indexQuery.data ?? null;
@@ -421,6 +434,7 @@ export function useStandingsSnapshot(wantedSeason: string | null | undefined) {
   const seasonQuery = useQuery({
     queryKey: ['standings-snapshot', season],
     queryFn: () => fetchSnapshotFile<SeasonSnapshot>(seasonSnapshotFile(season)),
+    initialData: initial && season === initial.season.season ? initial.season : undefined,
     enabled: !!season,
     staleTime: Number.POSITIVE_INFINITY,
   });

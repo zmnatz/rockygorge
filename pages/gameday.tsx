@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { useEffect, useMemo, useState } from 'react';
 import type { GetStaticProps } from 'next';
 import Head from 'next/head';
@@ -31,6 +29,7 @@ import {
   resolveMatchLocation,
 } from '@/utils/gameday';
 import { formatStartDate } from '@/utils/calendar';
+import { readPublishedJson, REVALIDATE_SECONDS } from '@/utils/publishedData';
 
 const sides = matchesConfig.sides;
 
@@ -58,24 +57,14 @@ interface GamedayPageProps {
   builtAt: string;
 }
 
-// Missing snapshot (e.g. local dev before first generate) leaves the seed
-// empty and the page falls back to the live fixtures read.
+// Re-read hourly, so the resolved Gameday follows the clock between deploys. A missing
+// snapshot (e.g. local dev before first generate) leaves the seed empty and the page falls
+// back to the live fixtures read.
 export const getStaticProps: GetStaticProps<GamedayPageProps> = async () => {
   const builtAt = new Date();
-  let initialScores: Score[] = [];
-  try {
-    const raw = fs.readFileSync(
-      path.join(process.cwd(), 'public', 'data', 'scores.json'),
-      'utf-8'
-    );
-    const json = JSON.parse(raw);
-    if (Array.isArray(json)) {
-      initialScores = gamedaySeedScores(json as Score[], sides, builtAt);
-    }
-  } catch {
-    // Fall back to the live read.
-  }
-  return { props: { initialScores, builtAt: builtAt.toISOString() } };
+  const scores = await readPublishedJson<Score[]>('scores.json');
+  const initialScores = Array.isArray(scores) ? gamedaySeedScores(scores, sides, builtAt) : [];
+  return { props: { initialScores, builtAt: builtAt.toISOString() }, revalidate: REVALIDATE_SECONDS };
 };
 
 export default function GamedayPage({ initialScores = [], builtAt }: Partial<GamedayPageProps>) {
