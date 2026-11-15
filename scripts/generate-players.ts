@@ -7,7 +7,6 @@ import {
   playerSnapshotFile,
 } from '../src/utils/playerHistory';
 import { leagueResults, type ScheduledFixture } from '@zmnatz/usa-club-rugby-data';
-import { eligibilityPlayerIds } from './lib/eligibility-players';
 import { readLeagueFixtures } from './lib/league-fixtures';
 import { logRequestStats } from './lib/log-request-stats';
 import {
@@ -25,45 +24,58 @@ import { readManifest, recordRun, SNAPSHOT_FORMATS, skipIfFresh, syncDir } from 
 // are never downloaded again, except for an archive format change or
 // --full-history. Best-effort like the other snapshots: a throttled CMS never
 // fails the build, and on failure the previous snapshot and archive are kept.
+//
+// With --offline (what `bun run build` runs) nothing is downloaded: the histories are
+// calculated from the committed archive alone and the manifest is left as it is, since
+// public/data/players/ is not committed (ADR 016).
 async function generate() {
   const outDir = path.join(process.cwd(), 'public', PLAYERS_SNAPSHOT_DIR);
   const archiveDir = path.join(process.cwd(), MATCH_ARCHIVE_DIR);
-  if (skipIfFresh('players', outDir) && skipIfFresh('matches', archiveDir)) {
+  const offline = process.argv.includes('--offline');
+  if (!offline && skipIfFresh('players', outDir) && skipIfFresh('matches', archiveDir)) {
     return;
   }
   console.log('Building player histories from the match archive...');
   try {
     const results = leagueResults(readLeagueFixtures() as ScheduledFixture[]);
     const current = results.reduce((latest, fixture) => (fixture.season > latest ? fixture.season : latest), '');
-    const fullHistory =
-      process.argv.includes('--full-history') || readManifest().matches?.format !== SNAPSHOT_FORMATS.matches;
-    const refreshFrom = fullHistory ? '' : current;
-    const saved = fullHistory ? {} : readMatchArchive(archiveDir);
+    let archive: ReturnType<typeof readMatchArchive>;
+    if (offline) {
+      archive = readMatchArchive(archiveDir);
+    } else {
+      const fullHistory =
+        process.argv.includes('--full-history') || readManifest().matches?.format !== SNAPSHOT_FORMATS.matches;
+      const refreshFrom = fullHistory ? '' : current;
+      const saved = fullHistory ? {} : readMatchArchive(archiveDir);
 
-    const toFetch = matchesToFetch(results, saved, refreshFrom);
-    const { matches, failed } = await fetchMatchesInBatches(toFetch);
-    // A partial download would drop games, so the previous snapshot stays.
-    if (failed.length > 0) {
-      throw new Error(`${failed.length} of ${toFetch.length} matches failed`);
+      const toFetch = matchesToFetch(results, saved, refreshFrom);
+      const { matches, failed } = await fetchMatchesInBatches(toFetch);
+      // A partial download would drop games, so the previous snapshot stays.
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} of ${toFetch.length} matches failed`);
+      }
+      const byId = new Map(matches.map((match) => [match.fixture.id, match]));
+      const fetched = new Map<string, { season: string; match: MatchCentreData | null }>(
+        toFetch.map((fixture) => [fixture.id, { season: fixture.season, match: byId.get(fixture.id) ?? null }])
+      );
+      archive = updateArchive(saved, fetched, refreshFrom);
+      console.log(`Downloaded ${toFetch.length} matches (${fullHistory ? 'every season' : `${current} and any missing`}).`);
     }
-    const byId = new Map(matches.map((match) => [match.fixture.id, match]));
-    const fetched = new Map<string, { season: string; match: MatchCentreData | null }>(
-      toFetch.map((fixture) => [fixture.id, { season: fixture.season, match: byId.get(fixture.id) ?? null }])
-    );
-    const archive = updateArchive(saved, fetched, refreshFrom);
-    console.log(`Downloaded ${toFetch.length} matches (${fullHistory ? 'every season' : `${current} and any missing`}).`);
 
     const all = archivedMatches(archive, results);
     const histories = aggregatePlayerHistory(all);
-    const linked = await eligibilityPlayerIds();
     const files: Record<string, string> = {};
     for (const [id, history] of histories) {
-      files[playerSnapshotFile(id)] = JSON.stringify({ ...history, eligibility: linked.has(id) });
+      files[playerSnapshotFile(id)] = JSON.stringify(history);
     }
-    recordRun('matches', writeMatchArchive(archiveDir, archive));
-    recordRun('players', syncDir(outDir, files));
+    if (offline) {
+      syncDir(outDir, files);
+    } else {
+      recordRun('matches', writeMatchArchive(archiveDir, archive));
+      recordRun('players', syncDir(outDir, files));
+    }
     console.log(`Saved ${histories.size} player histories from ${all.length} archived matches to public/${PLAYERS_SNAPSHOT_DIR}/`);
-    logRequestStats('players');
+    if (!offline) logRequestStats('players');
   } catch (err) {
     // Fails the nightly run, so GitHub reports it; the previous snapshot stays.
     process.exitCode = 1;

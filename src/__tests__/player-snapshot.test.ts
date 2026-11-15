@@ -1,10 +1,10 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readPlayerHistory } from '@/utils/playerSnapshot';
 
-const history = { id: 'abc', name: 'A Player', teamName: 'T', games: [], scoringEvents: [], eligibility: true };
+const history = { id: 'abc', name: 'A Player', teamName: 'T', games: [], scoringEvents: [] };
 
 describe('readPlayerHistory', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'players-'));
@@ -29,8 +29,21 @@ describe('readPlayerHistory', () => {
     await expect(readPlayerHistory('broken', dir)).rejects.toThrow();
   });
 
-  it('reads the committed snapshots by default', async () => {
-    const found = await readPlayerHistory('f5JqeT4vzmH2nxtnR');
-    expect(found?.name).toBe('Adam Wiley');
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("reads the deploy's copy over HTTP when the snapshots aren't on disk", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.endsWith('/players/abc.json') ? Response.json(history) : new Response('', { status: 404 })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const missing = path.join(dir, 'missing');
+    await expect(readPlayerHistory('abc', missing, 'https://deploy.example/data/')).resolves.toEqual(history);
+    expect(fetchMock).toHaveBeenCalledWith('https://deploy.example/data/players/abc.json');
+    await expect(readPlayerHistory('nobody', missing, 'https://deploy.example/data')).resolves.toBeNull();
+  });
+
+  it('throws when the CDN fails', async () => {
+    vi.stubGlobal('fetch', async () => new Response('', { status: 500 }));
+    await expect(readPlayerHistory('abc', path.join(dir, 'missing'), 'https://deploy.example/data')).rejects.toThrow();
   });
 });
