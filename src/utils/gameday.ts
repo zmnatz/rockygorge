@@ -177,39 +177,6 @@ export function gamedaySeedScores<
   return club.filter((score) => days.includes(toLocalDayKey(score.dateTime)));
 }
 
-// What the home and Gameday pages' static HTML would show if built at `now`. The
-// nightly job saves it, so a commit, and with it a build, happens on a night that
-// changes first paint even when no match data changed: a match day arriving, a
-// recap ending, the next fixture passing. Other quiet nights stay quiet.
-export function firstPaintKey<T extends GamedayFixtureInput>(
-  scores: T[],
-  sides: GamedaySide[],
-  now: Date = new Date()
-) {
-  const view = (seed: T[]) => {
-    const fixtures = seed.map((score) => ({
-      ...score,
-      status: score.status ?? '',
-      isLive: score.isLive ?? false,
-    }));
-    const { kind, date } = resolveGameday(fixtures, sides, now);
-    return { fixtures: seed.map((score) => score.id), kind, date };
-  };
-  return {
-    home: view(homePageScores(scores, HOME_RESULT_COUNT, sides.length, now)),
-    gameday: view(gamedaySeedScores(scores, sides, now)),
-  };
-}
-
-interface GamedayFixtureInput {
-  id: string;
-  dateTime: string;
-  status?: string;
-  isLive?: boolean;
-  homeTeam: { name: string; score: string };
-  awayTeam: { name: string; score: string };
-}
-
 // Default toggle pick for the day: the live Match, else the earlier
 // kickoff, else the first Side in config order. -1 when there is nothing.
 export function defaultSideIndex(matches: SideMatch[]): number {

@@ -1,27 +1,26 @@
 # Build-time snapshots
 
-The site pre-pulls CMS data (scores, standings, scoring leaders, player
+The site pre-pulls CMS data (scores, standings, player
 histories) into JSON so pages are static. Those pulls were most of the build
 time, so the results are **committed to the repo** and refreshed nightly.
 
 | Snapshot  | Output                      | Script                         |
 | --------- | --------------------------- | ------------------------------ |
-| scores    | `public/data/scores.json`, plus `first-paint.json` | `scripts/generate-scores-index.ts` |
+| scores    | `public/data/scores.json` | `scripts/generate-scores-index.ts` |
 | standings | `public/data/standings/`    | `scripts/generate-standings-index.ts` |
-| leaders   | `public/data/leaders/`, calculated from the match archive | `scripts/generate-leaders-index.ts` |
 | players   | the match archive `.cache/matches/` (committed), and `public/data/players/`, which is calculated from it at build time and not committed | `scripts/generate-players.ts` |
 | crests    | `public/crests/` (WebP team logos) | `scripts/generate-crests.ts` |
 | clubPages | `public/data/club-pages.json` (each club's Rugby Xplorer page and crest, confirmed through the CMS) | `scripts/generate-club-pages.ts` |
 
 ## How freshness works
 
-`public/data/manifest.json` records when each snapshot's content last **changed**, and the **format** version it was generated with. Generating writes only files whose content differs (ignoring `generatedAt`), so a run that finds nothing new changes nothing. `.cache/snapshots-checked.json` is a local record of when a run last checked the CMS, and isn't committed.
+`public/data/manifest.json` records when each snapshot's content last **changed**, and the **format** version it was generated with. Generating writes only files whose content differs (ignoring `generatedAt`), so a run that finds nothing new changes nothing.
 
-**Builds don't touch the CMS.** `bun run build`, which is all Netlify runs, calculates the player histories from the committed match archive (`generate-players.ts --offline`, a few seconds, gitignored) and then runs `next build` from the committed snapshots. Only the nightly workflow or a deliberate run refreshes them, so a PR that changes a snapshot's format must regenerate and commit it, or the format test fails.
+**Builds don't touch the CMS.** `bun run build`, which is all Netlify runs, first calculates what comes from the committed match archive and the standings snapshot (`bun run build:data`: the player histories, `generate-players.ts --offline`, and the scoring leaders, `generate-leaders-index.ts`; a few seconds, both gitignored) and then runs `next build` from the committed snapshots. Only the nightly workflow or a deliberate run refreshes them, so a PR that changes a snapshot's format must regenerate and commit it, or the format test fails.
 
 Run by hand, `bun run generate` skips a snapshot whose format is current. `bun run generate:force` refreshes everything.
 
-`.github/workflows/update-snapshots.yml` runs daily at 06:00 UTC (and on demand). It runs `bun run generate:force` and commits `public/data`, `public/crests` and `.cache` to `master` (not the player histories, which the build calculates) if anything changed. That push is what triggers the Netlify build, so a quiet night makes no commit and no build. `public/data/first-paint.json` records what the home and Gameday pages' static HTML would show, so a night that changes it, such as a match day arriving, still gets a build. Nothing reads that file. To see whether a night ran, check the workflow's runs in GitHub Actions. A job that fails keeps its previous data, the others still run and are committed, and the run then fails, so GitHub sends its usual failed-run notification. Scheduled runs notify whoever last changed the workflow's schedule.
+`.github/workflows/update-snapshots.yml` runs daily at 06:00 UTC (and on demand). It runs `bun run generate:force` and commits `public/data`, `public/crests` and `.cache` to `master` (not the player histories, which the build calculates) if anything changed. That push is what triggers the Netlify build, so a quiet night makes no commit and no build. The home and Gameday pages are regenerated hourly (`revalidate` in their `getStaticProps`), so what depends on the clock, such as a match day arriving, follows it between deploys and a quiet night needs no commit. To see whether a night ran, check the workflow's runs in GitHub Actions. A job that fails keeps its previous data, the others still run and are committed, and the run then fails, so GitHub sends its usual failed-run notification. Scheduled runs notify whoever last changed the workflow's schedule.
 
 ## Changing a snapshot's format
 

@@ -1,3 +1,4 @@
+import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -18,6 +19,7 @@ import { ScoreCard } from '@/components/Scores/ScoreCard';
 import type { Score } from '@/components/Scores/types';
 import { LeadersTable, StandingsTable, TeamSummary } from '@/components/Scoreboard';
 import { useLeadersSeason } from '@/api/leaders';
+import { readPublishedJson } from '@/utils/publishedData';
 import {
   ALL,
   compsOf,
@@ -37,8 +39,12 @@ import {
   useCompLadder,
   useStandingsSnapshot,
   type CapitalFixture,
+  seasonSnapshotFile,
   type FixtureDateGroup,
+  type InitialStandings,
   type LadderPool,
+  type SeasonSnapshot,
+  type StandingsSnapshotIndex,
 } from '@/api/capital';
 import type { LeadersDivision } from '@/utils/leaders';
 
@@ -82,7 +88,21 @@ function queryParam(value: string | string[] | undefined): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-export default function StandingsPage() {
+// The index and the default season, from the nightly snapshot, so the first view needs no
+// request. Missing files (e.g. local dev before first generate) leave the live fallback.
+export const getStaticProps: GetStaticProps<StandingsPageProps> = async () => {
+  const index = await readPublishedJson<StandingsSnapshotIndex>('standings/index.json');
+  const season = index
+    ? await readPublishedJson<SeasonSnapshot>(`standings/${seasonSnapshotFile(index.defaultSeason)}`)
+    : null;
+  return { props: { initial: index && season ? { index, season } : null } };
+};
+
+interface StandingsPageProps {
+  initial: InitialStandings | null;
+}
+
+export default function StandingsPage({ initial }: StandingsPageProps) {
   const router = useRouter();
   const [tab, setTab] = useState<StandingsTab>('standings');
   const [season, setSeason] = useState<string>('');
@@ -94,7 +114,8 @@ export default function StandingsPage() {
   // loaded (the URL's on first visit, else the newest with results).
   const urlSeason = router.isReady ? queryParam(router.query.season) : undefined;
   const standingsSnapshot = useStandingsSnapshot(
-    router.isReady ? season || urlSeason : null
+    router.isReady ? season || urlSeason : null,
+    initial
   );
   // The CMS is only a fallback for when no snapshot was built: the nightly
   // build keeps the snapshot at most a day old.

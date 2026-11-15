@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import home from '@content/home.yml';
@@ -15,6 +13,7 @@ import { CalendarCard } from '@/components/CalendarCard';
 import { HomeGames } from '@/components/Scores/HomeGames';
 import type { Score } from '@/components/Scores/types';
 import { crestSrc } from '@/utils/crest';
+import { readPublishedJson, REVALIDATE_SECONDS } from '@/utils/publishedData';
 import { markdownToReact } from '@/utils/markdown';
 import matchesConfig from '@config/matches.yml';
 import { HOME_RESULT_COUNT, homePageScores } from '@/utils/gameday';
@@ -27,26 +26,17 @@ interface HomeProps {
   builtAt: string;
 }
 
-// Snapshot baked at build time (scripts/generate-scores-index.ts runs just
-// before `next build`). Missing file (e.g. local dev before first generate)
-// falls back to live CMS data client-side.
+// The nightly scores snapshot (scripts/generate-scores-index.ts), re-read hourly so the
+// ticker's results and the next game follow the clock between deploys. A missing file
+// (e.g. local dev before first generate) falls back to live CMS data client-side.
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  let initialScores: Score[] = [];
-  try {
-    const raw = fs.readFileSync(
-      path.join(process.cwd(), 'public', 'data', 'scores.json'),
-      'utf-8'
-    );
-    const json = JSON.parse(raw);
-    if (Array.isArray(json)) {
-      // The snapshot spans the season; the page needs only the ticker's
-      // results and the next game, so inline just those.
-      initialScores = homePageScores(json as Score[], HOME_RESULT_COUNT, matchesConfig.sides.length);
-    }
-  } catch {
-    // Fall back to client-side live fetch
-  }
-  return { props: { initialScores, builtAt: new Date().toISOString() } };
+  const scores = await readPublishedJson<Score[]>('scores.json');
+  // The snapshot spans the season; the page needs only the ticker's results and the next
+  // game, so inline just those.
+  const initialScores = Array.isArray(scores)
+    ? homePageScores(scores, HOME_RESULT_COUNT, matchesConfig.sides.length)
+    : [];
+  return { props: { initialScores, builtAt: new Date().toISOString() }, revalidate: REVALIDATE_SECONDS };
 };
 
 export const itemsBySource = {

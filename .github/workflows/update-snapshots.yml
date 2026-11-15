@@ -37,7 +37,7 @@ jobs:
         id: regenerate
         run: |
           failed=""
-          for job in scores standings players leaders club-pages crests; do
+          for job in scores standings players club-pages crests; do
             FORCE_SNAPSHOTS=1 bun run "generate:$job" || failed="$failed $job"
           done
           echo "failed=$failed" >> "$GITHUB_OUTPUT"
