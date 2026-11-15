@@ -9,8 +9,8 @@
 ## Screenshots
 
 <!--
-Optional but encouraged for UI changes. One path per line; the deploy-preview
-run screenshots each at desktop and mobile widths. The home page is always
+Optional but encouraged for UI changes. One path per line; CI
+screenshots each at desktop and mobile widths. The home page is always
 captured. Add `wait: <selector>` or `delay: <ms>` after a path for pages that
 fill in late. Delete this section if nothing visual changed.
 -->
