@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07T20:55:46.004Z",
+ "generatedAt": "2026-11-15T13:15:34.399Z",
  "clubs": {
   "Atlanta Harlequins Women": {
    "slug": "atlanta-harlequins",
@@ -34,7 +34,7 @@
   "Baltimore Flamingos-Ferals Women": {
    "slug": null,
    "crest": null,
-   "checkedAt": "2026-11-07T20:46:23.914Z"
+   "checkedAt": "2026-11-15T13:15:28.717Z"
   },
   "Belmont Shore": {
    "slug": "belmont-shore-rugby",
@@ -219,7 +219,7 @@
   "New York Women": {
    "slug": null,
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91308.png?v=1712805330200",
-   "checkedAt": "2026-11-07T20:46:31.253Z"
+   "checkedAt": "2026-11-15T13:15:34.399Z"
   },
   "Newport News": {
    "slug": "newport-news",
@@ -262,9 +262,9 @@
    "checkedAt": "2026-11-07T20:46:38.561Z"
   },
   "NOVA": {
-   "slug": null,
+   "slug": "northern-virginia-men",
    "crest": "https://dpf0m541u9zk8.cloudfront.net/ru/team/91262.png?v=1712692560036",
-   "checkedAt": "2026-11-07T20:46:19.188Z"
+   "checkedAt": "2026-11-15T13:15:29.563Z"
   },
   "NOVA Men": {
    "slug": "nova",
