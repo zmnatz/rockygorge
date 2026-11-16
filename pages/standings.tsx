@@ -2,7 +2,7 @@ import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -102,21 +102,27 @@ interface StandingsPageProps {
   initial: InitialStandings | null;
 }
 
+function tabParam(value: string | undefined): StandingsTab {
+  // `results` was renamed Scores in the ESPN-style rework; old links still work.
+  if (value === 'results') return 'scores';
+  return value && (TAB_VALUES as string[]).includes(value) ? (value as StandingsTab) : 'standings';
+}
+
 export default function StandingsPage({ initial }: StandingsPageProps) {
   const router = useRouter();
-  const [tab, setTab] = useState<StandingsTab>('standings');
-  const [season, setSeason] = useState<string>('');
-  const [compId, setCompId] = useState<string>(ALL);
-  const [team, setTeam] = useState<string>(ALL);
-  const initializedFromUrl = useRef(false);
+  // The URL holds the tab, season, division and team (`?tab=scores&season=...`), so Back and
+  // Forward step through them and a link shares them. A page with no parameter shows the
+  // default (standings, the newest season, every division and team), which is what the
+  // static HTML shows. An unknown value falls back to the default.
+  const tab = tabParam(queryParam(router.query.tab));
+  const urlSeason = queryParam(router.query.season);
+  const urlComp = queryParam(router.query.comp) ?? ALL;
+  const urlTeam = queryParam(router.query.team) ?? ALL;
 
-  // The build snapshot is split by season and only the selected season is
-  // loaded (the URL's on first visit, else the newest with results).
-  const urlSeason = router.isReady ? queryParam(router.query.season) : undefined;
-  const standingsSnapshot = useStandingsSnapshot(
-    router.isReady ? season || urlSeason : null,
-    initial
-  );
+  // The build snapshot is split by season and only the selected season is loaded (the
+  // URL's, else the newest with results). The router's query is empty until it is ready,
+  // so until then the default season's props are shown.
+  const standingsSnapshot = useStandingsSnapshot(router.isReady || initial ? urlSeason : null, initial);
   // The CMS is only a fallback for when no snapshot was built: the nightly
   // build keeps the snapshot at most a day old.
   const liveEnabled = !standingsSnapshot.isPending && !standingsSnapshot.snapshot;
@@ -140,161 +146,45 @@ export default function StandingsPage({ initial }: StandingsPageProps) {
     () => snapshotSeasons ?? seasonsOf(leagueFixtures),
     [leagueFixtures, snapshotSeasons]
   );
+  const season =
+    urlSeason && seasons.includes(urlSeason)
+      ? urlSeason
+      : (standingsSnapshot.index?.defaultSeason ??
+        (leagueFixtures.length > 0 ? defaultSeason(leagueFixtures) : ''));
   const comps = useMemo(
     () => (season ? compsOf(leagueFixtures, season) : []),
     [leagueFixtures, season]
   );
+  const compId = urlComp !== ALL && comps.some((comp) => comp.compId === urlComp) ? urlComp : ALL;
   const teams = useMemo(
     () => (season ? teamIdentities(leagueFixtures, season, compId) : []),
     [leagueFixtures, season, compId]
   );
   // The selected team as a cross-season identity (one team id per season in
-  // the CMS, e.g. "D3" became "MD3"), resolved from display or season name.
+  // the CMS, e.g. "D3" became "MD3"), resolved from display or season name. A team picked
+  // in one season stays selected in another as long as it plays there; until that season
+  // has loaded there are no teams, so it shows as unselected, then comes back.
   const identity = useMemo(
-    () => (team === ALL ? undefined : findTeamIdentity(teams, team)),
-    [teams, team]
+    () => (urlTeam === ALL ? undefined : findTeamIdentity(teams, urlTeam)),
+    [teams, urlTeam]
   );
+  const team = identity ? urlTeam : ALL;
   const teamNames = useMemo(
-    () => (identity ? identity.names : team === ALL ? [ALL] : [team]),
-    [identity, team]
+    () => (identity ? identity.names : [ALL]),
+    [identity]
   );
-
-  // Seed filters from the URL once (e.g. shared ?tab=scores&season=... links).
-  useEffect(() => {
-    if (
-      !router.isReady ||
-      initializedFromUrl.current ||
-      leagueFixtures.length === 0
-    ) {
-      return;
-    }
-    initializedFromUrl.current = true;
-    const urlTab = queryParam(router.query.tab);
-    if (urlTab && (TAB_VALUES as string[]).includes(urlTab)) {
-      setTab(urlTab as StandingsTab);
-    } else if (urlTab === 'results') {
-      // Renamed to Scores in the ESPN-style rework.
-      setTab('scores');
-    }
-    const urlSeason = queryParam(router.query.season);
-    const resolvedSeason =
-      urlSeason && seasons.includes(urlSeason)
-        ? urlSeason
-        : defaultSeason(leagueFixtures);
-    setSeason(resolvedSeason);
-    const urlComp = queryParam(router.query.comp);
-    if (
-      urlComp &&
-      urlComp !== ALL &&
-      compsOf(leagueFixtures, resolvedSeason).some((comp) => comp.compId === urlComp)
-    ) {
-      setCompId(urlComp);
-    }
-    const urlTeam = queryParam(router.query.team);
-    if (
-      urlTeam &&
-      urlTeam !== ALL &&
-      findTeamIdentity(teamIdentities(leagueFixtures, resolvedSeason, urlComp ?? ALL), urlTeam)
-    ) {
-      setTeam(urlTeam);
-    }
-  }, [router.isReady, router.query, leagueFixtures, seasons]);
-
-  // A team picked in one season stays selected when switching seasons, as
-  // long as it plays in the new one; checked once that season has loaded.
   const seasonLoaded = leagueFixtures.some((item) => item.season === season);
-  useEffect(() => {
-    if (seasonLoaded && team !== ALL && !findTeamIdentity(teams, team)) {
-      setTeam(ALL);
-    }
-  }, [seasonLoaded, team, teams]);
 
-  // Default to the newest season with results once fixtures load.
-  useEffect(() => {
-    if (leagueFixtures.length === 0) {
-      return;
-    }
-    if (!season && initializedFromUrl.current) {
-      return;
-    }
-    if (!season) {
-      setSeason(defaultSeason(leagueFixtures));
-    }
-  }, [leagueFixtures, season]);
-
-  // Keep the URL and the filters in step, in both directions, so filtered
-  // views are shareable and the browser's back/forward buttons walk through
-  // the filters the visitor picked. A filter change pushes a history entry;
-  // back/forward changes the URL, which is applied to the filters here.
-  // `pendingKey` is a push still on its way to the router, `applyingUrl` a
-  // URL still on its way into state, so neither side reverts the other.
-  const stateKey = `${tab}|${season}|${compId}|${team}`;
-  const prevStateKey = useRef('');
-  const pendingKey = useRef<string | null>(null);
-  const applyingUrl = useRef(false);
-  // A cancelled or failed navigation never reaches the URL, so don't wait on it.
-  useEffect(() => {
-    const reset = () => {
-      pendingKey.current = null;
-      applyingUrl.current = false;
-    };
-    router.events.on('routeChangeError', reset);
-    return () => router.events.off('routeChangeError', reset);
-  }, [router.events]);
-  useEffect(() => {
-    if (!router.isReady || !initializedFromUrl.current || !season) {
-      return;
-    }
-    const stateChanged = prevStateKey.current !== stateKey;
-    const firstSync = prevStateKey.current === '';
-    prevStateKey.current = stateKey;
-    if (router.pathname !== STANDINGS_PATH) {
-      return;
-    }
-    const urlSeason = queryParam(router.query.season);
-    const urlTabParam = queryParam(router.query.tab);
-    const urlTab =
-      urlTabParam === 'results'
-        ? 'scores'
-        : urlTabParam && (TAB_VALUES as string[]).includes(urlTabParam)
-          ? (urlTabParam as StandingsTab)
-          : 'standings';
-    const urlComp = queryParam(router.query.comp) ?? ALL;
-    const urlTeam = queryParam(router.query.team) ?? ALL;
-    const urlKey = `${urlTab}|${urlSeason}|${urlComp}|${urlTeam}`;
-    if (urlKey === stateKey) {
-      pendingKey.current = null;
-      applyingUrl.current = false;
-      return;
-    }
-    if (stateChanged) {
-      // A filter changed: reflect it in the URL. The first sync only
-      // completes the URL (e.g. a bare /standings), so it doesn't add history.
-      // A correction right after applying a URL (an unknown team or division
-      // dropped) replaces the entry, or back would land on the bad URL again.
-      const correcting = applyingUrl.current;
-      applyingUrl.current = false;
-      pendingKey.current = stateKey;
-      const navigate = firstSync || correcting || !urlSeason ? router.replace : router.push;
-      navigate.call(
-        router,
-        { pathname: router.pathname, query: { tab, season, comp: compId, team } },
-        undefined,
-        { shallow: true }
-      );
-      return;
-    }
-    // Only the URL changed (back/forward): apply it. An unknown team or
-    // division is dropped by the checks that follow a season load.
-    if (pendingKey.current !== null || applyingUrl.current || !urlSeason) {
-      return;
-    }
-    applyingUrl.current = true;
-    setTab(urlTab);
-    setSeason(urlSeason);
-    setCompId(urlComp);
-    setTeam(urlTeam);
-  }, [stateKey, tab, season, compId, team, router]);
+  // Changes the URL, keeping what isn't named. Defaults are left out of it.
+  const navigate = (next: { tab?: StandingsTab; season?: string; comp?: string; team?: string }) => {
+    const state = { tab, season, comp: compId, team, ...next };
+    const query: Record<string, string> = {};
+    if (state.tab !== 'standings') query.tab = state.tab;
+    if (state.season) query.season = state.season;
+    if (state.comp !== ALL) query.comp = state.comp;
+    if (state.team !== ALL) query.team = state.team;
+    router.push({ pathname: STANDINGS_PATH, query }, undefined, { shallow: true, scroll: false });
+  };
 
   const filtered = useMemo(
     () => filterFixtures(leagueFixtures, { season: season || ALL, compId, team: teamNames }),
@@ -380,27 +270,24 @@ export default function StandingsPage({ initial }: StandingsPageProps) {
   }, [ladder, team, teamNames]);
 
   // Division ids are minted per season, so a season switch always resets the
-  // division; the team is re-checked once the new season loads (see above).
-  const handleSeasonChange = (value: string) => {
-    setSeason(value);
-    setCompId(ALL);
-  };
+  // division; the team stays if it plays in the new season (see above).
+  const handleSeasonChange = (value: string) => navigate({ season: value, comp: ALL });
 
   // A team link in the Leaders table: show that team's standings in the
   // division it was listed under.
   const handleSelectTeamFromLeaders = (name: string) => {
     const found = findTeamIdentity(teamIdentities(leagueFixtures, season, ladderCompId), name);
-    setCompId(ladderCompId);
-    setTeam(found?.display ?? name);
-    setTab('standings');
+    navigate({ tab: 'standings', comp: ladderCompId, team: found?.display ?? name });
   };
 
-  const handleCompChange = (value: string) => {
-    setCompId(value);
-    if (team !== ALL && !findTeamIdentity(teamIdentities(leagueFixtures, season, value), team)) {
-      setTeam(ALL);
-    }
-  };
+  const handleCompChange = (value: string) =>
+    navigate({
+      comp: value,
+      team:
+        team !== ALL && !findTeamIdentity(teamIdentities(leagueFixtures, season, value), team)
+          ? ALL
+          : team,
+    });
 
   return (
     <Box sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
@@ -489,7 +376,7 @@ export default function StandingsPage({ initial }: StandingsPageProps) {
                 labelId="standings-team-label"
                 value={team}
                 label="Team"
-                onChange={(event) => setTeam(event.target.value)}
+                onChange={(event) => navigate({ team: event.target.value })}
               >
                 <MenuItem value={ALL}>
                   <em>All teams</em>
@@ -514,7 +401,7 @@ export default function StandingsPage({ initial }: StandingsPageProps) {
 
           <Tabs
             value={tab}
-            onChange={(_event, value: StandingsTab) => setTab(value)}
+            onChange={(_event, value: StandingsTab) => navigate({ tab: value })}
             variant="scrollable"
             scrollButtons="auto"
             aria-label="Capital rugby views"
