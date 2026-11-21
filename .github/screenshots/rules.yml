@@ -1,4 +1,4 @@
-# PR screenshots (the shared workflow in zmnatz/code-review, called from ci.yml). The
+# PR screenshots (the shared workflow in zmnatz/github-workflows, called from ci.yml). The
 # home page is always captured. When a PR changes a file matching `files`, the listed routes are
 # captured too. A route may add `waitFor` (selector) or `delayMs` for pages
 # that fill in after load; the default is network idle plus a short settle.

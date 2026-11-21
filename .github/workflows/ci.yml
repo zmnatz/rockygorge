@@ -42,7 +42,7 @@ jobs:
   # Builds the site, serves it with `next start` (as Netlify's runtime does) and
   # screenshots it, then keeps one sticky comment on the PR up to date, so it doesn't
   # wait on or depend on Netlify's deploy preview. The job is the shared workflow in
-  # zmnatz/code-review, which stores the images on the orphan `pr-screenshots` branch
+  # zmnatz/github-workflows, which stores the images on the orphan `pr-screenshots` branch
   # so they can be embedded inline. Pages come from the PR description's
   # `## Screenshots` section plus routes mapped from changed files
   # (.github/screenshots/rules.yml); `/` is always included.
@@ -50,7 +50,7 @@ jobs:
     name: Screenshots
     # A fork's token can't push the images or comment.
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    uses: zmnatz/code-review/.github/workflows/screenshots.yml@v1
+    uses: zmnatz/github-workflows/.github/workflows/screenshots.yml@v1
     permissions:
       contents: write
       pull-requests: write
