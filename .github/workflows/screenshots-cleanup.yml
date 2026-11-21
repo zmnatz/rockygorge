@@ -2,7 +2,7 @@ name: Clean up PR screenshots
 
 # Deletes a PR's folder from the orphan `pr-screenshots` branch when the PR closes or
 # merges, so the branch does not grow forever. The job is the shared workflow in
-# zmnatz/code-review.
+# zmnatz/github-workflows.
 on:
   pull_request:
     types: [closed]
@@ -10,6 +10,6 @@ on:
 jobs:
   cleanup:
     name: Remove PR screenshots
-    uses: zmnatz/code-review/.github/workflows/screenshots-cleanup.yml@v1
+    uses: zmnatz/github-workflows/.github/workflows/screenshots-cleanup.yml@v1
     permissions:
       contents: write

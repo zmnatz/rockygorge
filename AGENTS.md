@@ -32,7 +32,7 @@
 - Follow MUI patterns for styling and components.
 
 ## Pull Requests
-- For PRs that change UI, add a `## Screenshots` section to the description listing the pages to capture, one path per line (e.g. `/gameday`). CI screenshots them at desktop and mobile widths and posts the images in a PR comment, from a build made inside the job (it doesn't use Netlify's deploy preview). The job is the shared workflow in `zmnatz/code-review`, called from `.github/workflows/ci.yml`; its README documents the inputs. The `.github/pull_request_template.md` has the format.
+- For PRs that change UI, add a `## Screenshots` section to the description listing the pages to capture, one path per line (e.g. `/gameday`). CI screenshots them at desktop and mobile widths and posts the images in a PR comment, from a build made inside the job (it doesn't use Netlify's deploy preview). The job is the shared workflow in `zmnatz/github-workflows`, called from `.github/workflows/ci.yml`; its README documents the inputs. The `.github/pull_request_template.md` has the format.
 - Add `wait: <selector>` or `delay: <ms>` after a path for pages that fill in after load (e.g. `/gameday wait: [data-testid=match-centre]`).
 - The section is encouraged, not required. Without it the run captures only `/` (plus routes mapped from changed files in `.github/screenshots/rules.yml`) and says so in its comment. Do your best to list the pages your change touches.
 - Commit messages are unchanged.
