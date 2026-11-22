@@ -23,10 +23,6 @@ vi.mock('@/api/scores', () => ({
   }),
 }));
 
-vi.mock('@/api/calendar', () => ({
-  useCalendarSourceItems: () => ({ data: mocks.calendar }),
-}));
-
 vi.mock('@/components/Scores/useMatch', () => ({
   useMatch: (matchId: string | undefined) => {
     const centre = matchId ? mocks.centreById[matchId] : undefined;
@@ -109,7 +105,7 @@ function calendarItem(summary: string, start: string, end = start): CalendarSour
 }
 
 function render(): string {
-  return renderToStaticMarkup(<GamedayPage />);
+  return renderToStaticMarkup(<GamedayPage calendarItems={mocks.calendar} />);
 }
 
 beforeEach(() => {

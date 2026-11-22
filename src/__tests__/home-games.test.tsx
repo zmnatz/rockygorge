@@ -1,13 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ClubFixture } from '@/api/scores';
+import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 
 const mocks = vi.hoisted(() => ({
-  calendar: { data: [], isPending: false, isPlaceholderData: false } as {
-    data: unknown[];
-    isPending: boolean;
-    isPlaceholderData: boolean;
-  },
+  calendar: [] as CalendarSourceItem[],
   seed: undefined as ClubFixture[] | undefined,
   query: { data: undefined, isPending: true, isError: false } as {
     data: ClubFixture[] | undefined;
@@ -22,9 +19,6 @@ vi.mock('@/api/scores', async (importOriginal) => ({
     mocks.seed = seed;
     return mocks.query;
   },
-}));
-vi.mock('@/api/calendar', () => ({
-  useCalendarSourceItems: () => mocks.calendar,
 }));
 
 vi.mock('@/utils/nextLink', () => ({
@@ -59,12 +53,12 @@ function fx(id: string, days: number): ClubFixture {
   };
 }
 
-const render = () => renderToStaticMarkup(<HomeGames />);
+const render = () => renderToStaticMarkup(<HomeGames calendarItems={mocks.calendar} />);
 
 describe('HomeGames', () => {
   beforeEach(() => {
     mocks.query = { data: undefined, isPending: true, isError: false };
-    mocks.calendar = { data: [], isPending: false, isPlaceholderData: false };
+    mocks.calendar = [];
   });
 
   it('renders the next game card, linked to Gameday, once the window has passed', () => {
@@ -76,38 +70,33 @@ describe('HomeGames', () => {
     expect(html).toContain('href="/gameday"');
   });
 
-  it('renders the card while the calendar loads, holding back the time of day', () => {
+  it('renders the card without a time of day until the calendar has the kickoff', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
-    mocks.calendar = { data: [], isPending: false, isPlaceholderData: true };
-    const loading = render();
-    expect(loading).toContain('Washington MD1');
-    expect(loading).toContain('MAC Men D1');
+    const without = render();
+    expect(without).toContain('Washington MD1');
+    expect(without).toContain('MAC Men D1');
+    expect(without).not.toMatch(/\d:\d\d/);
     const start = at(6).replace('T12:', 'T15:');
-    const item = { summary: 'MD1 vs Washington', start, end: start, location: '' };
-    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: true };
-    expect(render()).not.toMatch(/\d:\d\d/);
-    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: false };
-    const loaded = render();
-    expect(loaded.length).toBeGreaterThan(loading.length);
-    expect(loaded).toMatch(/\d:\d\d/);
-    expect(loading).not.toMatch(/\d:\d\d/);
+    mocks.calendar = [{ summary: 'MD1 vs Washington', start, end: start, location: '', htmlLink: '' }];
+    expect(render()).toMatch(/\d:\d\d/);
   });
 
   it('never falls back to the feed time when the calendar has no kickoff', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
-    mocks.calendar = { data: [], isPending: false, isPlaceholderData: false };
+    mocks.calendar = [];
     expect(render()).not.toMatch(/\d:\d\d/);
   });
 
   it('puts the venue in the header as an icon button plus text, once known', () => {
     mocks.query = { data: [fx('b', 6)], isPending: false, isError: false };
     const start = at(6).replace('T12:', 'T15:');
-    const item = { summary: 'MD1 vs Washington', start, end: start, location: 'Field 3, Rockville' };
-    mocks.calendar = { data: [item], isPending: false, isPlaceholderData: false };
+    mocks.calendar = [
+      { summary: 'MD1 vs Washington', start, end: start, location: 'Field 3, Rockville', htmlLink: '' },
+    ];
     const html = render();
     expect(html).toContain('aria-label="Map: Field 3, Rockville"');
     expect(html).toContain('Field 3, Rockville</span>');
-    mocks.calendar = { data: [], isPending: false, isPlaceholderData: true };
+    mocks.calendar = [];
     expect(render()).not.toContain('aria-label="Map:');
   });
 

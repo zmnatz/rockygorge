@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
-import { useCalendarSourceItems } from '@/api/calendar';
 import { scoreToClubFixture, useGamedayFixtures } from '@/api/scores';
 import matchesConfig from '@config/matches.yml';
 import {
@@ -16,6 +15,7 @@ import { ScoreCard } from './ScoreCard';
 import { Scores } from './Scores';
 import type { Team } from '@/types/match';
 import type { Score } from './types';
+import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 
 const sides = matchesConfig.sides;
 
@@ -27,6 +27,8 @@ interface HomeGamesProps {
   // Build-time snapshot of club fixtures (results and upcoming). Seeds the
   // card so it renders with the page instead of waiting on the network.
   initialScores?: Score[];
+  // The calendar, read on the server (empty when it couldn't be read).
+  calendarItems?: CalendarSourceItem[];
   // When the snapshot was built. The first render judges "today" against
   // this so the client hydrates to exactly the static markup; a real clock
   // takes over right after mount.
@@ -37,9 +39,8 @@ interface HomeGamesProps {
 // Gameday's first Side replaces the results ticker; otherwise (and when
 // the Gameday page would not show a "next" day) the ticker shows. The
 // fixture comes from the cached snapshot, so the card and the results
-// ticker appear and swap together with no flicker; only the kickoff time
-// waits on the calendar.
-export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
+// ticker appear and swap together with no flicker.
+export function HomeGames({ initialScores, calendarItems = [], builtAt }: HomeGamesProps) {
   const seed = useMemo(
     () =>
       initialScores
@@ -48,10 +49,6 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
     [initialScores]
   );
   const fixturesQuery = useGamedayFixtures(seed);
-  const calendarQuery = useCalendarSourceItems();
-  // The calendar query serves an empty placeholder until the real read
-  // lands, so isPending alone is never true: check the placeholder too.
-  const calendarLoading = calendarQuery.isPending || calendarQuery.isPlaceholderData;
 
   const [now, setNow] = useState(() => (builtAt ? new Date(builtAt) : new Date()));
   useEffect(() => {
@@ -65,9 +62,9 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
   const assignment = useMemo(
     () =>
       match
-        ? assignMatchWindows([match], calendarQuery.data ?? [])[0]
+        ? assignMatchWindows([match], calendarItems)[0]
         : undefined,
-    [match, calendarQuery.data]
+    [match, calendarItems]
   );
 
   // Either/or: the next game replaces the results ticker. Both decide from
@@ -109,11 +106,10 @@ export function HomeGames({ initialScores, builtAt }: HomeGamesProps) {
         score={score}
         kickoff={assignment?.kickoff}
         // The feed's date is right but its time is always a placeholder, so
-        // the time comes from the calendar kickoff only; with none (still
-        // loading, or no matching item) the header shows the day alone.
+        // the time comes from the calendar kickoff only; with none (no matching
+        // item) the header shows the day alone.
         header={`Next game · ${formatStartDate(
-          (!calendarLoading && assignment?.kickoff) ||
-            toLocalDayKey(match.fixture.dateTime)
+          assignment?.kickoff || toLocalDayKey(match.fixture.dateTime)
         )}`}
         location={resolveMatchLocation(assignment?.item?.location, clubFixture?.venue)}
       />

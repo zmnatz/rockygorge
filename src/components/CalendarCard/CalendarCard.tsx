@@ -2,18 +2,18 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Typography from "@mui/material/Typography";
-import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader, CircularProgress } from "@mui/material";
-import { useCalendarEvents } from "@/api/calendar";
+import { Link as MuiLink, List, ListItem, ListItemText, ListSubheader } from "@mui/material";
 import { formatEventTime } from "@/utils/calendar";
 import type { CalendarEvent } from "./types";
 import Link from "next/link";
 
 interface CalendarCardProps {
   calendars: string[]
+  // Read on the server, by filter name; null when the calendar couldn't be read.
+  events: Record<string, CalendarEvent[]> | null
 }
 
-export function CalendarCard({calendars}: CalendarCardProps) {
-  const { data, isFetching, error } = useCalendarEvents();
+export function CalendarCard({calendars, events}: CalendarCardProps) {
   return (
     <Card component="section">
       <CardHeader
@@ -28,15 +28,12 @@ export function CalendarCard({calendars}: CalendarCardProps) {
       />
       <CardContent>
       <List sx={{ p: 0 }}>
-        {isFetching && <ListItem sx={{textAlign: 'center'}}>
-          <CircularProgress/>
-        </ListItem>}
-        {error && <MuiLink component={Link} href="/calendar">Check out upcoming events</MuiLink>}
-        {!isFetching && !error && calendars.filter(calendar => data[calendar])
+        {!events && <MuiLink component={Link} href="/calendar">Check out upcoming events</MuiLink>}
+        {events && calendars.filter(calendar => events[calendar])
           .map(calendar =>
             <CalendarSection key={calendar}
               title={calendars.length > 1 ? calendar : undefined}
-              data={data[calendar]}
+              data={events[calendar]}
             />
           )
         }

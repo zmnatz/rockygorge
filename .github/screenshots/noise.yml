@@ -2,10 +2,4 @@
 # matches `pattern` (a regular expression) are left out of the PR comment.
 # `kind` is optional: console, pageerror or request; omit it to match all.
 # Add an entry with a reason rather than silencing a finding silently.
-noise:
-  - kind: request
-    pattern: "/api/calendar\\?\\S+ 404$"
-    reason: /api/calendar is a Netlify redirect rule (netlify.toml) to Google Calendar, which `next start` doesn't apply, so the calendar is empty in these screenshots.
-  - kind: console
-    pattern: "^Failed to load resource: the server responded with a status of 404"
-    reason: The same request. Chromium's message has no URL, and a real 404 is still reported as a request.
+noise: []

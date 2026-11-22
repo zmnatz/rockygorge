@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -12,11 +12,11 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
-import { useCalendarSourceItems } from '@/api/calendar';
 import { scoreToClubFixture, useGamedayFixtures, type ClubFixture } from '@/api/scores';
 import { MatchCentre } from '@/components/MatchCentre';
 import { ScoreCard } from '@/components/Scores/ScoreCard';
 import type { Score } from '@/components/Scores/types';
+import type { CalendarSourceItem } from '@/components/CalendarCard/types';
 import { useMatch } from '@/components/Scores/useMatch';
 import matchesConfig from '@config/matches.yml';
 import type { ResolvedGameday, SideMatch } from '@/types/gameday';
@@ -29,7 +29,8 @@ import {
   resolveMatchLocation,
 } from '@/utils/gameday';
 import { formatStartDate } from '@/utils/calendar';
-import { readPublishedJson, REVALIDATE_SECONDS } from '@/utils/publishedData';
+import { readPublishedJson } from '@/utils/publishedData';
+import { fetchCalendarItems, setCalendarCacheHeader } from '@/utils/calendarServer';
 
 const sides = matchesConfig.sides;
 
@@ -54,20 +55,33 @@ interface GamedayPageProps {
   // Renders the page's scaffold (teams, crests, date) with the static HTML;
   // the live reads only fill in kickoff, venue, lineups and events.
   initialScores: Score[];
+  // The calendar, read on the server (empty when it couldn't be read).
+  calendarItems: CalendarSourceItem[];
   builtAt: string;
 }
 
-// Re-read hourly, so the resolved Gameday follows the clock between deploys. A missing
-// snapshot (e.g. local dev before first generate) leaves the seed empty and the page falls
-// back to the live fixtures read.
-export const getStaticProps: GetStaticProps<GamedayPageProps> = async () => {
+// Rendered on request and cached by the CDN for 15 minutes with no stale copy served
+// (src/utils/calendarServer.ts), so the resolved Gameday and the calendar's kickoff times
+// follow the clock. A missing snapshot (e.g. local dev before first generate) leaves the
+// seed empty and the page falls back to the live fixtures read.
+export const getServerSideProps: GetServerSideProps<GamedayPageProps> = async ({ res }) => {
   const builtAt = new Date();
-  const scores = await readPublishedJson<Score[]>('scores.json');
+  const [scores, calendar] = await Promise.all([
+    readPublishedJson<Score[]>('scores.json'),
+    fetchCalendarItems(builtAt),
+  ]);
+  setCalendarCacheHeader(res, calendar);
   const initialScores = Array.isArray(scores) ? gamedaySeedScores(scores, sides, builtAt) : [];
-  return { props: { initialScores, builtAt: builtAt.toISOString() }, revalidate: REVALIDATE_SECONDS };
+  return {
+    props: { initialScores, calendarItems: calendar ?? [], builtAt: builtAt.toISOString() },
+  };
 };
 
-export default function GamedayPage({ initialScores = [], builtAt }: Partial<GamedayPageProps>) {
+export default function GamedayPage({
+  initialScores = [],
+  calendarItems = [],
+  builtAt,
+}: Partial<GamedayPageProps>) {
   const seed = useMemo(
     () =>
       initialScores
@@ -121,6 +135,7 @@ export default function GamedayPage({ initialScores = [], builtAt }: Partial<Gam
           fixtures={fixturesQuery.data}
           resolved={resolved}
           snapshot={initialScores}
+          calendarItems={calendarItems}
         />
       )}
     </>
@@ -134,13 +149,13 @@ function GamedayDay({
   fixtures,
   resolved,
   snapshot,
+  calendarItems,
 }: {
   fixtures: ClubFixture[];
   resolved: ResolvedGameday;
   snapshot: Score[];
+  calendarItems: CalendarSourceItem[];
 }) {
-  const calendarQuery = useCalendarSourceItems();
-
   const [selected, setSelected] = useState<number | null>(null);
   const fallback = defaultSideIndex(resolved.matches);
   const activeIndex =
@@ -148,8 +163,8 @@ function GamedayDay({
       ? selected
       : fallback;
   const assignments = useMemo(
-    () => assignMatchWindows(resolved.matches, calendarQuery.data ?? []),
-    [resolved.matches, calendarQuery.data]
+    () => assignMatchWindows(resolved.matches, calendarItems),
+    [resolved.matches, calendarItems]
   );
   const assignment = assignments[activeIndex];
   const match: SideMatch | undefined = assignment?.match;

@@ -137,3 +137,17 @@ export function mapCalendarSourceItem(item: RawCalendarItem): CalendarSourceItem
 export function mapCalendarSourceItems(items: RawCalendarItem[]): CalendarSourceItem[] {
   return items.map(mapCalendarSourceItem);
 }
+
+/** The public calendar items grouped by each filter in content/calendar.yml, descriptions
+ *  dropped. */
+export function groupCalendarEvents(
+  items: CalendarSourceItem[],
+  filters: CalendarFilter[]
+): Record<string, CalendarEvent[]> {
+  const events = items.map(({ description: _description, ...event }) => event);
+  const results: Record<string, CalendarEvent[]> = {};
+  for (const filter of filters) {
+    results[filter.name] = filterEvents(events, filter);
+  }
+  return results;
+}
