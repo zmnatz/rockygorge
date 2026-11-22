@@ -1,19 +1,18 @@
-import { useCalendarEvents } from "@/api/calendar";
 import { formatStartDate } from "@/utils/calendar";
-import { Typography, Box, CircularProgress } from "@mui/material";
+import { Typography, Box } from "@mui/material";
+import type { CalendarEvent } from "./types";
 
 interface CalendarEventDetailProps {
   title: string;
+  // Read on the server, by filter name; null when the calendar couldn't be read.
+  events: Record<string, CalendarEvent[]> | null;
 }
 
-export function CalendarEventDetail({ title }: CalendarEventDetailProps) {
-  const { data, isFetching, error } = useCalendarEvents();
-
-  if (isFetching) return <CircularProgress size={20} />;
-  if (error || !data) return null;
+export function CalendarEventDetail({ title, events }: CalendarEventDetailProps) {
+  if (!events) return null;
 
   // Look through all filtered calendars for a match
-  const allEvents = Object.values(data).flat();
+  const allEvents = Object.values(events).flat();
   const match = allEvents.find(event => 
     event.summary?.toLowerCase().includes(title.toLowerCase())
   );

@@ -1,4 +1,5 @@
 import { Typography, Container, Box, Card, CardHeader, CardContent, List, ListItem } from "@mui/material";
+import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,21 +9,21 @@ import events from "@content/events.yml";
 import store from "@content/store.yml";
 import forms from "@content/forms.yml";
 import type { Event, Product, Form } from "@/types/data";
+import type { CalendarEvent } from "@/components/CalendarCard/types";
+import calendarInfo from "@content/calendar.yml";
+import { groupCalendarEvents } from "@/utils/calendar";
+import { fetchCalendarItems, setCalendarCacheHeader } from "@/utils/calendarServer";
 import { getLinkText } from "@/utils/links";
 import { markdownToReact } from "@/utils/markdown";
 
-export async function getStaticPaths() {
-  return {
-    paths: events.map((event) => ({
-      params: { id: event.slug },
-    })),
-    fallback: false,
-  };
-}
-
-export async function getStaticProps({ params }) {
+// Rendered on request so the event's date and place come from the calendar on the server;
+// the CDN keeps the page for 15 minutes with no stale copy served (src/utils/calendarServer.ts).
+export async function getServerSideProps({ params, res }: GetServerSidePropsContext) {
   const event = events.find((event) => event?.slug === params?.id);
   if (!event) return { notFound: true };
+
+  const calendar = await fetchCalendarItems();
+  setCalendarCacheHeader(res, calendar);
 
   const storeItem = store.find((item) => item.slug === event.slug) ?? null;
   const form = forms.find((f) => f.slug === event.slug) ?? null;
@@ -38,6 +39,7 @@ export async function getStaticProps({ params }) {
       storeItem,
       form,
       qrCode,
+      calendarEvents: calendar ? groupCalendarEvents(calendar, calendarInfo.filters) : null,
     },
   };
 }
@@ -51,7 +53,13 @@ export default function EventPage({
   storeItem,
   form,
   qrCode,
-}: Event & { storeItem?: Product; form?: Form; qrCode?: string }) {
+  calendarEvents,
+}: Event & {
+  storeItem?: Product;
+  form?: Form;
+  qrCode?: string;
+  calendarEvents: Record<string, CalendarEvent[]> | null;
+}) {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Head>
@@ -63,7 +71,7 @@ export default function EventPage({
         <Typography variant="h6" color="text.secondary" gutterBottom>{description}</Typography>
         <Typography variant="body1" sx={{ mb: 2 }}>{summary}</Typography>
         
-        <CalendarEventDetail title={title} />
+        <CalendarEventDetail title={title} events={calendarEvents} />
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           {storeItem && (

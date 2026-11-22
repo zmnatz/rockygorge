@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Box, CircularProgress, Link as MuiLink, Typography } from "@mui/material";
+import { Box, Link as MuiLink, Typography } from "@mui/material";
 import Link from "next/link";
-import { useCalendarSourceItems } from "@/api/calendar";
 import { usePracticeWeather } from "@/api/weather";
 import calendarInfo from "@content/calendar.yml";
 import practiceFieldsConfig from "@config/practice-fields.yml";
+import type { CalendarSourceItem } from "@/components/CalendarCard/types";
 import type { PracticeField } from "@/types/practice-field";
 import { findNextPractice, formatEventTime } from "@/utils/calendar";
 import { findPracticeField } from "@/utils/practice-fields";
@@ -88,11 +88,9 @@ function WeatherForecast({ summary }: { summary: PracticeWeatherSummary }) {
   );
 }
 
-export function WhereIsPractice() {
-  const { data, isFetching, error } = useCalendarSourceItems();
-
-  if (isFetching) return <CircularProgress size={20} />;
-  if (error || !data) {
+// `items` is the calendar read on the server; null when it couldn't be read.
+export function WhereIsPractice({ items }: { items: CalendarSourceItem[] | null }) {
+  if (!items) {
     return (
       <Box sx={{ my: 2 }}>
         <Typography variant="body1" color="error">
@@ -102,7 +100,7 @@ export function WhereIsPractice() {
     );
   }
 
-  const next = findNextPractice(data, calendarInfo.filters);
+  const next = findNextPractice(items, calendarInfo.filters);
 
   if (!next) {
     return (

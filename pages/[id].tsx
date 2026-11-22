@@ -1,4 +1,5 @@
 import { Typography, Box } from "@mui/material";
+import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { CalendarEventDetail } from "@/components/CalendarCard/CalendarEventDetail";
@@ -7,21 +8,21 @@ import {PaypalProduct} from "@/components/Paypal";
 import items from "@content/store.yml";
 import forms from "@content/forms.yml";
 import type { Product, Form } from "@/types/data";
+import type { CalendarEvent } from "@/components/CalendarCard/types";
+import calendarInfo from "@content/calendar.yml";
+import { groupCalendarEvents } from "@/utils/calendar";
+import { fetchCalendarItems, setCalendarCacheHeader } from "@/utils/calendarServer";
 import { getLinkText } from "@/utils/links";
 import { markdownToReact } from "@/utils/markdown";
 
-export async function getStaticPaths() {
-  return {
-    paths: items.map((item) => ({
-      params: { id: item.slug },
-    })),
-    fallback: false,
-  };
-}
-
-export async function getStaticProps({ params }) {
+// Rendered on request so the event details come from the calendar on the server; the CDN
+// keeps the page for 15 minutes with no stale copy served (src/utils/calendarServer.ts).
+export async function getServerSideProps({ params, res }: GetServerSidePropsContext) {
   const item = items.find((item) => item?.slug === params?.id);
   if (!item) return { notFound: true };
+
+  const calendar = await fetchCalendarItems();
+  setCalendarCacheHeader(res, calendar);
 
   const form = forms.find((f) => f.slug === item.slug) ?? null;
 
@@ -29,6 +30,7 @@ export async function getStaticProps({ params }) {
     props: {
       ...item,
       form,
+      calendarEvents: calendar ? groupCalendarEvents(calendar, calendarInfo.filters) : null,
     },
   };
 }
@@ -43,8 +45,9 @@ export default function StoreItem({
   subscriptions,
   supporters,
   slug,
-  form
-}: Product & { form?: Form }) {
+  form,
+  calendarEvents,
+}: Product & { form?: Form; calendarEvents: Record<string, CalendarEvent[]> | null }) {
   return (
     <>
       <Head>
@@ -72,7 +75,7 @@ export default function StoreItem({
         </Box>
       )}
 
-      <CalendarEventDetail title={title} />
+      <CalendarEventDetail title={title} events={calendarEvents} />
     </>
   );
 }
