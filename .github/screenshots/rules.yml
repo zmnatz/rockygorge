@@ -25,6 +25,18 @@ rules:
     routes:
       - path: /calendar
   - files:
+      - pages/whereIsPractice.tsx
+      - src/components/WhereIsPractice/**
+    routes:
+      - path: /whereIsPractice
+  - files:
+      - pages/api/calendar.ts
+      - src/utils/calendarServer.ts
+      - src/utils/calendar.ts
+    routes:
+      - path: /
+      - path: /whereIsPractice
+  - files:
       - content/links.yml
       - src/components/Toolbar.tsx
     routes:
